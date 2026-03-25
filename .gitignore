@@ -1,0 +1,27 @@
+# Dependencies
+node_modules
+.pnpm-store
+
+# Build
+dist
+.next
+out
+build
+.turbo
+
+# Env
+.env
+.env*.local
+
+# IDE / OS
+.idea
+.vscode
+.DS_Store
+Thumbs.db
+
+# Debug / logs
+*.log
+npm-debug.log*
+
+# Test
+coverage
