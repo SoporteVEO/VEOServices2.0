@@ -5,6 +5,18 @@ import { NotificationStatus } from '@prisma/client';
 import type { EndingSoonContract } from './entities/ending-soon-contract.js';
 import type { CreateNotifiedContractDto } from './dto/create-notified-contract.dto.js';
 
+interface SourceContractRow {
+  mconId: number;
+  dconId: number;
+  mconAtencionA: string;
+  dconFechaDesde: Date;
+  dconFechaHasta: Date;
+  mconCodigo: string;
+  sitiDireccion: string;
+  cliNombres: string;
+  cliEmail: string;
+}
+
 const ENDING_SOON_CONTRACTS_SQL = `
 SELECT DISTINCT
     maecon.mconId,
@@ -50,10 +62,13 @@ export class ContractsService {
     from: Date,
     to: Date,
   ): Promise<EndingSoonContract[]> {
-    const rows = await this.brilo.query(ENDING_SOON_CONTRACTS_SQL, {
-      FechaDesde: from,
-      FechaHasta: to,
-    });
+    const rows = await this.brilo.query<SourceContractRow>(
+      ENDING_SOON_CONTRACTS_SQL,
+      {
+        FechaDesde: from,
+        FechaHasta: to,
+      },
+    );
     return this.mapSourceContracts(rows);
   }
 
@@ -61,10 +76,13 @@ export class ContractsService {
     from: Date,
     to: Date,
   ): Promise<EndingSoonContract[]> {
-    const sourceRows = (await this.brilo.query(ENDING_SOON_CONTRACTS_SQL, {
-      FechaDesde: from,
-      FechaHasta: to,
-    })) as { dconId: number }[];
+    const sourceRows = await this.brilo.query<SourceContractRow>(
+      ENDING_SOON_CONTRACTS_SQL,
+      {
+        FechaDesde: from,
+        FechaHasta: to,
+      },
+    );
 
     if (sourceRows.length === 0) return [];
 
@@ -88,6 +106,7 @@ export class ContractsService {
   async getNotifiedContracts() {
     return this.prisma.notifiedContract.findMany({
       where: { status: NotificationStatus.SENT },
+      orderBy: { createdAt: 'desc' },
     });
   }
 
@@ -103,7 +122,9 @@ export class ContractsService {
     });
   }
 
-  private mapSourceContracts(contracts: any[]): EndingSoonContract[] {
+  private mapSourceContracts(
+    contracts: SourceContractRow[],
+  ): EndingSoonContract[] {
     return contracts.map((c) => ({
       contractSourceId: c.mconId,
       contractDetailSourceId: c.dconId,

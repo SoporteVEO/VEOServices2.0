@@ -12,6 +12,7 @@ export interface NavItem {
   title: string;
   href: string;
   icon: LucideIcon;
+  requiredRole?: string;
 }
 
 export interface NavGroup {
@@ -42,7 +43,7 @@ export const NAV_GROUPS: NavGroup[] = [
   },
   {
     label: "Ajustes",
-    items: [{ title: "Usuarios", href: "/dashboard/users", icon: Users }],
+    items: [{ title: "Usuarios", href: "/dashboard/users", icon: Users, requiredRole: "ADMIN" }],
   },
 ];
 

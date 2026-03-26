@@ -4,7 +4,7 @@ import { useMemo } from "react";
 import type { ColumnDef } from "@tanstack/react-table";
 import { Badge } from "@/components/primitives/ui/badge";
 import { DataTable } from "@/components/ui/data-table";
-import { formatDate } from "@/lib/format";
+import { formatShortDate } from "@/lib/format";
 import type { NotifiedContract } from "@/api/contracts/contracts.get";
 
 const statusBadge: Record<
@@ -46,7 +46,7 @@ export function NotifiedContractsTable({
       {
         accessorKey: "createdAt",
         header: "Fecha notificacion",
-        cell: ({ row }) => formatDate(row.original.createdAt),
+        cell: ({ row }) => formatShortDate(new Date(row.original.createdAt)),
       },
       {
         accessorKey: "errorMessage",

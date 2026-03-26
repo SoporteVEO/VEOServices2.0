@@ -54,15 +54,12 @@ export function SpotsCalendarDayPanel({
       {
         label: "% Uso del día",
         value: formatPercent(dayPct),
-        description:
-          maxSpots > 0
-            ? `Sobre ${maxSpots.toLocaleString()} spots disponibles`
-            : undefined,
+        description: maxSpots > 0 ? `Spots disponibles` : undefined,
       },
       {
         label: "Campañas (día)",
         value: dayCampaigns.toLocaleString(),
-        description: "Campañas distintas registradas",
+        description: "Campañas distintas",
       },
     ],
     [dayCampaigns, dayPct, dayTotal, maxSpots],
