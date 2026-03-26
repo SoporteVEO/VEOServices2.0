@@ -4,6 +4,8 @@ import { Fraunces, JetBrains_Mono, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { TooltipProvider } from "@/components/primitives/ui/tooltip";
+import { Toaster } from "@/components/ui/sonner";
+import { QueryProvider } from "@/lib/query-provider";
 import { cn } from "@/lib/utils";
 
 const plusJakarta = Plus_Jakarta_Sans({
@@ -50,7 +52,12 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <TooltipProvider delayDuration={0}>{children}</TooltipProvider>
+          <QueryProvider>
+            <TooltipProvider delayDuration={0}>
+              {children}
+              <Toaster position="top-center" />
+            </TooltipProvider>
+          </QueryProvider>
         </ThemeProvider>
       </body>
     </html>

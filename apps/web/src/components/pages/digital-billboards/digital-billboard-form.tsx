@@ -1,0 +1,117 @@
+"use client";
+
+import { useForm } from "react-hook-form";
+import { Button } from "@/components/ui/button";
+import { ImageUploader } from "@/components/ui/image-uploader";
+import { Input } from "@/components/ui/input";
+import type { DigitalBillboardInput } from "@/api/digital-billboards/digital-billboards.post";
+
+interface DigitalBillboardFormProps {
+  isPending?: boolean;
+  errorMessage?: string;
+  onSubmit: (values: DigitalBillboardInput) => void;
+}
+
+export function DigitalBillboardForm({
+  isPending = false,
+  errorMessage,
+  onSubmit,
+}: DigitalBillboardFormProps) {
+  const { register, handleSubmit, setValue } = useForm<DigitalBillboardInput>({
+    defaultValues: {
+      maxSpots: 900,
+      imageBase64: null,
+    },
+  });
+
+  async function handleImageCropped(blob: Blob) {
+    const dataUrl = await new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(String(reader.result ?? ""));
+      reader.onerror = () => reject(new Error("No se pudo leer la imagen"));
+      reader.readAsDataURL(blob);
+    });
+
+    const base64 = dataUrl.includes(",") ? dataUrl.split(",")[1] : dataUrl;
+    setValue("imageBase64", base64, { shouldDirty: true });
+  }
+
+  return (
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div className="space-y-2">
+          <Input
+            id="code"
+            label="Codigo"
+            {...register("code", { required: true })}
+          />
+        </div>
+        <div className="space-y-2">
+          <Input
+            id="name"
+            label="Nombre"
+            {...register("name", { required: true })}
+          />
+        </div>
+      </div>
+
+      <div className="space-y-2">
+        <Input
+          id="address"
+          label="Direccion"
+          {...register("address", { required: true })}
+        />
+      </div>
+
+      <div className="grid gap-4 sm:grid-cols-3">
+        <div className="space-y-2">
+          <Input
+            id="latitude"
+            label="Latitud"
+            {...register("latitude", { required: true, valueAsNumber: true })}
+          />
+        </div>
+        <div className="space-y-2">
+          <Input
+            id="longitude"
+            label="Longitud"
+            {...register("longitude", { required: true, valueAsNumber: true })}
+          />
+        </div>
+        <div className="space-y-2">
+          <Input
+            id="price"
+            label="Precio"
+            {...register("price", { required: true })}
+          />
+        </div>
+      </div>
+
+      <Input
+        id="maxSpots"
+        label="Max spots"
+        {...register("maxSpots", {
+          required: true,
+          valueAsNumber: true,
+          min: 1,
+        })}
+      />
+
+      <div className="space-y-2">
+        <input type="hidden" {...register("imageBase64")} />
+        <ImageUploader
+          aspectRatio={16 / 9}
+          onImageCropped={handleImageCropped}
+        />
+      </div>
+
+      <Button type="submit" className="w-full" disabled={isPending}>
+        {isPending ? "Creando..." : "Crear valla"}
+      </Button>
+
+      {errorMessage ? (
+        <p className="text-sm text-destructive">{errorMessage}</p>
+      ) : null}
+    </form>
+  );
+}

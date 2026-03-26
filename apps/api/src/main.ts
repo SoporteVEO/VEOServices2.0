@@ -7,13 +7,19 @@ import 'dotenv/config';
 
 import { Logger, ValidationPipe, VersioningType } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
+import { NestExpressApplication } from '@nestjs/platform-express';
+import { json, urlencoded } from 'express';
 import { AppModule } from 'src/app.module';
 
 const logger = new Logger('Bootstrap');
 const port = process.env.PORT || 4000;
 
+/** JSON body limit (base64 images on digital-billboards exceed default 100kb). */
+const BODY_LIMIT = process.env.BODY_SIZE_LIMIT ?? '15mb';
+
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule, {
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
+    bodyParser: false,
     cors: {
       origin: '*',
       methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
@@ -22,6 +28,9 @@ async function bootstrap() {
     logger: ['error', 'warn', 'fatal', 'verbose', 'debug', 'log'],
     bufferLogs: false,
   });
+
+  app.use(json({ limit: BODY_LIMIT }));
+  app.use(urlencoded({ extended: true, limit: BODY_LIMIT }));
 
   app.enableVersioning({
     type: VersioningType.URI,

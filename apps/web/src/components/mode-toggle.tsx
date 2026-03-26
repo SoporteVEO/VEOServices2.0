@@ -4,13 +4,13 @@ import * as React from "react";
 import { Monitor, Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
 
-import { Button } from "@/components/primitives/ui/button";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/primitives/ui/dropdown-menu";
+} from "@/components/ui/dropdown-menu";
 
 export function ModeToggle() {
   const { setTheme, theme } = useTheme();
@@ -22,7 +22,7 @@ export function ModeToggle() {
 
   if (!mounted) {
     return (
-      <Button variant="outline" size="icon" className="size-9 shrink-0" disabled>
+      <Button variant="ghost" size="icon" className="size-9 shrink-0" disabled>
         <Sun className="size-4" />
       </Button>
     );
@@ -32,7 +32,7 @@ export function ModeToggle() {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button
-          variant="outline"
+          variant="ghost"
           size="icon"
           className="relative size-9 shrink-0"
           aria-label="Theme"
@@ -45,17 +45,23 @@ export function ModeToggle() {
         <DropdownMenuItem onClick={() => setTheme("light")}>
           <Sun className="me-2 size-4" />
           Light
-          {theme === "light" ? <span className="ms-auto text-xs text-muted-foreground">✓</span> : null}
+          {theme === "light" ? (
+            <span className="ms-auto text-xs text-muted-foreground">✓</span>
+          ) : null}
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => setTheme("dark")}>
           <Moon className="me-2 size-4" />
           Dark
-          {theme === "dark" ? <span className="ms-auto text-xs text-muted-foreground">✓</span> : null}
+          {theme === "dark" ? (
+            <span className="ms-auto text-xs text-muted-foreground">✓</span>
+          ) : null}
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => setTheme("system")}>
           <Monitor className="me-2 size-4" />
           System
-          {theme === "system" ? <span className="ms-auto text-xs text-muted-foreground">✓</span> : null}
+          {theme === "system" ? (
+            <span className="ms-auto text-xs text-muted-foreground">✓</span>
+          ) : null}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

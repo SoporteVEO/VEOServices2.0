@@ -1,0 +1,210 @@
+generator client {
+  provider     = "prisma-client-js"
+  moduleFormat = "cjs"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  ADMIN
+  USER
+}
+
+model User {
+  id        String  @id
+  publicId  String  @unique @default(uuid()) @map("public_id")
+  firstName String  @map("first_name")
+  lastName  String? @map("last_name")
+  email     String  @unique
+  role      Role    @default(USER)
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  emailVerified Boolean  @default(false)
+
+  image    String?
+  sessions Session[]
+  accounts Account[]
+
+  @@map("users")
+}
+
+model Session {
+  id        String   @id
+  expiresAt DateTime
+  token     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([token])
+  @@index([userId])
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([userId])
+  @@map("account")
+}
+
+enum NotificationStatus {
+  PENDING
+  SENT
+  FAILED
+}
+
+enum PurchaseStatus {
+  PENDING
+  COMPLETED
+  FAILED
+}
+
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([identifier])
+  @@map("verification")
+}
+
+model NotifiedContract {
+  id                     String             @id @default(uuid())
+  contractSourceId       Int
+  contractDetailSourceId Int
+  contractNumber         String
+  status                 NotificationStatus @default(PENDING)
+  errorMessage           String?
+  createdAt              DateTime           @default(now())
+  updatedAt              DateTime           @updatedAt
+
+  @@map("notified_contract")
+}
+
+model Customer {
+  id        String   @id @default(uuid())
+  name      String?
+  email     String   @unique
+  phone     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  purchases Purchase[]
+
+  @@map("customers")
+}
+
+model Purchase {
+  id              String         @id @default(uuid())
+  customerId      String
+  customer        Customer       @relation(fields: [customerId], references: [id])
+  status          PurchaseStatus @default(PENDING)
+  paypalOrderId   String?
+  paypalCaptureId String?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  items PurchaseItem[]
+
+  @@map("purchases")
+}
+
+model PurchaseItem {
+  id         String   @id @default(uuid())
+  purchaseId String
+  purchase   Purchase @relation(fields: [purchaseId], references: [id], onDelete: Cascade)
+
+  billboardId    Int?
+  billboardCode  String?
+  reference      String?
+  departmentName String?
+  cityName       String?
+  address        String?
+  price          Float?
+
+  digitalBillboardId String?
+  digitalBillboard   DigitalBillboard? @relation(fields: [digitalBillboardId], references: [id], onDelete: SetNull)
+  spotCount          Int?
+
+  from DateTime
+  to   DateTime
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([billboardId, from, to])
+  @@index([digitalBillboardId, from, to])
+  @@map("purchase_items")
+}
+
+model Image {
+  id                String             @id @default(uuid())
+  completeUrl       String
+  thumbnailUrl      String
+  mediumUrl         String
+  deleteUrl         String?
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  digitalBillboards DigitalBillboard[]
+
+  @@map("images")
+}
+
+model DigitalBillboardUsage {
+  id                  String           @id @default(uuid())
+  digitalBillboard    DigitalBillboard @relation(fields: [digitalBillboardId], references: [id])
+  digitalBillboardId  String
+  timestamp           DateTime
+  duration            Int
+  campaignName        String?
+  campaignDescription String?
+  createdAt           DateTime         @default(now())
+  updatedAt           DateTime         @updatedAt
+
+  @@index([digitalBillboardId, timestamp])
+  @@map("digital_billboard_usages")
+}
+
+model DigitalBillboard {
+  id                     String                  @id @default(uuid())
+  code                   String                  @unique
+  name                   String
+  address                String
+  latitude               Float
+  longitude              Float
+  price                  Float
+  image                  Image?                  @relation(fields: [imageId], references: [id])
+  imageId                String?
+  maxSpots               Int                     @default(900)
+  departmentId           Int?                    @map("department_id")
+  departmentName         String?                 @map("department_name")
+  createdAt              DateTime                @default(now())
+  updatedAt              DateTime                @updatedAt
+  digitalBillboardUsages DigitalBillboardUsage[]
+  purchaseItems          PurchaseItem[]
+
+  @@map("digital_billboards")
+}

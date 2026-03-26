@@ -181,7 +181,7 @@ Displays project info and `components.json` configuration. Run this first to dis
 | `tailwindConfigFile` | `string`  | Path to the Tailwind config file                                   |
 | `tailwindCssFile`    | `string`  | Path to the global CSS file                                        |
 | `aliasPrefix`        | `string`  | Import alias prefix (e.g. `@`, `~`, `@/`)                          |
-| `packageManager`     | `string`  | Detected package manager (`npm`, `pnpm`, `yarn`, `bun`)            |
+| `packageManager`     | `string`  | Detected package manager (`npm`)                                   |
 
 **Components.json fields:**
 
