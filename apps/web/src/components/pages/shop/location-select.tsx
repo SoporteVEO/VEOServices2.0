@@ -42,8 +42,8 @@ export function LocationSelect({
   );
 
   return (
-    <div className="flex w-full min-w-[220px] flex-col gap-1.5 sm:w-auto">
-      <label className="px-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground/70">
+    <div className="flex w-full min-w-0 sm:min-w-[220px] flex-col gap-1 sm:gap-1.5 sm:w-auto">
+      <label className="px-1 text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-muted-foreground/70">
         Ubicación
       </label>
       <Combobox
@@ -53,8 +53,8 @@ export function LocationSelect({
         required
         size="lg"
         placeholder="Selecciona municipio"
-        leadingIcon={<MapPin className="size-4 shrink-0" />}
-        triggerClassName="h-12 min-h-12 rounded-xl border-border/50 bg-background/50 shadow-sm hover:bg-accent/30 font-medium text-foreground"
+        leadingIcon={<MapPin className="size-3.5 sm:size-4 shrink-0" />}
+        triggerClassName="h-9 min-h-9 sm:h-12 sm:min-h-12 rounded-lg sm:rounded-xl border-border/50 bg-background/50 shadow-sm hover:bg-accent/30 text-xs sm:text-sm font-medium text-foreground"
         onChange={(next) => {
           if (next === undefined) return;
           const params = buildParams();

@@ -33,12 +33,12 @@ export function TypeSelect({ value }: TypeSelectProps) {
   }
 
   return (
-    <div className="flex flex-col gap-1.5 w-full sm:w-auto min-w-[200px]">
-      <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground/70 px-1">
+    <div className="flex flex-col gap-1 sm:gap-1.5 w-full sm:w-auto min-w-0 sm:min-w-[200px]">
+      <label className="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-muted-foreground/70 px-1">
         Formato
       </label>
       <Select value={value} onValueChange={onChange}>
-        <SelectTrigger className="w-full !h-12 bg-background/50 hover:bg-accent/30 transition-colors border-border/50 shadow-sm rounded-xl text-sm font-medium [&_[data-description]]:hidden [&_[data-icon-wrapper]]:size-5 [&_[data-icon]]:size-3 [&_[data-icon-wrapper]]:rounded-sm cursor-pointer">
+        <SelectTrigger className="w-full !h-9 sm:!h-12 bg-background/50 hover:bg-accent/30 transition-colors border-border/50 shadow-sm rounded-lg sm:rounded-xl text-xs sm:text-sm font-medium [&_[data-description]]:hidden [&_[data-icon-wrapper]]:size-4 sm:[&_[data-icon-wrapper]]:size-5 [&_[data-icon]]:size-3 [&_[data-icon-wrapper]]:rounded-sm cursor-pointer">
           <SelectValue placeholder="Selecciona formato" />
         </SelectTrigger>
         <SelectContent

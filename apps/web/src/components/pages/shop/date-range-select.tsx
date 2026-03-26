@@ -10,6 +10,7 @@ import {
   PopoverTrigger,
 } from "@/components/primitives/ui/popover";
 import { Calendar } from "@/components/primitives/ui/calendar";
+import { es } from "date-fns/locale";
 
 interface DateRangeSelectProps {
   from: string;
@@ -45,20 +46,20 @@ export function DateRangeSelect({
   };
 
   return (
-    <div className="flex flex-col gap-1.5 w-full sm:w-auto">
-      <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground/70 px-1">
+    <div className="flex flex-col gap-1 sm:gap-1.5 w-full sm:w-auto">
+      <label className="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-muted-foreground/70 px-1">
         Período de campaña
       </label>
-      <div className="flex items-center gap-2">
+      <div className="flex flex-col gap-1.5 sm:gap-2 sm:flex-row sm:items-center">
         <Popover>
           <PopoverTrigger asChild>
             <Button
               type="button"
               variant="outline"
               disabled={disabled}
-              className="w-full sm:w-[160px] h-12 justify-start bg-background/50 hover:bg-accent/30 border-border/50 shadow-sm rounded-xl font-medium"
+              className="w-full sm:w-[160px] h-9 sm:h-12 justify-start bg-background/50 hover:bg-accent/30 border-border/50 shadow-sm rounded-lg sm:rounded-xl text-xs sm:text-sm font-medium px-3"
             >
-              <CalendarIcon className="mr-2 size-4 text-muted-foreground" />
+              <CalendarIcon className="mr-1.5 sm:mr-2 size-3.5 sm:size-4 shrink-0 text-muted-foreground" />
               <span className="truncate">
                 {fromDate ? formatDate(fromDate) : "Inicio"}
               </span>
@@ -74,6 +75,11 @@ export function DateRangeSelect({
               onSelect={handleSelectFrom}
               defaultMonth={fromDate ?? undefined}
               className="p-3"
+              locale={es}
+              classNames={{
+                day: "w-full p-1.5 aspect-video",
+                month_caption: "w-full text-center capitalize mb-8",
+              }}
             />
           </PopoverContent>
         </Popover>
@@ -86,9 +92,9 @@ export function DateRangeSelect({
               type="button"
               variant="outline"
               disabled={disabled}
-              className="w-full sm:w-[160px] h-12 justify-start bg-background/50 hover:bg-accent/30 border-border/50 shadow-sm rounded-xl font-medium"
+              className="w-full sm:w-[160px] h-9 sm:h-12 justify-start bg-background/50 hover:bg-accent/30 border-border/50 shadow-sm rounded-lg sm:rounded-xl text-xs sm:text-sm font-medium px-3"
             >
-              <CalendarIcon className="mr-2 size-4 text-muted-foreground" />
+              <CalendarIcon className="mr-1.5 sm:mr-2 size-3.5 sm:size-4 shrink-0 text-muted-foreground" />
               <span className="truncate">
                 {toDate ? formatDate(toDate) : "Fin"}
               </span>
@@ -104,6 +110,11 @@ export function DateRangeSelect({
               onSelect={handleSelectTo}
               defaultMonth={toDate ?? fromDate ?? undefined}
               className="p-3"
+              locale={es}
+              classNames={{
+                day: "w-full p-1.5 aspect-video",
+                month_caption: "w-full text-center capitalize mb-8",
+              }}
             />
           </PopoverContent>
         </Popover>

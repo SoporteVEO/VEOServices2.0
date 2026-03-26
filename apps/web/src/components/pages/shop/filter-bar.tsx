@@ -34,9 +34,9 @@ export function FilterBar({
   buildParams,
 }: FilterBarProps) {
   return (
-    <div className="sticky top-0 z-40 w-full border-b border-border/40 bg-background/80 backdrop-blur-xl shadow-sm">
-      <div className="mx-auto w-full max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-end">
+    <div className="sticky top-16 z-40 w-full border-b border-border/40 bg-background/80 backdrop-blur-xl shadow-sm">
+      <div className="mx-auto w-full max-w-7xl px-3 py-2 sm:px-6 sm:py-4 lg:px-8">
+        <div className="flex flex-col gap-2 sm:gap-4 lg:flex-row lg:items-end">
           <TypeSelect value={mode} />
           
           <div className="h-10 w-px bg-border/50 hidden lg:block mx-2 self-end mb-1" />
