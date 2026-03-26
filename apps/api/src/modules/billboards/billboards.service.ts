@@ -31,7 +31,6 @@ interface BriloBillboardRow {
   Longitud: number | null;
   Precio: number | null;
   ImagenId: number | null;
-  Imagen: unknown;
   ImagenFecha: Date | null;
   ImagenObservaciones: string | null;
 }
@@ -99,7 +98,6 @@ SELECT
     ISNULL(prca_def.prcaPrecioMax, prca_def.Precio) AS [Precio],
 
     img.imagId            AS [ImagenId],
-    img.imagImagen        AS [Imagen],
     img.imagFecha         AS [ImagenFecha],
     img.imagObservaciones AS [ImagenObservaciones]
 
@@ -129,7 +127,6 @@ LEFT JOIN (
 OUTER APPLY (
     SELECT TOP 1
         i.imagId,
-        i.imagImagen,
         i.imagFecha,
         i.imagObservaciones
     FROM olVallas.dbo.imagenes i WITH (NOLOCK)
@@ -158,6 +155,12 @@ WHERE
 ORDER BY car.caraCodigo DESC;
 `;
 
+const BILLBOARD_IMAGE_SQL = `
+SELECT i.imagImagen AS [Imagen]
+FROM olVallas.dbo.imagenes i WITH (NOLOCK)
+WHERE i.imagId = @ImagenId
+`;
+
 function detectImageMimeType(buf: Buffer): string | null {
   if (buf.length >= 3 && buf[0] === 0xff && buf[1] === 0xd8 && buf[2] === 0xff)
     return 'image/jpeg';
@@ -182,17 +185,6 @@ function detectImageMimeType(buf: Buffer): string | null {
   return null;
 }
 
-function toDataUrl(image: unknown): string | null {
-  if (!image) return null;
-  const buf = Buffer.isBuffer(image)
-    ? image
-    : Buffer.from(image as ArrayBuffer);
-  if (!buf.length) return null;
-  const mime = detectImageMimeType(buf);
-  if (!mime) return null;
-  return `data:${mime};base64,${buf.toString('base64')}`;
-}
-
 @Injectable()
 export class BillboardsService {
   private readonly logger = new Logger(BillboardsService.name);
@@ -200,6 +192,10 @@ export class BillboardsService {
   private readonly billboardsCache = new TtlCache<AvailableBillboard[]>(
     CACHE_TTL_MS,
   );
+  private readonly imageCache = new TtlCache<{
+    buffer: Buffer;
+    mime: string;
+  } | null>(30 * 60 * 1000);
 
   constructor(
     private readonly prisma: PrismaService,
@@ -299,10 +295,30 @@ export class BillboardsService {
           longitude: r.Longitud ?? null,
           price: r.Precio ?? null,
           imageId: r.ImagenId ?? null,
-          imageUrl: toDataUrl(r.Imagen),
           imageDate: r.ImagenFecha ?? null,
           imageNotes: r.ImagenObservaciones ?? null,
         }),
       );
+  }
+
+  async getBillboardImage(
+    imageId: number,
+  ): Promise<{ buffer: Buffer; mime: string } | null> {
+    return this.imageCache.getOrFetch(String(imageId), async () => {
+      const rows = await this.brilo.query<{ Imagen: unknown }>(
+        BILLBOARD_IMAGE_SQL,
+        { ImagenId: imageId },
+      );
+
+      if (rows.length === 0 || !rows[0].Imagen) return null;
+
+      const buf = Buffer.isBuffer(rows[0].Imagen)
+        ? rows[0].Imagen
+        : Buffer.from(rows[0].Imagen as ArrayBuffer);
+      if (!buf.length) return null;
+
+      const mime = detectImageMimeType(buf) ?? 'application/octet-stream';
+      return { buffer: buf, mime };
+    });
   }
 }

@@ -20,6 +20,7 @@ interface ImageViewerProps {
   imageTitle?: string;
   imageUrl: string;
   thumbnailUrl?: string;
+  onThumbnailLoad?: () => void;
 }
 
 const ImageViewer_Motion = ({
@@ -29,6 +30,7 @@ const ImageViewer_Motion = ({
   imageTitle,
   imageUrl,
   thumbnailUrl,
+  onThumbnailLoad,
 }: ImageViewerProps) => {
   return (
     <Dialog>
@@ -36,16 +38,13 @@ const ImageViewer_Motion = ({
         <div className={cn("cursor-pointer", className)}>
           <img
             src={thumbnailUrl || imageUrl}
-            alt={
-              imageTitle
-                ? `${imageTitle} — vista previa, ampliar`
-                : "Vista previa, ampliar"
-            }
+            alt=""
             className={cn(
               "rounded-lg object-cover transition-opacity hover:opacity-90",
               classNameThumbnailViewer ??
                 "mx-auto h-[300px] w-full max-w-[300px]",
             )}
+            onLoad={onThumbnailLoad}
           />
         </div>
       </DialogTrigger>

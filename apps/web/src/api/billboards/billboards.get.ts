@@ -1,11 +1,19 @@
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
-import { apiFetch } from "@/lib/api";
+import { api, apiFetch } from "@/lib/api";
 import type { AvailableBillboard, AvailableState } from "./billboards.types";
 
 export type { AvailableBillboard, AvailableState } from "./billboards.types";
 
 const STALE_TIME = 5 * 60 * 1000;
 const GC_TIME = 10 * 60 * 1000;
+
+export function getBillboardImageUrl(
+  imageId: number | null | undefined,
+): string | null {
+  if (imageId == null) return null;
+  const base = (api.defaults.baseURL ?? "").replace(/\/$/, "");
+  return `${base}/billboards/image/${imageId}`;
+}
 
 export async function getBillboardStates(params: { from: string; to: string }) {
   const response = await apiFetch<{ data: AvailableState[] }>(

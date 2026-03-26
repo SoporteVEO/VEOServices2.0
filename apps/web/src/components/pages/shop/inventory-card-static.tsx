@@ -1,12 +1,15 @@
 "use client";
 
+import { useState } from "react";
 import { MapPin, Plus } from "lucide-react";
 import ImageViewerMotion from "@/components/commerce-ui/image-viewer-motion";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/primitives/ui/skeleton";
 import { useCartStore } from "@/lib/cart-store";
 import { formatMoney } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/primitives/ui/badge";
+import { getBillboardImageUrl } from "@/api/billboards/billboards.get";
 
 interface AvailableBillboard {
   billboardId: number;
@@ -16,7 +19,7 @@ interface AvailableBillboard {
   departmentName: string | null;
   cityName: string | null;
   price: number | null;
-  imageUrl: string | null;
+  imageId: number | null;
   latitude: number | null;
   longitude: number | null;
 }
@@ -32,6 +35,9 @@ export function InventoryCardStatic({
 }) {
   const addItem = useCartStore((s) => s.addItem);
   const items = useCartStore((s) => s.items);
+  const [imgLoaded, setImgLoaded] = useState(false);
+
+  const imageUrl = getBillboardImageUrl(b.imageId);
 
   const isAdded = items.some(
     (i) => i.kind === "static" && i.billboardId === b.billboardId,
@@ -48,7 +54,7 @@ export function InventoryCardStatic({
       cityName: b.cityName,
       address: b.address,
       price: b.price ?? 0,
-      imageUrl: b.imageUrl,
+      imageUrl,
       from,
       to,
     });
@@ -59,19 +65,25 @@ export function InventoryCardStatic({
   return (
     <div className="group relative flex flex-col overflow-hidden rounded-2xl border border-border/40 bg-card transition-all hover:shadow-xl hover:border-border/80">
       <div className="relative aspect-[4/3] w-full overflow-hidden bg-muted">
-        {b.imageUrl ? (
-          <ImageViewerMotion
-            imageUrl={b.imageUrl}
-            imageTitle={b.billboardCode ?? b.reference ?? "Valla"}
-            className="block size-full min-h-0"
-            classNameThumbnailViewer="size-full object-cover transition-transform duration-500 group-hover:scale-105 rounded-none"
-          />
+        {imageUrl ? (
+          <>
+            {!imgLoaded && (
+              <Skeleton className="absolute inset-0 z-10 rounded-none" />
+            )}
+            <ImageViewerMotion
+              imageUrl={imageUrl}
+              imageTitle={b.billboardCode ?? b.reference ?? "Valla"}
+              className="block size-full min-h-0"
+              classNameThumbnailViewer="size-full object-cover transition-transform duration-500 group-hover:scale-105 rounded-none"
+              onThumbnailLoad={() => setImgLoaded(true)}
+            />
+          </>
         ) : (
           <div className="flex h-full w-full items-center justify-center bg-zinc-100 dark:bg-zinc-900">
             <MapPin className="size-10 text-zinc-300 dark:text-zinc-700" />
           </div>
         )}
-        <div className="absolute top-3 left-3 flex gap-2">
+        <div className="absolute top-3 left-3 flex gap-2 z-20">
           <Badge className="bg-background/90 text-foreground backdrop-blur-sm hover:bg-background/90 border-transparent shadow-sm">
             {b.billboardCode ?? "Sin Código"}
           </Badge>

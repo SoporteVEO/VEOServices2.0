@@ -1,4 +1,14 @@
-import { Controller, Get, Query, BadRequestException } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Query,
+  Param,
+  Res,
+  BadRequestException,
+  NotFoundException,
+  StreamableFile,
+} from '@nestjs/common';
+import type { Response } from 'express';
 import { BillboardsService } from './billboards.service.js';
 import { Public } from '../auth/decorators.js';
 
@@ -23,6 +33,28 @@ export class BillboardsController {
 
     const states = await this.service.getAvailableStates(from, to);
     return { data: states };
+  }
+
+  @Get('image/:imageId')
+  async getBillboardImage(
+    @Param('imageId') imageIdRaw: string,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const imageId = Number(imageIdRaw);
+    if (!Number.isFinite(imageId)) {
+      throw new BadRequestException('imageId inválido');
+    }
+
+    const result = await this.service.getBillboardImage(imageId);
+    if (!result) {
+      throw new NotFoundException('Imagen no encontrada');
+    }
+
+    res.set({
+      'Content-Type': result.mime,
+      'Cache-Control': 'public, max-age=86400',
+    });
+    return new StreamableFile(result.buffer);
   }
 
   @Get()

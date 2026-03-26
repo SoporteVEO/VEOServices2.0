@@ -13,7 +13,6 @@ export interface AvailableBillboard {
   longitude: number | null;
   price: number | null;
   imageId: number | null;
-  imageUrl: string | null;
   imageDate: Date | null;
   imageNotes: string | null;
 }
