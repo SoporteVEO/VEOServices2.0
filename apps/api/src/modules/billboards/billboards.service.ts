@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { BriloDatabaseService } from '../brilo-database/brilo-database.service.js';
+import { RedisService } from '../redis/redis.service.js';
 import { TtlCache } from '../../lib/ttl-cache.js';
 import type {
   AvailableBillboard,
@@ -9,6 +10,8 @@ import type {
 
 const CACHE_TTL_MS =
   Number(process.env.BILLBOARD_CACHE_TTL_MS) || 5 * 60 * 1000;
+const IMAGE_REDIS_TTL_S =
+  Number(process.env.BILLBOARD_IMAGE_REDIS_TTL_S) || 24 * 60 * 60;
 
 interface BriloStateRow {
   departamentoId: number;
@@ -200,6 +203,7 @@ export class BillboardsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly brilo: BriloDatabaseService,
+    private readonly redis: RedisService,
   ) {
     this.logger.log(`Billboard cache TTL: ${CACHE_TTL_MS}ms`);
   }
@@ -304,21 +308,44 @@ export class BillboardsService {
   async getBillboardImage(
     imageId: number,
   ): Promise<{ buffer: Buffer; mime: string } | null> {
-    return this.imageCache.getOrFetch(String(imageId), async () => {
-      const rows = await this.brilo.query<{ Imagen: unknown }>(
-        BILLBOARD_IMAGE_SQL,
-        { ImagenId: imageId },
-      );
+    return this.imageCache.getOrFetch(String(imageId), () =>
+      this.fetchImageWithRedis(imageId),
+    );
+  }
 
-      if (rows.length === 0 || !rows[0].Imagen) return null;
+  private async fetchImageWithRedis(
+    imageId: number,
+  ): Promise<{ buffer: Buffer; mime: string } | null> {
+    const redisKey = `billboard:img:${imageId}`;
 
-      const buf = Buffer.isBuffer(rows[0].Imagen)
-        ? rows[0].Imagen
-        : Buffer.from(rows[0].Imagen as ArrayBuffer);
-      if (!buf.length) return null;
+    const [cachedMime, cachedData] = await Promise.all([
+      this.redis.get(`${redisKey}:mime`),
+      this.redis.getBuffer(`${redisKey}:data`),
+    ]);
 
-      const mime = detectImageMimeType(buf) ?? 'application/octet-stream';
-      return { buffer: buf, mime };
-    });
+    if (cachedMime && cachedData) {
+      return { buffer: cachedData, mime: cachedMime };
+    }
+
+    const rows = await this.brilo.query<{ Imagen: unknown }>(
+      BILLBOARD_IMAGE_SQL,
+      { ImagenId: imageId },
+    );
+
+    if (rows.length === 0 || !rows[0].Imagen) return null;
+
+    const buf = Buffer.isBuffer(rows[0].Imagen)
+      ? rows[0].Imagen
+      : Buffer.from(rows[0].Imagen as ArrayBuffer);
+    if (!buf.length) return null;
+
+    const mime = detectImageMimeType(buf) ?? 'application/octet-stream';
+
+    await Promise.all([
+      this.redis.setex(`${redisKey}:mime`, IMAGE_REDIS_TTL_S, mime),
+      this.redis.setex(`${redisKey}:data`, IMAGE_REDIS_TTL_S, buf),
+    ]);
+
+    return { buffer: buf, mime };
   }
 }

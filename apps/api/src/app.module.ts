@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { PrismaModule } from './modules/prisma/prisma.module.js';
 import { AuthModule } from './modules/auth/auth.module.js';
 import { BriloDatabaseModule } from './modules/brilo-database/brilo-database.module.js';
+import { RedisModule } from './modules/redis/redis.module.js';
 import { EmailModule } from './modules/email/email.module.js';
 import { UsersModule } from './modules/users/users.module.js';
 import { ContractsModule } from './modules/contracts/contracts.module.js';
@@ -16,6 +17,7 @@ import { PaypalModule } from './modules/paypal/paypal.module.js';
     PrismaModule,
     AuthModule,
     BriloDatabaseModule,
+    RedisModule,
     EmailModule,
     UsersModule,
     ContractsModule,
