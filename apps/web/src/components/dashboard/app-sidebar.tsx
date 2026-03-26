@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   Sidebar,
   SidebarContent,
@@ -17,9 +17,26 @@ import {
 } from "@/components/primitives/ui/sidebar";
 import { UserCard } from "@/components/ui/user-card";
 import { NAV_GROUPS } from "@/lib/routes";
+import { authClient, clearAuthToken } from "@/lib/auth-client";
 
 export function AppSidebar() {
   const pathname = usePathname();
+  const router = useRouter();
+  const { data: session } = authClient.useSession();
+
+  const userName = session?.user?.name ?? "Usuario";
+  const userEmail = session?.user?.email ?? "VEO Services";
+
+  function handleSignOut() {
+    authClient.signOut({
+      fetchOptions: {
+        onSuccess: () => {
+          clearAuthToken();
+          router.push("/");
+        },
+      },
+    });
+  }
 
   return (
     <Sidebar collapsible="icon" variant="inset">
@@ -72,7 +89,13 @@ export function AppSidebar() {
         ))}
       </SidebarContent>
       <SidebarFooter className="border-t border-sidebar-border">
-        <UserCard name="Usuario" subtitle="VEO Services" verified />
+        <UserCard
+          name={userName}
+          subtitle={userEmail}
+          imageUrl={session?.user?.image}
+          verified={session?.user?.emailVerified}
+          onSignOut={handleSignOut}
+        />
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>

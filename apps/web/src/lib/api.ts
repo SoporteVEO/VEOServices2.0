@@ -5,6 +5,28 @@ export const api = axios.create({
   headers: { "Content-Type": "application/json" },
 });
 
+api.interceptors.request.use((config) => {
+  if (typeof window !== "undefined") {
+    const token = localStorage.getItem("bearer_token");
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+  }
+  return config;
+});
+
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (typeof window !== "undefined" && error.response?.status === 401) {
+      localStorage.removeItem("bearer_token");
+      document.cookie = "bearer_token=; path=/; max-age=0";
+      window.location.href = "/";
+    }
+    return Promise.reject(error);
+  },
+);
+
 export async function apiFetch<T>(
   path: string,
   init?: {

@@ -1,6 +1,8 @@
 import { Controller, Get, Query, BadRequestException } from '@nestjs/common';
 import { BillboardsService } from './billboards.service.js';
+import { Public } from '../auth/decorators.js';
 
+@Public()
 @Controller('billboards')
 export class BillboardsController {
   constructor(private readonly service: BillboardsService) {}

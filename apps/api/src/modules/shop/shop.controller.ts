@@ -1,7 +1,9 @@
 import { Controller, Get, Query, BadRequestException } from '@nestjs/common';
 import { ShopService } from './shop.service.js';
 import { isDigitalSpotOption, type DigitalSpotOption } from './digital-spots.js';
+import { Public } from '../auth/decorators.js';
 
+@Public()
 @Controller('shop')
 export class ShopController {
   constructor(private readonly shopService: ShopService) {}

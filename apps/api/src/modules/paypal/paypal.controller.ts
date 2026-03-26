@@ -1,12 +1,16 @@
 import { Controller, Post, Body, Param, HttpException } from '@nestjs/common';
 import { PaypalService } from './paypal.service.js';
+import { Public } from '../auth/decorators.js';
 
+@Public()
 @Controller('paypal')
 export class PaypalController {
   constructor(private readonly paypalService: PaypalService) {}
 
   @Post('orders')
-  async createOrder(@Body() body: { cart: Array<{ price: number }> }) {
+  async createOrder(
+    @Body() body: { cart: Array<{ price: number }> },
+  ): Promise<unknown> {
     const result = await this.paypalService.createOrder(body.cart);
     if (result.error) {
       throw new HttpException(
@@ -18,7 +22,7 @@ export class PaypalController {
   }
 
   @Post('orders/:orderId/capture')
-  async captureOrder(@Param('orderId') orderId: string) {
+  async captureOrder(@Param('orderId') orderId: string): Promise<unknown> {
     const result = await this.paypalService.captureOrder(orderId);
     if (result.error) {
       throw new HttpException(
