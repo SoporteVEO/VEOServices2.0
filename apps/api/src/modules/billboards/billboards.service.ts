@@ -5,6 +5,8 @@ import { RedisService } from '../redis/redis.service.js';
 import { TtlCache } from '../../lib/ttl-cache.js';
 import type {
   AvailableBillboard,
+  AvailableBillboardListing,
+  AvailableBillboardReport,
   AvailableState,
 } from './entities/available-billboard.js';
 
@@ -36,6 +38,26 @@ interface BriloBillboardRow {
   ImagenId: number | null;
   ImagenFecha: Date | null;
   ImagenObservaciones: string | null;
+}
+
+interface BriloBillboardListingRow {
+  caraId: number;
+  caraCodigo: string | null;
+  Dirección: string | null;
+  Referencia: string | null;
+  DepartamentoId: number | null;
+  Departamento: string | null;
+  Municipio: string | null;
+  Calle: string | null;
+  Alto: number | null;
+  Ancho: number | null;
+  Latitud: number | null;
+  Longitud: number | null;
+  Precio: number | null;
+}
+
+interface BriloBillboardReportRow extends BriloBillboardRow {
+  PrecioImpresion: number | null;
 }
 
 const AVAILABLE_STATES_SQL = `
@@ -158,6 +180,148 @@ WHERE
 ORDER BY car.caraCodigo DESC;
 `;
 
+const AVAILABLE_BILLBOARDS_ALL_SQL = `
+SELECT
+    car.caraId,
+    car.caraCodigo,
+
+    siti.sitiReferencia AS [Referencia],
+    siti.sitiDireccion  AS [Dirección],
+    dpto.dptoId         AS [DepartamentoId],
+    dpto.dptoNombre     AS [Departamento],
+    muni.muniNombre     AS [Municipio],
+    calle.callNombre    AS [Calle],
+
+    car.caraAlto        AS [Alto],
+    car.caraAncho       AS [Ancho],
+
+    siti.sitiGPSLat     AS [Latitud],
+    siti.sitiGPSLon     AS [Longitud],
+
+    ISNULL(prca_def.prcaPrecioMax, prca_def.Precio) AS [Precio]
+
+FROM olVallas.dbo.Caras AS car WITH (NOLOCK)
+INNER JOIN olVallas.dbo.Sitios AS siti WITH (NOLOCK)
+    ON car.sitiId = siti.sitiId
+
+LEFT JOIN olComun.dbo.DeptosEstados AS dpto WITH (NOLOCK)
+    ON siti.dptoId = dpto.dptoId
+LEFT JOIN olComun.dbo.MuniCondados AS muni WITH (NOLOCK)
+    ON siti.muniId = muni.muniId
+LEFT JOIN olComun.dbo.Calles AS calle WITH (NOLOCK)
+    ON siti.callId = calle.callId
+
+LEFT JOIN (
+    SELECT
+        pc1.caraId,
+        MAX(CASE WHEN tp1.tiprEsDefault = 1 THEN pc1.prcaPrecio ELSE NULL END) AS prcaPrecioMax,
+        MAX(pc1.prcaPrecio) AS Precio
+    FROM olVallas.dbo.PreciosXCaras pc1 WITH (NOLOCK)
+    INNER JOIN olVallas.dbo.TiposPrecios tp1 WITH (NOLOCK)
+        ON pc1.tiprId = tp1.tiprId
+    GROUP BY pc1.caraId
+) AS prca_def
+    ON prca_def.caraId = car.caraId
+
+WHERE
+    siti.sitiActivo = 1
+    AND car.caraActivo = 1
+    AND dpto.dptoId IS NOT NULL
+    AND ISNULL(prca_def.prcaPrecioMax, prca_def.Precio) >= 5
+    AND NOT EXISTS (
+        SELECT 1
+        FROM olVallas.dbo.detContratos detcon WITH (NOLOCK)
+        INNER JOIN olVallas.dbo.maeContratos maecon WITH (NOLOCK)
+            ON maecon.mconId = detcon.mconId
+        WHERE detcon.caraId = car.caraId
+          AND maecon.mconPosteado <> 0
+          AND maecon.mconAnulado <> 1
+          AND detcon.dconFechaDesde <= @FechaFin
+          AND detcon.dconFechaHasta >= @FechaInicio
+    )
+ORDER BY dpto.dptoNombre ASC, car.caraCodigo DESC;
+`;
+
+const AVAILABLE_BILLBOARDS_REPORT_SQL = `
+SELECT
+    car.caraId,
+    car.caraCodigo,
+
+    siti.sitiReferencia AS [Referencia],
+    siti.sitiDireccion  AS [Dirección],
+    dpto.dptoId         AS [DepartamentoId],
+    dpto.dptoNombre     AS [Departamento],
+    muni.muniNombre     AS [Municipio],
+    calle.callNombre    AS [Calle],
+
+    car.caraAlto        AS [Alto],
+    car.caraAncho       AS [Ancho],
+
+    siti.sitiGPSLat     AS [Latitud],
+    siti.sitiGPSLon     AS [Longitud],
+
+    ISNULL(prca_def.prcaPrecioMax, prca_def.Precio) AS [Precio],
+    prca_def.PrecioImpresion AS [PrecioImpresion],
+
+    img.imagId            AS [ImagenId],
+    img.imagFecha         AS [ImagenFecha],
+    img.imagObservaciones AS [ImagenObservaciones]
+
+FROM olVallas.dbo.Caras AS car WITH (NOLOCK)
+INNER JOIN olVallas.dbo.Sitios AS siti WITH (NOLOCK)
+    ON car.sitiId = siti.sitiId
+
+LEFT JOIN olComun.dbo.DeptosEstados AS dpto WITH (NOLOCK)
+    ON siti.dptoId = dpto.dptoId
+LEFT JOIN olComun.dbo.MuniCondados AS muni WITH (NOLOCK)
+    ON siti.muniId = muni.muniId
+LEFT JOIN olComun.dbo.Calles AS calle WITH (NOLOCK)
+    ON siti.callId = calle.callId
+
+LEFT JOIN (
+    SELECT
+        pc1.caraId,
+        MAX(CASE WHEN tp1.tiprEsDefault = 1 THEN pc1.prcaPrecio ELSE NULL END) AS prcaPrecioMax,
+        MAX(pc1.prcaPrecio) AS Precio,
+        MAX(CASE WHEN tp1.tiprEsDefault <> 1 THEN pc1.prcaPrecio ELSE NULL END) AS PrecioImpresion
+    FROM olVallas.dbo.PreciosXCaras pc1 WITH (NOLOCK)
+    INNER JOIN olVallas.dbo.TiposPrecios tp1 WITH (NOLOCK)
+        ON pc1.tiprId = tp1.tiprId
+    GROUP BY pc1.caraId
+) AS prca_def
+    ON prca_def.caraId = car.caraId
+
+OUTER APPLY (
+    SELECT TOP 1
+        i.imagId,
+        i.imagFecha,
+        i.imagObservaciones
+    FROM olVallas.dbo.imagenes i WITH (NOLOCK)
+    WHERE i.caraId = car.caraId
+    AND i.tiimId <> 1
+    AND i.tiimId <> 5
+    ORDER BY i.imagFecha DESC, i.imagId DESC
+) img
+
+WHERE
+    siti.sitiActivo = 1
+    AND car.caraActivo = 1
+    AND dpto.dptoId IS NOT NULL
+    AND ISNULL(prca_def.prcaPrecioMax, prca_def.Precio) >= 5
+    AND NOT EXISTS (
+        SELECT 1
+        FROM olVallas.dbo.detContratos detcon WITH (NOLOCK)
+        INNER JOIN olVallas.dbo.maeContratos maecon WITH (NOLOCK)
+            ON maecon.mconId = detcon.mconId
+        WHERE detcon.caraId = car.caraId
+          AND maecon.mconPosteado <> 0
+          AND maecon.mconAnulado <> 1
+          AND detcon.dconFechaDesde <= @FechaFin
+          AND detcon.dconFechaHasta >= @FechaInicio
+    )
+ORDER BY dpto.dptoNombre ASC, car.caraCodigo DESC;
+`;
+
 const BILLBOARD_IMAGE_SQL = `
 SELECT i.imagImagen AS [Imagen]
 FROM olVallas.dbo.imagenes i WITH (NOLOCK)
@@ -195,6 +359,12 @@ export class BillboardsService {
   private readonly billboardsCache = new TtlCache<AvailableBillboard[]>(
     CACHE_TTL_MS,
   );
+  private readonly billboardsAllCache = new TtlCache<
+    AvailableBillboardListing[]
+  >(CACHE_TTL_MS);
+  private readonly billboardsReportCache = new TtlCache<
+    AvailableBillboardReport[]
+  >(CACHE_TTL_MS);
   private readonly imageCache = new TtlCache<{
     buffer: Buffer;
     mime: string;
@@ -223,6 +393,26 @@ export class BillboardsService {
     });
   }
 
+  async getAvailableBillboardsInRange(
+    from: Date,
+    to: Date,
+  ): Promise<AvailableBillboardListing[]> {
+    const key = `all|${from.toISOString()}|${to.toISOString()}`;
+    return this.billboardsAllCache.getOrFetch(key, () =>
+      this.fetchBillboardsAll(from, to),
+    );
+  }
+
+  async getAvailableBillboardsForReport(
+    from: Date,
+    to: Date,
+  ): Promise<AvailableBillboardReport[]> {
+    const key = `report|${from.toISOString()}|${to.toISOString()}`;
+    return this.billboardsReportCache.getOrFetch(key, () =>
+      this.fetchBillboardsReport(from, to),
+    );
+  }
+
   async getAvailableBillboardsByState(
     departmentId: number,
     from: Date,
@@ -232,6 +422,142 @@ export class BillboardsService {
     return this.billboardsCache.getOrFetch(key, () =>
       this.fetchBillboards(departmentId, from, to),
     );
+  }
+
+  private async fetchBillboardsAll(
+    from: Date,
+    to: Date,
+  ): Promise<AvailableBillboardListing[]> {
+    const rows = await this.brilo.query<BriloBillboardListingRow>(
+      AVAILABLE_BILLBOARDS_ALL_SQL,
+      {
+        FechaInicio: from,
+        FechaFin: to,
+      },
+    );
+
+    const filtered = rows.filter((r) => {
+      if (r.Precio == null) return false;
+      const numeric = Number(r.Precio);
+      return Number.isFinite(numeric) && numeric > 0;
+    });
+
+    const billboardIds = [
+      ...new Set(
+        filtered
+          .map((r) => r.caraId)
+          .filter((id): id is number => id != null)
+          .map(Number)
+          .filter(Number.isFinite),
+      ),
+    ];
+
+    let purchasedSet = new Set<number>();
+    if (billboardIds.length > 0) {
+      const overlapping = await this.prisma.purchaseItem.findMany({
+        where: {
+          billboardId: { in: billboardIds },
+          purchase: { status: 'COMPLETED' },
+          AND: [{ from: { lte: to } }, { to: { gte: from } }],
+        },
+        select: { billboardId: true },
+      });
+      purchasedSet = new Set(
+        overlapping
+          .map((i) => i.billboardId)
+          .filter((id): id is number => id != null),
+      );
+    }
+
+    return filtered
+      .filter((r) => !purchasedSet.has(Number(r.caraId)))
+      .map(
+        (r): AvailableBillboardListing => ({
+          billboardId: Number(r.caraId),
+          billboardCode: r.caraCodigo ?? null,
+          reference: r.Referencia ?? null,
+          address: r['Dirección'] ?? null,
+          departmentId: r.DepartamentoId ?? null,
+          departmentName: r.Departamento ?? null,
+          cityName: r.Municipio ?? null,
+          streetName: r.Calle ?? null,
+          height: r.Alto ?? null,
+          width: r.Ancho ?? null,
+          latitude: r.Latitud ?? null,
+          longitude: r.Longitud ?? null,
+          price: r.Precio ?? null,
+        }),
+      );
+  }
+
+  private async fetchBillboardsReport(
+    from: Date,
+    to: Date,
+  ): Promise<AvailableBillboardReport[]> {
+    const rows = await this.brilo.query<BriloBillboardReportRow>(
+      AVAILABLE_BILLBOARDS_REPORT_SQL,
+      {
+        FechaInicio: from,
+        FechaFin: to,
+      },
+    );
+
+    const filtered = rows.filter((r) => {
+      if (r.Precio == null) return false;
+      const numeric = Number(r.Precio);
+      return Number.isFinite(numeric) && numeric > 0;
+    });
+
+    const billboardIds = [
+      ...new Set(
+        filtered
+          .map((r) => r.caraId)
+          .filter((id): id is number => id != null)
+          .map(Number)
+          .filter(Number.isFinite),
+      ),
+    ];
+
+    let purchasedSet = new Set<number>();
+    if (billboardIds.length > 0) {
+      const overlapping = await this.prisma.purchaseItem.findMany({
+        where: {
+          billboardId: { in: billboardIds },
+          purchase: { status: 'COMPLETED' },
+          AND: [{ from: { lte: to } }, { to: { gte: from } }],
+        },
+        select: { billboardId: true },
+      });
+      purchasedSet = new Set(
+        overlapping
+          .map((i) => i.billboardId)
+          .filter((id): id is number => id != null),
+      );
+    }
+
+    return filtered
+      .filter((r) => !purchasedSet.has(Number(r.caraId)))
+      .map(
+        (r): AvailableBillboardReport => ({
+          billboardId: Number(r.caraId),
+          billboardCode: r.caraCodigo ?? null,
+          reference: r.Referencia ?? null,
+          address: r['Dirección'] ?? null,
+          departmentId: r.DepartamentoId ?? null,
+          departmentName: r.Departamento ?? null,
+          cityName: r.Municipio ?? null,
+          streetName: r.Calle ?? null,
+          height: r.Alto ?? null,
+          width: r.Ancho ?? null,
+          latitude: r.Latitud ?? null,
+          longitude: r.Longitud ?? null,
+          price: r.Precio ?? null,
+          imageId: r.ImagenId ?? null,
+          imageDate: r.ImagenFecha ?? null,
+          imageNotes: r.ImagenObservaciones ?? null,
+          impressionPrice: r.PrecioImpresion ?? null,
+        }),
+      );
   }
 
   private async fetchBillboards(

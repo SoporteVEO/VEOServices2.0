@@ -1,8 +1,18 @@
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { api, apiFetch } from "@/lib/api";
-import type { AvailableBillboard, AvailableState } from "./billboards.types";
+import type {
+  AvailableBillboard,
+  AvailableBillboardListing,
+  AvailableBillboardReport,
+  AvailableState,
+} from "./billboards.types";
 
-export type { AvailableBillboard, AvailableState } from "./billboards.types";
+export type {
+  AvailableBillboard,
+  AvailableBillboardListing,
+  AvailableBillboardReport,
+  AvailableState,
+} from "./billboards.types";
 
 const STALE_TIME = 5 * 60 * 1000;
 const GC_TIME = 10 * 60 * 1000;
@@ -77,4 +87,42 @@ export function useAvailableBillboards(params: {
     gcTime: GC_TIME,
     placeholderData: keepPreviousData,
   });
+}
+
+export async function getAvailableBillboardsInRange(params: {
+  from: string;
+  to: string;
+}) {
+  const response = await apiFetch<{ data: AvailableBillboardListing[] }>(
+    "/billboards/available",
+    { query: { from: params.from, to: params.to } },
+  );
+  return response.data;
+}
+
+export function useAvailableBillboardsInRange(params: {
+  from: string;
+  to: string;
+  enabled?: boolean;
+}) {
+  const { from, to, enabled = true } = params;
+  return useQuery({
+    queryKey: ["billboards", "available", from, to],
+    queryFn: () => getAvailableBillboardsInRange({ from, to }),
+    enabled,
+    staleTime: STALE_TIME,
+    gcTime: GC_TIME,
+    placeholderData: keepPreviousData,
+  });
+}
+
+export async function getAvailableBillboardsForReport(params: {
+  from: string;
+  to: string;
+}) {
+  const response = await apiFetch<{ data: AvailableBillboardReport[] }>(
+    "/billboards/available/report",
+    { query: { from: params.from, to: params.to } },
+  );
+  return response.data;
 }

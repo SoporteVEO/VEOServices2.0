@@ -1,5 +1,6 @@
 "use client";
 
+import type { ReactNode } from "react";
 import {
   ColumnDef,
   flexRender,
@@ -15,6 +16,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/primitives/ui/table";
+import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/primitives/ui/skeleton";
 import { cn } from "@/lib/utils";
 
@@ -42,6 +44,10 @@ interface DataTableProps<TData, TValue> {
   rowSize?: DataTableRowSize;
   onRowClick?: (row: TData) => void;
   emptyMessage?: string;
+  searchValue?: string;
+  onSearchChange?: (value: string) => void;
+  searchPlaceholder?: string;
+  sideButtons?: ReactNode;
 }
 
 export function DataTable<TData, TValue>({
@@ -52,6 +58,10 @@ export function DataTable<TData, TValue>({
   rowSize = "md",
   onRowClick,
   emptyMessage = "No results.",
+  searchValue,
+  onSearchChange,
+  searchPlaceholder = "Buscar...",
+  sideButtons,
 }: DataTableProps<TData, TValue>) {
   const rowSizeCellClass = ROW_SIZE_CELL_CLASS[rowSize];
 
@@ -67,7 +77,23 @@ export function DataTable<TData, TValue>({
       aria-busy={isLoading}
       aria-label={isLoading ? "Loading table" : undefined}
     >
-      <Table>
+      {(onSearchChange || sideButtons) && (
+        <div className="flex items-center gap-2 py-2">
+          {onSearchChange && (
+            <Input
+              placeholder={searchPlaceholder}
+              value={searchValue ?? ""}
+              onChange={(e) => onSearchChange(e.target.value)}
+              className="max-w-sm"
+              isSearch
+            />
+          )}
+          {sideButtons && (
+            <div className="ml-auto flex items-center gap-2">{sideButtons}</div>
+          )}
+        </div>
+      )}
+      <Table className="rounded-md">
         <TableHeader className="bg-accent/50">
           {table.getHeaderGroups().map((headerGroup) => (
             <TableRow key={headerGroup.id}>
@@ -92,7 +118,7 @@ export function DataTable<TData, TValue>({
               <TableRow
                 key={`skeleton-${rowIndex}`}
                 className={cn(
-                  "hover:bg-transparent",
+                  "hover:bg-transparent rounded-md",
                   rowIndex % 2 === 0 ? "bg-accent/10" : "bg-accent/25",
                 )}
               >

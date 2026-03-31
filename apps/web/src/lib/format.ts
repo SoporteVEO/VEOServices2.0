@@ -78,3 +78,13 @@ export function formatShortDate(date: Date) {
     year: "numeric",
   });
 };
+
+export function formatPrice(value: number | null): string {
+  if (value == null) return "—";
+  return `$${value.toLocaleString("en-US", { maximumFractionDigits: 0 })}`;
+}
+
+export function formatDimensions(width: number | null, height: number | null): string {
+  if (width == null && height == null) return "—";
+  return `${width?.toFixed(2) ?? "—"} x ${height?.toFixed(2) ?? "—"}`;
+}

@@ -22,3 +22,12 @@ export interface AvailableBillboard {
   imageDate: string | null;
   imageNotes: string | null;
 }
+
+export type AvailableBillboardListing = Omit<
+  AvailableBillboard,
+  "imageId" | "imageDate" | "imageNotes"
+>;
+
+export interface AvailableBillboardReport extends AvailableBillboard {
+  impressionPrice: number | null;
+}

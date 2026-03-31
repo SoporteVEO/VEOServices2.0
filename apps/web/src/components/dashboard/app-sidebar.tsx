@@ -35,7 +35,8 @@ export function AppSidebar() {
 
   const userName = session?.user?.name ?? "Usuario";
   const userEmail = session?.user?.email ?? "VEO Services";
-  const userRole = (session?.user as Record<string, unknown> | undefined)?.role as string | undefined;
+  const userRole = (session?.user as Record<string, unknown> | undefined)
+    ?.role as string | undefined;
   const visibleGroups = filterNavByRole(NAV_GROUPS, userRole);
 
   function handleSignOut() {
@@ -54,7 +55,7 @@ export function AppSidebar() {
       <SidebarHeader className="hover:bg-sidebar-accent hover:text-sidebar-accent-foreground rounded-lg">
         <Link
           href="/dashboard"
-          className="flex items-center gap-2 rounded-lg text-left outline-none  focus-visible:ring-2 transition-all duration-200 will-change-transform"
+          className="flex items-center gap-2 rounded-lg text-left outline-none focus-visible:ring-2 transition-all duration-200 will-change-transform"
         >
           <span className="flex size-8 items-center justify-center rounded-md bg-sidebar-primary text-xs font-semibold text-sidebar-primary-foreground">
             V
@@ -89,7 +90,9 @@ export function AppSidebar() {
                     >
                       <Link href={item.href}>
                         <item.icon className="size-4" />
-                        <span className="text-sm font-medium">{item.title}</span>
+                        <span className="text-sm font-medium">
+                          {item.title}
+                        </span>
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>

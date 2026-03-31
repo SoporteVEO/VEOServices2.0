@@ -6,17 +6,18 @@ import {
   LucideIcon,
   Store,
   Users,
+  Monitor
 } from "lucide-react";
+import { UserRole } from "@/api/users/users.types"
 
 export interface NavItem {
   title: string;
   href: string;
   icon: LucideIcon;
-  requiredRole?: string;
+  requiredRole?: UserRole;
 }
 
 export interface NavGroup {
-  /** Empty string = no label (e.g. top-level dashboard). */
   label: string;
   items: NavItem[];
 }
@@ -37,6 +38,11 @@ export const NAV_GROUPS: NavGroup[] = [
         title: "Vallas digitales",
         href: "/dashboard/digital-billboards",
         icon: MonitorPlay,
+      },
+      {
+        title: "Vallas estáticas",
+        href: "/dashboard/static-billboards",
+        icon: Monitor,
       },
       { title: "E-Commerce", href: "/shop", icon: Store },
     ],

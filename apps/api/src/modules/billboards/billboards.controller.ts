@@ -17,6 +17,48 @@ import { Public } from '../auth/decorators.js';
 export class BillboardsController {
   constructor(private readonly service: BillboardsService) {}
 
+  @Get('available/report')
+  async getAvailableBillboardsForReport(
+    @Query('from') fromRaw?: string,
+    @Query('to') toRaw?: string,
+  ) {
+    const from = fromRaw ? new Date(fromRaw) : new Date();
+    const to = toRaw
+      ? new Date(toRaw)
+      : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+
+    if (isNaN(from.getTime()) || isNaN(to.getTime())) {
+      throw new BadRequestException('Fechas inválidas');
+    }
+
+    const billboards = await this.service.getAvailableBillboardsForReport(
+      from,
+      to,
+    );
+    return { data: billboards };
+  }
+
+  @Get('available')
+  async getAvailableBillboardsInTimeframe(
+    @Query('from') fromRaw?: string,
+    @Query('to') toRaw?: string,
+  ) {
+    const from = fromRaw ? new Date(fromRaw) : new Date();
+    const to = toRaw
+      ? new Date(toRaw)
+      : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+
+    if (isNaN(from.getTime()) || isNaN(to.getTime())) {
+      throw new BadRequestException('Fechas inválidas');
+    }
+
+    const billboards = await this.service.getAvailableBillboardsInRange(
+      from,
+      to,
+    );
+    return { data: billboards };
+  }
+
   @Get('states')
   async getAvailableStates(
     @Query('from') fromRaw?: string,

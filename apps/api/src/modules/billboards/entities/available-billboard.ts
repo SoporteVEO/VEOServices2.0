@@ -17,6 +17,17 @@ export interface AvailableBillboard {
   imageNotes: string | null;
 }
 
+/** Same as {@link AvailableBillboard} without image fields (listing / dashboard). */
+export type AvailableBillboardListing = Omit<
+  AvailableBillboard,
+  'imageId' | 'imageDate' | 'imageNotes'
+>;
+
+/** Extended billboard data used for report generation (includes impression price). */
+export interface AvailableBillboardReport extends AvailableBillboard {
+  impressionPrice: number | null;
+}
+
 export interface AvailableState {
   departmentId: number;
   departmentName: string;
