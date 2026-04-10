@@ -267,6 +267,11 @@ function addBillboardSlide(pptx: any, bb: AvailableBillboardReport, imageBase64:
   addLabel("CANON MENSUAL:");
   addValue(formatPrice(bb.price));
 
+  if (bb.availableDiscount != null && bb.availableDiscount > 0) {
+    addLabel("DESCUENTO:");
+    addValue(`${bb.availableDiscount}%  →  ${formatPrice(bb.totalPrice)}`);
+  }
+
   addLabel("DISPONIBILIDAD:");
   addValue("De Inmediato");
 }

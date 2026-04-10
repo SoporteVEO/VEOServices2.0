@@ -11,6 +11,7 @@ export type CartLineStatic = {
   cityName: string | null;
   address: string | null;
   price: number;
+  totalPrice: number;
   imageUrl: string | null;
   from: string;
   to: string;
@@ -27,6 +28,7 @@ export type CartLineDigital = {
   cityName: string | null;
   address: string | null;
   price: number;
+  totalPrice: number;
   imageUrl: string | null;
   from: string;
   to: string;

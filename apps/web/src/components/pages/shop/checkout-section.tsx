@@ -54,10 +54,14 @@ export function CheckoutSection() {
 
   const emailIsValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
-  const total = useMemo(
-    () => items.reduce((sum, i) => sum + (i.price ?? 0), 0),
-    [items],
-  );
+  const { subtotal, discount, total } = useMemo(() => {
+    const sub = items.reduce((sum, i) => sum + (i.price ?? 0), 0);
+    const tot = items.reduce(
+      (sum, i) => sum + (i.totalPrice ?? i.price ?? 0),
+      0,
+    );
+    return { subtotal: sub, discount: sub - tot, total: tot };
+  }, [items]);
 
   if (items.length === 0) {
     return (
@@ -132,16 +136,22 @@ export function CheckoutSection() {
               <div className="space-y-3 pb-6 border-b border-border/40">
                 <div className="flex items-center justify-between text-sm text-muted-foreground">
                   <span>Subtotal ({items.length} items)</span>
-                  <span>{formatMoney(total)}</span>
+                  <span className="tabular-nums">{formatMoney(subtotal)}</span>
                 </div>
+                {discount > 0 && (
+                  <div className="flex items-center justify-between text-sm text-emerald-600 dark:text-emerald-400">
+                    <span>Descuentos</span>
+                    <span className="tabular-nums">
+                      -{formatMoney(discount)}
+                    </span>
+                  </div>
+                )}
                 <div className="flex items-center justify-between text-sm text-muted-foreground">
                   <span>Impuestos incluidos</span>
-                  <span>$0.00</span>
+                  <span className="tabular-nums">$0.00</span>
                 </div>
-                <div className="flex items-center justify-between pt-3">
-                  <span className="text-base font-semibold">
-                    Total estimado
-                  </span>
+                <div className="flex items-center justify-between pt-3 border-t border-dashed border-border/40">
+                  <span className="text-base font-semibold">Total</span>
                   <span className="text-2xl font-bold tabular-nums text-foreground tracking-tight">
                     {formatMoney(total)}
                   </span>
@@ -172,77 +182,79 @@ export function CheckoutSection() {
               </div>
 
               <div className="pt-2">
-                <PayPalScriptProvider options={paypalOptions}>
-                  <PayPalButtons
-                    style={{
-                      layout: "vertical",
-                      shape: "rect",
-                      color: "black",
-                      label: "pay",
-                    }}
-                    createOrder={async () => {
-                      if (!emailIsValid) {
-                        setMessage(
-                          "Ingresa un correo electrónico corporativo válido.",
-                        );
-                        throw new Error("Email requerido");
-                      }
-                      setIsProcessing(true);
-                      setMessage(null);
-                      try {
-                        const data = await createPaypalOrder(items);
-                        if (!data.id) {
-                          setIsProcessing(false);
-                          throw new Error("No se pudo crear la orden");
+                <div className="overflow-hidden dark:[filter:invert(.935)_hue-rotate(180deg)]">
+                  <PayPalScriptProvider options={paypalOptions}>
+                    <PayPalButtons
+                      style={{
+                        layout: "vertical",
+                        shape: "sharp",
+                        color: "white",
+                        label: "pay",
+                      }}
+                      createOrder={async () => {
+                        if (!emailIsValid) {
+                          setMessage(
+                            "Ingresa un correo electrónico corporativo válido.",
+                          );
+                          throw new Error("Email requerido");
                         }
-                        return data.id;
-                      } catch (err) {
+                        setIsProcessing(true);
+                        setMessage(null);
+                        try {
+                          const data = await createPaypalOrder(items);
+                          if (!data.id) {
+                            setIsProcessing(false);
+                            throw new Error("No se pudo crear la orden");
+                          }
+                          return data.id;
+                        } catch (err) {
+                          setIsProcessing(false);
+                          throw new Error(
+                            paypalApiErrorMessage(
+                              err,
+                              "No se pudo crear la orden",
+                            ),
+                          );
+                        }
+                      }}
+                      onApprove={async (data) => {
+                        try {
+                          await capturePaypalOrder(data.orderID);
+                          const purchaseData = await createPurchase({
+                            paypalOrderId: data.orderID,
+                            email,
+                            items,
+                          });
+                          useCartStore.getState().clear();
+                          setIsProcessing(false);
+                          // Redirect to shop success page
+                          router.push(
+                            `/shop/success?purchaseId=${encodeURIComponent(purchaseData.id)}`,
+                          );
+                        } catch (err: unknown) {
+                          setIsProcessing(false);
+                          setMessage(
+                            `Error al procesar: ${paypalApiErrorMessage(
+                              err,
+                              "Error desconocido",
+                            )}`,
+                          );
+                        }
+                      }}
+                      onCancel={() => {
                         setIsProcessing(false);
-                        throw new Error(
-                          paypalApiErrorMessage(
-                            err,
-                            "No se pudo crear la orden",
-                          ),
-                        );
-                      }
-                    }}
-                    onApprove={async (data) => {
-                      try {
-                        await capturePaypalOrder(data.orderID);
-                        const purchaseData = await createPurchase({
-                          paypalOrderId: data.orderID,
-                          email,
-                          items,
-                        });
-                        useCartStore.getState().clear();
-                        setIsProcessing(false);
-                        // Redirect to shop success page
-                        router.push(
-                          `/shop/success?purchaseId=${encodeURIComponent(purchaseData.id)}`,
-                        );
-                      } catch (err: unknown) {
+                        setMessage("El pago ha sido cancelado.");
+                      }}
+                      onError={(err) => {
                         setIsProcessing(false);
                         setMessage(
-                          `Error al procesar: ${paypalApiErrorMessage(
-                            err,
-                            "Error desconocido",
-                          )}`,
+                          `Ha ocurrido un error en la pasarela de pago. Intenta nuevamente.`,
                         );
-                      }
-                    }}
-                    onCancel={() => {
-                      setIsProcessing(false);
-                      setMessage("El pago ha sido cancelado.");
-                    }}
-                    onError={(err) => {
-                      setIsProcessing(false);
-                      setMessage(
-                        `Ha ocurrido un error en la pasarela de pago. Intenta nuevamente.`,
-                      );
-                    }}
-                    disabled={items.length === 0 || !emailIsValid}
-                  />
-                </PayPalScriptProvider>
+                      }}
+                      disabled={items.length === 0 || !emailIsValid}
+                    />
+                  </PayPalScriptProvider>
+                </div>
 
                 {message && (
                   <div className="mt-4 p-3 rounded-lg bg-destructive/10 text-destructive text-sm text-center font-medium border border-destructive/20">
@@ -389,8 +401,13 @@ function CartItemCard({
               Inversión
             </span>
             <span className="text-lg font-bold tabular-nums text-foreground">
-              {formatMoney(item.price)}
+              {formatMoney(item.totalPrice ?? item.price)}
             </span>
+            {item.totalPrice != null && item.totalPrice < item.price && (
+              <span className="text-xs tabular-nums line-through text-muted-foreground text-red-500">
+                {formatMoney(item.price)}
+              </span>
+            )}
           </div>
           <Button
             variant="ghost"

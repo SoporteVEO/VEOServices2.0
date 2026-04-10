@@ -38,6 +38,7 @@ interface BriloBillboardRow {
   ImagenId: number | null;
   ImagenFecha: Date | null;
   ImagenObservaciones: string | null;
+  UltimaFechaContrato: Date | null;
 }
 
 interface BriloBillboardListingRow {
@@ -54,6 +55,7 @@ interface BriloBillboardListingRow {
   Latitud: number | null;
   Longitud: number | null;
   Precio: number | null;
+  UltimaFechaContrato: Date | null;
 }
 
 interface BriloBillboardReportRow extends BriloBillboardRow {
@@ -124,7 +126,9 @@ SELECT
 
     img.imagId            AS [ImagenId],
     img.imagFecha         AS [ImagenFecha],
-    img.imagObservaciones AS [ImagenObservaciones]
+    img.imagObservaciones AS [ImagenObservaciones],
+
+    last_contract.dconFechaHasta AS [UltimaFechaContrato]
 
 FROM olVallas.dbo.Caras AS car WITH (NOLOCK)
 INNER JOIN olVallas.dbo.Sitios AS siti WITH (NOLOCK)
@@ -160,6 +164,17 @@ OUTER APPLY (
     AND i.tiimId <> 5
     ORDER BY i.imagFecha DESC, i.imagId DESC
 ) img
+
+OUTER APPLY (
+    SELECT TOP 1 detcon.dconFechaHasta
+    FROM olVallas.dbo.detContratos detcon WITH (NOLOCK)
+    INNER JOIN olVallas.dbo.maeContratos maecon WITH (NOLOCK)
+        ON maecon.mconId = detcon.mconId
+    WHERE detcon.caraId = car.caraId
+      AND maecon.mconPosteado <> 0
+      AND maecon.mconAnulado <> 1
+    ORDER BY detcon.dconFechaHasta DESC
+) last_contract
 
 WHERE
     siti.sitiActivo = 1
@@ -198,7 +213,9 @@ SELECT
     siti.sitiGPSLat     AS [Latitud],
     siti.sitiGPSLon     AS [Longitud],
 
-    ISNULL(prca_def.prcaPrecioMax, prca_def.Precio) AS [Precio]
+    ISNULL(prca_def.prcaPrecioMax, prca_def.Precio) AS [Precio],
+
+    last_contract.dconFechaHasta AS [UltimaFechaContrato]
 
 FROM olVallas.dbo.Caras AS car WITH (NOLOCK)
 INNER JOIN olVallas.dbo.Sitios AS siti WITH (NOLOCK)
@@ -222,6 +239,17 @@ LEFT JOIN (
     GROUP BY pc1.caraId
 ) AS prca_def
     ON prca_def.caraId = car.caraId
+
+OUTER APPLY (
+    SELECT TOP 1 detcon.dconFechaHasta
+    FROM olVallas.dbo.detContratos detcon WITH (NOLOCK)
+    INNER JOIN olVallas.dbo.maeContratos maecon WITH (NOLOCK)
+        ON maecon.mconId = detcon.mconId
+    WHERE detcon.caraId = car.caraId
+      AND maecon.mconPosteado <> 0
+      AND maecon.mconAnulado <> 1
+    ORDER BY detcon.dconFechaHasta DESC
+) last_contract
 
 WHERE
     siti.sitiActivo = 1
@@ -265,7 +293,9 @@ SELECT
 
     img.imagId            AS [ImagenId],
     img.imagFecha         AS [ImagenFecha],
-    img.imagObservaciones AS [ImagenObservaciones]
+    img.imagObservaciones AS [ImagenObservaciones],
+
+    last_contract.dconFechaHasta AS [UltimaFechaContrato]
 
 FROM olVallas.dbo.Caras AS car WITH (NOLOCK)
 INNER JOIN olVallas.dbo.Sitios AS siti WITH (NOLOCK)
@@ -303,6 +333,17 @@ OUTER APPLY (
     ORDER BY i.imagFecha DESC, i.imagId DESC
 ) img
 
+OUTER APPLY (
+    SELECT TOP 1 detcon.dconFechaHasta
+    FROM olVallas.dbo.detContratos detcon WITH (NOLOCK)
+    INNER JOIN olVallas.dbo.maeContratos maecon WITH (NOLOCK)
+        ON maecon.mconId = detcon.mconId
+    WHERE detcon.caraId = car.caraId
+      AND maecon.mconPosteado <> 0
+      AND maecon.mconAnulado <> 1
+    ORDER BY detcon.dconFechaHasta DESC
+) last_contract
+
 WHERE
     siti.sitiActivo = 1
     AND car.caraActivo = 1
@@ -327,6 +368,17 @@ SELECT i.imagImagen AS [Imagen]
 FROM olVallas.dbo.imagenes i WITH (NOLOCK)
 WHERE i.imagId = @ImagenId
 `;
+
+function applyDiscount(
+  price: number | null,
+  discount: number | null,
+): number | null {
+  if (price == null) return null;
+  if (discount != null && discount > 0) {
+    return Math.round(price * (1 - discount / 100) * 100) / 100;
+  }
+  return price;
+}
 
 function detectImageMimeType(buf: Buffer): string | null {
   if (buf.length >= 3 && buf[0] === 0xff && buf[1] === 0xd8 && buf[2] === 0xff)
@@ -469,10 +521,29 @@ export class BillboardsService {
       );
     }
 
+    const now = new Date();
     return filtered
       .filter((r) => !purchasedSet.has(Number(r.caraId)))
-      .map(
-        (r): AvailableBillboardListing => ({
+      .map((r): AvailableBillboardListing => {
+        const lastDate = r.UltimaFechaContrato;
+        const monthsWithoutPurchase = lastDate
+          ? Math.max(
+              0,
+              (now.getFullYear() - lastDate.getFullYear()) * 12 +
+                (now.getMonth() - lastDate.getMonth()),
+            )
+          : null;
+
+        let availableDiscount: number | null = null;
+        if (monthsWithoutPurchase != null && monthsWithoutPurchase >= 3) {
+          availableDiscount = 45;
+        } else if (monthsWithoutPurchase === 2) {
+          availableDiscount = 30;
+        } else if (monthsWithoutPurchase === 1) {
+          availableDiscount = 20;
+        }
+
+        return {
           billboardId: Number(r.caraId),
           billboardCode: r.caraCodigo ?? null,
           reference: r.Referencia ?? null,
@@ -486,8 +557,11 @@ export class BillboardsService {
           latitude: r.Latitud ?? null,
           longitude: r.Longitud ?? null,
           price: r.Precio ?? null,
-        }),
-      );
+          monthsWithoutPurchase,
+          availableDiscount,
+          totalPrice: applyDiscount(r.Precio ?? null, availableDiscount),
+        };
+      });
   }
 
   private async fetchBillboardsReport(
@@ -535,10 +609,29 @@ export class BillboardsService {
       );
     }
 
+    const now = new Date();
     return filtered
       .filter((r) => !purchasedSet.has(Number(r.caraId)))
-      .map(
-        (r): AvailableBillboardReport => ({
+      .map((r): AvailableBillboardReport => {
+        const lastDate = r.UltimaFechaContrato;
+        const monthsWithoutPurchase = lastDate
+          ? Math.max(
+              0,
+              (now.getFullYear() - lastDate.getFullYear()) * 12 +
+                (now.getMonth() - lastDate.getMonth()),
+            )
+          : null;
+
+        let availableDiscount: number | null = null;
+        if (monthsWithoutPurchase != null && monthsWithoutPurchase >= 3) {
+          availableDiscount = 45;
+        } else if (monthsWithoutPurchase === 2) {
+          availableDiscount = 30;
+        } else if (monthsWithoutPurchase === 1) {
+          availableDiscount = 20;
+        }
+
+        return {
           billboardId: Number(r.caraId),
           billboardCode: r.caraCodigo ?? null,
           reference: r.Referencia ?? null,
@@ -556,8 +649,11 @@ export class BillboardsService {
           imageDate: r.ImagenFecha ?? null,
           imageNotes: r.ImagenObservaciones ?? null,
           impressionPrice: r.PrecioImpresion ?? null,
-        }),
-      );
+          monthsWithoutPurchase,
+          availableDiscount,
+          totalPrice: applyDiscount(r.Precio ?? null, availableDiscount),
+        };
+      });
   }
 
   private async fetchBillboards(
@@ -607,10 +703,29 @@ export class BillboardsService {
       );
     }
 
+    const now = new Date();
     return filtered
       .filter((r) => !purchasedSet.has(Number(r.caraId)))
-      .map(
-        (r): AvailableBillboard => ({
+      .map((r): AvailableBillboard => {
+        const lastDate = r.UltimaFechaContrato;
+        const monthsWithoutPurchase = lastDate
+          ? Math.max(
+              0,
+              (now.getFullYear() - lastDate.getFullYear()) * 12 +
+                (now.getMonth() - lastDate.getMonth()),
+            )
+          : null;
+
+        let availableDiscount: number | null = null;
+        if (monthsWithoutPurchase != null && monthsWithoutPurchase >= 3) {
+          availableDiscount = 45;
+        } else if (monthsWithoutPurchase === 2) {
+          availableDiscount = 30;
+        } else if (monthsWithoutPurchase === 1) {
+          availableDiscount = 20;
+        }
+
+        return {
           billboardId: Number(r.caraId),
           billboardCode: r.caraCodigo ?? null,
           reference: r.Referencia ?? null,
@@ -627,8 +742,11 @@ export class BillboardsService {
           imageId: r.ImagenId ?? null,
           imageDate: r.ImagenFecha ?? null,
           imageNotes: r.ImagenObservaciones ?? null,
-        }),
-      );
+          monthsWithoutPurchase,
+          availableDiscount,
+          totalPrice: applyDiscount(r.Precio ?? null, availableDiscount),
+        };
+      });
   }
 
   async getBillboardImage(

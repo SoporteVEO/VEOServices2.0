@@ -23,7 +23,7 @@ export function CartButton() {
   const items = useCartStore((s) => s.items);
   const removeLine = useCartStore((s) => s.removeLine);
   const count = items.length;
-  const total = items.reduce((sum, item) => sum + (item.price ?? 0), 0);
+  const total = items.reduce((sum, item) => sum + (item.totalPrice ?? item.price ?? 0), 0);
 
   return (
     <div
@@ -112,7 +112,7 @@ export function CartButton() {
                           {item.reference ?? item.address ?? "—"}
                         </p>
                         <p className="mt-0.5 text-sm font-semibold tabular-nums text-foreground">
-                          {formatMoney(item.price)}
+                          {formatMoney(item.totalPrice ?? item.price)}
                         </p>
                       </div>
                       <Button

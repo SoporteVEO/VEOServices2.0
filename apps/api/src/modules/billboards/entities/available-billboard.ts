@@ -15,6 +15,9 @@ export interface AvailableBillboard {
   imageId: number | null;
   imageDate: Date | null;
   imageNotes: string | null;
+  monthsWithoutPurchase: number | null;
+  availableDiscount: number | null;
+  totalPrice: number | null;
 }
 
 /** Same as {@link AvailableBillboard} without image fields (listing / dashboard). */

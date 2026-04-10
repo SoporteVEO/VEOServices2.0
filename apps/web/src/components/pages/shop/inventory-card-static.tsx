@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { MapPin, Plus } from "lucide-react";
+import { MapPin, Plus, Percent } from "lucide-react";
 import ImageViewerMotion from "@/components/commerce-ui/image-viewer-motion";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/primitives/ui/skeleton";
@@ -22,6 +22,8 @@ interface AvailableBillboard {
   imageId: number | null;
   latitude: number | null;
   longitude: number | null;
+  availableDiscount: number | null;
+  totalPrice: number | null;
 }
 
 export function InventoryCardStatic({
@@ -54,6 +56,7 @@ export function InventoryCardStatic({
       cityName: b.cityName,
       address: b.address,
       price: b.price ?? 0,
+      totalPrice: b.totalPrice ?? b.price ?? 0,
       imageUrl,
       from,
       to,
@@ -94,6 +97,13 @@ export function InventoryCardStatic({
             Estática
           </Badge>
         </div>
+        {b.availableDiscount != null && b.availableDiscount > 0 && (
+          <div className="absolute top-2.5 right-3 z-20">
+            <Badge className="bg-red-500/90 text-white hover:bg-red-500/90 border-transparent backdrop-blur-sm shadow-sm gap-1">
+              <Percent className="size-3" />-{b.availableDiscount}%
+            </Badge>
+          </div>
+        )}
       </div>
 
       <div className="flex flex-1 flex-col p-5">
@@ -117,9 +127,22 @@ export function InventoryCardStatic({
             <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
               Inversión
             </span>
-            <span className="text-xl font-bold tabular-nums text-foreground">
-              {formatMoney(b.price)}
-            </span>
+            {b.availableDiscount != null &&
+            b.availableDiscount > 0 &&
+            b.price != null ? (
+              <div className="flex items-baseline gap-2 pr-1">
+                <span className="text-xl font-bold tabular-nums text-foreground">
+                  {formatMoney(b.totalPrice)}
+                </span>
+                <span className="text-sm tabular-nums line-through text-red-500">
+                  {formatMoney(b.price)}
+                </span>
+              </div>
+            ) : (
+              <span className="text-xl font-bold tabular-nums text-foreground">
+                {formatMoney(b.totalPrice ?? b.price)}
+              </span>
+            )}
           </div>
           <Button
             size="sm"

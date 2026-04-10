@@ -21,6 +21,9 @@ export interface AvailableBillboard {
   imageId: number | null;
   imageDate: string | null;
   imageNotes: string | null;
+  monthsWithoutPurchase: number | null;
+  availableDiscount: number | null;
+  totalPrice: number | null;
 }
 
 export type AvailableBillboardListing = Omit<

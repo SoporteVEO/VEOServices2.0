@@ -4,6 +4,7 @@ import { type ReactNode, useState, useMemo } from "react";
 import type { ColumnDef } from "@tanstack/react-table";
 import type { AvailableBillboardListing } from "@/api/billboards/billboards.get";
 import { DataTable } from "@/components/ui/data-table";
+import { Badge } from "@/components/primitives/ui/badge";
 import { formatMoney } from "@/lib/format";
 
 const columns: ColumnDef<AvailableBillboardListing>[] = [
@@ -58,6 +59,32 @@ const columns: ColumnDef<AvailableBillboardListing>[] = [
         {formatMoney(row.original.price)}
       </span>
     ),
+  },
+  {
+    accessorKey: "monthsWithoutPurchase",
+    header: () => <span className="text-right block">Meses sin compra</span>,
+    cell: ({ row }) => {
+      const months = row.original.monthsWithoutPurchase;
+      if (months == null) return null;
+      return <span className="block text-right tabular-nums">{months}</span>;
+    },
+  },
+  {
+    accessorKey: "availableDiscount",
+    header: () => <span className="text-right block">Descuento</span>,
+    cell: ({ row }) => {
+      const discount = row.original.availableDiscount;
+      if (discount == null || discount === 0) {
+        return null;
+      }
+      return (
+        <div className="flex justify-end">
+          <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10 border-transparent tabular-nums">
+            -{discount}%
+          </Badge>
+        </div>
+      );
+    },
   },
 ];
 

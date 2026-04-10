@@ -30,8 +30,11 @@ export class PaypalService {
     this.ordersController = new OrdersController(this.client);
   }
 
-  async createOrder(cart: Array<{ price: number }>) {
-    const total = cart.reduce((sum, item) => sum + (item.price ?? 0), 0);
+  async createOrder(cart: Array<{ price: number; totalPrice?: number }>) {
+    const total = cart.reduce(
+      (sum, item) => sum + (item.totalPrice ?? item.price ?? 0),
+      0,
+    );
     const amount = total > 0 ? total.toFixed(2) : '0.01';
 
     try {
@@ -39,9 +42,7 @@ export class PaypalService {
         await this.ordersController.createOrder({
           body: {
             intent: CheckoutPaymentIntent.Capture,
-            purchaseUnits: [
-              { amount: { currencyCode: 'USD', value: amount } },
-            ],
+            purchaseUnits: [{ amount: { currencyCode: 'USD', value: amount } }],
           },
           prefer: 'return=minimal',
         });

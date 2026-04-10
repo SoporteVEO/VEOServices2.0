@@ -52,6 +52,7 @@ export function InventoryCardDigital({
       cityName: null,
       address: b.address,
       price: linePrice,
+      totalPrice: linePrice,
       imageUrl: b.imageUrl,
       from,
       to,
