@@ -6,7 +6,8 @@ import {
   LucideIcon,
   Store,
   Users,
-  Monitor
+  Monitor,
+  Image
 } from "lucide-react";
 import { UserRole } from "@/api/users/users.types"
 
@@ -33,7 +34,6 @@ export const NAV_GROUPS: NavGroup[] = [
     label: "Módulos",
     items: [
       { title: "Contratos", href: "/dashboard/contracts", icon: FileText },
-      { title: "Compras", href: "/dashboard/purchases", icon: ShoppingCart },
       {
         title: "Vallas digitales",
         href: "/dashboard/digital-billboards",
@@ -44,7 +44,14 @@ export const NAV_GROUPS: NavGroup[] = [
         href: "/dashboard/static-billboards",
         icon: Monitor,
       },
+      { title: "Imágenes", href: "/dashboard/images", icon: Image },
+    ],
+  },
+  {
+    label: "Tienda",
+    items: [
       { title: "E-Commerce", href: "/shop", icon: Store },
+      { title: "Ordenes", href: "/dashboard/purchases", icon: ShoppingCart },
     ],
   },
   {
