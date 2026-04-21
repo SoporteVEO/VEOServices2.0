@@ -38,6 +38,8 @@ export interface ActiveContract {
   contractNumber: string;
   billboardCode: string;
   billboardAddress: string;
+  billboardLatitude: number | null;
+  billboardLongitude: number | null;
   customerName: string;
   customerEmail: string;
   images: ActiveContractImage[];

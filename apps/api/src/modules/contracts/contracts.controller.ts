@@ -1,11 +1,13 @@
 import {
   BadRequestException,
+  Body,
   Controller,
   Get,
   Post,
   Query,
 } from '@nestjs/common';
 import { ContractsService } from './contracts.service.js';
+import { SendMaintenanceReportDto } from './dto/send-maintenance-report.dto.js';
 
 function parseDate(value: string | undefined, field: string): Date | undefined {
   if (!value) return undefined;
@@ -70,6 +72,11 @@ export class ContractsController {
   async getNotifiedContracts() {
     const contracts = await this.contractsService.getNotifiedContracts();
     return { data: contracts };
+  }
+
+  @Post('send-maintenance-report')
+  async sendMaintenanceReport(@Body() dto: SendMaintenanceReportDto) {
+    return await this.contractsService.sendMaintenanceReport(dto);
   }
 
   @Post('worker/ending-soon')

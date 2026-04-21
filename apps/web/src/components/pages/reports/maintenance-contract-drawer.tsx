@@ -1,24 +1,41 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import NextImage from "next/image";
-import { ImageOff, ImagePlus, MapPin } from "lucide-react";
+import {
+  Check,
+  Eye,
+  ImageOff,
+  ImagePlus,
+  MapPin,
+  Send,
+} from "lucide-react";
+import { toast } from "sonner";
 import type {
   ActiveContract,
   ActiveContractImage,
 } from "@/api/contracts/contracts.get";
+import { sendMaintenanceReport } from "@/api/contracts/contracts.post";
 import type { S3Image } from "@/api/s3-images/s3-images.get";
 import { Badge } from "@/components/primitives/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Drawer,
   DrawerContent,
   DrawerDescription,
+  DrawerFooter,
   DrawerHeader,
   DrawerTitle,
 } from "@/components/ui/drawer";
 import { ImagePreviewDialog } from "@/components/pages/images/image-preview-dialog";
 import { formatShortDate } from "@/lib/format";
+import {
+  generateContractReport,
+  type ContractReportProgress,
+} from "@/lib/generate-contract-report";
+import { cn } from "@/lib/utils";
 import type { MaintenanceContractGroup } from "./group";
+import { SendReportDialog } from "./send-report-dialog";
 
 function toS3ImagePreview(
   image: ActiveContractImage,
@@ -45,52 +62,188 @@ export function MaintenanceContractDrawer({
   group: MaintenanceContractGroup | null;
   onOpenChange: (open: boolean) => void;
 }) {
+  return (
+    <Drawer
+      open={!!group}
+      onOpenChange={onOpenChange}
+      direction="right"
+      disablePreventScroll={true}
+      handleOnly
+    >
+      <DrawerContent size="xl" className="flex flex-col">
+        {group ? (
+          <MaintenanceContractDrawerContent
+            key={group.contractNumber}
+            group={group}
+          />
+        ) : null}
+      </DrawerContent>
+    </Drawer>
+  );
+}
+
+function MaintenanceContractDrawerContent({
+  group,
+}: {
+  group: MaintenanceContractGroup;
+}) {
   const [preview, setPreview] = useState<S3Image | null>(null);
+  const [selectedImageIds, setSelectedImageIds] = useState<
+    Record<number, string | null>
+  >(() => buildInitialSelection(group));
+  const [isSendOpen, setIsSendOpen] = useState(false);
+  const [isSending, setIsSending] = useState(false);
+  const [progress, setProgress] = useState<ContractReportProgress | null>(null);
+
+  const stats = useMemo(() => {
+    const billboardsWithImages = group.billboards.filter(
+      (b) => b.images.length > 0,
+    ).length;
+    const billboardsSelected = group.billboards.filter(
+      (b) => selectedImageIds[b.contractDetailSourceId],
+    ).length;
+    return { billboardsWithImages, billboardsSelected };
+  }, [group, selectedImageIds]);
+
+  function handleSelectImage(billboardId: number, imageId: string) {
+    setSelectedImageIds((prev) => ({
+      ...prev,
+      [billboardId]: prev[billboardId] === imageId ? null : imageId,
+    }));
+  }
+
+  async function handleSendReport(email: string) {
+    setIsSending(true);
+    setProgress({ stage: "Preparando", current: 0, total: 1 });
+
+    try {
+      const reportBillboards = group.billboards.map((billboard) => {
+        const selectedImageId =
+          selectedImageIds[billboard.contractDetailSourceId];
+        const selectedImage = selectedImageId
+          ? (billboard.images.find((img) => img.id === selectedImageId) ?? null)
+          : null;
+
+        return {
+          billboardCode: billboard.billboardCode,
+          billboardAddress: billboard.billboardAddress,
+          latitude: billboard.billboardLatitude,
+          longitude: billboard.billboardLongitude,
+          imageUrl: selectedImage?.url ?? null,
+          imageCreatedAt: selectedImage?.createdAt ?? null,
+        };
+      });
+
+      const { blob, fileName, period } = await generateContractReport({
+        contractNumber: group.contractNumber,
+        customerName: group.customerName,
+        customerEmail: group.customerEmail,
+        description: group.description,
+        dateFrom: new Date(group.startDate),
+        dateTo: new Date(group.endDate),
+        billboards: reportBillboards,
+        onProgress: setProgress,
+      });
+
+      setProgress({ stage: "Enviando email", current: 0, total: 1 });
+      const fileBase64 = await blobToBase64(blob);
+
+      await sendMaintenanceReport({
+        email,
+        contractNumber: group.contractNumber,
+        customerName: group.customerName,
+        description: group.description,
+        period,
+        fileName,
+        fileBase64,
+      });
+
+      toast.success(`Reporte enviado a ${email}.`);
+      setIsSendOpen(false);
+    } catch (error) {
+      console.error("Error sending contract report:", error);
+      toast.error("No se pudo enviar el reporte.");
+    } finally {
+      setIsSending(false);
+      setProgress(null);
+    }
+  }
+
+  const progressLabel = progress
+    ? `${progress.stage}${progress.total > 1 ? ` (${progress.current}/${progress.total})` : "…"}`
+    : null;
 
   return (
     <>
-      <Drawer
-        open={!!group}
-        onOpenChange={onOpenChange}
-        direction="right"
-        disablePreventScroll={true}
-        handleOnly
-      >
-        <DrawerContent size="xl" className="flex flex-col">
-          <DrawerHeader>
-            <DrawerTitle>{group?.contractNumber ?? ""}</DrawerTitle>
-            {group ? (
-              <DrawerDescription>
-                {group.customerName} · {group.customerEmail}
-              </DrawerDescription>
-            ) : null}
-          </DrawerHeader>
+      <DrawerHeader>
+        <DrawerTitle>{group.contractNumber}</DrawerTitle>
+        <DrawerDescription>
+          {group.customerName} · {group.customerEmail}
+        </DrawerDescription>
+      </DrawerHeader>
 
-          <div className="min-h-0 flex-1 space-y-4 overflow-y-auto px-4 pb-6">
-            {group ? (
-              <>
-                <ContractSummary group={group} />
-                <div className="space-y-3">
-                  <h3 className="text-sm font-medium text-muted-foreground">
-                    Vallas estáticas ({group.totalBillboards})
-                  </h3>
-                  {group.billboards.map((billboard) => (
-                    <BillboardCard
-                      key={billboard.contractDetailSourceId}
-                      billboard={billboard}
-                      onPreview={(image) =>
-                        setPreview(
-                          toS3ImagePreview(image, billboard.billboardCode),
-                        )
-                      }
-                    />
-                  ))}
-                </div>
-              </>
-            ) : null}
+      <div className="min-h-0 flex-1 space-y-4 overflow-y-auto px-4 pb-4">
+        <ContractSummary group={group} />
+
+        <div className="space-y-3">
+          <div className="flex items-center justify-between gap-2">
+            <h3 className="text-sm font-medium text-muted-foreground">
+              Vallas estáticas ({group.totalBillboards})
+            </h3>
+            <p className="text-xs text-muted-foreground">
+              Toca una imagen para incluirla en el reporte
+            </p>
           </div>
-        </DrawerContent>
-      </Drawer>
+          {group.billboards.map((billboard) => (
+            <BillboardCard
+              key={billboard.contractDetailSourceId}
+              billboard={billboard}
+              selectedImageId={
+                selectedImageIds[billboard.contractDetailSourceId] ?? null
+              }
+              onSelectImage={(imageId) =>
+                handleSelectImage(billboard.contractDetailSourceId, imageId)
+              }
+              onPreview={(image) =>
+                setPreview(toS3ImagePreview(image, billboard.billboardCode))
+              }
+            />
+          ))}
+        </div>
+      </div>
+
+      <DrawerFooter className="border-t bg-muted/20">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-xs text-muted-foreground">
+            <span className="font-medium text-foreground tabular-nums">
+              {stats.billboardsSelected}
+            </span>{" "}
+            de{" "}
+            <span className="tabular-nums">{stats.billboardsWithImages}</span>{" "}
+            vallas con imagen seleccionada
+          </p>
+          <Button
+            sizeVariant="lg"
+            onClick={() => setIsSendOpen(true)}
+            disabled={isSending}
+            icon={Send}
+          >
+            Generar reporte
+          </Button>
+        </div>
+      </DrawerFooter>
+
+      <SendReportDialog
+        open={isSendOpen}
+        onOpenChange={setIsSendOpen}
+        defaultEmail={group.customerEmail}
+        contractNumber={group.contractNumber}
+        billboardsCount={stats.billboardsWithImages}
+        selectedImagesCount={stats.billboardsSelected}
+        isSubmitting={isSending}
+        progressLabel={progressLabel}
+        onSubmit={handleSendReport}
+      />
 
       <ImagePreviewDialog
         image={preview}
@@ -100,6 +253,34 @@ export function MaintenanceContractDrawer({
       />
     </>
   );
+}
+
+async function blobToBase64(blob: Blob): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const result = reader.result;
+      if (typeof result !== "string") {
+        reject(new Error("Failed to read blob"));
+        return;
+      }
+      const commaIdx = result.indexOf(",");
+      resolve(commaIdx >= 0 ? result.slice(commaIdx + 1) : result);
+    };
+    reader.onerror = () => reject(new Error("Failed to read blob"));
+    reader.readAsDataURL(blob);
+  });
+}
+
+function buildInitialSelection(
+  group: MaintenanceContractGroup,
+): Record<number, string | null> {
+  const initial: Record<number, string | null> = {};
+  for (const billboard of group.billboards) {
+    const mostRecent = billboard.images[0];
+    initial[billboard.contractDetailSourceId] = mostRecent?.id ?? null;
+  }
+  return initial;
 }
 
 function ContractSummary({ group }: { group: MaintenanceContractGroup }) {
@@ -140,9 +321,13 @@ function SummaryItem({
 
 function BillboardCard({
   billboard,
+  selectedImageId,
+  onSelectImage,
   onPreview,
 }: {
   billboard: ActiveContract;
+  selectedImageId: string | null;
+  onSelectImage: (imageId: string) => void;
   onPreview: (image: ActiveContractImage) => void;
 }) {
   return (
@@ -171,50 +356,127 @@ function BillboardCard({
         </p>
       </div>
 
-      <BillboardImages billboard={billboard} onPreview={onPreview} />
+      <BillboardImages
+        billboard={billboard}
+        selectedImageId={selectedImageId}
+        onSelectImage={onSelectImage}
+        onPreview={onPreview}
+      />
     </div>
   );
 }
 
 function BillboardImages({
   billboard,
+  selectedImageId,
+  onSelectImage,
   onPreview,
 }: {
   billboard: ActiveContract;
+  selectedImageId: string | null;
+  onSelectImage: (imageId: string) => void;
   onPreview: (image: ActiveContractImage) => void;
 }) {
   if (billboard.images.length === 0) {
     return (
       <div className="flex items-center gap-2 rounded-md border border-dashed bg-muted/20 px-3 py-4 text-xs text-muted-foreground">
         <ImageOff className="size-4" aria-hidden />
-        Sin imágenes para este período.
+        Sin imágenes para este período. La diapositiva se incluirá sin imagen.
       </div>
     );
   }
 
   return (
     <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4">
-      {billboard.images.map((image) => (
-        <button
-          key={image.id}
-          type="button"
-          onClick={() => onPreview(image)}
-          className="group relative aspect-4/3 overflow-hidden rounded-md border bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
-          aria-label={`Ver imagen subida el ${formatShortDate(new Date(image.createdAt))}`}
-        >
-          <NextImage
-            src={image.url}
-            alt={`Imagen ${billboard.billboardCode}`}
-            fill
-            sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, 25vw"
-            unoptimized
-            className="object-cover transition-transform duration-300 group-hover:scale-[1.04]"
+      {billboard.images.map((image) => {
+        const isSelected = selectedImageId === image.id;
+        return (
+          <SelectableImage
+            key={image.id}
+            image={image}
+            billboardCode={billboard.billboardCode}
+            isSelected={isSelected}
+            onSelect={() => onSelectImage(image.id)}
+            onPreview={() => onPreview(image)}
           />
-          <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-linear-to-t from-black/70 to-transparent px-2 py-1 text-[10px] text-white">
-            {formatShortDate(new Date(image.createdAt))}
-          </div>
-        </button>
-      ))}
+        );
+      })}
+    </div>
+  );
+}
+
+function SelectableImage({
+  image,
+  billboardCode,
+  isSelected,
+  onSelect,
+  onPreview,
+}: {
+  image: ActiveContractImage;
+  billboardCode: string;
+  isSelected: boolean;
+  onSelect: () => void;
+  onPreview: () => void;
+}) {
+  return (
+    <div
+      className={cn(
+        "group relative aspect-4/3 overflow-hidden rounded-md border bg-muted transition-all",
+        isSelected
+          ? "border-primary ring-2 ring-primary/40"
+          : "border-border hover:border-muted-foreground/40",
+      )}
+    >
+      <button
+        type="button"
+        onClick={onSelect}
+        aria-pressed={isSelected}
+        aria-label={
+          isSelected
+            ? `Quitar imagen del ${formatShortDate(new Date(image.createdAt))} del reporte`
+            : `Incluir imagen del ${formatShortDate(new Date(image.createdAt))} en el reporte`
+        }
+        className="absolute inset-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
+      >
+        <NextImage
+          src={image.url}
+          alt={`Imagen ${billboardCode}`}
+          fill
+          sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, 25vw"
+          unoptimized
+          className={cn(
+            "object-cover transition-transform duration-300 group-hover:scale-[1.04]",
+            !isSelected && "opacity-90",
+          )}
+        />
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-linear-to-t from-black/70 to-transparent px-2 py-1 text-[10px] text-white">
+          {formatShortDate(new Date(image.createdAt))}
+        </div>
+      </button>
+
+      <div
+        className={cn(
+          "pointer-events-none absolute left-1.5 top-1.5 flex size-6 items-center justify-center rounded-full border-2 transition-all",
+          isSelected
+            ? "border-primary bg-primary text-primary-foreground"
+            : "border-white/80 bg-black/30 text-transparent backdrop-blur-sm group-hover:bg-black/40",
+        )}
+        aria-hidden
+      >
+        <Check className="size-3.5" strokeWidth={3} />
+      </div>
+
+      <button
+        type="button"
+        onClick={(e) => {
+          e.stopPropagation();
+          onPreview();
+        }}
+        aria-label="Vista previa de imagen"
+        className="absolute right-1.5 top-1.5 flex size-6 cursor-pointer items-center justify-center rounded-full bg-black/40 text-white opacity-0 backdrop-blur-sm transition-opacity hover:bg-black/60 focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 group-hover:opacity-100"
+      >
+        <Eye className="size-3.5" />
+      </button>
     </div>
   );
 }

@@ -1,7 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { BriloDatabaseService } from '../brilo-database/brilo-database.service.js';
 import { S3StorageService } from '../s3-images/s3-storage.service.js';
+import { EmailService } from '../email/email.service.js';
 import { NotificationStatus, S3ImageType } from '@prisma/client';
 import type { EndingSoonContract } from './entities/ending-soon-contract.js';
 import type {
@@ -9,6 +10,7 @@ import type {
   ActiveContractWithImages,
 } from './entities/active-contract-with-images.js';
 import type { CreateNotifiedContractDto } from './dto/create-notified-contract.dto.js';
+import type { SendMaintenanceReportDto } from './dto/send-maintenance-report.dto.js';
 
 interface SourceContractRow {
   mconId: number;
@@ -24,6 +26,8 @@ interface SourceContractRow {
 
 interface ActiveContractRow extends SourceContractRow {
   caraCodigo: string;
+  sitiGPSLat: number | null;
+  sitiGPSLon: number | null;
 }
 
 const ENDING_SOON_CONTRACTS_SQL = `
@@ -70,6 +74,8 @@ SELECT DISTINCT
     maecon.mconCodigo,
     car.caraCodigo,
     siti.sitiDireccion,
+    siti.sitiGPSLat,
+    siti.sitiGPSLon,
     cli.cliNombres,
     cli.cliEmail
 FROM olVallas.dbo.maeContratos maecon
@@ -101,6 +107,7 @@ export class ContractsService {
     private readonly prisma: PrismaService,
     private readonly brilo: BriloDatabaseService,
     private readonly s3Storage: S3StorageService,
+    private readonly email: EmailService,
   ) {}
 
   async getEndingSoonContracts(
@@ -204,6 +211,8 @@ export class ContractsService {
       contractNumber: row.mconCodigo,
       billboardCode: row.caraCodigo,
       billboardAddress: row.sitiDireccion,
+      billboardLatitude: row.sitiGPSLat,
+      billboardLongitude: row.sitiGPSLon,
       customerName: row.cliNombres,
       customerEmail: row.cliEmail,
       images: imagesByCode.get(row.caraCodigo) ?? [],
@@ -272,6 +281,40 @@ export class ContractsService {
     return result;
   }
 
+  async sendMaintenanceReport(dto: SendMaintenanceReportDto) {
+    const fileBuffer = decodeReportFile(dto.fileBase64);
+
+    const subject = `Reporte de Mantenimiento - Contrato ${dto.contractNumber} (${dto.period})`;
+    const htmlContent = buildMaintenanceReportEmailHtml({
+      contractNumber: dto.contractNumber,
+      customerName: dto.customerName,
+      description: dto.description ?? '',
+      period: dto.period,
+    });
+
+    const { error } = await this.email.sendEmail(
+      dto.email,
+      subject,
+      htmlContent,
+      [
+        {
+          filename: dto.fileName,
+          content: fileBuffer,
+          contentType:
+            'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+        },
+      ],
+    );
+
+    if (error) {
+      throw new InternalServerErrorException(
+        `No se pudo enviar el reporte: ${error.message}`,
+      );
+    }
+
+    return { success: true };
+  }
+
   private mapSourceContracts(
     contracts: SourceContractRow[],
   ): EndingSoonContract[] {
@@ -287,4 +330,92 @@ export class ContractsService {
       customerEmail: c.cliEmail,
     }));
   }
+}
+
+function decodeReportFile(input: string): Buffer {
+  const cleaned = input.includes(',') ? (input.split(',').pop() ?? '') : input;
+  return Buffer.from(cleaned, 'base64');
+}
+
+function buildMaintenanceReportEmailHtml(params: {
+  contractNumber: string;
+  customerName: string;
+  description: string;
+  period: string;
+}): string {
+  const greeting = params.customerName
+    ? `Estimado(a) ${escapeHtml(params.customerName)},`
+    : 'Estimado(a) cliente,';
+
+  return `<!doctype html>
+<html lang="es">
+  <body style="margin:0;padding:0;background:#f4f6f8;font-family:Arial,Helvetica,sans-serif;color:#1f2937;">
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#f4f6f8;padding:32px 0;">
+      <tr>
+        <td align="center">
+          <table role="presentation" width="600" cellspacing="0" cellpadding="0" style="background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 1px 3px rgba(15,23,42,0.08);">
+            <tr>
+              <td style="background:#003366;padding:24px 32px;color:#ffffff;">
+                <p style="margin:0;font-size:12px;letter-spacing:2px;color:#7aa3c8;">VEO MEDIA</p>
+                <h1 style="margin:6px 0 0;font-size:22px;">Reporte de Mantenimiento</h1>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:28px 32px 8px 32px;">
+                <p style="margin:0 0 16px;font-size:15px;line-height:1.6;">${greeting}</p>
+                <p style="margin:0 0 16px;font-size:14px;line-height:1.6;">
+                  Adjunto encontrarás el reporte de mantenimiento correspondiente al periodo
+                  <strong>${escapeHtml(params.period)}</strong> para el contrato
+                  <strong>${escapeHtml(params.contractNumber)}</strong>.
+                </p>
+                ${
+                  params.description
+                    ? `<p style="margin:0 0 16px;font-size:14px;line-height:1.6;color:#4b5563;">
+                        <em>${escapeHtml(params.description)}</em>
+                      </p>`
+                    : ''
+                }
+                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin:16px 0;background:#f0f4f8;border-radius:8px;">
+                  <tr>
+                    <td style="padding:14px 16px;font-size:13px;color:#003366;">
+                      <strong>Contrato:</strong> ${escapeHtml(params.contractNumber)}<br/>
+                      <strong>Periodo:</strong> ${escapeHtml(params.period)}
+                    </td>
+                  </tr>
+                </table>
+                <p style="margin:0 0 8px;font-size:14px;line-height:1.6;">
+                  El archivo está adjunto a este correo en formato PowerPoint (.pptx).
+                </p>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:8px 32px 28px 32px;">
+                <p style="margin:24px 0 0;font-size:13px;color:#6b7280;line-height:1.6;">
+                  Saludos cordiales,<br/>
+                  <strong>Equipo VEO Media</strong>
+                </p>
+              </td>
+            </tr>
+            <tr>
+              <td style="background:#f9fafb;padding:14px 32px;border-top:1px solid #e5e7eb;">
+                <p style="margin:0;font-size:11px;color:#9ca3af;text-align:center;">
+                  Este es un correo automático. Por favor no responder a esta dirección.
+                </p>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>`;
+}
+
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
 }

@@ -1,6 +1,12 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Resend } from 'resend';
 
+export interface EmailAttachment {
+  filename: string;
+  content: Buffer | string;
+  contentType?: string;
+}
+
 @Injectable()
 export class EmailService {
   private readonly logger = new Logger(EmailService.name);
@@ -10,7 +16,12 @@ export class EmailService {
   private readonly testToEmail =
     process.env.RESEND_TEST_TO_EMAIL ?? 'soporte.dev@arhedes.com.sv';
 
-  async sendEmail(to: string, subject: string, htmlContent: string) {
+  async sendEmail(
+    to: string,
+    subject: string,
+    htmlContent: string,
+    attachments?: EmailAttachment[],
+  ) {
     const isProd = process.env.NODE_ENV === 'production';
 
     const { data, error } = await this.resend.emails.send({
@@ -18,6 +29,11 @@ export class EmailService {
       to: [isProd ? to : this.testToEmail],
       subject,
       html: htmlContent,
+      attachments: attachments?.map((a) => ({
+        filename: a.filename,
+        content: a.content,
+        contentType: a.contentType,
+      })),
     });
 
     if (error) {
