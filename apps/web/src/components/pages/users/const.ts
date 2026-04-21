@@ -13,4 +13,10 @@ export const roleBadge: Record<
     className:
       "border-yellow-500/50 bg-yellow-500/10 text-yellow-700 dark:text-yellow-400",
   },
+  LIMITED: {
+    label: "Limitado",
+    variant: "outline",
+    className:
+      "border-sky-500/50 bg-sky-500/10 text-sky-700 dark:text-sky-400",
+  },
 };

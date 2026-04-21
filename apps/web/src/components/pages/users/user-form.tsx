@@ -93,6 +93,7 @@ export function UserForm({
                 <SelectContent>
                   <SelectItem value="USER">Usuario</SelectItem>
                   <SelectItem value="ADMIN">Administrador</SelectItem>
+                  <SelectItem value="LIMITED">Limitado (solo imágenes)</SelectItem>
                 </SelectContent>
               </Select>
             </div>

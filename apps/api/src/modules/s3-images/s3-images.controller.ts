@@ -9,7 +9,7 @@ import {
   Query,
 } from '@nestjs/common';
 import { S3ImageType } from '@prisma/client';
-import { CurrentUser } from '../auth/decorators.js';
+import { AllowLimited, CurrentUser } from '../auth/decorators.js';
 import { CreateS3ImageDto } from './dto/create-s3-image.dto.js';
 import { S3ImagesService } from './s3-images.service.js';
 
@@ -26,6 +26,7 @@ function parseDate(value: string | undefined, field: string): Date | undefined {
   return parsed;
 }
 
+@AllowLimited()
 @Controller('s3-images')
 export class S3ImagesController {
   constructor(private readonly service: S3ImagesService) {}

@@ -16,17 +16,9 @@ import {
   SidebarRail,
 } from "@/components/primitives/ui/sidebar";
 import { UserCard } from "@/components/ui/user-card";
-import { NAV_GROUPS, type NavGroup } from "@/lib/routes";
+import { NAV_GROUPS, filterNavGroupsByRole } from "@/lib/routes";
+import type { UserRole } from "@/api/users/users.types";
 import { authClient, clearAuthToken } from "@/lib/auth-client";
-
-function filterNavByRole(groups: NavGroup[], role?: string): NavGroup[] {
-  return groups
-    .map((g) => ({
-      ...g,
-      items: g.items.filter((i) => !i.requiredRole || i.requiredRole === role),
-    }))
-    .filter((g) => g.items.length > 0);
-}
 
 export function AppSidebar() {
   const pathname = usePathname();
@@ -36,8 +28,8 @@ export function AppSidebar() {
   const userName = session?.user?.name ?? "Usuario";
   const userEmail = session?.user?.email ?? "VEO Services";
   const userRole = (session?.user as Record<string, unknown> | undefined)
-    ?.role as string | undefined;
-  const visibleGroups = filterNavByRole(NAV_GROUPS, userRole);
+    ?.role as UserRole | undefined;
+  const visibleGroups = filterNavGroupsByRole(NAV_GROUPS, userRole);
 
   function handleSignOut() {
     authClient.signOut({

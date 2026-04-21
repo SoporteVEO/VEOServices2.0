@@ -8,7 +8,13 @@ import {
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import type { Request } from 'express';
-import { IS_PUBLIC_KEY, REQUIRED_ROLES_KEY } from './decorators.js';
+import {
+  ALLOW_LIMITED_KEY,
+  IS_PUBLIC_KEY,
+  REQUIRED_ROLES_KEY,
+} from './decorators.js';
+
+const LIMITED_ROLE = 'LIMITED';
 
 export const AUTH_INSTANCE = 'BETTER_AUTH';
 
@@ -59,11 +65,22 @@ export class AuthGuard implements CanActivate {
     request.user = session.user;
     request.authSession = session.session;
 
+    const userRole = session.user.role as string | undefined;
+
+    if (userRole === LIMITED_ROLE) {
+      const allowLimited = this.reflector.getAllAndOverride<boolean>(
+        ALLOW_LIMITED_KEY,
+        [context.getHandler(), context.getClass()],
+      );
+      if (!allowLimited) {
+        throw new ForbiddenException('No tienes permisos para este recurso');
+      }
+    }
+
     const requiredRoles = this.reflector.getAllAndOverride<
       string[] | undefined
     >(REQUIRED_ROLES_KEY, [context.getHandler(), context.getClass()]);
     if (requiredRoles?.length) {
-      const userRole = session.user.role as string | undefined;
       if (!userRole || !requiredRoles.includes(userRole)) {
         throw new ForbiddenException('No tienes permisos para este recurso');
       }

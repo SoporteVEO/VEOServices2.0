@@ -8,21 +8,23 @@ import {
   Users,
   Monitor,
   Image,
-  SquareChartGantt
+  SquareChartGantt,
 } from "lucide-react";
-import { UserRole } from "@/api/users/users.types"
+import { UserRole } from "@/api/users/users.types";
 
 export interface NavItem {
   title: string;
   href: string;
   icon: LucideIcon;
-  requiredRole?: UserRole;
+  allowedRoles?: UserRole[];
 }
 
 export interface NavGroup {
   label: string;
   items: NavItem[];
 }
+
+const DEFAULT_ALLOWED_ROLES: UserRole[] = ["ADMIN", "USER"];
 
 export const NAV_GROUPS: NavGroup[] = [
   {
@@ -46,7 +48,12 @@ export const NAV_GROUPS: NavGroup[] = [
         href: "/dashboard/static-billboards",
         icon: Monitor,
       },
-      { title: "Imágenes", href: "/dashboard/images", icon: Image },
+      {
+        title: "Imágenes",
+        href: "/dashboard/images",
+        icon: Image,
+        allowedRoles: ["ADMIN", "USER", "LIMITED"],
+      },
     ],
   },
   {
@@ -58,8 +65,33 @@ export const NAV_GROUPS: NavGroup[] = [
   },
   {
     label: "Ajustes",
-    items: [{ title: "Usuarios", href: "/dashboard/users", icon: Users, requiredRole: "ADMIN" }],
+    items: [
+      {
+        title: "Usuarios",
+        href: "/dashboard/users",
+        icon: Users,
+        allowedRoles: ["ADMIN"],
+      },
+    ],
   },
 ];
 
 export const NAV_ITEMS: NavItem[] = NAV_GROUPS.flatMap((group) => group.items);
+
+export function canRoleAccessItem(item: NavItem, role?: UserRole): boolean {
+  const allowed = item.allowedRoles ?? DEFAULT_ALLOWED_ROLES;
+  if (!role) return false;
+  return allowed.includes(role);
+}
+
+export function filterNavGroupsByRole(
+  groups: NavGroup[],
+  role?: UserRole,
+): NavGroup[] {
+  return groups
+    .map((g) => ({
+      ...g,
+      items: g.items.filter((i) => canRoleAccessItem(i, role)),
+    }))
+    .filter((g) => g.items.length > 0);
+}

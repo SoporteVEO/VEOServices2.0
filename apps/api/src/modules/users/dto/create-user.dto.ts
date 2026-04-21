@@ -9,6 +9,7 @@ import {
 enum Role {
   ADMIN = 'ADMIN',
   USER = 'USER',
+  LIMITED = 'LIMITED',
 }
 
 export class CreateUserDto {
