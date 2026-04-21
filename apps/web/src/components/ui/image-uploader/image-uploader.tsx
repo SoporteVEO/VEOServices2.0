@@ -42,7 +42,8 @@ interface Area {
  */
 interface ImageUploaderProps {
   /**
-   * The aspect ratio of the cropped image (width / height)
+   * The aspect ratio of the cropped image (width / height).
+   * Ignored when `disableCrop` is true.
    * @default 1 (square)
    */
   aspectRatio?: number;
@@ -65,19 +66,28 @@ interface ImageUploaderProps {
   className?: string;
 
   /**
-   * Callback function that returns the cropped image as a blob or file
+   * When true the crop / zoom UI is skipped and the original file is sent as-is.
+   * Useful when image processing happens server-side.
+   * @default false
+   */
+  disableCrop?: boolean;
+
+  /**
+   * Callback invoked when an image is ready to be used.
+   * Receives the cropped blob, or the original file when `disableCrop` is true.
    */
   onImageCropped?: (blob: Blob) => void;
 }
 
 /**
- * A reusable image uploader component with drag & drop, preview, and crop functionality
+ * A reusable image uploader component with drag & drop, preview, and optional crop functionality
  */
 export function ImageUploader({
   aspectRatio = 1,
   maxSize = 5 * 1024 * 1024, // 5MB
   acceptedFileTypes = ["image/jpeg", "image/png", "image/webp"],
   className,
+  disableCrop = false,
   onImageCropped,
 }: ImageUploaderProps) {
   const [image, setImage] = useState<string | null>(null);
@@ -90,14 +100,11 @@ export function ImageUploader({
 
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // We're not using a drop library like react-dropzone, so this is handled manually with DOM events
-
   const handleFileSelect = (file: File | null) => {
     if (!file) return;
 
     setError(null);
 
-    // Check file type
     if (!acceptedFileTypes.includes(file.type)) {
       setError(
         `Tipo de archivo no compatible. Tipos permitidos: ${acceptedFileTypes.join(", ")}`,
@@ -105,7 +112,6 @@ export function ImageUploader({
       return;
     }
 
-    // Check file size
     if (file.size > maxSize) {
       setError(
         `El archivo es demasiado grande. Tamano maximo: ${maxSize / (1024 * 1024)}MB`,
@@ -115,8 +121,15 @@ export function ImageUploader({
 
     const reader = new FileReader();
     reader.onload = () => {
-      setImage(reader.result as string);
-      setIsCropDialogOpen(true);
+      const dataUrl = reader.result as string;
+      setImage(dataUrl);
+
+      if (disableCrop) {
+        setPreviewImage(dataUrl);
+        onImageCropped?.(file);
+      } else {
+        setIsCropDialogOpen(true);
+      }
     };
     reader.readAsDataURL(file);
   };
@@ -202,6 +215,11 @@ export function ImageUploader({
     }
   };
 
+  const previewStyle = disableCrop ? undefined : { aspectRatio };
+  const previewClassName = disableCrop
+    ? "w-full h-auto rounded-lg object-contain"
+    : "w-full h-auto rounded-lg object-cover";
+
   return (
     <div className={cn("w-full", className)}>
       <Card className="w-full">
@@ -265,71 +283,77 @@ export function ImageUploader({
             <div className="relative rounded-lg overflow-hidden">
               <NextImage
                 src={previewImage}
-                alt="Vista previa recortada"
+                alt="Vista previa"
                 width={1200}
                 height={1200}
                 unoptimized
-                className="w-full h-auto rounded-lg object-cover aspect-ratio-1/1"
-                style={{ aspectRatio: aspectRatio }}
+                className={previewClassName}
+                style={previewStyle}
               />
-              <Button
-                className="absolute bottom-4 right-4"
-                onClick={() => setIsCropDialogOpen(true)}
-              >
-                Editar
-              </Button>
+              {!disableCrop && (
+                <Button
+                  className="absolute bottom-4 right-4"
+                  onClick={() => setIsCropDialogOpen(true)}
+                >
+                  Editar
+                </Button>
+              )}
             </div>
           )}
         </CardContent>
         <CardFooter className="flex justify-between">
           <p className="text-xs text-muted-foreground">
-            Carga una imagen para verla y recortarla
+            {disableCrop
+              ? "Carga una imagen para subirla"
+              : "Carga una imagen para verla y recortarla"}
           </p>
         </CardFooter>
       </Card>
 
-      <Dialog open={isCropDialogOpen} onOpenChange={setIsCropDialogOpen}>
-        <DialogContent className="sm:max-w-lg">
-          <DialogHeader>
-            <DialogTitle>Recortar imagen</DialogTitle>
-          </DialogHeader>
-          {image && (
-            <>
-              <div className="relative w-full h-80">
-                <Cropper
-                  image={image}
-                  crop={crop}
-                  zoom={zoom}
-                  aspect={aspectRatio}
-                  onCropChange={setCrop}
-                  onCropComplete={onCropComplete}
-                  onZoomChange={setZoom}
-                />
-              </div>
-              <div className="flex items-center gap-4">
-                <ZoomOut className="h-4 w-4" />
-                <Slider
-                  value={[zoom]}
-                  min={1}
-                  max={3}
-                  step={0.1}
-                  onValueChange={(value) => setZoom(value[0])}
-                />
-                <ZoomIn className="h-4 w-4" />
-              </div>
-              <div className="flex justify-end gap-2">
-                <Button
-                  variant="outline"
-                  onClick={() => setIsCropDialogOpen(false)}
-                >
-                  Cancelar
-                </Button>
-                <Button onClick={cropImage}>Aplicar</Button>
-              </div>
-            </>
-          )}
-        </DialogContent>
-      </Dialog>
+      {!disableCrop && (
+        <Dialog open={isCropDialogOpen} onOpenChange={setIsCropDialogOpen}>
+          <DialogContent className="sm:max-w-lg">
+            <DialogHeader>
+              <DialogTitle>Recortar imagen</DialogTitle>
+            </DialogHeader>
+            {image && (
+              <>
+                <div className="relative w-full h-80">
+                  <Cropper
+                    image={image}
+                    crop={crop}
+                    zoom={zoom}
+                    aspect={aspectRatio}
+                    onCropChange={setCrop}
+                    onCropComplete={onCropComplete}
+                    onZoomChange={setZoom}
+                  />
+                </div>
+                <div className="flex items-center gap-4">
+                  <ZoomOut className="h-4 w-4" />
+                  <Slider
+                    value={[zoom]}
+                    min={1}
+                    max={3}
+                    step={0.1}
+                    onValueChange={(value) => setZoom(value[0])}
+                  />
+                  <ZoomIn className="h-4 w-4" />
+                </div>
+                <div className="flex justify-end gap-2">
+                  <Button
+                    variant="outline"
+                    onClick={() => setIsCropDialogOpen(false)}
+                  >
+                    Cancelar
+                  </Button>
+                  <Button onClick={cropImage}>Aplicar</Button>
+                </div>
+              </>
+            )}
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 }

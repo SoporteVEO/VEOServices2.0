@@ -1,5 +1,32 @@
-import { Controller, Get, Post, Body, Query } from '@nestjs/common';
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Get,
+  Post,
+  Query,
+} from '@nestjs/common';
 import { ContractsService } from './contracts.service.js';
+import { SendMaintenanceReportDto } from './dto/send-maintenance-report.dto.js';
+
+function parseDate(value: string | undefined, field: string): Date | undefined {
+  if (!value) return undefined;
+  const parsed = new Date(value);
+  if (isNaN(parsed.getTime())) {
+    throw new BadRequestException(`${field} no es una fecha válida (ISO 8601)`);
+  }
+  return parsed;
+}
+
+function startOfCurrentMonth(): Date {
+  const now = new Date();
+  return new Date(now.getFullYear(), now.getMonth(), 1);
+}
+
+function startOfNextMonth(): Date {
+  const now = new Date();
+  return new Date(now.getFullYear(), now.getMonth() + 1, 1);
+}
 
 @Controller('contracts')
 export class ContractsController {
@@ -22,10 +49,34 @@ export class ContractsController {
     return { data: contracts };
   }
 
+  @Get('active')
+  async getActiveContracts(
+    @Query('from') fromStr?: string,
+    @Query('to') toStr?: string,
+  ) {
+    const from = parseDate(fromStr, 'from') ?? startOfCurrentMonth();
+    const to = parseDate(toStr, 'to') ?? startOfNextMonth();
+
+    if (from >= to) {
+      throw new BadRequestException('"from" debe ser anterior a "to"');
+    }
+
+    const contracts = await this.contractsService.getActiveContractsWithImages(
+      from,
+      to,
+    );
+    return { data: contracts };
+  }
+
   @Get('notified')
   async getNotifiedContracts() {
     const contracts = await this.contractsService.getNotifiedContracts();
     return { data: contracts };
+  }
+
+  @Post('send-maintenance-report')
+  async sendMaintenanceReport(@Body() dto: SendMaintenanceReportDto) {
+    return await this.contractsService.sendMaintenanceReport(dto);
   }
 
   @Post('worker/ending-soon')

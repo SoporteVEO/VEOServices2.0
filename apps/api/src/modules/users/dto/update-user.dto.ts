@@ -3,6 +3,7 @@ import { IsEmail, IsEnum, IsOptional, IsString, MinLength } from 'class-validato
 enum Role {
   ADMIN = 'ADMIN',
   USER = 'USER',
+  LIMITED = 'LIMITED',
 }
 
 export class UpdateUserDto {

@@ -11,6 +11,8 @@ import { DigitalBillboardsModule } from './modules/digital-billboards/digital-bi
 import { BillboardsModule } from './modules/billboards/billboards.module.js';
 import { ShopModule } from './modules/shop/shop.module.js';
 import { PaypalModule } from './modules/paypal/paypal.module.js';
+import { S3ImagesModule } from './modules/s3-images/s3-images.module.js';
+import { StaticBillboardCodesModule } from './modules/static-billboard-codes/static-billboard-codes.module.js';
 
 @Module({
   imports: [
@@ -26,6 +28,8 @@ import { PaypalModule } from './modules/paypal/paypal.module.js';
     BillboardsModule,
     ShopModule,
     PaypalModule,
+    S3ImagesModule,
+    StaticBillboardCodesModule,
   ],
 })
 export class AppModule {}
