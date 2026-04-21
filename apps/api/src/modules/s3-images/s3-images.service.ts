@@ -4,6 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { S3ImageType } from '@prisma/client';
+import type { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { CreateS3ImageDto } from './dto/create-s3-image.dto.js';
 import { ImageProcessorService } from './image-processor.service.js';
@@ -30,10 +31,34 @@ export interface S3ImageListItem {
   } | null;
 }
 
+export type SortOrder = 'asc' | 'desc';
+
 export interface ListS3ImagesFilters {
   type?: S3ImageType;
   staticBillboardCodeId?: string;
+  code?: string;
+  uploadedUserId?: string;
+  dateFrom?: Date;
+  dateTo?: Date;
+  sortOrder?: SortOrder;
+  limit?: number;
+  cursor?: string;
 }
+
+export interface PaginatedS3Images {
+  data: S3ImageListItem[];
+  nextCursor: string | null;
+}
+
+export interface S3ImageUploader {
+  id: string;
+  firstName: string;
+  lastName: string | null;
+  email: string;
+}
+
+const DEFAULT_PAGE_SIZE = 24;
+const MAX_PAGE_SIZE = 100;
 
 const STATIC_BILLBOARD_FOLDERS: Record<S3ImageType, string> = {
   STATIC_BILLBOARD_MONTHLY: 'static-billboards/monthly',
@@ -47,6 +72,11 @@ function decodeBase64Image(base64: string): Buffer {
   return Buffer.from(normalized, 'base64');
 }
 
+function clampLimit(value: number | undefined): number {
+  if (!value || !Number.isFinite(value)) return DEFAULT_PAGE_SIZE;
+  return Math.min(Math.max(Math.floor(value), 1), MAX_PAGE_SIZE);
+}
+
 @Injectable()
 export class S3ImagesService {
   constructor(
@@ -55,15 +85,40 @@ export class S3ImagesService {
     private readonly processor: ImageProcessorService,
   ) {}
 
-  async list(filters: ListS3ImagesFilters = {}): Promise<S3ImageListItem[]> {
+  async list(filters: ListS3ImagesFilters = {}): Promise<PaginatedS3Images> {
+    const limit = clampLimit(filters.limit);
+    const sortOrder: SortOrder = filters.sortOrder === 'asc' ? 'asc' : 'desc';
+
+    const where: Prisma.S3ImageWhereInput = {
+      ...(filters.type ? { type: filters.type } : {}),
+      ...(filters.staticBillboardCodeId
+        ? { staticBillboardCodeId: filters.staticBillboardCodeId }
+        : {}),
+      ...(filters.uploadedUserId
+        ? { uploadedUserId: filters.uploadedUserId }
+        : {}),
+      ...(filters.dateFrom || filters.dateTo
+        ? {
+            createdAt: {
+              ...(filters.dateFrom ? { gte: filters.dateFrom } : {}),
+              ...(filters.dateTo ? { lte: filters.dateTo } : {}),
+            },
+          }
+        : {}),
+      ...(filters.code
+        ? {
+            staticBillboardCode: {
+              code: { contains: filters.code, mode: 'insensitive' },
+            },
+          }
+        : {}),
+    };
+
     const rows = await this.prisma.s3Image.findMany({
-      where: {
-        ...(filters.type ? { type: filters.type } : {}),
-        ...(filters.staticBillboardCodeId
-          ? { staticBillboardCodeId: filters.staticBillboardCodeId }
-          : {}),
-      },
-      orderBy: { createdAt: 'desc' },
+      where,
+      take: limit + 1,
+      ...(filters.cursor ? { skip: 1, cursor: { id: filters.cursor } } : {}),
+      orderBy: [{ createdAt: sortOrder }, { id: sortOrder }],
       include: {
         uploadedUser: {
           select: { id: true, firstName: true, lastName: true, email: true },
@@ -72,22 +127,38 @@ export class S3ImagesService {
       },
     });
 
+    const hasMore = rows.length > limit;
+    const pageRows = hasMore ? rows.slice(0, limit) : rows;
+    const nextCursor =
+      hasMore && pageRows.length > 0 ? pageRows[pageRows.length - 1].id : null;
+
     const signed = await Promise.all(
-      rows.map((row) => this.storage.getSignedUrl(row.deleteUrl)),
+      pageRows.map((row) => this.storage.getSignedUrl(row.deleteUrl)),
     );
 
-    return rows.map((row, i) => ({
-      id: row.id,
-      url: signed[i],
-      createdAt: row.createdAt.toISOString(),
-      updatedAt: row.updatedAt.toISOString(),
-      uploadedUserId: row.uploadedUserId,
-      uploadedUser: row.uploadedUser,
-      tags: row.tags,
-      type: row.type,
-      staticBillboardCodeId: row.staticBillboardCodeId,
-      staticBillboardCode: row.staticBillboardCode,
-    }));
+    return {
+      data: pageRows.map((row, i) => ({
+        id: row.id,
+        url: signed[i],
+        createdAt: row.createdAt.toISOString(),
+        updatedAt: row.updatedAt.toISOString(),
+        uploadedUserId: row.uploadedUserId,
+        uploadedUser: row.uploadedUser,
+        tags: row.tags,
+        type: row.type,
+        staticBillboardCodeId: row.staticBillboardCodeId,
+        staticBillboardCode: row.staticBillboardCode,
+      })),
+      nextCursor,
+    };
+  }
+
+  async listUploaders(): Promise<S3ImageUploader[]> {
+    return this.prisma.user.findMany({
+      where: { s3Images: { some: {} } },
+      select: { id: true, firstName: true, lastName: true, email: true },
+      orderBy: [{ firstName: 'asc' }, { lastName: 'asc' }],
+    });
   }
 
   async create(

@@ -1,7 +1,8 @@
-import { useQuery } from "@tanstack/react-query";
+import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { apiFetch } from "@/lib/api";
 
 export type S3ImageType = "STATIC_BILLBOARD_MONTHLY";
+export type SortOrder = "asc" | "desc";
 
 export interface S3Image {
   id: string;
@@ -24,29 +25,76 @@ export interface S3Image {
   } | null;
 }
 
+export interface S3ImageUploader {
+  id: string;
+  firstName: string;
+  lastName: string | null;
+  email: string;
+}
+
+export interface PaginatedS3Images {
+  data: S3Image[];
+  nextCursor: string | null;
+}
+
 export interface ListS3ImagesQuery {
   type?: S3ImageType;
   staticBillboardCodeId?: string;
+  code?: string;
+  uploadedUserId?: string;
+  dateFrom?: string;
+  dateTo?: string;
+  sortOrder?: SortOrder;
+  limit?: number;
 }
 
-export async function getS3Images(query: ListS3ImagesQuery = {}) {
+function buildParams(
+  query: ListS3ImagesQuery,
+  cursor: string | undefined,
+): Record<string, string> {
   const params: Record<string, string> = {};
   if (query.type) params.type = query.type;
   if (query.staticBillboardCodeId)
     params.staticBillboardCodeId = query.staticBillboardCodeId;
+  if (query.code) params.code = query.code;
+  if (query.uploadedUserId) params.uploadedUserId = query.uploadedUserId;
+  if (query.dateFrom) params.dateFrom = query.dateFrom;
+  if (query.dateTo) params.dateTo = query.dateTo;
+  if (query.sortOrder) params.sortOrder = query.sortOrder;
+  if (query.limit) params.limit = String(query.limit);
+  if (cursor) params.cursor = cursor;
+  return params;
+}
 
-  const response = await apiFetch<{ data: S3Image[] }>("/s3-images", {
+export async function getS3ImagesPage(
+  query: ListS3ImagesQuery,
+  cursor?: string,
+): Promise<PaginatedS3Images> {
+  return apiFetch<PaginatedS3Images>("/s3-images", {
     method: "GET",
-    query: params,
+    query: buildParams(query, cursor),
   });
-  return response.data;
 }
 
 export function useS3Images(query: ListS3ImagesQuery = {}) {
-  const { data, isLoading } = useQuery({
-    queryKey: ["s3-images", query],
-    queryFn: () => getS3Images(query),
+  return useInfiniteQuery({
+    queryKey: ["s3-images", "list", query],
+    queryFn: ({ pageParam }) => getS3ImagesPage(query, pageParam ?? undefined),
+    initialPageParam: undefined as string | undefined,
+    getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
   });
+}
 
-  return { data, isLoading };
+export async function getS3ImageUploaders() {
+  const response = await apiFetch<{ data: S3ImageUploader[] }>(
+    "/s3-images/uploaders",
+  );
+  return response.data;
+}
+
+export function useS3ImageUploaders() {
+  return useQuery({
+    queryKey: ["s3-images", "uploaders"],
+    queryFn: getS3ImageUploaders,
+  });
 }

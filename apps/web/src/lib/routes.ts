@@ -7,7 +7,8 @@ import {
   Store,
   Users,
   Monitor,
-  Image
+  Image,
+  SquareChartGantt
 } from "lucide-react";
 import { UserRole } from "@/api/users/users.types"
 
@@ -33,6 +34,7 @@ export const NAV_GROUPS: NavGroup[] = [
   {
     label: "Módulos",
     items: [
+      { title: "Reportes", href: "/dashboard/reports", icon: SquareChartGantt },
       { title: "Contratos", href: "/dashboard/contracts", icon: FileText },
       {
         title: "Vallas digitales",

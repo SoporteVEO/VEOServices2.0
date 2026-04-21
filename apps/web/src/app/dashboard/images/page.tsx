@@ -1,28 +1,60 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Plus } from "lucide-react";
 import { useS3Images } from "@/api/s3-images/s3-images.get";
 import { Button } from "@/components/ui/button";
-import { ImagesGrid, UploadImageDialog } from "@/components/pages/images";
+import {
+  DEFAULT_IMAGES_FILTERS,
+  ImagesFilters,
+  ImagesGrid,
+  UploadImageDialog,
+  type ImagesFiltersState,
+} from "@/components/pages/images";
+import { useDebouncedValue } from "@/hooks/use-debounced-value";
 
 export default function ImagesPage() {
   const [uploadOpen, setUploadOpen] = useState(false);
-  const { data: images = [], isLoading } = useS3Images();
+  const [filters, setFilters] = useState<ImagesFiltersState>(
+    DEFAULT_IMAGES_FILTERS,
+  );
+
+  const debouncedCode = useDebouncedValue(filters.code.trim(), 300);
+
+  const query = useS3Images({
+    code: debouncedCode || undefined,
+    uploadedUserId: filters.uploadedUserId ?? undefined,
+    dateFrom: filters.dateFrom ?? undefined,
+    dateTo: filters.dateTo ?? undefined,
+    sortOrder: filters.sortOrder,
+  });
+
+  const images = useMemo(
+    () => query.data?.pages.flatMap((page) => page.data) ?? [],
+    [query.data],
+  );
 
   return (
     <div className="flex flex-1 flex-col gap-6">
-      <div className="flex items-start justify-between gap-4">
-        <div className="space-y-1">
-          <h1 className="text-lg font-semibold tracking-tight">Imágenes</h1>
-        </div>
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+        <ImagesFilters value={filters} onChange={setFilters} />
 
-        <Button icon={Plus} onClick={() => setUploadOpen(true)}>
+        <Button
+          icon={Plus}
+          onClick={() => setUploadOpen(true)}
+          className="self-start lg:self-auto"
+        >
           Subir imagen
         </Button>
       </div>
 
-      <ImagesGrid images={images} isLoading={isLoading} />
+      <ImagesGrid
+        images={images}
+        isLoading={query.isLoading}
+        isFetchingNextPage={query.isFetchingNextPage}
+        hasNextPage={query.hasNextPage}
+        onLoadMore={query.fetchNextPage}
+      />
 
       <UploadImageDialog open={uploadOpen} onOpenChange={setUploadOpen} />
     </div>
