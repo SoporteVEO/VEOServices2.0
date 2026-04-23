@@ -6,6 +6,7 @@ import { toYYYYMMDD, parseYYYYMMDD } from "@/lib/format";
 import {
   StaticBillboardsTable,
   GenerateReportButton,
+  ExportStaticBillboardsExcelButton,
 } from "@/components/pages/static-billboards";
 import { DateRangePicker } from "@/components/ui/date-range-picker";
 
@@ -45,7 +46,7 @@ export default function StaticBillboardsPage() {
     <StaticBillboardsTable
       billboards={billboardsQuery.data ?? []}
       isLoading={billboardsQuery.isLoading}
-      sideButtons={
+      sideButtons={({ filtered }) => (
         <>
           <DateRangePicker
             align="start"
@@ -59,9 +60,15 @@ export default function StaticBillboardsPage() {
               setToStr(toYYYYMMDD(to));
             }}
           />
+          <ExportStaticBillboardsExcelButton
+            rows={filtered}
+            from={fromStr}
+            to={toStr}
+            disabled={billboardsQuery.isLoading}
+          />
           <GenerateReportButton from={fromStr} to={toStr} />
         </>
-      }
+      )}
     />
   );
 }
