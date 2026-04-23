@@ -88,6 +88,10 @@ const columns: ColumnDef<AvailableBillboardListing>[] = [
   },
 ];
 
+export type StaticBillboardsSideButtonsContext = {
+  filtered: AvailableBillboardListing[];
+};
+
 export function StaticBillboardsTable({
   billboards,
   isLoading = false,
@@ -95,7 +99,9 @@ export function StaticBillboardsTable({
 }: {
   billboards: AvailableBillboardListing[];
   isLoading?: boolean;
-  sideButtons?: ReactNode;
+  sideButtons?:
+    | ReactNode
+    | ((ctx: StaticBillboardsSideButtonsContext) => ReactNode);
 }) {
   const [search, setSearch] = useState("");
 
@@ -112,6 +118,11 @@ export function StaticBillboardsTable({
     );
   }, [billboards, search]);
 
+  const resolvedSideButtons =
+    typeof sideButtons === "function"
+      ? sideButtons({ filtered })
+      : sideButtons;
+
   return (
     <DataTable
       columns={columns}
@@ -121,7 +132,7 @@ export function StaticBillboardsTable({
       searchValue={search}
       onSearchChange={setSearch}
       searchPlaceholder="Buscar vallas..."
-      sideButtons={sideButtons}
+      sideButtons={resolvedSideButtons}
     />
   );
 }
