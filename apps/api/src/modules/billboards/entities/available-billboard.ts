@@ -18,6 +18,7 @@ export interface AvailableBillboard {
   monthsWithoutPurchase: number | null;
   availableDiscount: number | null;
   totalPrice: number | null;
+  isAvailable: boolean;
 }
 
 /** Same as {@link AvailableBillboard} without image fields (listing / dashboard). */

@@ -1,10 +1,11 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { useMemo, type ReactNode } from "react";
 import {
   ColumnDef,
   flexRender,
   getCoreRowModel,
+  getPaginationRowModel,
   useReactTable,
 } from "@tanstack/react-table";
 
@@ -19,6 +20,14 @@ import {
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/primitives/ui/skeleton";
 import { cn } from "@/lib/utils";
+import { DataTablePagination } from "./data-table-pagination";
+
+const DEFAULT_PAGE_SIZE_OPTIONS = [10, 25, 50, 100] as const;
+
+export type DataTablePaginationConfig = {
+  pageSize?: number;
+  pageSizeOptions?: number[];
+};
 
 const SKELETON_CELL_WIDTHS = [
   "w-4/5",
@@ -48,6 +57,7 @@ interface DataTableProps<TData, TValue> {
   onSearchChange?: (value: string) => void;
   searchPlaceholder?: string;
   sideButtons?: ReactNode;
+  pagination?: boolean | DataTablePaginationConfig;
 }
 
 export function DataTable<TData, TValue>({
@@ -62,13 +72,30 @@ export function DataTable<TData, TValue>({
   onSearchChange,
   searchPlaceholder = "Buscar...",
   sideButtons,
+  pagination,
 }: DataTableProps<TData, TValue>) {
   const rowSizeCellClass = ROW_SIZE_CELL_CLASS[rowSize];
+
+  const paginationConfig = useMemo<DataTablePaginationConfig | null>(() => {
+    if (!pagination) return null;
+    if (pagination === true) return {};
+    return pagination;
+  }, [pagination]);
+
+  const pageSizeOptions =
+    paginationConfig?.pageSizeOptions ?? [...DEFAULT_PAGE_SIZE_OPTIONS];
+  const initialPageSize = paginationConfig?.pageSize ?? pageSizeOptions[0] ?? 10;
 
   const table = useReactTable({
     data: isLoading ? [] : data,
     columns,
     getCoreRowModel: getCoreRowModel(),
+    ...(paginationConfig
+      ? {
+          getPaginationRowModel: getPaginationRowModel(),
+          initialState: { pagination: { pageIndex: 0, pageSize: initialPageSize } },
+        }
+      : {}),
   });
 
   return (
@@ -176,6 +203,9 @@ export function DataTable<TData, TValue>({
           )}
         </TableBody>
       </Table>
+      {paginationConfig && !isLoading && (
+        <DataTablePagination table={table} pageSizeOptions={pageSizeOptions} />
+      )}
     </div>
   );
 }

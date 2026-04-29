@@ -7,7 +7,7 @@ import { DataTable } from "@/components/ui/data-table";
 import { Badge } from "@/components/primitives/ui/badge";
 import { formatMoney } from "@/lib/format";
 
-const columns: ColumnDef<AvailableBillboardListing>[] = [
+const baseColumns: ColumnDef<AvailableBillboardListing>[] = [
   {
     accessorKey: "billboardCode",
     header: "Código",
@@ -88,6 +88,27 @@ const columns: ColumnDef<AvailableBillboardListing>[] = [
   },
 ];
 
+const availabilityColumn: ColumnDef<AvailableBillboardListing> = {
+  accessorKey: "isAvailable",
+  header: () => <span className="text-right block">Disponibilidad</span>,
+  cell: ({ row }) => {
+    const isAvailable = row.original.isAvailable;
+    return (
+      <div className="flex justify-end">
+        <Badge
+          className={
+            isAvailable
+              ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10 border-transparent"
+              : "bg-rose-500/10 text-rose-600 dark:text-rose-400 hover:bg-rose-500/10 border-transparent"
+          }
+        >
+          {isAvailable ? "Disponible" : "Ocupada"}
+        </Badge>
+      </div>
+    );
+  },
+};
+
 export type StaticBillboardsSideButtonsContext = {
   filtered: AvailableBillboardListing[];
 };
@@ -95,15 +116,23 @@ export type StaticBillboardsSideButtonsContext = {
 export function StaticBillboardsTable({
   billboards,
   isLoading = false,
+  showAvailabilityColumn = false,
   sideButtons,
 }: {
   billboards: AvailableBillboardListing[];
   isLoading?: boolean;
+  showAvailabilityColumn?: boolean;
   sideButtons?:
     | ReactNode
     | ((ctx: StaticBillboardsSideButtonsContext) => ReactNode);
 }) {
   const [search, setSearch] = useState("");
+
+  const columns = useMemo(
+    () =>
+      showAvailabilityColumn ? [...baseColumns, availabilityColumn] : baseColumns,
+    [showAvailabilityColumn],
+  );
 
   const filtered = useMemo(() => {
     if (!search.trim()) return billboards;
@@ -133,6 +162,7 @@ export function StaticBillboardsTable({
       onSearchChange={setSearch}
       searchPlaceholder="Buscar vallas..."
       sideButtons={resolvedSideButtons}
+      pagination={{ pageSize: 25 }}
     />
   );
 }

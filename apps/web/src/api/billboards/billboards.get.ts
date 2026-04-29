@@ -92,10 +92,18 @@ export function useAvailableBillboards(params: {
 export async function getAvailableBillboardsInRange(params: {
   from: string;
   to: string;
+  includeUnavailable?: boolean;
 }) {
+  const query: Record<string, string> = {
+    from: params.from,
+    to: params.to,
+  };
+  if (params.includeUnavailable) {
+    query.includeUnavailable = "true";
+  }
   const response = await apiFetch<{ data: AvailableBillboardListing[] }>(
     "/billboards/available",
-    { query: { from: params.from, to: params.to } },
+    { query },
   );
   return response.data;
 }
@@ -103,12 +111,14 @@ export async function getAvailableBillboardsInRange(params: {
 export function useAvailableBillboardsInRange(params: {
   from: string;
   to: string;
+  includeUnavailable?: boolean;
   enabled?: boolean;
 }) {
-  const { from, to, enabled = true } = params;
+  const { from, to, includeUnavailable = false, enabled = true } = params;
   return useQuery({
-    queryKey: ["billboards", "available", from, to],
-    queryFn: () => getAvailableBillboardsInRange({ from, to }),
+    queryKey: ["billboards", "available", from, to, includeUnavailable],
+    queryFn: () =>
+      getAvailableBillboardsInRange({ from, to, includeUnavailable }),
     enabled,
     staleTime: STALE_TIME,
     gcTime: GC_TIME,

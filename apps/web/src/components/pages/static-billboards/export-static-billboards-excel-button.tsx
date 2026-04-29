@@ -6,7 +6,10 @@ import { Button } from "@/components/ui/button";
 import type { AvailableBillboardListing } from "@/api/billboards/billboards.get";
 import { formatMoney } from "@/lib/format";
 
-function rowsToSheetData(rows: AvailableBillboardListing[]) {
+function rowsToSheetData(
+  rows: AvailableBillboardListing[],
+  includeAvailabilityColumn: boolean,
+) {
   return rows.map((b) => {
     const location = [b.cityName, b.departmentName].filter(Boolean).join(", ");
     const dimensions =
@@ -17,7 +20,7 @@ function rowsToSheetData(rows: AvailableBillboardListing[]) {
       b.availableDiscount != null && b.availableDiscount !== 0
         ? `-${b.availableDiscount}%`
         : "";
-    return {
+    const base: Record<string, string | number> = {
       Código: b.billboardCode ?? "",
       Referencia: b.reference ?? "",
       Ubicación: location || "—",
@@ -27,6 +30,10 @@ function rowsToSheetData(rows: AvailableBillboardListing[]) {
       "Meses sin compra": b.monthsWithoutPurchase ?? "",
       Descuento: discount,
     };
+    if (includeAvailabilityColumn) {
+      base.Disponibilidad = b.isAvailable ? "Disponible" : "Ocupada";
+    }
+    return base;
   });
 }
 
@@ -35,11 +42,13 @@ export function ExportStaticBillboardsExcelButton({
   from,
   to,
   disabled,
+  includeAvailabilityColumn = false,
 }: {
   rows: AvailableBillboardListing[];
   from: string;
   to: string;
   disabled?: boolean;
+  includeAvailabilityColumn?: boolean;
 }) {
   async function handleClick() {
     if (rows.length === 0) {
@@ -48,10 +57,15 @@ export function ExportStaticBillboardsExcelButton({
     }
     try {
       const XLSX = await import("xlsx");
-      const ws = XLSX.utils.json_to_sheet(rowsToSheetData(rows));
+      const ws = XLSX.utils.json_to_sheet(
+        rowsToSheetData(rows, includeAvailabilityColumn),
+      );
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, "Vallas");
-      XLSX.writeFile(wb, `vallas-disponibles_${from}_${to}.xlsx`);
+      const fileNamePrefix = includeAvailabilityColumn
+        ? "vallas"
+        : "vallas-disponibles";
+      XLSX.writeFile(wb, `${fileNamePrefix}_${from}_${to}.xlsx`);
       toast.success("Archivo descargado.");
     } catch (e) {
       console.error(e);

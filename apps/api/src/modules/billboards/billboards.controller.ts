@@ -42,6 +42,7 @@ export class BillboardsController {
   async getAvailableBillboardsInTimeframe(
     @Query('from') fromRaw?: string,
     @Query('to') toRaw?: string,
+    @Query('includeUnavailable') includeUnavailableRaw?: string,
   ) {
     const from = fromRaw ? new Date(fromRaw) : new Date();
     const to = toRaw
@@ -52,9 +53,12 @@ export class BillboardsController {
       throw new BadRequestException('Fechas inválidas');
     }
 
+    const includeUnavailable = includeUnavailableRaw === 'true';
+
     const billboards = await this.service.getAvailableBillboardsInRange(
       from,
       to,
+      { includeUnavailable },
     );
     return { data: billboards };
   }

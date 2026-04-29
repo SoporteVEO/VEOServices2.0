@@ -56,6 +56,7 @@ interface BriloBillboardListingRow {
   Longitud: number | null;
   Precio: number | null;
   UltimaFechaContrato: Date | null;
+  IsOccupied?: number | boolean | null;
 }
 
 interface BriloBillboardReportRow extends BriloBillboardRow {
@@ -270,6 +271,82 @@ WHERE
 ORDER BY dpto.dptoNombre ASC, car.caraCodigo DESC;
 `;
 
+const ALL_BILLBOARDS_WITH_STATUS_SQL = `
+SELECT
+    car.caraId,
+    car.caraCodigo,
+
+    siti.sitiReferencia AS [Referencia],
+    siti.sitiDireccion  AS [Dirección],
+    dpto.dptoId         AS [DepartamentoId],
+    dpto.dptoNombre     AS [Departamento],
+    muni.muniNombre     AS [Municipio],
+    calle.callNombre    AS [Calle],
+
+    car.caraAlto        AS [Alto],
+    car.caraAncho       AS [Ancho],
+
+    siti.sitiGPSLat     AS [Latitud],
+    siti.sitiGPSLon     AS [Longitud],
+
+    ISNULL(prca_def.prcaPrecioMax, prca_def.Precio) AS [Precio],
+
+    last_contract.dconFechaHasta AS [UltimaFechaContrato],
+
+    CASE WHEN EXISTS (
+        SELECT 1
+        FROM olVallas.dbo.detContratos detcon WITH (NOLOCK)
+        INNER JOIN olVallas.dbo.maeContratos maecon WITH (NOLOCK)
+            ON maecon.mconId = detcon.mconId
+        WHERE detcon.caraId = car.caraId
+          AND maecon.mconPosteado <> 0
+          AND maecon.mconAnulado <> 1
+          AND detcon.dconFechaDesde <= @FechaFin
+          AND detcon.dconFechaHasta >= @FechaInicio
+    ) THEN 1 ELSE 0 END AS [IsOccupied]
+
+FROM olVallas.dbo.Caras AS car WITH (NOLOCK)
+INNER JOIN olVallas.dbo.Sitios AS siti WITH (NOLOCK)
+    ON car.sitiId = siti.sitiId
+
+LEFT JOIN olComun.dbo.DeptosEstados AS dpto WITH (NOLOCK)
+    ON siti.dptoId = dpto.dptoId
+LEFT JOIN olComun.dbo.MuniCondados AS muni WITH (NOLOCK)
+    ON siti.muniId = muni.muniId
+LEFT JOIN olComun.dbo.Calles AS calle WITH (NOLOCK)
+    ON siti.callId = calle.callId
+
+LEFT JOIN (
+    SELECT
+        pc1.caraId,
+        MAX(CASE WHEN tp1.tiprEsDefault = 1 THEN pc1.prcaPrecio ELSE NULL END) AS prcaPrecioMax,
+        MAX(pc1.prcaPrecio) AS Precio
+    FROM olVallas.dbo.PreciosXCaras pc1 WITH (NOLOCK)
+    INNER JOIN olVallas.dbo.TiposPrecios tp1 WITH (NOLOCK)
+        ON pc1.tiprId = tp1.tiprId
+    GROUP BY pc1.caraId
+) AS prca_def
+    ON prca_def.caraId = car.caraId
+
+OUTER APPLY (
+    SELECT TOP 1 detcon.dconFechaHasta
+    FROM olVallas.dbo.detContratos detcon WITH (NOLOCK)
+    INNER JOIN olVallas.dbo.maeContratos maecon WITH (NOLOCK)
+        ON maecon.mconId = detcon.mconId
+    WHERE detcon.caraId = car.caraId
+      AND maecon.mconPosteado <> 0
+      AND maecon.mconAnulado <> 1
+    ORDER BY detcon.dconFechaHasta DESC
+) last_contract
+
+WHERE
+    siti.sitiActivo = 1
+    AND car.caraActivo = 1
+    AND dpto.dptoId IS NOT NULL
+    AND ISNULL(prca_def.prcaPrecioMax, prca_def.Precio) >= 5
+ORDER BY dpto.dptoNombre ASC, car.caraCodigo DESC;
+`;
+
 const AVAILABLE_BILLBOARDS_REPORT_SQL = `
 SELECT
     car.caraId,
@@ -414,6 +491,9 @@ export class BillboardsService {
   private readonly billboardsAllCache = new TtlCache<
     AvailableBillboardListing[]
   >(CACHE_TTL_MS);
+  private readonly billboardsAllIncludingOccupiedCache = new TtlCache<
+    AvailableBillboardListing[]
+  >(CACHE_TTL_MS);
   private readonly billboardsReportCache = new TtlCache<
     AvailableBillboardReport[]
   >(CACHE_TTL_MS);
@@ -448,10 +528,15 @@ export class BillboardsService {
   async getAvailableBillboardsInRange(
     from: Date,
     to: Date,
+    options: { includeUnavailable?: boolean } = {},
   ): Promise<AvailableBillboardListing[]> {
-    const key = `all|${from.toISOString()}|${to.toISOString()}`;
-    return this.billboardsAllCache.getOrFetch(key, () =>
-      this.fetchBillboardsAll(from, to),
+    const { includeUnavailable = false } = options;
+    const key = `${includeUnavailable ? 'all-with-occupied' : 'all'}|${from.toISOString()}|${to.toISOString()}`;
+    const cache = includeUnavailable
+      ? this.billboardsAllIncludingOccupiedCache
+      : this.billboardsAllCache;
+    return cache.getOrFetch(key, () =>
+      this.fetchBillboardsAll(from, to, { includeUnavailable }),
     );
   }
 
@@ -479,14 +564,17 @@ export class BillboardsService {
   private async fetchBillboardsAll(
     from: Date,
     to: Date,
+    options: { includeUnavailable?: boolean } = {},
   ): Promise<AvailableBillboardListing[]> {
-    const rows = await this.brilo.query<BriloBillboardListingRow>(
-      AVAILABLE_BILLBOARDS_ALL_SQL,
-      {
-        FechaInicio: from,
-        FechaFin: to,
-      },
-    );
+    const { includeUnavailable = false } = options;
+    const sql = includeUnavailable
+      ? ALL_BILLBOARDS_WITH_STATUS_SQL
+      : AVAILABLE_BILLBOARDS_ALL_SQL;
+
+    const rows = await this.brilo.query<BriloBillboardListingRow>(sql, {
+      FechaInicio: from,
+      FechaFin: to,
+    });
 
     const filtered = rows.filter((r) => {
       if (r.Precio == null) return false;
@@ -522,46 +610,55 @@ export class BillboardsService {
     }
 
     const now = new Date();
-    return filtered
-      .filter((r) => !purchasedSet.has(Number(r.caraId)))
-      .map((r): AvailableBillboardListing => {
-        const lastDate = r.UltimaFechaContrato;
-        const monthsWithoutPurchase = lastDate
-          ? Math.max(
-              0,
-              (now.getFullYear() - lastDate.getFullYear()) * 12 +
-                (now.getMonth() - lastDate.getMonth()),
-            )
-          : null;
+    const visible = includeUnavailable
+      ? filtered
+      : filtered.filter((r) => !purchasedSet.has(Number(r.caraId)));
 
-        let availableDiscount: number | null = null;
-        if (monthsWithoutPurchase != null && monthsWithoutPurchase >= 3) {
-          availableDiscount = 45;
-        } else if (monthsWithoutPurchase === 2) {
-          availableDiscount = 30;
-        } else if (monthsWithoutPurchase === 1) {
-          availableDiscount = 20;
-        }
+    return visible.map((r): AvailableBillboardListing => {
+      const lastDate = r.UltimaFechaContrato;
+      const monthsWithoutPurchase = lastDate
+        ? Math.max(
+            0,
+            (now.getFullYear() - lastDate.getFullYear()) * 12 +
+              (now.getMonth() - lastDate.getMonth()),
+          )
+        : null;
 
-        return {
-          billboardId: Number(r.caraId),
-          billboardCode: r.caraCodigo ?? null,
-          reference: r.Referencia ?? null,
-          address: r['Dirección'] ?? null,
-          departmentId: r.DepartamentoId ?? null,
-          departmentName: r.Departamento ?? null,
-          cityName: r.Municipio ?? null,
-          streetName: r.Calle ?? null,
-          height: r.Alto ?? null,
-          width: r.Ancho ?? null,
-          latitude: r.Latitud ?? null,
-          longitude: r.Longitud ?? null,
-          price: r.Precio ?? null,
-          monthsWithoutPurchase,
-          availableDiscount,
-          totalPrice: applyDiscount(r.Precio ?? null, availableDiscount),
-        };
-      });
+      let availableDiscount: number | null = null;
+      if (monthsWithoutPurchase != null && monthsWithoutPurchase >= 3) {
+        availableDiscount = 45;
+      } else if (monthsWithoutPurchase === 2) {
+        availableDiscount = 30;
+      } else if (monthsWithoutPurchase === 1) {
+        availableDiscount = 20;
+      }
+
+      const isOccupiedInBrilo = includeUnavailable
+        ? Boolean(Number(r.IsOccupied ?? 0))
+        : false;
+      const isPurchased = purchasedSet.has(Number(r.caraId));
+      const isAvailable = !isOccupiedInBrilo && !isPurchased;
+
+      return {
+        billboardId: Number(r.caraId),
+        billboardCode: r.caraCodigo ?? null,
+        reference: r.Referencia ?? null,
+        address: r['Dirección'] ?? null,
+        departmentId: r.DepartamentoId ?? null,
+        departmentName: r.Departamento ?? null,
+        cityName: r.Municipio ?? null,
+        streetName: r.Calle ?? null,
+        height: r.Alto ?? null,
+        width: r.Ancho ?? null,
+        latitude: r.Latitud ?? null,
+        longitude: r.Longitud ?? null,
+        price: r.Precio ?? null,
+        monthsWithoutPurchase,
+        availableDiscount,
+        totalPrice: applyDiscount(r.Precio ?? null, availableDiscount),
+        isAvailable,
+      };
+    });
   }
 
   private async fetchBillboardsReport(
@@ -652,6 +749,7 @@ export class BillboardsService {
           monthsWithoutPurchase,
           availableDiscount,
           totalPrice: applyDiscount(r.Precio ?? null, availableDiscount),
+          isAvailable: true,
         };
       });
   }
@@ -745,6 +843,7 @@ export class BillboardsService {
           monthsWithoutPurchase,
           availableDiscount,
           totalPrice: applyDiscount(r.Precio ?? null, availableDiscount),
+          isAvailable: true,
         };
       });
   }

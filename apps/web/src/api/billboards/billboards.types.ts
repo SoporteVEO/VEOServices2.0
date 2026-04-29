@@ -24,6 +24,7 @@ export interface AvailableBillboard {
   monthsWithoutPurchase: number | null;
   availableDiscount: number | null;
   totalPrice: number | null;
+  isAvailable: boolean;
 }
 
 export type AvailableBillboardListing = Omit<
