@@ -16,10 +16,6 @@ function rowsToSheetData(
       b.width == null && b.height == null
         ? ""
         : `${b.width ?? "—"} × ${b.height ?? "—"}`;
-    const discount =
-      b.availableDiscount != null && b.availableDiscount !== 0
-        ? `-${b.availableDiscount}%`
-        : "";
     const base: Record<string, string | number> = {
       Código: b.billboardCode ?? "",
       Referencia: b.reference ?? "",
@@ -28,10 +24,14 @@ function rowsToSheetData(
       Dimensiones: dimensions,
       Precio: formatMoney(b.price),
       "Meses sin compra": b.monthsWithoutPurchase ?? "",
-      Descuento: discount,
     };
     if (includeAvailabilityColumn) {
       base.Disponibilidad = b.isAvailable ? "Disponible" : "Ocupada";
+    } else {
+      base.Descuento =
+        b.availableDiscount != null && b.availableDiscount !== 0
+          ? `-${b.availableDiscount}%`
+          : "";
     }
     return base;
   });

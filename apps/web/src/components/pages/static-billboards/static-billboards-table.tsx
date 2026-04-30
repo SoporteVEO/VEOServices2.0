@@ -69,24 +69,25 @@ const baseColumns: ColumnDef<AvailableBillboardListing>[] = [
       return <span className="block text-right tabular-nums">{months}</span>;
     },
   },
-  {
-    accessorKey: "availableDiscount",
-    header: () => <span className="text-right block">Descuento</span>,
-    cell: ({ row }) => {
-      const discount = row.original.availableDiscount;
-      if (discount == null || discount === 0) {
-        return null;
-      }
-      return (
-        <div className="flex justify-end">
-          <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10 border-transparent tabular-nums">
-            -{discount}%
-          </Badge>
-        </div>
-      );
-    },
-  },
 ];
+
+const discountColumn: ColumnDef<AvailableBillboardListing> = {
+  accessorKey: "availableDiscount",
+  header: () => <span className="text-right block">Descuento</span>,
+  cell: ({ row }) => {
+    const discount = row.original.availableDiscount;
+    if (discount == null || discount === 0) {
+      return null;
+    }
+    return (
+      <div className="flex justify-end">
+        <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10 border-transparent tabular-nums">
+          -{discount}%
+        </Badge>
+      </div>
+    );
+  },
+};
 
 const availabilityColumn: ColumnDef<AvailableBillboardListing> = {
   accessorKey: "isAvailable",
@@ -130,7 +131,9 @@ export function StaticBillboardsTable({
 
   const columns = useMemo(
     () =>
-      showAvailabilityColumn ? [...baseColumns, availabilityColumn] : baseColumns,
+      showAvailabilityColumn
+        ? [...baseColumns, availabilityColumn]
+        : [...baseColumns, discountColumn],
     [showAvailabilityColumn],
   );
 

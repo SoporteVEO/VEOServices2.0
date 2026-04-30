@@ -446,6 +446,26 @@ FROM olVallas.dbo.imagenes i WITH (NOLOCK)
 WHERE i.imagId = @ImagenId
 `;
 
+const CONTRACTS_IN_RANGE_SQL = `
+SELECT
+    detcon.caraId        AS caraId,
+    detcon.dconFechaDesde AS [FechaDesde],
+    detcon.dconFechaHasta AS [FechaHasta]
+FROM olVallas.dbo.detContratos detcon WITH (NOLOCK)
+INNER JOIN olVallas.dbo.maeContratos maecon WITH (NOLOCK)
+    ON maecon.mconId = detcon.mconId
+WHERE maecon.mconPosteado <> 0
+  AND maecon.mconAnulado <> 1
+  AND detcon.dconFechaDesde <= @FechaFin
+  AND detcon.dconFechaHasta >= @FechaInicio;
+`;
+
+interface BriloContractRangeRow {
+  caraId: number;
+  FechaDesde: Date;
+  FechaHasta: Date;
+}
+
 function applyDiscount(
   price: number | null,
   discount: number | null,
@@ -455,6 +475,53 @@ function applyDiscount(
     return Math.round(price * (1 - discount / 100) * 100) / 100;
   }
   return price;
+}
+
+function getDiscountForMonthsWithoutPurchase(
+  monthsWithoutPurchase: number | null,
+): number | null {
+  if (monthsWithoutPurchase == null) return null;
+  if (monthsWithoutPurchase >= 3) return 45;
+  if (monthsWithoutPurchase === 2) return 30;
+  if (monthsWithoutPurchase === 1) return 20;
+  return null;
+}
+
+function calendarMonthsBetween(from: Date, to: Date): number {
+  return (
+    (to.getFullYear() - from.getFullYear()) * 12 +
+    (to.getMonth() - from.getMonth()) +
+    1
+  );
+}
+
+function calculateMonthsWithoutContractInRange(
+  contracts: { from: Date; to: Date }[],
+  rangeFrom: Date,
+  rangeTo: Date,
+): number {
+  const totalMonths = calendarMonthsBetween(rangeFrom, rangeTo);
+  if (totalMonths <= 0) return 0;
+
+  const coveredMonthKeys = new Set<number>();
+
+  for (const contract of contracts) {
+    const start = contract.from > rangeFrom ? contract.from : rangeFrom;
+    const end = contract.to < rangeTo ? contract.to : rangeTo;
+    if (start > end) continue;
+
+    const cursorYear = start.getFullYear();
+    const cursorMonth = start.getMonth();
+    const stopKey = end.getFullYear() * 12 + end.getMonth();
+    let key = cursorYear * 12 + cursorMonth;
+
+    while (key <= stopKey) {
+      coveredMonthKeys.add(key);
+      key += 1;
+    }
+  }
+
+  return Math.max(0, totalMonths - coveredMonthKeys.size);
 }
 
 function detectImageMimeType(buf: Buffer): string | null {
@@ -609,38 +676,51 @@ export class BillboardsService {
       );
     }
 
+    const contractsByBillboard = includeUnavailable
+      ? await this.fetchContractsByBillboardInRange(from, to)
+      : null;
+
     const now = new Date();
     const visible = includeUnavailable
       ? filtered
       : filtered.filter((r) => !purchasedSet.has(Number(r.caraId)));
 
     return visible.map((r): AvailableBillboardListing => {
-      const lastDate = r.UltimaFechaContrato;
-      const monthsWithoutPurchase = lastDate
-        ? Math.max(
-            0,
-            (now.getFullYear() - lastDate.getFullYear()) * 12 +
-              (now.getMonth() - lastDate.getMonth()),
-          )
-        : null;
+      const billboardId = Number(r.caraId);
 
-      let availableDiscount: number | null = null;
-      if (monthsWithoutPurchase != null && monthsWithoutPurchase >= 3) {
-        availableDiscount = 45;
-      } else if (monthsWithoutPurchase === 2) {
-        availableDiscount = 30;
-      } else if (monthsWithoutPurchase === 1) {
-        availableDiscount = 20;
+      let monthsWithoutPurchase: number | null;
+      let availableDiscount: number | null;
+
+      if (includeUnavailable) {
+        const contracts = contractsByBillboard?.get(billboardId) ?? [];
+        monthsWithoutPurchase = calculateMonthsWithoutContractInRange(
+          contracts,
+          from,
+          to,
+        );
+        availableDiscount = null;
+      } else {
+        const lastDate = r.UltimaFechaContrato;
+        monthsWithoutPurchase = lastDate
+          ? Math.max(
+              0,
+              (now.getFullYear() - lastDate.getFullYear()) * 12 +
+                (now.getMonth() - lastDate.getMonth()),
+            )
+          : null;
+        availableDiscount = getDiscountForMonthsWithoutPurchase(
+          monthsWithoutPurchase,
+        );
       }
 
       const isOccupiedInBrilo = includeUnavailable
         ? Boolean(Number(r.IsOccupied ?? 0))
         : false;
-      const isPurchased = purchasedSet.has(Number(r.caraId));
+      const isPurchased = purchasedSet.has(billboardId);
       const isAvailable = !isOccupiedInBrilo && !isPurchased;
 
       return {
-        billboardId: Number(r.caraId),
+        billboardId,
         billboardCode: r.caraCodigo ?? null,
         reference: r.Referencia ?? null,
         address: r['Dirección'] ?? null,
@@ -659,6 +739,32 @@ export class BillboardsService {
         isAvailable,
       };
     });
+  }
+
+  private async fetchContractsByBillboardInRange(
+    from: Date,
+    to: Date,
+  ): Promise<Map<number, { from: Date; to: Date }[]>> {
+    const rows = await this.brilo.query<BriloContractRangeRow>(
+      CONTRACTS_IN_RANGE_SQL,
+      {
+        FechaInicio: from,
+        FechaFin: to,
+      },
+    );
+
+    const byBillboard = new Map<number, { from: Date; to: Date }[]>();
+    for (const row of rows) {
+      const billboardId = Number(row.caraId);
+      if (!Number.isFinite(billboardId)) continue;
+      if (!(row.FechaDesde instanceof Date) || !(row.FechaHasta instanceof Date)) {
+        continue;
+      }
+      const list = byBillboard.get(billboardId) ?? [];
+      list.push({ from: row.FechaDesde, to: row.FechaHasta });
+      byBillboard.set(billboardId, list);
+    }
+    return byBillboard;
   }
 
   private async fetchBillboardsReport(
