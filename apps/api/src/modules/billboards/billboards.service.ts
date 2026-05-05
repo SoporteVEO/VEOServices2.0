@@ -9,6 +9,13 @@ import type {
   AvailableBillboardReport,
   AvailableState,
   BillboardContractHistoryItem,
+  BillboardDashboardAnalytics,
+  DashboardDepartmentBreakdown,
+  DashboardKpis,
+  DashboardMonthlyTrend,
+  DashboardTopBillboard,
+  DashboardTopCustomer,
+  DashboardYoyTrend,
 } from './entities/available-billboard.js';
 
 const CACHE_TTL_MS =
@@ -506,6 +513,107 @@ interface BriloBillboardContractHistoryRow {
   ClienteEmail: string | null;
 }
 
+const DASHBOARD_CONTRACTS_SQL = `
+SELECT
+    detcon.dconId          AS [DetalleId],
+    detcon.dconFechaDesde  AS [FechaDesde],
+    detcon.dconFechaHasta  AS [FechaHasta],
+    car.caraId             AS [CaraId],
+    car.caraCodigo         AS [CaraCodigo],
+    siti.sitiDireccion     AS [Direccion],
+    dpto.dptoId            AS [DptoId],
+    dpto.dptoNombre        AS [DptoNombre],
+    muni.muniNombre        AS [MuniNombre],
+    cli.cliId              AS [CliId],
+    cli.cliNombres         AS [CliNombres],
+    cli.cliEmail           AS [CliEmail],
+    ISNULL(prca_def.prcaPrecioMax, prca_def.Precio) AS [PrecioMensual]
+FROM olVallas.dbo.detContratos detcon WITH (NOLOCK)
+INNER JOIN olVallas.dbo.maeContratos maecon WITH (NOLOCK)
+    ON maecon.mconId = detcon.mconId
+INNER JOIN olVallas.dbo.Caras car WITH (NOLOCK)
+    ON car.caraId = detcon.caraId
+INNER JOIN olVallas.dbo.Sitios siti WITH (NOLOCK)
+    ON siti.sitiId = car.sitiId
+LEFT JOIN olComun.dbo.DeptosEstados dpto WITH (NOLOCK)
+    ON siti.dptoId = dpto.dptoId
+LEFT JOIN olComun.dbo.MuniCondados muni WITH (NOLOCK)
+    ON siti.muniId = muni.muniId
+LEFT JOIN olComun.dbo.Clientes cli WITH (NOLOCK)
+    ON cli.cliId = maecon.cliId
+LEFT JOIN (
+    SELECT
+        pc1.caraId,
+        MAX(CASE WHEN tp1.tiprEsDefault = 1 THEN pc1.prcaPrecio ELSE NULL END) AS prcaPrecioMax,
+        MAX(pc1.prcaPrecio) AS Precio
+    FROM olVallas.dbo.PreciosXCaras pc1 WITH (NOLOCK)
+    INNER JOIN olVallas.dbo.TiposPrecios tp1 WITH (NOLOCK)
+        ON pc1.tiprId = tp1.tiprId
+    GROUP BY pc1.caraId
+) AS prca_def
+    ON prca_def.caraId = car.caraId
+WHERE maecon.mconPosteado <> 0
+  AND maecon.mconAnulado <> 1
+  AND detcon.dconFechaDesde <= @FechaFin
+  AND detcon.dconFechaHasta >= @FechaInicio
+  AND NOT EXISTS (
+      SELECT 1
+      FROM olVallas.dbo.maeContratos child WITH (NOLOCK)
+      WHERE child.mconIdPadre = maecon.mconId
+        AND child.mconAnulado <> 1
+        AND child.mconPosteado <> 0
+  );
+`;
+
+const DASHBOARD_BILLBOARD_TOTALS_SQL = `
+SELECT
+    dpto.dptoId      AS [DptoId],
+    dpto.dptoNombre  AS [DptoNombre],
+    COUNT(DISTINCT car.caraId) AS [Total]
+FROM olVallas.dbo.Caras car WITH (NOLOCK)
+INNER JOIN olVallas.dbo.Sitios siti WITH (NOLOCK)
+    ON siti.sitiId = car.sitiId
+LEFT JOIN olComun.dbo.DeptosEstados dpto WITH (NOLOCK)
+    ON siti.dptoId = dpto.dptoId
+LEFT JOIN (
+    SELECT
+        pc1.caraId,
+        MAX(CASE WHEN tp1.tiprEsDefault = 1 THEN pc1.prcaPrecio ELSE NULL END) AS prcaPrecioMax,
+        MAX(pc1.prcaPrecio) AS Precio
+    FROM olVallas.dbo.PreciosXCaras pc1 WITH (NOLOCK)
+    INNER JOIN olVallas.dbo.TiposPrecios tp1 WITH (NOLOCK)
+        ON pc1.tiprId = tp1.tiprId
+    GROUP BY pc1.caraId
+) AS prca_def
+    ON prca_def.caraId = car.caraId
+WHERE car.caraActivo = 1
+  AND siti.sitiActivo = 1
+  AND ISNULL(prca_def.prcaPrecioMax, prca_def.Precio) >= 5
+GROUP BY dpto.dptoId, dpto.dptoNombre;
+`;
+
+interface BriloDashboardContractRow {
+  DetalleId: number;
+  FechaDesde: Date;
+  FechaHasta: Date;
+  CaraId: number;
+  CaraCodigo: string | null;
+  Direccion: string | null;
+  DptoId: number | null;
+  DptoNombre: string | null;
+  MuniNombre: string | null;
+  CliId: number | null;
+  CliNombres: string | null;
+  CliEmail: string | null;
+  PrecioMensual: number | null;
+}
+
+interface BriloDashboardTotalsRow {
+  DptoId: number | null;
+  DptoNombre: string | null;
+  Total: number;
+}
+
 function applyDiscount(
   price: number | null,
   discount: number | null,
@@ -564,6 +672,452 @@ function calculateMonthsWithoutContractInRange(
   return Math.max(0, totalMonths - coveredMonthKeys.size);
 }
 
+const MS_PER_DAY = 24 * 60 * 60 * 1000;
+const AVG_DAYS_PER_MONTH = 30.4375;
+const TOP_LIST_SIZE = 10;
+
+function startOfDay(date: Date): Date {
+  return new Date(
+    date.getFullYear(),
+    date.getMonth(),
+    date.getDate(),
+    0,
+    0,
+    0,
+    0,
+  );
+}
+
+function startOfMonth(date: Date): Date {
+  return new Date(date.getFullYear(), date.getMonth(), 1);
+}
+
+function addMonths(date: Date, months: number): Date {
+  return new Date(date.getFullYear(), date.getMonth() + months, 1);
+}
+
+function daysBetween(from: Date, to: Date): number {
+  const diff = startOfDay(to).getTime() - startOfDay(from).getTime();
+  return Math.max(0, Math.floor(diff / MS_PER_DAY) + 1);
+}
+
+function overlapDays(
+  startA: Date,
+  endA: Date,
+  startB: Date,
+  endB: Date,
+): number {
+  const start = startA > startB ? startA : startB;
+  const end = endA < endB ? endA : endB;
+  if (start > end) return 0;
+  return daysBetween(start, end);
+}
+
+function monthKey(date: Date): string {
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  return `${date.getFullYear()}-${month}`;
+}
+
+function shiftYears(date: Date, years: number): Date {
+  return new Date(
+    date.getFullYear() + years,
+    date.getMonth(),
+    date.getDate(),
+    date.getHours(),
+    date.getMinutes(),
+    date.getSeconds(),
+    date.getMilliseconds(),
+  );
+}
+
+function shiftMonthKey(key: string, monthsDelta: number): string {
+  const [yearStr, monthStr] = key.split('-');
+  const year = Number(yearStr);
+  const month = Number(monthStr);
+  if (!Number.isFinite(year) || !Number.isFinite(month)) return key;
+  const baseDate = new Date(year, month - 1, 1);
+  return monthKey(addMonths(baseDate, monthsDelta));
+}
+
+function computeMonthlyRevenue(
+  contracts: BriloDashboardContractRow[],
+  rangeFrom: Date,
+  rangeTo: Date,
+): Map<string, number> {
+  const buckets = new Map<string, number>();
+  let cursor = startOfMonth(rangeFrom);
+  const cursorEnd = startOfMonth(rangeTo);
+  while (cursor <= cursorEnd) {
+    buckets.set(monthKey(cursor), 0);
+    cursor = addMonths(cursor, 1);
+  }
+
+  for (const row of contracts) {
+    if (
+      !(row.FechaDesde instanceof Date) ||
+      !(row.FechaHasta instanceof Date)
+    ) {
+      continue;
+    }
+    const monthlyPrice =
+      row.PrecioMensual != null ? Number(row.PrecioMensual) : null;
+    if (
+      monthlyPrice == null ||
+      !Number.isFinite(monthlyPrice) ||
+      monthlyPrice <= 0
+    ) {
+      continue;
+    }
+    const dailyRate = monthlyPrice / AVG_DAYS_PER_MONTH;
+
+    const start = row.FechaDesde;
+    const end = row.FechaHasta;
+    const startMonth = startOfMonth(start >= rangeFrom ? start : rangeFrom);
+    const endMonth = startOfMonth(end <= rangeTo ? end : rangeTo);
+    let monthCursor = startMonth;
+    while (monthCursor <= endMonth) {
+      const key = monthKey(monthCursor);
+      if (buckets.has(key)) {
+        const monthEnd = addMonths(monthCursor, 1);
+        const lastDayOfMonth = new Date(monthEnd.getTime() - MS_PER_DAY);
+        const overlap = overlapDays(start, end, monthCursor, lastDayOfMonth);
+        buckets.set(key, (buckets.get(key) ?? 0) + dailyRate * overlap);
+      }
+      monthCursor = addMonths(monthCursor, 1);
+    }
+  }
+
+  return buckets;
+}
+
+function computeDashboardAnalytics({
+  contractRows,
+  previousContractRows,
+  totalsRows,
+  rangeFrom,
+  rangeTo,
+}: {
+  contractRows: BriloDashboardContractRow[];
+  previousContractRows: BriloDashboardContractRow[];
+  totalsRows: BriloDashboardTotalsRow[];
+  rangeFrom: Date;
+  rangeTo: Date;
+}): BillboardDashboardAnalytics {
+  const today = startOfDay(new Date());
+  const endingSoonThreshold = new Date(today.getTime() + 30 * MS_PER_DAY);
+
+  const validContracts = contractRows.filter(
+    (r) => r.FechaDesde instanceof Date && r.FechaHasta instanceof Date,
+  );
+
+  const totalContracts = validContracts.length;
+  const billboardsOccupied = new Set<number>();
+  const customersInRange = new Set<string>();
+  let activeContractsToday = 0;
+  let endingSoonCount = 0;
+  let totalEstimatedRevenue = 0;
+  let totalContractDays = 0;
+
+  type CustomerAgg = {
+    name: string;
+    email: string | null;
+    contractsCount: number;
+    estimatedSpent: number;
+    lastContractEnd: Date | null;
+  };
+
+  type BillboardAgg = {
+    billboardId: number;
+    billboardCode: string | null;
+    address: string | null;
+    cityName: string | null;
+    departmentName: string | null;
+    contractsCount: number;
+    occupiedDays: number;
+    estimatedRevenue: number;
+    monthlyPrice: number | null;
+  };
+
+  type DepartmentAgg = {
+    departmentId: number | null;
+    departmentName: string | null;
+    occupiedBillboards: Set<number>;
+    contractsCount: number;
+    estimatedRevenue: number;
+  };
+
+  const customerAggs = new Map<string, CustomerAgg>();
+  const billboardAggs = new Map<number, BillboardAgg>();
+  const departmentAggs = new Map<string, DepartmentAgg>();
+  type MonthlyAgg = {
+    contractsStarted: number;
+    contractsActive: number;
+    estimatedRevenue: number;
+  };
+  const monthlyAggs = new Map<string, MonthlyAgg>();
+
+  let cursor = startOfMonth(rangeFrom);
+  const cursorEnd = startOfMonth(rangeTo);
+  while (cursor <= cursorEnd) {
+    monthlyAggs.set(monthKey(cursor), {
+      contractsStarted: 0,
+      contractsActive: 0,
+      estimatedRevenue: 0,
+    });
+    cursor = addMonths(cursor, 1);
+  }
+
+  for (const row of validContracts) {
+    const start = row.FechaDesde;
+    const end = row.FechaHasta;
+    const monthlyPrice =
+      row.PrecioMensual != null ? Number(row.PrecioMensual) : null;
+    const safeMonthlyPrice =
+      monthlyPrice != null && Number.isFinite(monthlyPrice) && monthlyPrice > 0
+        ? monthlyPrice
+        : null;
+
+    const dailyRate =
+      safeMonthlyPrice != null ? safeMonthlyPrice / AVG_DAYS_PER_MONTH : 0;
+
+    const overlapWithRange = overlapDays(start, end, rangeFrom, rangeTo);
+    const overlapRevenue = dailyRate * overlapWithRange;
+
+    totalEstimatedRevenue += overlapRevenue;
+    totalContractDays += overlapWithRange;
+
+    const billboardId = Number(row.CaraId);
+    if (Number.isFinite(billboardId)) {
+      billboardsOccupied.add(billboardId);
+    }
+
+    if (start <= today && today <= end) {
+      activeContractsToday += 1;
+    }
+    if (end >= today && end <= endingSoonThreshold) {
+      endingSoonCount += 1;
+    }
+
+    const customerKey = row.CliId
+      ? `id:${row.CliId}`
+      : row.CliEmail
+        ? `email:${row.CliEmail.toLowerCase()}`
+        : row.CliNombres
+          ? `name:${row.CliNombres.trim().toLowerCase()}`
+          : null;
+
+    if (customerKey) {
+      customersInRange.add(customerKey);
+      const existing = customerAggs.get(customerKey);
+      if (existing) {
+        existing.contractsCount += 1;
+        existing.estimatedSpent += overlapRevenue;
+        if (!existing.lastContractEnd || end > existing.lastContractEnd) {
+          existing.lastContractEnd = end;
+        }
+      } else {
+        customerAggs.set(customerKey, {
+          name: row.CliNombres?.trim() || row.CliEmail || 'Sin nombre',
+          email: row.CliEmail ?? null,
+          contractsCount: 1,
+          estimatedSpent: overlapRevenue,
+          lastContractEnd: end,
+        });
+      }
+    }
+
+    if (Number.isFinite(billboardId)) {
+      const existing = billboardAggs.get(billboardId);
+      if (existing) {
+        existing.contractsCount += 1;
+        existing.occupiedDays += overlapWithRange;
+        existing.estimatedRevenue += overlapRevenue;
+      } else {
+        billboardAggs.set(billboardId, {
+          billboardId,
+          billboardCode: row.CaraCodigo ?? null,
+          address: row.Direccion ?? null,
+          cityName: row.MuniNombre ?? null,
+          departmentName: row.DptoNombre ?? null,
+          contractsCount: 1,
+          occupiedDays: overlapWithRange,
+          estimatedRevenue: overlapRevenue,
+          monthlyPrice: safeMonthlyPrice,
+        });
+      }
+    }
+
+    const departmentKey = row.DptoId != null ? `id:${row.DptoId}` : 'unknown';
+    const existingDept = departmentAggs.get(departmentKey);
+    if (existingDept) {
+      existingDept.contractsCount += 1;
+      existingDept.estimatedRevenue += overlapRevenue;
+      if (Number.isFinite(billboardId)) {
+        existingDept.occupiedBillboards.add(billboardId);
+      }
+    } else {
+      const occupied = new Set<number>();
+      if (Number.isFinite(billboardId)) occupied.add(billboardId);
+      departmentAggs.set(departmentKey, {
+        departmentId: row.DptoId ?? null,
+        departmentName: row.DptoNombre ?? null,
+        occupiedBillboards: occupied,
+        contractsCount: 1,
+        estimatedRevenue: overlapRevenue,
+      });
+    }
+
+    const startMonth = startOfMonth(start >= rangeFrom ? start : rangeFrom);
+    const endMonth = startOfMonth(end <= rangeTo ? end : rangeTo);
+    let monthCursor = startMonth;
+    while (monthCursor <= endMonth) {
+      const key = monthKey(monthCursor);
+      const monthBucket = monthlyAggs.get(key);
+      if (monthBucket) {
+        const monthEnd = addMonths(monthCursor, 1);
+        const lastDayOfMonth = new Date(monthEnd.getTime() - MS_PER_DAY);
+        const overlapWithMonth = overlapDays(
+          start,
+          end,
+          monthCursor,
+          lastDayOfMonth,
+        );
+        monthBucket.contractsActive += 1;
+        monthBucket.estimatedRevenue += dailyRate * overlapWithMonth;
+        if (
+          start.getFullYear() === monthCursor.getFullYear() &&
+          start.getMonth() === monthCursor.getMonth() &&
+          start >= rangeFrom
+        ) {
+          monthBucket.contractsStarted += 1;
+        }
+      }
+      monthCursor = addMonths(monthCursor, 1);
+    }
+  }
+
+  const totalsByDept = new Map<
+    string,
+    { total: number; name: string | null }
+  >();
+  let totalBillboards = 0;
+  for (const row of totalsRows) {
+    const key = row.DptoId != null ? `id:${row.DptoId}` : 'unknown';
+    const total = Number(row.Total ?? 0);
+    totalBillboards += total;
+    totalsByDept.set(key, { total, name: row.DptoNombre ?? null });
+  }
+
+  const occupiedBillboards = billboardsOccupied.size;
+  const availableBillboards = Math.max(0, totalBillboards - occupiedBillboards);
+  const occupancyRate =
+    totalBillboards > 0 ? occupiedBillboards / totalBillboards : 0;
+  const averageContractValue =
+    totalContracts > 0 ? totalEstimatedRevenue / totalContracts : 0;
+
+  const kpis: DashboardKpis = {
+    totalBillboards,
+    occupiedBillboards,
+    availableBillboards,
+    occupancyRate,
+    totalContracts,
+    activeContractsToday,
+    endingSoon: endingSoonCount,
+    uniqueCustomers: customersInRange.size,
+    estimatedRevenue: totalEstimatedRevenue,
+    averageContractValue,
+    totalContractDays,
+  };
+
+  const monthlyTrend: DashboardMonthlyTrend[] = [...monthlyAggs.entries()]
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([month, agg]) => ({
+      monthKey: month,
+      contractsStarted: agg.contractsStarted,
+      contractsActive: agg.contractsActive,
+      estimatedRevenue: agg.estimatedRevenue,
+    }));
+
+  const topCustomers: DashboardTopCustomer[] = [...customerAggs.values()]
+    .sort((a, b) => b.estimatedSpent - a.estimatedSpent)
+    .slice(0, TOP_LIST_SIZE)
+    .map((c) => ({
+      name: c.name,
+      email: c.email,
+      contractsCount: c.contractsCount,
+      estimatedSpent: c.estimatedSpent,
+      lastContractEnd: c.lastContractEnd,
+    }));
+
+  const topBillboards: DashboardTopBillboard[] = [...billboardAggs.values()]
+    .sort((a, b) => b.estimatedRevenue - a.estimatedRevenue)
+    .slice(0, TOP_LIST_SIZE)
+    .map((b) => ({
+      billboardId: b.billboardId,
+      billboardCode: b.billboardCode,
+      address: b.address,
+      cityName: b.cityName,
+      departmentName: b.departmentName,
+      contractsCount: b.contractsCount,
+      occupiedDays: b.occupiedDays,
+      estimatedRevenue: b.estimatedRevenue,
+      monthlyPrice: b.monthlyPrice,
+    }));
+
+  const departmentKeys: string[] = [];
+  for (const k of departmentAggs.keys()) departmentKeys.push(k);
+  for (const k of totalsByDept.keys()) {
+    if (!departmentKeys.includes(k)) departmentKeys.push(k);
+  }
+
+  const byDepartment: DashboardDepartmentBreakdown[] = [];
+  for (const key of departmentKeys) {
+    const agg = departmentAggs.get(key);
+    const totals = totalsByDept.get(key);
+    const totalBillboardsForDept: number = totals?.total ?? 0;
+    const contractsCountForDept: number = agg?.contractsCount ?? 0;
+    if (totalBillboardsForDept <= 0 && contractsCountForDept <= 0) continue;
+    byDepartment.push({
+      departmentId: agg?.departmentId ?? null,
+      departmentName: agg?.departmentName ?? totals?.name ?? null,
+      totalBillboards: totalBillboardsForDept,
+      occupiedBillboards: agg?.occupiedBillboards.size ?? 0,
+      contractsCount: contractsCountForDept,
+      estimatedRevenue: agg?.estimatedRevenue ?? 0,
+    });
+  }
+  byDepartment.sort(
+    (
+      a: DashboardDepartmentBreakdown,
+      b: DashboardDepartmentBreakdown,
+    ): number => b.estimatedRevenue - a.estimatedRevenue,
+  );
+
+  const previousMonthlyRevenue = computeMonthlyRevenue(
+    previousContractRows,
+    shiftYears(rangeFrom, -1),
+    shiftYears(rangeTo, -1),
+  );
+
+  const yoyTrend: DashboardYoyTrend[] = monthlyTrend.map((m) => {
+    const prevKey = shiftMonthKey(m.monthKey, -12);
+    return {
+      monthKey: m.monthKey,
+      current: m.estimatedRevenue,
+      previous: previousMonthlyRevenue.get(prevKey) ?? 0,
+    };
+  });
+
+  return {
+    kpis,
+    monthlyTrend,
+    yoyTrend,
+    topCustomers,
+    topBillboards,
+    byDepartment,
+  };
+}
+
 function detectImageMimeType(buf: Buffer): string | null {
   if (buf.length >= 3 && buf[0] === 0xff && buf[1] === 0xd8 && buf[2] === 0xff)
     return 'image/jpeg';
@@ -607,6 +1161,8 @@ export class BillboardsService {
   private readonly contractHistoryCache = new TtlCache<
     BillboardContractHistoryItem[]
   >(CACHE_TTL_MS);
+  private readonly dashboardAnalyticsCache =
+    new TtlCache<BillboardDashboardAnalytics>(CACHE_TTL_MS);
   private readonly imageCache = new TtlCache<{
     buffer: Buffer;
     mime: string;
@@ -677,6 +1233,44 @@ export class BillboardsService {
     return this.contractHistoryCache.getOrFetch(String(billboardId), () =>
       this.fetchBillboardContractHistory(billboardId),
     );
+  }
+
+  async getDashboardAnalytics(
+    from: Date,
+    to: Date,
+  ): Promise<BillboardDashboardAnalytics> {
+    const key = `${from.toISOString()}|${to.toISOString()}`;
+    return this.dashboardAnalyticsCache.getOrFetch(key, () =>
+      this.fetchDashboardAnalytics(from, to),
+    );
+  }
+
+  private async fetchDashboardAnalytics(
+    from: Date,
+    to: Date,
+  ): Promise<BillboardDashboardAnalytics> {
+    const previousFrom = shiftYears(from, -1);
+    const previousTo = shiftYears(to, -1);
+
+    const [contractRows, previousContractRows, totalsRows] = await Promise.all([
+      this.brilo.query<BriloDashboardContractRow>(DASHBOARD_CONTRACTS_SQL, {
+        FechaInicio: from,
+        FechaFin: to,
+      }),
+      this.brilo.query<BriloDashboardContractRow>(DASHBOARD_CONTRACTS_SQL, {
+        FechaInicio: previousFrom,
+        FechaFin: previousTo,
+      }),
+      this.brilo.query<BriloDashboardTotalsRow>(DASHBOARD_BILLBOARD_TOTALS_SQL),
+    ]);
+
+    return computeDashboardAnalytics({
+      contractRows,
+      previousContractRows,
+      totalsRows,
+      rangeFrom: from,
+      rangeTo: to,
+    });
   }
 
   private async fetchBillboardContractHistory(

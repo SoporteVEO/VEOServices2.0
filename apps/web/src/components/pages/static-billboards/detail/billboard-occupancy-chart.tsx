@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+
 import {
   Card,
   CardContent,
@@ -17,18 +18,22 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/primitives/ui/select";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/primitives/ui/tooltip";
-import { cn } from "@/lib/utils";
+import type { ChartConfig } from "@/components/primitives/ui/chart";
+import { BarChart } from "@/components/ui/bar-chart";
+
 import type { BillboardContractHistoryItem } from "@/api/billboards/billboards.get";
 import { getAvailableYears, getYearOccupancy } from "./billboard-detail-utils";
 
 interface BillboardOccupancyChartProps {
   contracts: BillboardContractHistoryItem[];
 }
+
+const CHART_CONFIG = {
+  occupancyPercent: {
+    label: "Ocupación",
+    color: "var(--chart-1)",
+  },
+} satisfies ChartConfig;
 
 export function BillboardOccupancyChart({
   contracts,
@@ -119,74 +124,21 @@ export function BillboardOccupancyChart({
         </div>
       </CardHeader>
       <CardContent>
-        <div className="flex h-40 items-stretch gap-1.5">
-          {monthData.map((m) => {
-            const percent = m.occupancyPercent;
-            const heightPct = Math.max(percent, percent > 0 ? 4 : 0);
-            return (
-              <Tooltip key={m.monthIndex}>
-                <TooltipTrigger asChild>
-                  <div className="flex h-full flex-1 flex-col items-center gap-1.5">
-                    <div className="relative w-full flex-1 overflow-hidden rounded-md bg-accent/40">
-                      <div
-                        className={cn(
-                          "absolute inset-x-0 bottom-0 rounded-md transition-all",
-                          percent === 0 && "bg-transparent",
-                          percent > 0 && percent < 50 && "bg-amber-400/70",
-                          percent >= 50 && percent < 100 && "bg-amber-500",
-                          percent === 100 && "bg-rose-500",
-                        )}
-                        style={{ height: `${heightPct}%` }}
-                      />
-                    </div>
-                    <span className="text-[10px] font-medium text-muted-foreground">
-                      {m.monthLabel}
-                    </span>
-                  </div>
-                </TooltipTrigger>
-                <TooltipContent side="top">
-                  <div className="flex flex-col gap-0.5">
-                    <span className="font-medium">
-                      {m.monthLabel} {year}
-                    </span>
-                    <span className="text-[11px] opacity-90">
-                      {m.occupiedDays}/{m.daysInMonth} días ocupados (
-                      {m.occupancyPercent}%)
-                    </span>
-                    {m.contractsCount > 0 && (
-                      <span className="text-[11px] opacity-90">
-                        {m.contractsCount} contrato
-                        {m.contractsCount === 1 ? "" : "s"} activo
-                        {m.contractsCount === 1 ? "" : "s"}
-                      </span>
-                    )}
-                    {m.occupiedDays === 0 && (
-                      <span className="text-[11px] opacity-90">
-                        Disponible todo el mes
-                      </span>
-                    )}
-                  </div>
-                </TooltipContent>
-              </Tooltip>
-            );
-          })}
-        </div>
-        <div className="mt-3 flex items-center gap-3 text-[11px] text-muted-foreground">
-          <LegendItem className="bg-accent/40" label="Disponible" />
-          <LegendItem className="bg-amber-400/70" label="Parcial (<50%)" />
-          <LegendItem className="bg-amber-500" label="Ocupado (50–99%)" />
-          <LegendItem className="bg-rose-500" label="Lleno (100%)" />
-        </div>
+        <BarChart
+          data={monthData}
+          config={CHART_CONFIG}
+          xKey="monthLabel"
+          series={[{ dataKey: "occupancyPercent" }]}
+          yTickFormatter={(value) => `${value}%`}
+          tooltipLabelFormatter={(label, payload) => {
+            const item = payload[0]?.payload;
+            return `${String(label)} ${year}${
+              item ? ` · ${item.occupiedDays}/${item.daysInMonth} días` : ""
+            }`;
+          }}
+          className="h-[200px]"
+        />
       </CardContent>
     </Card>
-  );
-}
-
-function LegendItem({ className, label }: { className: string; label: string }) {
-  return (
-    <span className="flex items-center gap-1.5">
-      <span className={cn("size-2.5 rounded-sm", className)} />
-      {label}
-    </span>
   );
 }

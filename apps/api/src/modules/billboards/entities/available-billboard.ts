@@ -50,6 +50,74 @@ export interface BillboardContractHistoryItem {
   price: number | null;
 }
 
+export interface DashboardKpis {
+  totalBillboards: number;
+  occupiedBillboards: number;
+  availableBillboards: number;
+  occupancyRate: number;
+  totalContracts: number;
+  activeContractsToday: number;
+  endingSoon: number;
+  uniqueCustomers: number;
+  estimatedRevenue: number;
+  averageContractValue: number;
+  totalContractDays: number;
+}
+
+export interface DashboardMonthlyTrend {
+  monthKey: string;
+  contractsStarted: number;
+  contractsActive: number;
+  estimatedRevenue: number;
+}
+
+export interface DashboardYoyTrend {
+  /** Month key for the current period, format `YYYY-MM`. */
+  monthKey: string;
+  /** Estimated revenue for this month in the current period. */
+  current: number;
+  /** Estimated revenue for the same month one year earlier. */
+  previous: number;
+}
+
+export interface DashboardTopCustomer {
+  name: string;
+  email: string | null;
+  contractsCount: number;
+  estimatedSpent: number;
+  lastContractEnd: Date | null;
+}
+
+export interface DashboardTopBillboard {
+  billboardId: number;
+  billboardCode: string | null;
+  address: string | null;
+  cityName: string | null;
+  departmentName: string | null;
+  contractsCount: number;
+  occupiedDays: number;
+  estimatedRevenue: number;
+  monthlyPrice: number | null;
+}
+
+export interface DashboardDepartmentBreakdown {
+  departmentId: number | null;
+  departmentName: string | null;
+  totalBillboards: number;
+  occupiedBillboards: number;
+  contractsCount: number;
+  estimatedRevenue: number;
+}
+
+export interface BillboardDashboardAnalytics {
+  kpis: DashboardKpis;
+  monthlyTrend: DashboardMonthlyTrend[];
+  yoyTrend: DashboardYoyTrend[];
+  topCustomers: DashboardTopCustomer[];
+  topBillboards: DashboardTopBillboard[];
+  byDepartment: DashboardDepartmentBreakdown[];
+}
+
 export interface AvailableDigitalBillboard {
   id: string;
   code: string;

@@ -81,6 +81,24 @@ export class BillboardsController {
     return { data: states };
   }
 
+  @Get('dashboard/analytics')
+  async getDashboardAnalytics(
+    @Query('from') fromRaw?: string,
+    @Query('to') toRaw?: string,
+  ) {
+    const from = fromRaw ? new Date(fromRaw) : new Date();
+    const to = toRaw
+      ? new Date(toRaw)
+      : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+
+    if (isNaN(from.getTime()) || isNaN(to.getTime())) {
+      throw new BadRequestException('Fechas inválidas');
+    }
+
+    const analytics = await this.service.getDashboardAnalytics(from, to);
+    return { data: analytics };
+  }
+
   @Get('image/:imageId')
   async getBillboardImage(
     @Param('imageId') imageIdRaw: string,

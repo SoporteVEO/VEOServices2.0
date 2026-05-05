@@ -6,6 +6,7 @@ import type {
   AvailableBillboardReport,
   AvailableState,
   BillboardContractHistoryItem,
+  BillboardDashboardAnalytics,
 } from "./billboards.types";
 
 export type {
@@ -14,6 +15,13 @@ export type {
   AvailableBillboardReport,
   AvailableState,
   BillboardContractHistoryItem,
+  BillboardDashboardAnalytics,
+  DashboardKpis,
+  DashboardMonthlyTrend,
+  DashboardYoyTrend,
+  DashboardTopCustomer,
+  DashboardTopBillboard,
+  DashboardDepartmentBreakdown,
 } from "./billboards.types";
 
 const STALE_TIME = 5 * 60 * 1000;
@@ -157,5 +165,32 @@ export function useBillboardContractHistory(params: {
     enabled: enabled && billboardId != null,
     staleTime: STALE_TIME,
     gcTime: GC_TIME,
+  });
+}
+
+export async function getBillboardDashboardAnalytics(params: {
+  from: string;
+  to: string;
+}) {
+  const response = await apiFetch<{ data: BillboardDashboardAnalytics }>(
+    "/billboards/dashboard/analytics",
+    { query: { from: params.from, to: params.to } },
+  );
+  return response.data;
+}
+
+export function useBillboardDashboardAnalytics(params: {
+  from: string;
+  to: string;
+  enabled?: boolean;
+}) {
+  const { from, to, enabled = true } = params;
+  return useQuery({
+    queryKey: ["billboards", "dashboard", "analytics", from, to],
+    queryFn: () => getBillboardDashboardAnalytics({ from, to }),
+    enabled,
+    staleTime: STALE_TIME,
+    gcTime: GC_TIME,
+    placeholderData: keepPreviousData,
   });
 }

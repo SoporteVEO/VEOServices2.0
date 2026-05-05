@@ -47,3 +47,68 @@ export interface BillboardContractHistoryItem {
   customerEmail: string | null;
   price: number | null;
 }
+
+export interface DashboardKpis {
+  totalBillboards: number;
+  occupiedBillboards: number;
+  availableBillboards: number;
+  occupancyRate: number;
+  totalContracts: number;
+  activeContractsToday: number;
+  endingSoon: number;
+  uniqueCustomers: number;
+  estimatedRevenue: number;
+  averageContractValue: number;
+  totalContractDays: number;
+}
+
+export interface DashboardMonthlyTrend {
+  monthKey: string;
+  contractsStarted: number;
+  contractsActive: number;
+  estimatedRevenue: number;
+}
+
+export interface DashboardYoyTrend {
+  monthKey: string;
+  current: number;
+  previous: number;
+}
+
+export interface DashboardTopCustomer {
+  name: string;
+  email: string | null;
+  contractsCount: number;
+  estimatedSpent: number;
+  lastContractEnd: string | null;
+}
+
+export interface DashboardTopBillboard {
+  billboardId: number;
+  billboardCode: string | null;
+  address: string | null;
+  cityName: string | null;
+  departmentName: string | null;
+  contractsCount: number;
+  occupiedDays: number;
+  estimatedRevenue: number;
+  monthlyPrice: number | null;
+}
+
+export interface DashboardDepartmentBreakdown {
+  departmentId: number | null;
+  departmentName: string | null;
+  totalBillboards: number;
+  occupiedBillboards: number;
+  contractsCount: number;
+  estimatedRevenue: number;
+}
+
+export interface BillboardDashboardAnalytics {
+  kpis: DashboardKpis;
+  monthlyTrend: DashboardMonthlyTrend[];
+  yoyTrend: DashboardYoyTrend[];
+  topCustomers: DashboardTopCustomer[];
+  topBillboards: DashboardTopBillboard[];
+  byDepartment: DashboardDepartmentBreakdown[];
+}
