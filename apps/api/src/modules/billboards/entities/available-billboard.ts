@@ -38,6 +38,18 @@ export interface AvailableState {
   availableCount: number;
 }
 
+export interface BillboardContractHistoryItem {
+  contractSourceId: number;
+  contractDetailSourceId: number;
+  contractNumber: string | null;
+  description: string | null;
+  startDate: Date;
+  endDate: Date;
+  customerName: string | null;
+  customerEmail: string | null;
+  price: number | null;
+}
+
 export interface AvailableDigitalBillboard {
   id: string;
   code: string;

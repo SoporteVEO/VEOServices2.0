@@ -8,6 +8,7 @@ import type {
   AvailableBillboardListing,
   AvailableBillboardReport,
   AvailableState,
+  BillboardContractHistoryItem,
 } from './entities/available-billboard.js';
 
 const CACHE_TTL_MS =
@@ -460,10 +461,49 @@ WHERE maecon.mconPosteado <> 0
   AND detcon.dconFechaHasta >= @FechaInicio;
 `;
 
+const BILLBOARD_CONTRACT_HISTORY_SQL = `
+SELECT
+    maecon.mconId          AS [ContratoId],
+    detcon.dconId          AS [DetalleId],
+    maecon.mconCodigo      AS [Codigo],
+    maecon.mconAtencionA   AS [AtencionA],
+    detcon.dconFechaDesde  AS [FechaDesde],
+    detcon.dconFechaHasta  AS [FechaHasta],
+    cli.cliNombres         AS [ClienteNombres],
+    cli.cliEmail           AS [ClienteEmail]
+FROM olVallas.dbo.detContratos detcon WITH (NOLOCK)
+INNER JOIN olVallas.dbo.maeContratos maecon WITH (NOLOCK)
+    ON maecon.mconId = detcon.mconId
+LEFT JOIN olComun.dbo.Clientes cli WITH (NOLOCK)
+    ON cli.cliId = maecon.cliId
+WHERE detcon.caraId = @CaraId
+  AND maecon.mconPosteado <> 0
+  AND maecon.mconAnulado <> 1
+  AND NOT EXISTS (
+      SELECT 1
+      FROM olVallas.dbo.maeContratos child WITH (NOLOCK)
+      WHERE child.mconIdPadre = maecon.mconId
+        AND child.mconAnulado <> 1
+        AND child.mconPosteado <> 0
+  )
+ORDER BY detcon.dconFechaDesde DESC;
+`;
+
 interface BriloContractRangeRow {
   caraId: number;
   FechaDesde: Date;
   FechaHasta: Date;
+}
+
+interface BriloBillboardContractHistoryRow {
+  ContratoId: number;
+  DetalleId: number;
+  Codigo: string | null;
+  AtencionA: string | null;
+  FechaDesde: Date;
+  FechaHasta: Date;
+  ClienteNombres: string | null;
+  ClienteEmail: string | null;
 }
 
 function applyDiscount(
@@ -564,6 +604,9 @@ export class BillboardsService {
   private readonly billboardsReportCache = new TtlCache<
     AvailableBillboardReport[]
   >(CACHE_TTL_MS);
+  private readonly contractHistoryCache = new TtlCache<
+    BillboardContractHistoryItem[]
+  >(CACHE_TTL_MS);
   private readonly imageCache = new TtlCache<{
     buffer: Buffer;
     mime: string;
@@ -626,6 +669,41 @@ export class BillboardsService {
     return this.billboardsCache.getOrFetch(key, () =>
       this.fetchBillboards(departmentId, from, to),
     );
+  }
+
+  async getBillboardContractHistory(
+    billboardId: number,
+  ): Promise<BillboardContractHistoryItem[]> {
+    return this.contractHistoryCache.getOrFetch(String(billboardId), () =>
+      this.fetchBillboardContractHistory(billboardId),
+    );
+  }
+
+  private async fetchBillboardContractHistory(
+    billboardId: number,
+  ): Promise<BillboardContractHistoryItem[]> {
+    const rows = await this.brilo.query<BriloBillboardContractHistoryRow>(
+      BILLBOARD_CONTRACT_HISTORY_SQL,
+      { CaraId: billboardId },
+    );
+
+    return rows
+      .filter(
+        (r) => r.FechaDesde instanceof Date && r.FechaHasta instanceof Date,
+      )
+      .map(
+        (r): BillboardContractHistoryItem => ({
+          contractSourceId: Number(r.ContratoId),
+          contractDetailSourceId: Number(r.DetalleId),
+          contractNumber: r.Codigo ?? null,
+          description: r.AtencionA ?? null,
+          startDate: r.FechaDesde,
+          endDate: r.FechaHasta,
+          customerName: r.ClienteNombres ?? null,
+          customerEmail: r.ClienteEmail ?? null,
+          price: null,
+        }),
+      );
   }
 
   private async fetchBillboardsAll(
@@ -757,7 +835,10 @@ export class BillboardsService {
     for (const row of rows) {
       const billboardId = Number(row.caraId);
       if (!Number.isFinite(billboardId)) continue;
-      if (!(row.FechaDesde instanceof Date) || !(row.FechaHasta instanceof Date)) {
+      if (
+        !(row.FechaDesde instanceof Date) ||
+        !(row.FechaHasta instanceof Date)
+      ) {
         continue;
       }
       const list = byBillboard.get(billboardId) ?? [];

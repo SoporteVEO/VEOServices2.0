@@ -5,6 +5,7 @@ import type {
   AvailableBillboardListing,
   AvailableBillboardReport,
   AvailableState,
+  BillboardContractHistoryItem,
 } from "./billboards.types";
 
 export type {
@@ -12,6 +13,7 @@ export type {
   AvailableBillboardListing,
   AvailableBillboardReport,
   AvailableState,
+  BillboardContractHistoryItem,
 } from "./billboards.types";
 
 const STALE_TIME = 5 * 60 * 1000;
@@ -135,4 +137,25 @@ export async function getAvailableBillboardsForReport(params: {
     { query: { from: params.from, to: params.to } },
   );
   return response.data;
+}
+
+export async function getBillboardContractHistory(billboardId: number) {
+  const response = await apiFetch<{ data: BillboardContractHistoryItem[] }>(
+    `/billboards/${billboardId}/contracts`,
+  );
+  return response.data;
+}
+
+export function useBillboardContractHistory(params: {
+  billboardId: number | null;
+  enabled?: boolean;
+}) {
+  const { billboardId, enabled = true } = params;
+  return useQuery({
+    queryKey: ["billboards", "contracts", billboardId],
+    queryFn: () => getBillboardContractHistory(billboardId!),
+    enabled: enabled && billboardId != null,
+    staleTime: STALE_TIME,
+    gcTime: GC_TIME,
+  });
 }

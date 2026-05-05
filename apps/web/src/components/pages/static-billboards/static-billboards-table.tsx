@@ -6,6 +6,12 @@ import type { AvailableBillboardListing } from "@/api/billboards/billboards.get"
 import { DataTable } from "@/components/ui/data-table";
 import { Badge } from "@/components/primitives/ui/badge";
 import { formatMoney } from "@/lib/format";
+import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+} from "@/components/primitives/ui/tooltip";
+import { BillboardDetailDrawer } from "./detail";
 
 const baseColumns: ColumnDef<AvailableBillboardListing>[] = [
   {
@@ -33,9 +39,14 @@ const baseColumns: ColumnDef<AvailableBillboardListing>[] = [
     accessorKey: "address",
     header: "Dirección",
     cell: ({ row }) => (
-      <span className="block max-w-[200px] truncate">
-        {row.original.address ?? "—"}
-      </span>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <span className="block max-w-[200px] truncate">
+            {row.original.address ?? "—"}
+          </span>
+        </TooltipTrigger>
+        <TooltipContent>{row.original.address ?? "—"}</TooltipContent>
+      </Tooltip>
     ),
   },
   {
@@ -128,6 +139,9 @@ export function StaticBillboardsTable({
     | ((ctx: StaticBillboardsSideButtonsContext) => ReactNode);
 }) {
   const [search, setSearch] = useState("");
+  const [selected, setSelected] = useState<AvailableBillboardListing | null>(
+    null,
+  );
 
   const columns = useMemo(
     () =>
@@ -151,21 +165,29 @@ export function StaticBillboardsTable({
   }, [billboards, search]);
 
   const resolvedSideButtons =
-    typeof sideButtons === "function"
-      ? sideButtons({ filtered })
-      : sideButtons;
+    typeof sideButtons === "function" ? sideButtons({ filtered }) : sideButtons;
 
   return (
-    <DataTable
-      columns={columns}
-      data={filtered}
-      isLoading={isLoading}
-      emptyMessage="No hay vallas disponibles."
-      searchValue={search}
-      onSearchChange={setSearch}
-      searchPlaceholder="Buscar vallas..."
-      sideButtons={resolvedSideButtons}
-      pagination={{ pageSize: 25 }}
-    />
+    <>
+      <DataTable
+        columns={columns}
+        data={filtered}
+        isLoading={isLoading}
+        emptyMessage="No hay vallas disponibles."
+        searchValue={search}
+        onSearchChange={setSearch}
+        searchPlaceholder="Buscar vallas..."
+        sideButtons={resolvedSideButtons}
+        pagination={{ pageSize: 25 }}
+        onRowClick={setSelected}
+      />
+      <BillboardDetailDrawer
+        billboard={selected}
+        open={selected != null}
+        onOpenChange={(open) => {
+          if (!open) setSelected(null);
+        }}
+      />
+    </>
   );
 }

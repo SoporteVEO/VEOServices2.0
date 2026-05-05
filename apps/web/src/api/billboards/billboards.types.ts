@@ -35,3 +35,15 @@ export type AvailableBillboardListing = Omit<
 export interface AvailableBillboardReport extends AvailableBillboard {
   impressionPrice: number | null;
 }
+
+export interface BillboardContractHistoryItem {
+  contractSourceId: number;
+  contractDetailSourceId: number;
+  contractNumber: string | null;
+  description: string | null;
+  startDate: string;
+  endDate: string;
+  customerName: string | null;
+  customerEmail: string | null;
+  price: number | null;
+}

@@ -29,6 +29,16 @@ export function formatDate(value: Date | string | null | undefined): string {
   return `${day}/${month}/${year}`;
 }
 
+export function formatHumanDate(
+  value: Date | string | null | undefined,
+): string {
+  if (value == null) return "—";
+  const d = typeof value === "string" ? new Date(value) : value;
+  if (isNaN(d.getTime())) return "—";
+  const raw = format(d, "MMMM d 'del' yyyy", { locale: es });
+  return raw[0] ? raw[0].toUpperCase() + raw.slice(1) : raw;
+}
+
 export function formatDateRange(from: Date | string, to: Date | string) {
   return `${format(new Date(from), "d MMM yyyy", { locale: es })} – ${format(new Date(to), "d MMM yyyy", { locale: es })}`;
 }
@@ -63,7 +73,7 @@ export function formatLongDate(
 
 export function formatMoney(value: number | null | undefined) {
   if (value == null) return "—";
-  return new Intl.NumberFormat("es", {
+  return new Intl.NumberFormat("en-US", {
     style: "currency",
     currency: "USD",
     maximumFractionDigits: 0,

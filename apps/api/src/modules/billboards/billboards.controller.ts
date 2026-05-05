@@ -103,6 +103,20 @@ export class BillboardsController {
     return new StreamableFile(result.buffer);
   }
 
+  @Get(':billboardId/contracts')
+  async getBillboardContractHistory(
+    @Param('billboardId') billboardIdRaw: string,
+  ) {
+    const billboardId = Number(billboardIdRaw);
+    if (!Number.isFinite(billboardId)) {
+      throw new BadRequestException('billboardId inválido');
+    }
+
+    const contracts =
+      await this.service.getBillboardContractHistory(billboardId);
+    return { data: contracts };
+  }
+
   @Get()
   async getAvailableBillboards(
     @Query('departmentId') departmentIdRaw: string,
