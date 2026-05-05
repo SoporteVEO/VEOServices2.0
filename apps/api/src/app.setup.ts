@@ -19,7 +19,7 @@ import { AUTH_INSTANCE } from './modules/auth/auth.guard.js';
 const BODY_LIMIT = process.env.BODY_SIZE_LIMIT ?? '15mb';
 
 const TRUSTED_ORIGINS = (
-  process.env.TRUSTED_ORIGINS ?? 'http://localhost:3000'
+  process.env.TRUSTED_ORIGINS ?? 'http://localhost:3000,https://app.veo.com.sv'
 ).split(',');
 
 const LOG_LEVELS: LogLevel[] = [
