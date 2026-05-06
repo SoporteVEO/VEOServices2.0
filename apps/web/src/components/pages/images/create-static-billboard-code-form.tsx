@@ -28,7 +28,10 @@ export function CreateStaticBillboardCodeForm({
   });
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)}>
+    <form
+      onSubmit={handleSubmit(onSubmit)}
+      className="flex min-h-0 flex-1 flex-col"
+    >
       <DialogBody className="space-y-4">
         <Input
           label="Código"

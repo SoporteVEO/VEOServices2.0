@@ -35,19 +35,23 @@ export default function ImagesPage() {
     [query.data],
   );
 
-  return (
-    <div className="flex flex-1 flex-col gap-6">
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-        <ImagesFilters value={filters} onChange={setFilters} />
+  const uploadButton = (
+    <Button
+      icon={Plus}
+      onClick={() => setUploadOpen(true)}
+      aria-label="Subir imagen"
+    >
+      <span className="hidden sm:inline">Subir imagen</span>
+    </Button>
+  );
 
-        <Button
-          icon={Plus}
-          onClick={() => setUploadOpen(true)}
-          className="self-start lg:self-auto"
-        >
-          Subir imagen
-        </Button>
-      </div>
+  return (
+    <div className="flex flex-1 flex-col gap-4 lg:gap-6">
+      <ImagesFilters
+        value={filters}
+        onChange={setFilters}
+        actions={uploadButton}
+      />
 
       <ImagesGrid
         images={images}

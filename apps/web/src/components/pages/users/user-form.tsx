@@ -49,7 +49,10 @@ export function UserForm({
   });
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)}>
+    <form
+      onSubmit={handleSubmit(onSubmit)}
+      className="flex min-h-0 flex-1 flex-col"
+    >
       <DialogBody className="space-y-4">
         <div className="grid grid-cols-2 gap-4">
           <Input

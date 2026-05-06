@@ -92,7 +92,10 @@ export function UploadImageForm({
 
   return (
     <>
-      <form onSubmit={handleSubmit}>
+      <form
+        onSubmit={handleSubmit}
+        className="flex min-h-0 flex-1 flex-col"
+      >
         <DialogBody className="space-y-4">
           <Select
             label="Tipo de imagen"
