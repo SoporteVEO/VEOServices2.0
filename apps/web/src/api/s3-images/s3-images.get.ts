@@ -1,7 +1,22 @@
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { apiFetch } from "@/lib/api";
 
-export type S3ImageType = "STATIC_BILLBOARD_MONTHLY";
+export type S3ImageType =
+  | "STATIC_BILLBOARD_MONTHLY"
+  | "STATIC_BILLBOARD_MAINTENANCE"
+  | "STATIC_BILLBOARD_INSTALLATION";
+
+export const S3_IMAGE_TYPE_OPTIONS: { value: S3ImageType; label: string }[] = [
+  { value: "STATIC_BILLBOARD_MONTHLY", label: "Imagen de valla mensual" },
+  {
+    value: "STATIC_BILLBOARD_INSTALLATION",
+    label: "Imagen de instalacion de valla",
+  },
+  {
+    value: "STATIC_BILLBOARD_MAINTENANCE",
+    label: "Imagen de mantenimiento de valla",
+  },
+];
 export type SortOrder = "asc" | "desc";
 
 export interface S3Image {

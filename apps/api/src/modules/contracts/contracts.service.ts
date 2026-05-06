@@ -6,8 +6,10 @@ import { EmailService } from '../email/email.service.js';
 import { NotificationStatus, S3ImageType } from '@prisma/client';
 import type { EndingSoonContract } from './entities/ending-soon-contract.js';
 import type {
+  ActiveContractGroup,
   ActiveContractImage,
   ActiveContractWithImages,
+  PaginatedActiveContracts,
 } from './entities/active-contract-with-images.js';
 import type { CreateNotifiedContractDto } from './dto/create-notified-contract.dto.js';
 import type { SendMaintenanceReportDto } from './dto/send-maintenance-report.dto.js';
@@ -29,6 +31,20 @@ interface ActiveContractRow extends SourceContractRow {
   sitiGPSLat: number | null;
   sitiGPSLon: number | null;
 }
+
+interface ActiveContractGroupRow {
+  mconId: number;
+  mconCodigo: string;
+  mconAtencionA: string;
+  cliNombres: string;
+  cliEmail: string;
+  earliestStart: Date;
+  latestEnd: Date;
+  totalCount: number;
+}
+
+const DEFAULT_PAGE_SIZE = 25;
+const MAX_PAGE_SIZE = 100;
 
 const ENDING_SOON_CONTRACTS_SQL = `
 SELECT DISTINCT
@@ -64,8 +80,61 @@ WHERE maecon.mconPosteado <> 0
 ORDER BY detcon.dconFechaHasta ASC
 `;
 
-const ACTIVE_CONTRACTS_SQL = `
-SELECT DISTINCT
+const ACTIVE_CONTRACTS_PAGE_SQL = `
+WITH FilteredContracts AS (
+    SELECT
+        maecon.mconId,
+        MIN(detcon.dconFechaDesde) AS earliestStart,
+        MAX(detcon.dconFechaHasta) AS latestEnd,
+        MAX(maecon.mconCodigo) AS mconCodigo,
+        MAX(maecon.mconAtencionA) AS mconAtencionA,
+        MAX(cli.cliNombres) AS cliNombres,
+        MAX(cli.cliEmail) AS cliEmail
+    FROM olVallas.dbo.maeContratos maecon
+    INNER JOIN olVallas.dbo.detContratos detcon
+        ON detcon.mconId = maecon.mconId
+    INNER JOIN olVallas.dbo.Caras car
+        ON detcon.caraId = car.caraId
+    INNER JOIN olVallas.dbo.Sitios siti
+        ON car.sitiId = siti.sitiId
+    INNER JOIN olComun.dbo.Clientes cli
+        ON maecon.cliId = cli.cliId
+    WHERE maecon.mconPosteado <> 0
+      AND maecon.mconAnulado <> 1
+      AND detcon.dconFechaHasta >= @FechaDesde
+      AND NOT EXISTS (
+          SELECT 1
+          FROM olVallas.dbo.maeContratos child
+          WHERE child.mconIdPadre = maecon.mconId
+            AND child.mconAnulado <> 1
+            AND child.mconPosteado <> 0
+      )
+      AND (
+          @Search = ''
+          OR maecon.mconCodigo LIKE @SearchLike ESCAPE '\\'
+          OR maecon.mconAtencionA LIKE @SearchLike ESCAPE '\\'
+          OR cli.cliNombres LIKE @SearchLike ESCAPE '\\'
+          OR cli.cliEmail LIKE @SearchLike ESCAPE '\\'
+          OR car.caraCodigo LIKE @SearchLike ESCAPE '\\'
+      )
+    GROUP BY maecon.mconId
+)
+SELECT
+    mconId,
+    mconCodigo,
+    mconAtencionA,
+    cliNombres,
+    cliEmail,
+    earliestStart,
+    latestEnd,
+    COUNT(*) OVER () AS totalCount
+FROM FilteredContracts
+ORDER BY latestEnd ASC, mconId ASC
+OFFSET @Offset ROWS FETCH NEXT @PageSize ROWS ONLY
+`;
+
+const ACTIVE_CONTRACT_DETAILS_SQL = `
+SELECT
     maecon.mconId,
     detcon.dconId,
     maecon.mconAtencionA,
@@ -87,18 +156,8 @@ INNER JOIN olVallas.dbo.Sitios siti
     ON car.sitiId = siti.sitiId
 INNER JOIN olComun.dbo.Clientes cli
     ON maecon.cliId = cli.cliId
-WHERE maecon.mconPosteado <> 0
-  AND maecon.mconAnulado <> 1
-  AND detcon.dconFechaDesde <= @FechaHasta
-  AND detcon.dconFechaHasta >= @FechaDesde
-  AND NOT EXISTS (
-      SELECT 1
-      FROM olVallas.dbo.maeContratos child
-      WHERE child.mconIdPadre = maecon.mconId
-        AND child.mconAnulado <> 1
-        AND child.mconPosteado <> 0
-  )
-ORDER BY detcon.dconFechaHasta ASC
+WHERE maecon.mconId IN (__IDS__)
+ORDER BY maecon.mconId, detcon.dconFechaHasta ASC
 `;
 
 @Injectable()
@@ -174,23 +233,42 @@ export class ContractsService {
     });
   }
 
-  async getActiveContractsWithImages(
-    from: Date,
-    to: Date,
-  ): Promise<ActiveContractWithImages[]> {
-    const sourceRows = await this.brilo.query<ActiveContractRow>(
-      ACTIVE_CONTRACTS_SQL,
+  async getActiveContractsWithImages(args: {
+    from: Date;
+    to: Date;
+    page?: number;
+    pageSize?: number;
+    search?: string;
+  }): Promise<PaginatedActiveContracts> {
+    const page = clampPage(args.page);
+    const pageSize = clampPageSize(args.pageSize);
+    const search = (args.search ?? '').trim();
+    const searchLike = `%${escapeLikePattern(search)}%`;
+    const offset = (page - 1) * pageSize;
+
+    const groupRows = await this.brilo.query<ActiveContractGroupRow>(
+      ACTIVE_CONTRACTS_PAGE_SQL,
       {
-        FechaDesde: from,
-        FechaHasta: to,
+        FechaDesde: args.from,
+        Search: search,
+        SearchLike: searchLike,
+        Offset: offset,
+        PageSize: pageSize,
       },
     );
 
-    if (sourceRows.length === 0) return [];
+    if (groupRows.length === 0) {
+      return { data: [], total: 0, page, pageSize };
+    }
+
+    const total = groupRows[0]?.totalCount ?? 0;
+    const mconIds = groupRows.map((row) => row.mconId);
+
+    const detailRows = await this.fetchContractDetails(mconIds);
 
     const billboardCodes = Array.from(
       new Set(
-        sourceRows
+        detailRows
           .map((row) => row.caraCodigo)
           .filter((code): code is string => Boolean(code)),
       ),
@@ -198,25 +276,78 @@ export class ContractsService {
 
     const imagesByCode = await this.fetchImagesByBillboardCode(
       billboardCodes,
-      from,
-      to,
+      args.from,
+      args.to,
     );
 
-    return sourceRows.map((row) => ({
-      contractSourceId: row.mconId,
-      contractDetailSourceId: row.dconId,
-      description: row.mconAtencionA,
-      startDate: row.dconFechaDesde,
-      endDate: row.dconFechaHasta,
-      contractNumber: row.mconCodigo,
-      billboardCode: row.caraCodigo,
-      billboardAddress: row.sitiDireccion,
-      billboardLatitude: row.sitiGPSLat,
-      billboardLongitude: row.sitiGPSLon,
-      customerName: row.cliNombres,
-      customerEmail: row.cliEmail,
-      images: imagesByCode.get(row.caraCodigo) ?? [],
-    }));
+    const billboardsByContract = new Map<number, ActiveContractWithImages[]>();
+    for (const row of detailRows) {
+      const billboard: ActiveContractWithImages = {
+        contractSourceId: row.mconId,
+        contractDetailSourceId: row.dconId,
+        description: row.mconAtencionA,
+        startDate: row.dconFechaDesde,
+        endDate: row.dconFechaHasta,
+        contractNumber: row.mconCodigo,
+        billboardCode: row.caraCodigo,
+        billboardAddress: row.sitiDireccion,
+        billboardLatitude: row.sitiGPSLat,
+        billboardLongitude: row.sitiGPSLon,
+        customerName: row.cliNombres,
+        customerEmail: row.cliEmail,
+        images: imagesByCode.get(row.caraCodigo) ?? [],
+      };
+      const existing = billboardsByContract.get(row.mconId);
+      if (existing) {
+        existing.push(billboard);
+      } else {
+        billboardsByContract.set(row.mconId, [billboard]);
+      }
+    }
+
+    const data: ActiveContractGroup[] = groupRows.map((row) => {
+      const billboards = billboardsByContract.get(row.mconId) ?? [];
+      const totalImages = billboards.reduce(
+        (sum, b) => sum + b.images.length,
+        0,
+      );
+      const billboardsWithImages = billboards.filter(
+        (b) => b.images.length > 0,
+      ).length;
+
+      return {
+        contractNumber: row.mconCodigo,
+        contractSourceId: row.mconId,
+        description: row.mconAtencionA,
+        customerName: row.cliNombres,
+        customerEmail: row.cliEmail,
+        startDate: row.earliestStart,
+        endDate: row.latestEnd,
+        billboards,
+        totalBillboards: billboards.length,
+        totalImages,
+        billboardsWithImages,
+      };
+    });
+
+    return { data, total, page, pageSize };
+  }
+
+  private async fetchContractDetails(
+    mconIds: number[],
+  ): Promise<ActiveContractRow[]> {
+    if (mconIds.length === 0) return [];
+
+    const params: Record<string, unknown> = {};
+    const placeholders = mconIds
+      .map((id, i) => {
+        params[`mconId${i}`] = id;
+        return `@mconId${i}`;
+      })
+      .join(',');
+
+    const sql = ACTIVE_CONTRACT_DETAILS_SQL.replace('__IDS__', placeholders);
+    return this.brilo.query<ActiveContractRow>(sql, params);
   }
 
   private async fetchImagesByBillboardCode(
@@ -330,6 +461,20 @@ export class ContractsService {
       customerEmail: c.cliEmail,
     }));
   }
+}
+
+function clampPage(value: number | undefined): number {
+  if (!value || !Number.isFinite(value) || value < 1) return 1;
+  return Math.floor(value);
+}
+
+function clampPageSize(value: number | undefined): number {
+  if (!value || !Number.isFinite(value)) return DEFAULT_PAGE_SIZE;
+  return Math.min(Math.max(Math.floor(value), 1), MAX_PAGE_SIZE);
+}
+
+function escapeLikePattern(value: string): string {
+  return value.replace(/[\\%_[]/g, (char) => `\\${char}`);
 }
 
 function decodeReportFile(input: string): Buffer {

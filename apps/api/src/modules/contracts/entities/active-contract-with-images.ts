@@ -30,3 +30,24 @@ export interface ActiveContractWithImages {
   customerEmail: string;
   images: ActiveContractImage[];
 }
+
+export interface ActiveContractGroup {
+  contractNumber: string;
+  contractSourceId: number;
+  description: string;
+  customerName: string;
+  customerEmail: string;
+  startDate: Date;
+  endDate: Date;
+  billboards: ActiveContractWithImages[];
+  totalBillboards: number;
+  totalImages: number;
+  billboardsWithImages: number;
+}
+
+export interface PaginatedActiveContracts {
+  data: ActiveContractGroup[];
+  total: number;
+  page: number;
+  pageSize: number;
+}

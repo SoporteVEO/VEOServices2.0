@@ -1,5 +1,5 @@
 import { apiFetch } from "@/lib/api";
-import { useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import type { S3ImageType } from "@/api/s3-images/s3-images.get";
 
 export interface EndingSoonContract {
@@ -43,6 +43,35 @@ export interface ActiveContract {
   customerName: string;
   customerEmail: string;
   images: ActiveContractImage[];
+}
+
+export interface ActiveContractGroup {
+  contractNumber: string;
+  contractSourceId: number;
+  description: string;
+  customerName: string;
+  customerEmail: string;
+  startDate: string;
+  endDate: string;
+  billboards: ActiveContract[];
+  totalBillboards: number;
+  totalImages: number;
+  billboardsWithImages: number;
+}
+
+export interface ActiveContractsPage {
+  data: ActiveContractGroup[];
+  total: number;
+  page: number;
+  pageSize: number;
+}
+
+export interface ActiveContractsQuery {
+  from?: Date;
+  to?: Date;
+  page?: number;
+  pageSize?: number;
+  search?: string;
 }
 
 export interface NotifiedContract {
@@ -99,27 +128,46 @@ function startOfNextMonth(): Date {
   return new Date(now.getFullYear(), now.getMonth() + 1, 1);
 }
 
-export async function getActiveContracts({ from, to }: { from: Date; to: Date }) {
-  const response = await apiFetch<{ data: ActiveContract[] }>(
-    "/contracts/active",
-    {
-      method: "GET",
-      query: {
-        from: from.toISOString(),
-        to: to.toISOString(),
-      },
-    },
-  );
-  return response.data;
+export async function getActiveContracts(query: ActiveContractsQuery = {}) {
+  const from = query.from ?? startOfCurrentMonth();
+  const to = query.to ?? startOfNextMonth();
+
+  const params: Record<string, string> = {
+    from: from.toISOString(),
+    to: to.toISOString(),
+  };
+  if (query.page) params.page = String(query.page);
+  if (query.pageSize) params.pageSize = String(query.pageSize);
+  if (query.search) params.search = query.search;
+
+  return apiFetch<ActiveContractsPage>("/contracts/active", {
+    method: "GET",
+    query: params,
+  });
 }
 
-export function useActiveContracts(opts?: { from?: Date; to?: Date }) {
-  const from = opts?.from ?? startOfCurrentMonth();
-  const to = opts?.to ?? startOfNextMonth();
+export function useActiveContracts(query: ActiveContractsQuery = {}) {
+  const from = query.from ?? startOfCurrentMonth();
+  const to = query.to ?? startOfNextMonth();
+  const normalized: ActiveContractsQuery = {
+    from,
+    to,
+    page: query.page,
+    pageSize: query.pageSize,
+    search: query.search,
+  };
 
-  const { data, isLoading } = useQuery({
-    queryKey: ["contracts", "active", from.toISOString(), to.toISOString()],
-    queryFn: () => getActiveContracts({ from, to }),
+  return useQuery({
+    queryKey: [
+      "contracts",
+      "active",
+      from.toISOString(),
+      to.toISOString(),
+      normalized.page ?? 1,
+      normalized.pageSize ?? null,
+      normalized.search ?? "",
+    ],
+    queryFn: () => getActiveContracts(normalized),
+    placeholderData: keepPreviousData,
   });
-  return { data, isLoading };
 }

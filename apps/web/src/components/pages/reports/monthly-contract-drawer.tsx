@@ -2,17 +2,11 @@
 
 import { useMemo, useState } from "react";
 import NextImage from "next/image";
-import {
-  Check,
-  Eye,
-  ImageOff,
-  ImagePlus,
-  MapPin,
-  Send,
-} from "lucide-react";
+import { Check, Eye, ImageOff, ImagePlus, MapPin, Send } from "lucide-react";
 import { toast } from "sonner";
 import type {
   ActiveContract,
+  ActiveContractGroup,
   ActiveContractImage,
 } from "@/api/contracts/contracts.get";
 import { sendMaintenanceReport } from "@/api/contracts/contracts.post";
@@ -34,7 +28,6 @@ import {
   type ContractReportProgress,
 } from "@/lib/generate-contract-report";
 import { cn } from "@/lib/utils";
-import type { MaintenanceContractGroup } from "./group";
 import { SendReportDialog } from "./send-report-dialog";
 
 function toS3ImagePreview(
@@ -55,11 +48,11 @@ function toS3ImagePreview(
   };
 }
 
-export function MaintenanceContractDrawer({
+export function MonthlyContractDrawer({
   group,
   onOpenChange,
 }: {
-  group: MaintenanceContractGroup | null;
+  group: ActiveContractGroup | null;
   onOpenChange: (open: boolean) => void;
 }) {
   return (
@@ -72,7 +65,7 @@ export function MaintenanceContractDrawer({
     >
       <DrawerContent size="xl" className="flex flex-col">
         {group ? (
-          <MaintenanceContractDrawerContent
+          <MonthlyContractDrawerContent
             key={group.contractNumber}
             group={group}
           />
@@ -82,10 +75,10 @@ export function MaintenanceContractDrawer({
   );
 }
 
-function MaintenanceContractDrawerContent({
+function MonthlyContractDrawerContent({
   group,
 }: {
-  group: MaintenanceContractGroup;
+  group: ActiveContractGroup;
 }) {
   const [preview, setPreview] = useState<S3Image | null>(null);
   const [selectedImageIds, setSelectedImageIds] = useState<
@@ -273,7 +266,7 @@ async function blobToBase64(blob: Blob): Promise<string> {
 }
 
 function buildInitialSelection(
-  group: MaintenanceContractGroup,
+  group: ActiveContractGroup,
 ): Record<number, string | null> {
   const initial: Record<number, string | null> = {};
   for (const billboard of group.billboards) {
@@ -283,7 +276,7 @@ function buildInitialSelection(
   return initial;
 }
 
-function ContractSummary({ group }: { group: MaintenanceContractGroup }) {
+function ContractSummary({ group }: { group: ActiveContractGroup }) {
   return (
     <div className="grid grid-cols-2 gap-3 rounded-lg border bg-muted/30 p-3 text-sm sm:grid-cols-4">
       <SummaryItem label="Atención">{group.description || "—"}</SummaryItem>

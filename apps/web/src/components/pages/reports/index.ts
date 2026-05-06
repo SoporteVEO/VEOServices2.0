@@ -1,4 +1,3 @@
-export * from "./maintenance-contracts-table";
-export * from "./maintenance-contract-drawer";
+export * from "./monthly-contracts-table";
+export * from "./monthly-contract-drawer";
 export * from "./send-report-dialog";
-export * from "./group";

@@ -3,7 +3,9 @@
 import { useMemo } from "react";
 import { ArrowDownNarrowWide, ArrowUpNarrowWide, X } from "lucide-react";
 import {
+  S3_IMAGE_TYPE_OPTIONS,
   useS3ImageUploaders,
+  type S3ImageType,
   type SortOrder,
 } from "@/api/s3-images/s3-images.get";
 import { Button } from "@/components/ui/button";
@@ -22,6 +24,7 @@ import { parseYYYYMMDD, toYYYYMMDD } from "@/lib/format";
 export interface ImagesFiltersState {
   code: string;
   uploadedUserId: string | null;
+  s3ImageType: S3ImageType | null;
   dateFrom: string | null;
   dateTo: string | null;
   sortOrder: SortOrder;
@@ -30,6 +33,7 @@ export interface ImagesFiltersState {
 export const DEFAULT_IMAGES_FILTERS: ImagesFiltersState = {
   code: "",
   uploadedUserId: null,
+  s3ImageType: null,
   dateFrom: null,
   dateTo: null,
   sortOrder: "desc",
@@ -53,6 +57,7 @@ function isFiltered(state: ImagesFiltersState) {
   return (
     state.code.trim() !== "" ||
     state.uploadedUserId !== null ||
+    state.s3ImageType !== null ||
     state.dateFrom !== null ||
     state.dateTo !== null
   );
@@ -107,6 +112,28 @@ export function ImagesFilters({ value, onChange }: ImagesFiltersProps) {
           });
         }}
       />
+
+      <Select
+        value={value.s3ImageType ?? "all"}
+        onValueChange={(v) =>
+          onChange({
+            ...value,
+            s3ImageType: v === "all" ? null : (v as S3ImageType),
+          })
+        }
+      >
+        <SelectTrigger sizeVariant="lg" className="w-full min-w-0 sm:max-w-72">
+          <SelectValue placeholder="Tipo de imagen" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="all">Todos los tipos</SelectItem>
+          {S3_IMAGE_TYPE_OPTIONS.map((opt) => (
+            <SelectItem key={opt.value} value={opt.value}>
+              {opt.label}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
 
       <Combobox
         className="w-full sm:w-56"

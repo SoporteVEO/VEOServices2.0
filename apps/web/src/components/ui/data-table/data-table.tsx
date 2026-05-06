@@ -30,6 +30,15 @@ export type DataTablePaginationConfig = {
   pageSizeOptions?: number[];
 };
 
+export type DataTableManualPagination = {
+  pageIndex: number;
+  pageSize: number;
+  total: number;
+  pageSizeOptions?: number[];
+  onPageIndexChange: (pageIndex: number) => void;
+  onPageSizeChange: (pageSize: number) => void;
+};
+
 const SKELETON_CELL_WIDTHS = [
   "w-4/5",
   "w-3/5",
@@ -59,6 +68,7 @@ interface DataTableProps<TData, TValue> {
   searchPlaceholder?: string;
   sideButtons?: ReactNode;
   pagination?: boolean | DataTablePaginationConfig;
+  manualPagination?: DataTableManualPagination;
 }
 
 export function DataTable<TData, TValue>({
@@ -74,18 +84,20 @@ export function DataTable<TData, TValue>({
   searchPlaceholder = "Buscar...",
   sideButtons,
   pagination,
+  manualPagination,
 }: DataTableProps<TData, TValue>) {
   const rowSizeCellClass = ROW_SIZE_CELL_CLASS[rowSize];
 
   const paginationConfig = useMemo<DataTablePaginationConfig | null>(() => {
-    if (!pagination) return null;
+    if (manualPagination || !pagination) return null;
     if (pagination === true) return {};
     return pagination;
-  }, [pagination]);
+  }, [pagination, manualPagination]);
 
-  const pageSizeOptions =
+  const pageSizeOptions = manualPagination?.pageSizeOptions ??
     paginationConfig?.pageSizeOptions ?? [...DEFAULT_PAGE_SIZE_OPTIONS];
-  const initialPageSize = paginationConfig?.pageSize ?? pageSizeOptions[0] ?? 10;
+  const initialPageSize =
+    paginationConfig?.pageSize ?? pageSizeOptions[0] ?? 10;
 
   const table = useReactTable({
     data: isLoading ? [] : data,
@@ -94,10 +106,16 @@ export function DataTable<TData, TValue>({
     ...(paginationConfig
       ? {
           getPaginationRowModel: getPaginationRowModel(),
-          initialState: { pagination: { pageIndex: 0, pageSize: initialPageSize } },
+          initialState: {
+            pagination: { pageIndex: 0, pageSize: initialPageSize },
+          },
         }
       : {}),
   });
+
+  const manualPageCount = manualPagination
+    ? Math.max(1, Math.ceil(manualPagination.total / manualPagination.pageSize))
+    : 0;
 
   return (
     <div
@@ -108,20 +126,22 @@ export function DataTable<TData, TValue>({
       {(onSearchChange || sideButtons) && (
         <div className="flex items-center gap-2 py-2">
           {onSearchChange && (
-            <Input
-              placeholder={searchPlaceholder}
-              value={searchValue ?? ""}
-              onChange={(e) => onSearchChange(e.target.value)}
-              className="max-w-sm"
-              isSearch
-            />
+            <div className="w-full max-w-sm min-w-0 shrink-0">
+              <Input
+                placeholder={searchPlaceholder}
+                value={searchValue ?? ""}
+                onChange={(e) => onSearchChange(e.target.value)}
+                className="w-full"
+                isSearch
+              />
+            </div>
           )}
           {sideButtons && (
             <div className="ml-auto flex items-center gap-2">{sideButtons}</div>
           )}
         </div>
       )}
-      <Table className="rounded-md">
+      <Table className="rounded-lg border">
         <TableHeader className="bg-accent/50">
           {table.getHeaderGroups().map((headerGroup) => (
             <TableRow key={headerGroup.id}>
@@ -205,7 +225,30 @@ export function DataTable<TData, TValue>({
         </TableBody>
       </Table>
       {paginationConfig && !isLoading && (
-        <DataTablePagination table={table} pageSizeOptions={pageSizeOptions} />
+        <DataTablePagination
+          pageIndex={table.getState().pagination.pageIndex}
+          pageSize={table.getState().pagination.pageSize}
+          pageCount={table.getPageCount()}
+          totalRows={table.getFilteredRowModel().rows.length}
+          pageSizeOptions={pageSizeOptions}
+          canPreviousPage={table.getCanPreviousPage()}
+          canNextPage={table.getCanNextPage()}
+          onPageIndexChange={(i) => table.setPageIndex(i)}
+          onPageSizeChange={(s) => table.setPageSize(s)}
+        />
+      )}
+      {manualPagination && (
+        <DataTablePagination
+          pageIndex={manualPagination.pageIndex}
+          pageSize={manualPagination.pageSize}
+          pageCount={manualPageCount}
+          totalRows={manualPagination.total}
+          pageSizeOptions={pageSizeOptions}
+          canPreviousPage={manualPagination.pageIndex > 0}
+          canNextPage={manualPagination.pageIndex < manualPageCount - 1}
+          onPageIndexChange={manualPagination.onPageIndexChange}
+          onPageSizeChange={manualPagination.onPageSizeChange}
+        />
       )}
     </div>
   );

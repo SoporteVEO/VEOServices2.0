@@ -97,9 +97,7 @@ export function ContractsTable({
           className="max-w-sm"
           isSearch
         />
-        <div className="rounded-lg border">
-          <DataTable columns={columns} data={filtered} isLoading={isLoading} />
-        </div>
+        <DataTable columns={columns} data={filtered} isLoading={isLoading} />
       </div>
     </TooltipProvider>
   );

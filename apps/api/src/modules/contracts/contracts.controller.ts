@@ -18,6 +18,18 @@ function parseDate(value: string | undefined, field: string): Date | undefined {
   return parsed;
 }
 
+function parsePositiveInt(
+  value: string | undefined,
+  field: string,
+): number | undefined {
+  if (value == null) return undefined;
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed) || parsed < 1) {
+    throw new BadRequestException(`${field} debe ser un entero positivo`);
+  }
+  return Math.floor(parsed);
+}
+
 function startOfCurrentMonth(): Date {
   const now = new Date();
   return new Date(now.getFullYear(), now.getMonth(), 1);
@@ -53,6 +65,9 @@ export class ContractsController {
   async getActiveContracts(
     @Query('from') fromStr?: string,
     @Query('to') toStr?: string,
+    @Query('page') pageStr?: string,
+    @Query('pageSize') pageSizeStr?: string,
+    @Query('search') search?: string,
   ) {
     const from = parseDate(fromStr, 'from') ?? startOfCurrentMonth();
     const to = parseDate(toStr, 'to') ?? startOfNextMonth();
@@ -61,11 +76,16 @@ export class ContractsController {
       throw new BadRequestException('"from" debe ser anterior a "to"');
     }
 
-    const contracts = await this.contractsService.getActiveContractsWithImages(
+    const page = parsePositiveInt(pageStr, 'page');
+    const pageSize = parsePositiveInt(pageSizeStr, 'pageSize');
+
+    return this.contractsService.getActiveContractsWithImages({
       from,
       to,
-    );
-    return { data: contracts };
+      page,
+      pageSize,
+      search,
+    });
   }
 
   @Get('notified')

@@ -11,4 +11,9 @@ export {
   SelectValue,
   selectTriggerVariants,
 } from "./select";
-export type { SelectSizeVariant, SelectTriggerProps } from "./select";
+export type {
+  SelectProps,
+  SelectRootProps,
+  SelectSizeVariant,
+  SelectTriggerProps,
+} from "./select";

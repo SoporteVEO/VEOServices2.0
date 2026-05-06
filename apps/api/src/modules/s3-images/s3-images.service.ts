@@ -62,6 +62,8 @@ const MAX_PAGE_SIZE = 100;
 
 const STATIC_BILLBOARD_FOLDERS: Record<S3ImageType, string> = {
   STATIC_BILLBOARD_MONTHLY: 'static-billboards/monthly',
+  STATIC_BILLBOARD_MAINTENANCE: 'static-billboards/maintenance',
+  STATIC_BILLBOARD_INSTALLATION: 'static-billboards/installation',
 };
 
 function decodeBase64Image(base64: string): Buffer {

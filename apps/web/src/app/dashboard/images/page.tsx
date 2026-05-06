@@ -24,6 +24,7 @@ export default function ImagesPage() {
   const query = useS3Images({
     code: debouncedCode || undefined,
     uploadedUserId: filters.uploadedUserId ?? undefined,
+    type: filters.s3ImageType ?? undefined,
     dateFrom: filters.dateFrom ?? undefined,
     dateTo: filters.dateTo ?? undefined,
     sortOrder: filters.sortOrder,

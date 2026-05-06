@@ -1,7 +1,5 @@
 "use client";
-"use no memo";
 
-import type { Table } from "@tanstack/react-table";
 import {
   ChevronLeftIcon,
   ChevronRightIcon,
@@ -17,19 +15,29 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-interface DataTablePaginationProps<TData> {
-  table: Table<TData>;
+interface DataTablePaginationProps {
+  pageIndex: number;
+  pageSize: number;
+  pageCount: number;
+  totalRows: number;
   pageSizeOptions: number[];
+  canPreviousPage: boolean;
+  canNextPage: boolean;
+  onPageIndexChange: (pageIndex: number) => void;
+  onPageSizeChange: (pageSize: number) => void;
 }
 
-export function DataTablePagination<TData>({
-  table,
+export function DataTablePagination({
+  pageIndex,
+  pageSize,
+  pageCount,
+  totalRows,
   pageSizeOptions,
-}: DataTablePaginationProps<TData>) {
-  const { pageIndex, pageSize } = table.getState().pagination;
-  const pageCount = table.getPageCount();
-  const totalRows = table.getFilteredRowModel().rows.length;
-
+  canPreviousPage,
+  canNextPage,
+  onPageIndexChange,
+  onPageSizeChange,
+}: DataTablePaginationProps) {
   const rangeStart = totalRows === 0 ? 0 : pageIndex * pageSize + 1;
   const rangeEnd = Math.min((pageIndex + 1) * pageSize, totalRows);
 
@@ -45,7 +53,7 @@ export function DataTablePagination<TData>({
           <span className="text-sm text-muted-foreground">Por página</span>
           <Select
             value={String(pageSize)}
-            onValueChange={(value) => table.setPageSize(Number(value))}
+            onValueChange={(value) => onPageSizeChange(Number(value))}
           >
             <SelectTrigger sizeVariant="sm" className="w-[72px]">
               <SelectValue placeholder={pageSize} />
@@ -68,8 +76,8 @@ export function DataTablePagination<TData>({
             sizeVariant="sm"
             className="size-8 p-0"
             aria-label="Primera página"
-            onClick={() => table.setPageIndex(0)}
-            disabled={!table.getCanPreviousPage()}
+            onClick={() => onPageIndexChange(0)}
+            disabled={!canPreviousPage}
           >
             <ChevronsLeftIcon className="size-4" />
           </Button>
@@ -78,8 +86,8 @@ export function DataTablePagination<TData>({
             sizeVariant="sm"
             className="size-8 p-0"
             aria-label="Página anterior"
-            onClick={() => table.previousPage()}
-            disabled={!table.getCanPreviousPage()}
+            onClick={() => onPageIndexChange(pageIndex - 1)}
+            disabled={!canPreviousPage}
           >
             <ChevronLeftIcon className="size-4" />
           </Button>
@@ -88,8 +96,8 @@ export function DataTablePagination<TData>({
             sizeVariant="sm"
             className="size-8 p-0"
             aria-label="Página siguiente"
-            onClick={() => table.nextPage()}
-            disabled={!table.getCanNextPage()}
+            onClick={() => onPageIndexChange(pageIndex + 1)}
+            disabled={!canNextPage}
           >
             <ChevronRightIcon className="size-4" />
           </Button>
@@ -98,8 +106,8 @@ export function DataTablePagination<TData>({
             sizeVariant="sm"
             className="size-8 p-0"
             aria-label="Última página"
-            onClick={() => table.setPageIndex(pageCount - 1)}
-            disabled={!table.getCanNextPage()}
+            onClick={() => onPageIndexChange(pageCount - 1)}
+            disabled={!canNextPage}
           >
             <ChevronsRightIcon className="size-4" />
           </Button>

@@ -1,10 +1,22 @@
 "use client";
 
 import * as React from "react";
-import { SelectTrigger as PrimitiveSelectTrigger } from "@/components/primitives/ui/select";
+import {
+  Select as SelectRoot,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectScrollDownButton,
+  SelectScrollUpButton,
+  SelectSeparator,
+  SelectTrigger as PrimitiveSelectTrigger,
+  SelectValue,
+  selectTriggerVariants,
+} from "@/components/primitives/ui/select";
+import { cn } from "@/lib/utils";
 
 export {
-  Select,
   SelectContent,
   SelectGroup,
   SelectItem,
@@ -14,7 +26,41 @@ export {
   SelectSeparator,
   SelectValue,
   selectTriggerVariants,
-} from "@/components/primitives/ui/select";
+};
+
+export type SelectRootProps = React.ComponentProps<typeof SelectRoot>;
+
+export type SelectProps = SelectRootProps & {
+  label?: string;
+  /** Applied to the outer wrapper (label + control), matching Combobox `className`. */
+  className?: string;
+};
+
+function Select({
+  label,
+  required,
+  className,
+  children,
+  ...rootProps
+}: SelectProps) {
+  return (
+    <div
+      className={cn("flex flex-col", label ? "gap-2" : "gap-0", className)}
+    >
+      {label ? (
+        <p className="text-sm font-medium text-muted-foreground">
+          {label}
+          {required ? <span className="text-red-500 ml-1">*</span> : null}
+        </p>
+      ) : null}
+      <SelectRoot required={required} {...rootProps}>
+        {children}
+      </SelectRoot>
+    </div>
+  );
+}
+
+export { Select };
 
 type SelectSizeVariant = "sm" | "md" | "lg";
 
