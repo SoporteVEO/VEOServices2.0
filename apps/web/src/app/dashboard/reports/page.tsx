@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { MonthlyContractsTable } from "@/components/pages/reports";
+import { ContractsReportTable } from "@/components/pages/reports";
 
 export default function ReportsPage() {
   const [tab, setTab] = useState("mensual");
@@ -16,7 +16,15 @@ export default function ReportsPage() {
       </TabsList>
 
       <TabsContent value="mensual" className="pt-4">
-        <MonthlyContractsTable />
+        <ContractsReportTable reportType="monthly" />
+      </TabsContent>
+
+      <TabsContent value="instalacion" className="pt-4">
+        <ContractsReportTable reportType="installation" />
+      </TabsContent>
+
+      <TabsContent value="mantenimiento" className="pt-4">
+        <ContractsReportTable reportType="maintenance" />
       </TabsContent>
     </Tabs>
   );

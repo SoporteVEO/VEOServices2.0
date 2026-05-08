@@ -21,7 +21,7 @@ export interface SendReportDialogProps {
   onOpenChange: (open: boolean) => void;
   defaultEmail: string;
   contractNumber: string;
-  billboardsCount: number;
+  totalBillboardsCount: number;
   selectedImagesCount: number;
   isSubmitting: boolean;
   progressLabel?: string | null;
@@ -47,7 +47,7 @@ export function SendReportDialog(props: SendReportDialogProps) {
 function SendReportDialogContent({
   defaultEmail,
   contractNumber,
-  billboardsCount,
+  totalBillboardsCount,
   selectedImagesCount,
   isSubmitting,
   progressLabel,
@@ -85,16 +85,21 @@ function SendReportDialogContent({
       </DialogHeader>
 
       <DialogBody className="space-y-4">
-        <div className="rounded-lg border bg-muted/30 px-3 py-2.5 text-xs text-muted-foreground">
+        <div className="space-y-1 rounded-lg border bg-muted/30 px-3 py-2.5 text-xs text-muted-foreground">
           <p>
-            <span className="font-medium text-foreground tabular-nums">
-              {billboardsCount}
-            </span>{" "}
-            {billboardsCount === 1 ? "valla incluida" : "vallas incluidas"} ·{" "}
             <span className="font-medium text-foreground tabular-nums">
               {selectedImagesCount}
             </span>{" "}
-            con imagen seleccionada
+            de{" "}
+            <span className="font-medium text-foreground tabular-nums">
+              {totalBillboardsCount}
+            </span>{" "}
+            {totalBillboardsCount === 1
+              ? "valla incluida en el reporte"
+              : "vallas incluidas en el reporte"}
+          </p>
+          <p className="text-[11px]">
+            Solo se incluirán las vallas con imagen seleccionada.
           </p>
         </div>
 

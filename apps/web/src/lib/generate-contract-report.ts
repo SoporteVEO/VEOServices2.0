@@ -1,11 +1,10 @@
 import { getMapsUrl } from "./utils";
 
-const BRAND_DARK = "003366";
-const BRAND_ACCENT = "0066CC";
-const LABEL_COLOR = "003366";
+const BRAND_DARK = "FE1C65";
+const BRAND_ACCENT = "89DA00";
+const LABEL_COLOR = "FE1C65";
 const VALUE_COLOR = "333333";
-const WHITE = "FFFFFF";
-const LIGHT_BG = "F0F4F8";
+const WHITE = "FAF9F6";
 
 const SLIDE_W = 13.33;
 const SLIDE_H = 7.5;
@@ -41,6 +40,8 @@ export interface ContractReportOptions {
   dateFrom: Date;
   dateTo: Date;
   billboards: ContractReportBillboard[];
+  coverTitle?: string;
+  fileNamePrefix?: string;
   onProgress?: (progress: ContractReportProgress) => void;
 }
 
@@ -105,6 +106,8 @@ export async function generateContractReport(
     dateFrom,
     dateTo,
     billboards,
+    coverTitle = "REPORTE DE MANTENIMIENTO",
+    fileNamePrefix = "Mantenimiento",
     onProgress,
   } = options;
 
@@ -114,7 +117,7 @@ export async function generateContractReport(
   pptx.layout = "LAYOUT_WIDE";
   pptx.author = "VEO";
   pptx.company = "VEO Media";
-  pptx.title = `Mantenimiento ${contractNumber}`;
+  pptx.title = `${fileNamePrefix} ${contractNumber}`;
 
   const period = formatPeriod(dateFrom, dateTo);
 
@@ -154,10 +157,14 @@ export async function generateContractReport(
     });
   }
 
+  const billboardsToInclude = billboards.filter((bb) =>
+    imageMap.has(bb.billboardCode),
+  );
+
   onProgress?.({
     stage: "Generando presentación",
     current: 0,
-    total: billboards.length,
+    total: billboardsToInclude.length,
   });
 
   for (const img of introImages) {
@@ -170,18 +177,20 @@ export async function generateContractReport(
     customerEmail,
     description,
     period,
-    totalBillboards: billboards.length,
+    totalBillboards: billboardsToInclude.length,
+    coverTitle,
   });
 
-  for (let i = 0; i < billboards.length; i++) {
-    const bb = billboards[i]!;
-    const imageBase64 = imageMap.get(bb.billboardCode) ?? null;
+  for (let i = 0; i < billboardsToInclude.length; i++) {
+    const bb = billboardsToInclude[i]!;
+    const imageBase64 = imageMap.get(bb.billboardCode);
+    if (!imageBase64) continue;
     addBillboardSlide(pptx, bb, imageBase64);
     if (i % 5 === 0) {
       onProgress?.({
         stage: "Generando presentación",
         current: i + 1,
-        total: billboards.length,
+        total: billboardsToInclude.length,
       });
     }
   }
@@ -191,7 +200,7 @@ export async function generateContractReport(
   onProgress?.({ stage: "Empaquetando archivo", current: 0, total: 1 });
 
   const fileName = sanitizeFileName(
-    `Mantenimiento - ${contractNumber} - ${period}.pptx`,
+    `${fileNamePrefix} - ${contractNumber} - ${period}.pptx`,
   );
   const blob = (await pptx.write({ outputType: "blob" })) as Blob;
 
@@ -220,6 +229,7 @@ interface CoverSlideData {
   description: string;
   period: string;
   totalBillboards: number;
+  coverTitle: string;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -227,7 +237,7 @@ function addCoverSlide(pptx: any, data: CoverSlideData) {
   const slide = pptx.addSlide();
   slide.background = { fill: BRAND_DARK };
 
-  slide.addText("REPORTE DE MANTENIMIENTO", {
+  slide.addText(data.coverTitle, {
     x: 0.6,
     y: 1.6,
     w: SLIDE_W - 1.2,
@@ -326,7 +336,7 @@ function addBillboardSlide(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   pptx: any,
   bb: ContractReportBillboard,
-  imageBase64: string | null,
+  imageBase64: string,
 ) {
   const slide = pptx.addSlide();
   slide.background = { fill: WHITE };
@@ -350,30 +360,14 @@ function addBillboardSlide(
   const imgW = 8.5;
   const imgH = 5.9;
 
-  if (imageBase64) {
-    slide.addImage({
-      data: imageBase64,
-      x: imgX,
-      y: imgY,
-      w: imgW,
-      h: imgH,
-      sizing: { type: "contain", w: imgW, h: imgH },
-    });
-  } else {
-    slide.addText("Sin imagen disponible", {
-      x: imgX,
-      y: imgY,
-      w: imgW,
-      h: imgH,
-      fill: { color: LIGHT_BG },
-      fontSize: 18,
-      color: "999999",
-      align: "center",
-      valign: "middle",
-      fontFace: "Arial",
-      line: { color: "DDDDDD", width: 1 },
-    });
-  }
+  slide.addImage({
+    data: imageBase64,
+    x: imgX,
+    y: imgY,
+    w: imgW,
+    h: imgH,
+    sizing: { type: "contain", w: imgW, h: imgH },
+  });
 
   const panelX = 9.15;
   const panelW = 3.8;

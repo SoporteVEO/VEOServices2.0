@@ -12,22 +12,30 @@ import {
   type ActiveContractGroup,
 } from "@/api/contracts/contracts.get";
 import { ContractReportDrawer } from "./contract-report-drawer";
-import { ReportType } from "./report-types";
+import { REPORT_TYPE_CONFIG, type ReportType } from "./report-types";
 
 const DEFAULT_PAGE_SIZE = 25;
 
-export function MonthlyContractsTable() {
+interface ContractsReportTableProps {
+  reportType: ReportType;
+}
+
+export function ContractsReportTable({
+  reportType,
+}: ContractsReportTableProps) {
   const [search, setSearch] = useState("");
   const [pageIndex, setPageIndex] = useState(0);
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
   const [selected, setSelected] = useState<ActiveContractGroup | null>(null);
 
   const debouncedSearch = useDebouncedValue(search.trim(), 300);
+  const config = REPORT_TYPE_CONFIG[reportType];
 
   const { data, isLoading } = useActiveContracts({
     page: pageIndex + 1,
     pageSize,
     search: debouncedSearch || undefined,
+    imageType: config.imageType,
   });
 
   const columns = useMemo<ColumnDef<ActiveContractGroup>[]>(
@@ -70,15 +78,12 @@ export function MonthlyContractsTable() {
         id: "images",
         header: "Imágenes",
         cell: ({ row }) => {
-          const { billboardsWithImages, totalBillboards, totalImages } =
-            row.original;
-          const isComplete = billboardsWithImages === totalBillboards;
-          const hasNone = totalImages === 0;
+          const { billboardsWithImages, totalBillboards } = row.original;
+          const isComplete =
+            totalBillboards > 0 && billboardsWithImages === totalBillboards;
           return (
             <Badge
-              variant={
-                hasNone ? "destructive" : isComplete ? "default" : "secondary"
-              }
+              variant={isComplete ? "default" : "secondary"}
               className="gap-1"
             >
               <ImageIcon className="size-3" aria-hidden />
@@ -128,7 +133,7 @@ export function MonthlyContractsTable() {
 
       <ContractReportDrawer
         group={selected}
-        reportType="monthly"
+        reportType={reportType}
         onOpenChange={(open) => {
           if (!open) setSelected(null);
         }}

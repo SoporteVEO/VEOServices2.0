@@ -6,6 +6,7 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
+import { S3ImageType } from '@prisma/client';
 import { ContractsService } from './contracts.service.js';
 import { SendMaintenanceReportDto } from './dto/send-maintenance-report.dto.js';
 
@@ -68,6 +69,7 @@ export class ContractsController {
     @Query('page') pageStr?: string,
     @Query('pageSize') pageSizeStr?: string,
     @Query('search') search?: string,
+    @Query('imageType') imageTypeStr?: string,
   ) {
     const from = parseDate(fromStr, 'from') ?? startOfCurrentMonth();
     const to = parseDate(toStr, 'to') ?? startOfNextMonth();
@@ -79,12 +81,20 @@ export class ContractsController {
     const page = parsePositiveInt(pageStr, 'page');
     const pageSize = parsePositiveInt(pageSizeStr, 'pageSize');
 
+    if (imageTypeStr && !(imageTypeStr in S3ImageType)) {
+      throw new BadRequestException(
+        `imageType debe ser uno de: ${Object.keys(S3ImageType).join(', ')}`,
+      );
+    }
+    const imageType = imageTypeStr as S3ImageType | undefined;
+
     return this.contractsService.getActiveContractsWithImages({
       from,
       to,
       page,
       pageSize,
       search,
+      imageType,
     });
   }
 

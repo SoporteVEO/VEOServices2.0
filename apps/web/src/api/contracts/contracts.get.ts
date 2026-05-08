@@ -72,6 +72,7 @@ export interface ActiveContractsQuery {
   page?: number;
   pageSize?: number;
   search?: string;
+  imageType?: S3ImageType;
 }
 
 export interface NotifiedContract {
@@ -139,6 +140,7 @@ export async function getActiveContracts(query: ActiveContractsQuery = {}) {
   if (query.page) params.page = String(query.page);
   if (query.pageSize) params.pageSize = String(query.pageSize);
   if (query.search) params.search = query.search;
+  if (query.imageType) params.imageType = query.imageType;
 
   return apiFetch<ActiveContractsPage>("/contracts/active", {
     method: "GET",
@@ -155,6 +157,7 @@ export function useActiveContracts(query: ActiveContractsQuery = {}) {
     page: query.page,
     pageSize: query.pageSize,
     search: query.search,
+    imageType: query.imageType,
   };
 
   return useQuery({
@@ -166,6 +169,7 @@ export function useActiveContracts(query: ActiveContractsQuery = {}) {
       normalized.page ?? 1,
       normalized.pageSize ?? null,
       normalized.search ?? "",
+      normalized.imageType ?? "",
     ],
     queryFn: () => getActiveContracts(normalized),
     placeholderData: keepPreviousData,

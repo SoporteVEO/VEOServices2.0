@@ -1,4 +1,12 @@
-import { IsEmail, IsOptional, IsString, MaxLength } from 'class-validator';
+import { IsEmail, IsIn, IsOptional, IsString, MaxLength } from 'class-validator';
+
+export type ContractReportType = 'monthly' | 'installation' | 'maintenance';
+
+export const CONTRACT_REPORT_TYPES: ContractReportType[] = [
+  'monthly',
+  'installation',
+  'maintenance',
+];
 
 export class SendMaintenanceReportDto {
   @IsEmail()
@@ -23,4 +31,8 @@ export class SendMaintenanceReportDto {
 
   @IsString()
   fileBase64: string;
+
+  @IsIn(CONTRACT_REPORT_TYPES)
+  @IsOptional()
+  reportType?: ContractReportType;
 }

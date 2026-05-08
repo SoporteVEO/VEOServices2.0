@@ -12,7 +12,31 @@ import type {
   PaginatedActiveContracts,
 } from './entities/active-contract-with-images.js';
 import type { CreateNotifiedContractDto } from './dto/create-notified-contract.dto.js';
-import type { SendMaintenanceReportDto } from './dto/send-maintenance-report.dto.js';
+import type {
+  ContractReportType,
+  SendMaintenanceReportDto,
+} from './dto/send-maintenance-report.dto.js';
+
+const REPORT_TYPE_EMAIL_LABELS: Record<
+  ContractReportType,
+  { subject: string; heading: string; body: string }
+> = {
+  monthly: {
+    subject: 'Reporte Mensual de Vallas',
+    heading: 'Reporte Mensual de Vallas',
+    body: 'el reporte mensual de vallas',
+  },
+  installation: {
+    subject: 'Reporte de Instalación de Vallas',
+    heading: 'Reporte de Instalación de Vallas',
+    body: 'el reporte de instalación de vallas',
+  },
+  maintenance: {
+    subject: 'Reporte de Mantenimiento de Vallas',
+    heading: 'Reporte de Mantenimiento de Vallas',
+    body: 'el reporte de mantenimiento de vallas',
+  },
+};
 
 interface SourceContractRow {
   mconId: number;
@@ -236,6 +260,7 @@ export class ContractsService {
   async getActiveContractsWithImages(args: {
     from: Date;
     to: Date;
+    imageType?: S3ImageType;
     page?: number;
     pageSize?: number;
     search?: string;
@@ -245,6 +270,7 @@ export class ContractsService {
     const search = (args.search ?? '').trim();
     const searchLike = `%${escapeLikePattern(search)}%`;
     const offset = (page - 1) * pageSize;
+    const imageType = args.imageType ?? S3ImageType.STATIC_BILLBOARD_MONTHLY;
 
     const groupRows = await this.brilo.query<ActiveContractGroupRow>(
       ACTIVE_CONTRACTS_PAGE_SQL,
@@ -278,6 +304,7 @@ export class ContractsService {
       billboardCodes,
       args.from,
       args.to,
+      imageType,
     );
 
     const billboardsByContract = new Map<number, ActiveContractWithImages[]>();
@@ -354,6 +381,7 @@ export class ContractsService {
     codes: string[],
     from: Date,
     to: Date,
+    imageType: S3ImageType,
   ): Promise<Map<string, ActiveContractImage[]>> {
     const result = new Map<string, ActiveContractImage[]>();
     if (codes.length === 0) return result;
@@ -363,7 +391,7 @@ export class ContractsService {
       include: {
         s3Images: {
           where: {
-            type: S3ImageType.STATIC_BILLBOARD_MONTHLY,
+            type: imageType,
             createdAt: { gte: from, lte: to },
           },
           include: {
@@ -415,12 +443,15 @@ export class ContractsService {
   async sendMaintenanceReport(dto: SendMaintenanceReportDto) {
     const fileBuffer = decodeReportFile(dto.fileBase64);
 
-    const subject = `Reporte de Mantenimiento - Contrato ${dto.contractNumber} (${dto.period})`;
+    const labels = REPORT_TYPE_EMAIL_LABELS[dto.reportType ?? 'monthly'];
+    const subject = `${labels.subject} - Contrato ${dto.contractNumber} (${dto.period})`;
     const htmlContent = buildMaintenanceReportEmailHtml({
       contractNumber: dto.contractNumber,
       customerName: dto.customerName,
       description: dto.description ?? '',
       period: dto.period,
+      heading: labels.heading,
+      body: labels.body,
     });
 
     const { error } = await this.email.sendEmail(
@@ -487,6 +518,8 @@ function buildMaintenanceReportEmailHtml(params: {
   customerName: string;
   description: string;
   period: string;
+  heading: string;
+  body: string;
 }): string {
   const greeting = params.customerName
     ? `Estimado(a) ${escapeHtml(params.customerName)},`
@@ -502,14 +535,14 @@ function buildMaintenanceReportEmailHtml(params: {
             <tr>
               <td style="background:#003366;padding:24px 32px;color:#ffffff;">
                 <p style="margin:0;font-size:12px;letter-spacing:2px;color:#7aa3c8;">VEO MEDIA</p>
-                <h1 style="margin:6px 0 0;font-size:22px;">Reporte de Mantenimiento</h1>
+                <h1 style="margin:6px 0 0;font-size:22px;">${escapeHtml(params.heading)}</h1>
               </td>
             </tr>
             <tr>
               <td style="padding:28px 32px 8px 32px;">
                 <p style="margin:0 0 16px;font-size:15px;line-height:1.6;">${greeting}</p>
                 <p style="margin:0 0 16px;font-size:14px;line-height:1.6;">
-                  Adjunto encontrarás el reporte de mantenimiento correspondiente al periodo
+                  Adjunto encontrarás ${escapeHtml(params.body)} correspondiente al periodo
                   <strong>${escapeHtml(params.period)}</strong> para el contrato
                   <strong>${escapeHtml(params.contractNumber)}</strong>.
                 </p>

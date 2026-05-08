@@ -1,5 +1,7 @@
 import { apiFetch } from "@/lib/api";
 
+export type ContractReportType = "monthly" | "installation" | "maintenance";
+
 export interface SendMaintenanceReportInput {
   email: string;
   contractNumber: string;
@@ -8,6 +10,7 @@ export interface SendMaintenanceReportInput {
   period: string;
   fileName: string;
   fileBase64: string;
+  reportType?: ContractReportType;
 }
 
 export async function sendMaintenanceReport(input: SendMaintenanceReportInput) {

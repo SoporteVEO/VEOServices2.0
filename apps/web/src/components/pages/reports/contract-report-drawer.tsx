@@ -29,6 +29,7 @@ import {
 } from "@/lib/generate-contract-report";
 import { cn } from "@/lib/utils";
 import { SendReportDialog } from "./send-report-dialog";
+import { REPORT_TYPE_CONFIG, type ReportType } from "./report-types";
 
 function toS3ImagePreview(
   image: ActiveContractImage,
@@ -48,11 +49,13 @@ function toS3ImagePreview(
   };
 }
 
-export function MonthlyContractDrawer({
+export function ContractReportDrawer({
   group,
+  reportType,
   onOpenChange,
 }: {
   group: ActiveContractGroup | null;
+  reportType: ReportType;
   onOpenChange: (open: boolean) => void;
 }) {
   return (
@@ -65,9 +68,10 @@ export function MonthlyContractDrawer({
     >
       <DrawerContent size="xl" className="flex flex-col">
         {group ? (
-          <MonthlyContractDrawerContent
-            key={group.contractNumber}
+          <ContractReportDrawerContent
+            key={`${reportType}-${group.contractNumber}`}
             group={group}
+            reportType={reportType}
           />
         ) : null}
       </DrawerContent>
@@ -75,11 +79,15 @@ export function MonthlyContractDrawer({
   );
 }
 
-function MonthlyContractDrawerContent({
+function ContractReportDrawerContent({
   group,
+  reportType,
 }: {
   group: ActiveContractGroup;
+  reportType: ReportType;
 }) {
+  const config = REPORT_TYPE_CONFIG[reportType];
+
   const [preview, setPreview] = useState<S3Image | null>(null);
   const [selectedImageIds, setSelectedImageIds] = useState<
     Record<number, string | null>
@@ -135,6 +143,8 @@ function MonthlyContractDrawerContent({
         dateFrom: new Date(group.startDate),
         dateTo: new Date(group.endDate),
         billboards: reportBillboards,
+        coverTitle: config.coverTitle,
+        fileNamePrefix: config.fileNamePrefix,
         onProgress: setProgress,
       });
 
@@ -149,6 +159,7 @@ function MonthlyContractDrawerContent({
         period,
         fileName,
         fileBase64,
+        reportType,
       });
 
       toast.success(`Reporte enviado a ${email}.`);
@@ -191,6 +202,7 @@ function MonthlyContractDrawerContent({
             <BillboardCard
               key={billboard.contractDetailSourceId}
               billboard={billboard}
+              emptyMessage={config.emptyImagesMessage}
               selectedImageId={
                 selectedImageIds[billboard.contractDetailSourceId] ?? null
               }
@@ -207,14 +219,20 @@ function MonthlyContractDrawerContent({
 
       <DrawerFooter className="border-t bg-muted/20">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-xs text-muted-foreground">
-            <span className="font-medium text-foreground tabular-nums">
-              {stats.billboardsSelected}
-            </span>{" "}
-            de{" "}
-            <span className="tabular-nums">{stats.billboardsWithImages}</span>{" "}
-            vallas con imagen seleccionada
-          </p>
+          <div className="space-y-0.5">
+            <p className="text-xs text-muted-foreground">
+              <span className="font-medium text-foreground tabular-nums">
+                {stats.billboardsSelected}
+              </span>{" "}
+              de{" "}
+              <span className="tabular-nums">{group.totalBillboards}</span>{" "}
+              vallas con imagen seleccionada
+            </p>
+            <p className="text-[11px] text-muted-foreground">
+              Solo se incluirán en el reporte las vallas con imagen
+              seleccionada.
+            </p>
+          </div>
           <Button
             sizeVariant="lg"
             onClick={() => setIsSendOpen(true)}
@@ -231,7 +249,7 @@ function MonthlyContractDrawerContent({
         onOpenChange={setIsSendOpen}
         defaultEmail={group.customerEmail}
         contractNumber={group.contractNumber}
-        billboardsCount={stats.billboardsWithImages}
+        totalBillboardsCount={group.totalBillboards}
         selectedImagesCount={stats.billboardsSelected}
         isSubmitting={isSending}
         progressLabel={progressLabel}
@@ -314,11 +332,13 @@ function SummaryItem({
 
 function BillboardCard({
   billboard,
+  emptyMessage,
   selectedImageId,
   onSelectImage,
   onPreview,
 }: {
   billboard: ActiveContract;
+  emptyMessage: string;
   selectedImageId: string | null;
   onSelectImage: (imageId: string) => void;
   onPreview: (image: ActiveContractImage) => void;
@@ -351,6 +371,7 @@ function BillboardCard({
 
       <BillboardImages
         billboard={billboard}
+        emptyMessage={emptyMessage}
         selectedImageId={selectedImageId}
         onSelectImage={onSelectImage}
         onPreview={onPreview}
@@ -361,11 +382,13 @@ function BillboardCard({
 
 function BillboardImages({
   billboard,
+  emptyMessage,
   selectedImageId,
   onSelectImage,
   onPreview,
 }: {
   billboard: ActiveContract;
+  emptyMessage: string;
   selectedImageId: string | null;
   onSelectImage: (imageId: string) => void;
   onPreview: (image: ActiveContractImage) => void;
@@ -374,7 +397,7 @@ function BillboardImages({
     return (
       <div className="flex items-center gap-2 rounded-md border border-dashed bg-muted/20 px-3 py-4 text-xs text-muted-foreground">
         <ImageOff className="size-4" aria-hidden />
-        Sin imágenes para este período. La diapositiva se incluirá sin imagen.
+        {emptyMessage}
       </div>
     );
   }
