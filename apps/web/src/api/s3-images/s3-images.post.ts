@@ -36,6 +36,38 @@ export function useCreateS3Image(options?: {
   });
 }
 
+export interface UpdateS3ImageInput {
+  staticBillboardCodeId?: string | null;
+}
+
+export async function updateS3Image(id: string, input: UpdateS3ImageInput) {
+  const response = await apiFetch<{ data: S3Image }>(`/s3-images/${id}`, {
+    method: "PATCH",
+    body: JSON.stringify(input),
+  });
+  return response.data;
+}
+
+export function useUpdateS3Image(options?: {
+  onSuccess?: (updated: S3Image) => void;
+  onError?: (error: Error) => void;
+}) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, ...input }: UpdateS3ImageInput & { id: string }) =>
+      updateS3Image(id, input),
+    onSuccess: async (updated) => {
+      await queryClient.invalidateQueries({ queryKey: ["s3-images"] });
+      options?.onSuccess?.(updated);
+    },
+    onError: (err) => {
+      const error = err instanceof Error ? err : new Error(String(err));
+      options?.onError?.(error);
+    },
+  });
+}
+
 export async function deleteS3Image(id: string) {
   return apiFetch(`/s3-images/${id}`, { method: "DELETE" });
 }

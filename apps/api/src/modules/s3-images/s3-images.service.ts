@@ -7,6 +7,7 @@ import { S3ImageType } from '@prisma/client';
 import type { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { CreateS3ImageDto } from './dto/create-s3-image.dto.js';
+import { UpdateS3ImageDto } from './dto/update-s3-image.dto.js';
 import { ImageProcessorService } from './image-processor.service.js';
 import { S3StorageService } from './s3-storage.service.js';
 
@@ -227,6 +228,55 @@ export class S3ImagesService {
       await this.storage.deleteByKey(upload.key);
       throw e;
     }
+  }
+
+  async update(
+    id: string,
+    dto: UpdateS3ImageDto,
+  ): Promise<S3ImageListItem> {
+    const existing = await this.prisma.s3Image.findUnique({ where: { id } });
+    if (!existing) throw new NotFoundException('Imagen no encontrada');
+
+    if (dto.staticBillboardCodeId) {
+      const code = await this.prisma.staticBillboardCodes.findUnique({
+        where: { id: dto.staticBillboardCodeId },
+        select: { id: true },
+      });
+      if (!code) throw new NotFoundException('Código de valla no encontrado');
+    }
+
+    const data: Prisma.S3ImageUpdateInput = {};
+    if (dto.staticBillboardCodeId !== undefined) {
+      data.staticBillboardCode = dto.staticBillboardCodeId
+        ? { connect: { id: dto.staticBillboardCodeId } }
+        : { disconnect: true };
+    }
+
+    const updated = await this.prisma.s3Image.update({
+      where: { id },
+      data,
+      include: {
+        uploadedUser: {
+          select: { id: true, firstName: true, lastName: true, email: true },
+        },
+        staticBillboardCode: { select: { id: true, code: true } },
+      },
+    });
+
+    const signedUrl = await this.storage.getSignedUrl(updated.deleteUrl);
+
+    return {
+      id: updated.id,
+      url: signedUrl,
+      createdAt: updated.createdAt.toISOString(),
+      updatedAt: updated.updatedAt.toISOString(),
+      uploadedUserId: updated.uploadedUserId,
+      uploadedUser: updated.uploadedUser,
+      tags: updated.tags,
+      type: updated.type,
+      staticBillboardCodeId: updated.staticBillboardCodeId,
+      staticBillboardCode: updated.staticBillboardCode,
+    };
   }
 
   async remove(id: string): Promise<{ deleted: true }> {

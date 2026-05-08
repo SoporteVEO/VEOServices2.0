@@ -7,6 +7,7 @@ import type { S3Image } from "@/api/s3-images/s3-images.get";
 import { useDeleteS3Image } from "@/api/s3-images/s3-images.post";
 import { Skeleton } from "@/components/primitives/ui/skeleton";
 import { useIntersectionObserver } from "@/hooks/use-intersection-observer";
+import { EditImageCodeDialog } from "./edit-image-code-dialog";
 import { ImageCard } from "./image-card";
 import { ImagePreviewDialog } from "./image-preview-dialog";
 
@@ -53,6 +54,7 @@ export function ImagesGrid({
 }: ImagesGridProps) {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [previewImage, setPreviewImage] = useState<S3Image | null>(null);
+  const [editingImage, setEditingImage] = useState<S3Image | null>(null);
 
   const deleteMutation = useDeleteS3Image({
     onSuccess: () => {
@@ -106,6 +108,7 @@ export function ImagesGrid({
             key={image.id}
             image={image}
             onPreview={setPreviewImage}
+            onEdit={setEditingImage}
             onDelete={handleDelete}
             isDeleting={deletingId === image.id}
             priority={index < PRIORITY_COUNT}
@@ -133,6 +136,13 @@ export function ImagesGrid({
         image={previewImage}
         onOpenChange={(open) => {
           if (!open) setPreviewImage(null);
+        }}
+      />
+
+      <EditImageCodeDialog
+        image={editingImage}
+        onOpenChange={(open) => {
+          if (!open) setEditingImage(null);
         }}
       />
     </>

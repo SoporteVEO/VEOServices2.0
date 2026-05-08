@@ -35,9 +35,15 @@ export function CreateStaticBillboardCodeForm({
       <DialogBody className="space-y-4">
         <Input
           label="Código"
-          placeholder="Ej. VEO-001"
+          placeholder="Ej. MS-1022"
           autoFocus
-          {...register("code", { required: true })}
+          className="uppercase"
+          {...register("code", {
+            required: true,
+            onChange: (e) => {
+              e.target.value = e.target.value.toUpperCase();
+            },
+          })}
         />
 
         {errorMessage ? (

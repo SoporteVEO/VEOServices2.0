@@ -5,12 +5,14 @@ import {
   Delete,
   Get,
   Param,
+  Patch,
   Post,
   Query,
 } from '@nestjs/common';
 import { S3ImageType } from '@prisma/client';
 import { AllowLimited, CurrentUser } from '../auth/decorators.js';
 import { CreateS3ImageDto } from './dto/create-s3-image.dto.js';
+import { UpdateS3ImageDto } from './dto/update-s3-image.dto.js';
 import { S3ImagesService } from './s3-images.service.js';
 
 interface AuthUser {
@@ -81,6 +83,12 @@ export class S3ImagesController {
   async create(@Body() dto: CreateS3ImageDto, @CurrentUser() user: AuthUser) {
     const created = await this.service.create(dto, user.id);
     return { data: created };
+  }
+
+  @Patch(':id')
+  async update(@Param('id') id: string, @Body() dto: UpdateS3ImageDto) {
+    const updated = await this.service.update(id, dto);
+    return { data: updated };
   }
 
   @Delete(':id')

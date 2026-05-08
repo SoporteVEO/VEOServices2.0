@@ -1,3 +1,4 @@
+import { isAxiosError } from "axios";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiFetch } from "@/lib/api";
 import type { StaticBillboardCode } from "./static-billboard-codes.get";
@@ -19,6 +20,19 @@ export async function createStaticBillboardCode(
   return response.data;
 }
 
+function toClientError(err: unknown, fallback: string): Error {
+  if (isAxiosError(err)) {
+    const data = err.response?.data as
+      | { message?: string | string[]; error?: string }
+      | undefined;
+    const raw = data?.message ?? data?.error;
+    const message = Array.isArray(raw) ? raw.join(". ") : raw;
+    if (message) return new Error(message);
+  }
+  if (err instanceof Error) return err;
+  return new Error(fallback);
+}
+
 export function useCreateStaticBillboardCode(options?: {
   onSuccess?: (created: StaticBillboardCode) => void;
   onError?: (error: Error) => void;
@@ -34,8 +48,7 @@ export function useCreateStaticBillboardCode(options?: {
       options?.onSuccess?.(created);
     },
     onError: (err) => {
-      const error = err instanceof Error ? err : new Error(String(err));
-      options?.onError?.(error);
+      options?.onError?.(toClientError(err, "No se pudo crear el código."));
     },
   });
 }

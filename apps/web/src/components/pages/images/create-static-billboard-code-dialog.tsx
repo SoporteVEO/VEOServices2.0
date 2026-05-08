@@ -13,6 +13,7 @@ import {
   CreateStaticBillboardCodeForm,
   type StaticBillboardCodeFormValues,
 } from "./create-static-billboard-code-form";
+import { useState } from "react";
 
 interface CreateStaticBillboardCodeDialogProps {
   open: boolean;
@@ -25,19 +26,24 @@ export function CreateStaticBillboardCodeDialog({
   onOpenChange,
   onCreated,
 }: CreateStaticBillboardCodeDialogProps) {
+  const [errorMessage, setErrorMessage] = useState<string | undefined>(
+    undefined,
+  );
   const createMutation = useCreateStaticBillboardCode({
     onSuccess: (created) => {
       toast.success(`Código "${created.code}" creado.`);
       onCreated?.(created);
       onOpenChange(false);
+      setErrorMessage(undefined);
     },
     onError: (error) => {
+      setErrorMessage(error.message || "No se pudo crear el código.");
       toast.error(error.message || "No se pudo crear el código.");
     },
   });
 
   function handleSubmit(values: StaticBillboardCodeFormValues) {
-    createMutation.mutate({ code: values.code.trim() });
+    createMutation.mutate({ code: values.code.trim().toUpperCase() });
   }
 
   return (
@@ -50,7 +56,7 @@ export function CreateStaticBillboardCodeDialog({
         <CreateStaticBillboardCodeForm
           key={String(open)}
           isPending={createMutation.isPending}
-          errorMessage={createMutation.error?.message}
+          errorMessage={errorMessage}
           onSubmit={handleSubmit}
           onCancel={() => onOpenChange(false)}
         />

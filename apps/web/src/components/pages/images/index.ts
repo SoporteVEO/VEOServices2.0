@@ -6,3 +6,5 @@ export * from "./upload-image-dialog";
 export * from "./upload-image-form";
 export * from "./create-static-billboard-code-dialog";
 export * from "./create-static-billboard-code-form";
+export * from "./edit-image-code-dialog";
+export * from "./edit-image-code-form";

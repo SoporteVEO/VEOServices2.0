@@ -46,7 +46,14 @@ export class StaticBillboardCodesService {
   async create(
     dto: CreateStaticBillboardCodeDto,
   ): Promise<StaticBillboardCodeListItem> {
-    const code = dto.code.trim();
+    const code = dto.code.trim().toUpperCase();
+
+    const existing = await this.prisma.staticBillboardCodes.findUnique({
+      where: { code },
+    });
+    if (existing) {
+      throw new ConflictException(`El código "${code}" ya existe.`);
+    }
 
     try {
       const row = await this.prisma.staticBillboardCodes.create({
@@ -65,7 +72,7 @@ export class StaticBillboardCodesService {
         'code' in e &&
         (e as { code: string }).code === 'P2002'
       ) {
-        throw new ConflictException('Ya existe un código con ese valor');
+        throw new ConflictException(`El código "${code}" ya existe.`);
       }
       throw e;
     }

@@ -1,8 +1,12 @@
 "use client";
 
 import NextImage from "next/image";
-import { Eye, ImageOff, MoreVertical, Trash2 } from "lucide-react";
-import type { S3Image } from "@/api/s3-images/s3-images.get";
+import { Eye, ImageOff, MoreVertical, Pencil, Trash2 } from "lucide-react";
+import {
+  S3_IMAGE_TYPE_BADGE_CLASSES,
+  S3_IMAGE_TYPE_SHORT_LABELS,
+  type S3Image,
+} from "@/api/s3-images/s3-images.get";
 import { Badge } from "@/components/primitives/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -17,6 +21,7 @@ import { cn } from "@/lib/utils";
 interface ImageCardProps {
   image: S3Image;
   onPreview?: (image: S3Image) => void;
+  onEdit?: (image: S3Image) => void;
   onDelete?: (image: S3Image) => void;
   isDeleting?: boolean;
   priority?: boolean;
@@ -25,16 +30,20 @@ interface ImageCardProps {
 export function ImageCard({
   image,
   onPreview,
+  onEdit,
   onDelete,
   isDeleting = false,
   priority = false,
 }: ImageCardProps) {
   const codeLabel = image.staticBillboardCode?.code ?? "Sin código";
+  const typeLabel = S3_IMAGE_TYPE_SHORT_LABELS[image.type];
+  const typeBadgeClass = S3_IMAGE_TYPE_BADGE_CLASSES[image.type];
   const dateLabel = formatShortDate(new Date(image.createdAt));
   const userName = [image.uploadedUser.firstName, image.uploadedUser.lastName]
     .filter(Boolean)
     .join(" ")
     .trim();
+  const hasMenu = Boolean(onEdit || onDelete);
 
   return (
     <div
@@ -66,9 +75,17 @@ export function ImageCard({
           </div>
         )}
 
-        <div className="pointer-events-none absolute left-2.5 top-2.5">
+        <div className="pointer-events-none absolute left-2.5 top-2.5 flex flex-row items-start gap-1.5">
           <Badge className="border-transparent bg-black/65 font-mono text-[11px] tracking-wide text-white shadow-md backdrop-blur-sm">
             {codeLabel}
+          </Badge>
+          <Badge
+            className={cn(
+              "border-transparent text-[11px] font-medium tracking-wide shadow-md backdrop-blur-sm",
+              typeBadgeClass,
+            )}
+          >
+            {typeLabel}
           </Badge>
         </div>
 
@@ -80,7 +97,7 @@ export function ImageCard({
         </div>
       </button>
 
-      {onDelete ? (
+      {hasMenu ? (
         <div className="absolute right-2 top-2 opacity-0 transition-opacity duration-200 focus-within:opacity-100 group-hover:opacity-100">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -95,13 +112,21 @@ export function ImageCard({
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem
-                variant="destructive"
-                onSelect={() => onDelete(image)}
-              >
-                <Trash2 className="mr-2 size-3.5" />
-                Eliminar
-              </DropdownMenuItem>
+              {onEdit ? (
+                <DropdownMenuItem onSelect={() => onEdit(image)}>
+                  <Pencil className="mr-2 size-3.5" />
+                  Editar
+                </DropdownMenuItem>
+              ) : null}
+              {onDelete ? (
+                <DropdownMenuItem
+                  variant="destructive"
+                  onSelect={() => onDelete(image)}
+                >
+                  <Trash2 className="mr-2 size-3.5" />
+                  Eliminar
+                </DropdownMenuItem>
+              ) : null}
             </DropdownMenuContent>
           </DropdownMenu>
         </div>

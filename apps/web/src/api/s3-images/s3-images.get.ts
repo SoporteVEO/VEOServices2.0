@@ -17,6 +17,18 @@ export const S3_IMAGE_TYPE_OPTIONS: { value: S3ImageType; label: string }[] = [
     label: "Imagen de mantenimiento de valla",
   },
 ];
+
+export const S3_IMAGE_TYPE_SHORT_LABELS: Record<S3ImageType, string> = {
+  STATIC_BILLBOARD_MONTHLY: "Mensual",
+  STATIC_BILLBOARD_INSTALLATION: "Instalación",
+  STATIC_BILLBOARD_MAINTENANCE: "Mantenimiento",
+};
+
+export const S3_IMAGE_TYPE_BADGE_CLASSES: Record<S3ImageType, string> = {
+  STATIC_BILLBOARD_MONTHLY: "bg-sky-500/85 text-white",
+  STATIC_BILLBOARD_INSTALLATION: "bg-emerald-500/85 text-white",
+  STATIC_BILLBOARD_MAINTENANCE: "bg-amber-500/90 text-white",
+};
 export type SortOrder = "asc" | "desc";
 
 export interface S3Image {
