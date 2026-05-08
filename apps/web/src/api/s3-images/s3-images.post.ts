@@ -38,6 +38,7 @@ export function useCreateS3Image(options?: {
 
 export interface UpdateS3ImageInput {
   staticBillboardCodeId?: string | null;
+  type?: S3ImageType;
 }
 
 export async function updateS3Image(id: string, input: UpdateS3ImageInput) {

@@ -137,6 +137,8 @@ export function ImagesGrid({
         onOpenChange={(open) => {
           if (!open) setPreviewImage(null);
         }}
+        onSelectImage={setPreviewImage}
+        onImageUpdated={setPreviewImage}
       />
 
       <EditImageCodeDialog

@@ -230,10 +230,7 @@ export class S3ImagesService {
     }
   }
 
-  async update(
-    id: string,
-    dto: UpdateS3ImageDto,
-  ): Promise<S3ImageListItem> {
+  async update(id: string, dto: UpdateS3ImageDto): Promise<S3ImageListItem> {
     const existing = await this.prisma.s3Image.findUnique({ where: { id } });
     if (!existing) throw new NotFoundException('Imagen no encontrada');
 
@@ -250,6 +247,9 @@ export class S3ImagesService {
       data.staticBillboardCode = dto.staticBillboardCodeId
         ? { connect: { id: dto.staticBillboardCodeId } }
         : { disconnect: true };
+    }
+    if (dto.type !== undefined) {
+      data.type = dto.type;
     }
 
     const updated = await this.prisma.s3Image.update({
