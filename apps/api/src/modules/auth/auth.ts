@@ -41,6 +41,11 @@ export async function createAuth(): Promise<any> {
           required: false,
           input: false,
         },
+        subRoles: {
+          type: 'string[]' as const,
+          required: false,
+          input: false,
+        },
       },
     },
     plugins: [bearer()],

@@ -3,7 +3,7 @@
 import type { ReactNode } from "react";
 
 import { AppSidebar } from "@/components/dashboard/app-sidebar";
-import { LimitedRoleRedirect } from "@/components/dashboard/limited-role-redirect";
+import { DashboardAccessGuard } from "@/components/dashboard/dashboard-access-guard";
 import { ModeToggle } from "@/components/mode-toggle";
 import { Separator } from "@/components/primitives/ui/separator";
 import {
@@ -41,7 +41,7 @@ export function DashboardShell({ children }: { children: ReactNode }) {
             className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_120%_80%_at_50%_-30%,oklch(0.72_0.17_45/0.12),transparent_55%)] dark:bg-[radial-gradient(ellipse_120%_80%_at_50%_-30%,oklch(0.55_0.18_264/0.18),transparent_55%)]"
           />
           <div className="flex h-full w-full min-w-0 flex-1 flex-col overflow-x-auto overflow-y-auto p-4">
-            <LimitedRoleRedirect>{children}</LimitedRoleRedirect>
+            <DashboardAccessGuard>{children}</DashboardAccessGuard>
           </div>
         </div>
       </SidebarInset>

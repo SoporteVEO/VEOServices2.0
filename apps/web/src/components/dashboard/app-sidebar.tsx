@@ -16,8 +16,8 @@ import {
   SidebarRail,
 } from "@/components/primitives/ui/sidebar";
 import { UserCard } from "@/components/ui/user-card";
-import { NAV_GROUPS, filterNavGroupsByRole } from "@/lib/routes";
-import type { UserRole } from "@/api/users/users.types";
+import { NAV_GROUPS, filterNavGroupsByAccess } from "@/lib/routes";
+import type { SubRole, UserRole } from "@/api/users/users.types";
 import { authClient, clearAuthToken } from "@/lib/auth-client";
 
 export function AppSidebar() {
@@ -27,9 +27,15 @@ export function AppSidebar() {
 
   const userName = session?.user?.name ?? "Usuario";
   const userEmail = session?.user?.email ?? "VEO Services";
-  const userRole = (session?.user as Record<string, unknown> | undefined)
-    ?.role as UserRole | undefined;
-  const visibleGroups = filterNavGroupsByRole(NAV_GROUPS, userRole);
+  const sessionUser = session?.user as Record<string, unknown> | undefined;
+  const userRole = sessionUser?.role as UserRole | undefined;
+  const userSubRoles =
+    (sessionUser?.subRoles as SubRole[] | undefined) ?? [];
+  const visibleGroups = filterNavGroupsByAccess(
+    NAV_GROUPS,
+    userRole,
+    userSubRoles,
+  );
 
   function handleSignOut() {
     authClient.signOut({

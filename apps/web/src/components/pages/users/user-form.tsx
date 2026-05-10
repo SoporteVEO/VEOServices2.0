@@ -2,7 +2,7 @@
 
 import { useForm, Controller } from "react-hook-form";
 import { Loader2 } from "lucide-react";
-import type { UserRole } from "@/api/users/users.types";
+import type { SubRole, UserRole } from "@/api/users/users.types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DialogBody, DialogFooter } from "@/components/ui/dialog";
@@ -13,6 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { SubRolesField } from "./sub-roles-field";
 
 export type UserFormValues = {
   firstName: string;
@@ -20,6 +21,7 @@ export type UserFormValues = {
   email: string;
   password: string;
   role: UserRole;
+  subRoles: SubRole[];
 };
 
 type UserFormProps = {
@@ -44,6 +46,7 @@ export function UserForm({
       email: "",
       password: "",
       role: "USER",
+      subRoles: [],
       ...defaultValues,
     },
   });
@@ -100,6 +103,14 @@ export function UserForm({
                 </SelectContent>
               </Select>
             </div>
+          )}
+        />
+
+        <Controller
+          control={control}
+          name="subRoles"
+          render={({ field }) => (
+            <SubRolesField value={field.value} onChange={field.onChange} />
           )}
         />
       </DialogBody>

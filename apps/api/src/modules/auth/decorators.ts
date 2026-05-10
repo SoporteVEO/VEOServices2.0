@@ -11,6 +11,10 @@ export const REQUIRED_ROLES_KEY = 'requiredRoles';
 export const RequiredRoles = (...roles: string[]) =>
   SetMetadata(REQUIRED_ROLES_KEY, roles);
 
+export const REQUIRED_SUB_ROLES_KEY = 'requiredSubRoles';
+export const RequiredSubRoles = (...subRoles: string[]) =>
+  SetMetadata(REQUIRED_SUB_ROLES_KEY, subRoles);
+
 export const ALLOW_LIMITED_KEY = 'allowLimited';
 export const AllowLimited = () => SetMetadata(ALLOW_LIMITED_KEY, true);
 

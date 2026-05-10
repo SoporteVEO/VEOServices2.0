@@ -6,14 +6,13 @@ import {
   Patch,
   Param,
   Delete,
-  SetMetadata,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { REQUIRED_ROLES_KEY } from '../auth/decorators.js';
+import { RequiredSubRoles } from '../auth/decorators.js';
 
-@SetMetadata(REQUIRED_ROLES_KEY, ['ADMIN'])
+@RequiredSubRoles('USERS_MANAGEMENT')
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}

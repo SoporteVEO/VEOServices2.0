@@ -16,7 +16,7 @@ import {
 import { formatShortDate } from "@/lib/format";
 import { UserFormDialog } from "./user-form-dialog";
 import { DeleteUserDialog } from "./delete-user-dialog";
-import { roleBadge } from "./const";
+import { roleBadge, subRoleBadge } from "./const";
 
 function ActionsCell({
   user,
@@ -85,10 +85,22 @@ export function UsersTable({
       header: "Rol",
       cell: ({ row }) => {
         const badge = roleBadge[row.original.role] ?? roleBadge.USER;
+        const subRoles = row.original.subRoles ?? [];
         return (
-          <Badge variant={badge.variant} className={badge.className}>
-            {badge.label}
-          </Badge>
+          <div className="flex flex-wrap items-center gap-1.5">
+            <Badge variant={badge.variant} className={badge.className}>
+              {badge.label}
+            </Badge>
+            {subRoles.map((sr) => {
+              const sb = subRoleBadge[sr];
+              if (!sb) return null;
+              return (
+                <Badge key={sr} variant={sb.variant} className={sb.className}>
+                  {sb.label}
+                </Badge>
+              );
+            })}
+          </div>
         );
       },
     },

@@ -1,9 +1,22 @@
-import { IsEmail, IsEnum, IsOptional, IsString, MinLength } from 'class-validator';
+import {
+  ArrayUnique,
+  IsArray,
+  IsEmail,
+  IsEnum,
+  IsOptional,
+  IsString,
+  MinLength,
+} from 'class-validator';
 
 enum Role {
   ADMIN = 'ADMIN',
   USER = 'USER',
   LIMITED = 'LIMITED',
+}
+
+enum SubRole {
+  HR = 'HR',
+  USERS_MANAGEMENT = 'USERS_MANAGEMENT',
 }
 
 export class UpdateUserDto {
@@ -27,4 +40,10 @@ export class UpdateUserDto {
   @IsEnum(Role)
   @IsOptional()
   role?: Role;
+
+  @IsArray()
+  @IsEnum(SubRole, { each: true })
+  @ArrayUnique()
+  @IsOptional()
+  subRoles?: SubRole[];
 }
