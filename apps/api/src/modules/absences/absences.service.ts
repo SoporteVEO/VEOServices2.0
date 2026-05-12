@@ -14,7 +14,6 @@ import {
   buildEmployeeAbsenceConfirmationEmail,
   buildHrAbsenceEmail,
 } from './absence-emails.js';
-import { buildAbsencePdf, type AbsencePdfImage } from './absence-pdf.js';
 import { CreateAbsenceDto } from './dto/create-absence.dto.js';
 import { UpdateAbsenceDto } from './dto/update-absence.dto.js';
 
@@ -67,17 +66,6 @@ function decodeBase64Image(base64: string): Buffer {
     throw new BadRequestException('La imagen está vacía o es inválida');
   }
   return Buffer.from(normalized, 'base64');
-}
-
-function buildAbsencePdfFileName(fullName: string, fromDate: Date): string {
-  const datePart = fromDate.toISOString().slice(0, 10);
-  const slug = fullName
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '');
-  return `incapacidad-${slug || 'empleado'}-${datePart}.pdf`;
 }
 
 function formatAbsenceUserFullName(user: AbsenceRow['user']): string {
@@ -196,9 +184,7 @@ export class AbsencesService {
   }
 
   private async dispatchAbsenceEmails(absence: AbsenceRow) {
-    const fullName = formatAbsenceUserFullName(absence.user);
-
-    const [hrUsers, requester, pdfImages] = await Promise.all([
+    const [hrUsers, requester] = await Promise.all([
       this.prisma.user.findMany({
         where: {
           disabled: false,
@@ -218,39 +204,12 @@ export class AbsencesService {
           teamMember: { select: { businessEmail: true } },
         },
       }),
-      this.loadAbsencePdfImages(absence),
     ]);
 
     const requesterEmail =
       requester?.teamMember?.businessEmail ??
       requester?.email ??
       absence.user.email;
-
-    const pdfBuffer = await buildAbsencePdf({
-      absence: {
-        id: absence.id,
-        userId: absence.userId,
-        fromDate: absence.fromDate.toISOString(),
-        toDate: absence.toDate.toISOString(),
-        reason: absence.reason,
-        status: absence.status,
-        createdAt: absence.createdAt.toISOString(),
-        updatedAt: absence.updatedAt.toISOString(),
-        user: {
-          id: absence.user.id,
-          firstName: absence.user.firstName,
-          lastName: absence.user.lastName,
-          email: requesterEmail,
-        },
-        images: absence.images.map((img) => ({
-          id: img.id,
-          url: img.url,
-          createdAt: img.createdAt.toISOString(),
-        })),
-      },
-      images: pdfImages,
-    });
-    const pdfFileName = buildAbsencePdfFileName(fullName, absence.fromDate);
 
     const emailData = {
       id: absence.id,
@@ -274,13 +233,7 @@ export class AbsencesService {
       const hrEmail = buildHrAbsenceEmail(emailData);
       await Promise.all(
         hrRecipients.map((email) =>
-          this.email.sendEmail(email, hrEmail.subject, hrEmail.html, [
-            {
-              filename: pdfFileName,
-              content: pdfBuffer,
-              contentType: 'application/pdf',
-            },
-          ]),
+          this.email.sendEmail(email, hrEmail.subject, hrEmail.html),
         ),
       );
       this.logger.log(
@@ -293,44 +246,10 @@ export class AbsencesService {
       requesterEmail,
       employeeEmail.subject,
       employeeEmail.html,
-      [
-        {
-          filename: pdfFileName,
-          content: pdfBuffer,
-          contentType: 'application/pdf',
-        },
-      ],
     );
     this.logger.log(
       `Sent confirmation email to ${requesterEmail} for absence ${absence.id}`,
     );
-  }
-
-  private async loadAbsencePdfImages(
-    absence: AbsenceRow,
-  ): Promise<AbsencePdfImage[]> {
-    if (absence.images.length === 0) return [];
-
-    const results: (AbsencePdfImage | null)[] = await Promise.all(
-      absence.images.map(async (img): Promise<AbsencePdfImage | null> => {
-        try {
-          const buffer = await this.storage.getObjectBuffer(img.url);
-          const png = await this.processor.toPng(buffer);
-          return {
-            id: img.id,
-            createdAt: img.createdAt.toISOString(),
-            src: { data: png.buffer, format: 'png' },
-          };
-        } catch (err) {
-          this.logger.warn(
-            `Failed to load absence image ${img.id} for PDF: ${(err as Error).message}`,
-          );
-          return null;
-        }
-      }),
-    );
-
-    return results.filter((r): r is AbsencePdfImage => r !== null);
   }
 
   async findMine(userId: string) {

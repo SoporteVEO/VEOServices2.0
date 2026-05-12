@@ -53,7 +53,7 @@ function buildShell(params: {
   introHtml: string;
   detailsRows: { label: string; value: string }[];
   reason: string;
-  attachmentNote?: string;
+  footerNote?: string;
 }): string {
   const detailsTable = params.detailsRows
     .map(
@@ -103,9 +103,9 @@ function buildShell(params: {
                   ${escapeHtml(params.reason)}
                 </div>
                 ${
-                  params.attachmentNote
+                  params.footerNote
                     ? `<p style="margin:18px 0 0;font-size:13px;color:#4b5563;line-height:1.5;">
-                        ${escapeHtml(params.attachmentNote)}
+                        ${escapeHtml(params.footerNote)}
                       </p>`
                     : ''
                 }
@@ -171,11 +171,11 @@ export function buildHrAbsenceEmail(absence: AbsenceEmailData): {
         Estimado equipo de Recursos Humanos,
       </p>
       <p style="margin:0 0 16px;font-size:14px;line-height:1.6;">
-        El usuario <strong>${escapeHtml(fullName)}</strong> ha enviado una nueva solicitud de incapacidad. A continuación, los detalles de la solicitud y el reporte completo en formato PDF está adjunto a este correo.
+        El usuario <strong>${escapeHtml(fullName)}</strong> ha enviado una nueva solicitud de incapacidad. A continuación, los detalles de la solicitud.
       </p>`,
     detailsRows: buildDetailsRows(absence),
     reason: absence.reason,
-    attachmentNote: `Encontrarás el reporte completo en formato PDF adjunto a este correo${absence.imagesCount > 0 ? ', incluyendo la información de los documentos adjuntos cargados por el empleado' : ''}.`,
+    footerNote: `Puedes revisar la solicitud completa, incluyendo los documentos adjuntos${absence.imagesCount > 0 ? ` (${absence.imagesCount})` : ''}, desde el panel de Recursos Humanos en VEO Services.`,
   });
   return { subject, html };
 }
@@ -194,13 +194,10 @@ export function buildEmployeeAbsenceConfirmationEmail(
       </p>
       <p style="margin:0 0 16px;font-size:14px;line-height:1.6;">
         Hemos recibido tu solicitud de incapacidad y ha sido enviada al equipo de Recursos Humanos para su revisión. Te notificaremos cuando el estado de tu solicitud cambie.
-      </p>
-      <p style="margin:0 0 16px;font-size:14px;line-height:1.6;color:#4b5563;">
-        Adjunto encontrarás un reporte en PDF con la información de tu solicitud para tu registro.
       </p>`,
     detailsRows: buildDetailsRows(absence),
     reason: absence.reason,
-    attachmentNote:
+    footerNote:
       'Si necesitas hacer cambios o tienes alguna duda, ponte en contacto con el equipo de Recursos Humanos.',
   });
   return { subject, html };
