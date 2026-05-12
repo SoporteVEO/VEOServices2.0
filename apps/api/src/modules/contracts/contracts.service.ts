@@ -1,7 +1,14 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import {
+  Injectable,
+  InternalServerErrorException,
+  Logger,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { BriloDatabaseService } from '../brilo-database/brilo-database.service.js';
-import { S3StorageService } from '../s3-images/s3-storage.service.js';
+import {
+  S3StorageService,
+  type PresignedPutResult,
+} from '../s3-images/s3-storage.service.js';
 import { EmailService } from '../email/email.service.js';
 import { NotificationStatus, S3ImageType } from '@prisma/client';
 import type { EndingSoonContract } from './entities/ending-soon-contract.js';
@@ -12,9 +19,10 @@ import type {
   PaginatedActiveContracts,
 } from './entities/active-contract-with-images.js';
 import type { CreateNotifiedContractDto } from './dto/create-notified-contract.dto.js';
-import type {
-  ContractReportType,
-  SendMaintenanceReportDto,
+import {
+  REPORT_UPLOAD_FOLDER,
+  type ContractReportType,
+  type SendMaintenanceReportDto,
 } from './dto/send-maintenance-report.dto.js';
 
 const REPORT_TYPE_EMAIL_LABELS: Record<
@@ -184,8 +192,14 @@ WHERE maecon.mconId IN (__IDS__)
 ORDER BY maecon.mconId, detcon.dconFechaHasta ASC
 `;
 
+const REPORT_FILE_MIME_TYPE =
+  'application/vnd.openxmlformats-officedocument.presentationml.presentation';
+const REPORT_FILE_EXTENSION = 'pptx';
+
 @Injectable()
 export class ContractsService {
+  private readonly logger = new Logger(ContractsService.name);
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly brilo: BriloDatabaseService,
@@ -440,8 +454,26 @@ export class ContractsService {
     return result;
   }
 
+  async createReportUploadUrl(): Promise<PresignedPutResult> {
+    return this.s3Storage.getPresignedPutUrl({
+      extension: REPORT_FILE_EXTENSION,
+      mimeType: REPORT_FILE_MIME_TYPE,
+      folder: REPORT_UPLOAD_FOLDER,
+    });
+  }
+
   async sendMaintenanceReport(dto: SendMaintenanceReportDto) {
-    const fileBuffer = decodeReportFile(dto.fileBase64);
+    let fileBuffer: Buffer;
+    try {
+      fileBuffer = await this.s3Storage.getObjectBuffer(dto.fileKey);
+    } catch (err) {
+      this.logger.error(
+        `No se pudo descargar el reporte ${dto.fileKey}: ${String(err)}`,
+      );
+      throw new InternalServerErrorException(
+        'No se pudo recuperar el archivo del reporte',
+      );
+    }
 
     const labels = REPORT_TYPE_EMAIL_LABELS[dto.reportType ?? 'monthly'];
     const subject = `${labels.subject} - Contrato ${dto.contractNumber} (${dto.period})`;
@@ -454,27 +486,30 @@ export class ContractsService {
       body: labels.body,
     });
 
-    const { error } = await this.email.sendEmail(
-      dto.email,
-      subject,
-      htmlContent,
-      [
-        {
-          filename: dto.fileName,
-          content: fileBuffer,
-          contentType:
-            'application/vnd.openxmlformats-officedocument.presentationml.presentation',
-        },
-      ],
-    );
-
-    if (error) {
-      throw new InternalServerErrorException(
-        `No se pudo enviar el reporte: ${error.message}`,
+    try {
+      const { error } = await this.email.sendEmail(
+        dto.email,
+        subject,
+        htmlContent,
+        [
+          {
+            filename: dto.fileName,
+            content: fileBuffer,
+            contentType: REPORT_FILE_MIME_TYPE,
+          },
+        ],
       );
-    }
 
-    return { success: true };
+      if (error) {
+        throw new InternalServerErrorException(
+          `No se pudo enviar el reporte: ${error.message}`,
+        );
+      }
+
+      return { success: true };
+    } finally {
+      await this.s3Storage.deleteByKey(dto.fileKey);
+    }
   }
 
   private mapSourceContracts(
@@ -506,11 +541,6 @@ function clampPageSize(value: number | undefined): number {
 
 function escapeLikePattern(value: string): string {
   return value.replace(/[\\%_[]/g, (char) => `\\${char}`);
-}
-
-function decodeReportFile(input: string): Buffer {
-  const cleaned = input.includes(',') ? (input.split(',').pop() ?? '') : input;
-  return Buffer.from(cleaned, 'base64');
 }
 
 function buildMaintenanceReportEmailHtml(params: {

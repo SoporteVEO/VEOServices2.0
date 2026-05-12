@@ -9,7 +9,10 @@ import type {
   ActiveContractGroup,
   ActiveContractImage,
 } from "@/api/contracts/contracts.get";
-import { sendMaintenanceReport } from "@/api/contracts/contracts.post";
+import {
+  createReportUploadUrl,
+  sendMaintenanceReport,
+} from "@/api/contracts/contracts.post";
 import type { S3Image } from "@/api/s3-images/s3-images.get";
 import { Badge } from "@/components/primitives/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -27,9 +30,13 @@ import {
   generateContractReport,
   type ContractReportProgress,
 } from "@/lib/generate-contract-report";
+import { uploadBlobToPresignedUrl } from "@/lib/upload-blob-to-presigned-url";
 import { cn } from "@/lib/utils";
 import { SendReportDialog } from "./send-report-dialog";
 import { REPORT_TYPE_CONFIG, type ReportType } from "./report-types";
+
+const REPORT_FILE_MIME_TYPE =
+  "application/vnd.openxmlformats-officedocument.presentationml.presentation";
 
 function toS3ImagePreview(
   image: ActiveContractImage,
@@ -148,9 +155,15 @@ function ContractReportDrawerContent({
         onProgress: setProgress,
       });
 
-      setProgress({ stage: "Enviando email", current: 0, total: 1 });
-      const fileBase64 = await blobToBase64(blob);
+      setProgress({ stage: "Subiendo reporte", current: 0, total: 1 });
+      const { key, url } = await createReportUploadUrl();
+      await uploadBlobToPresignedUrl({
+        url,
+        blob,
+        contentType: REPORT_FILE_MIME_TYPE,
+      });
 
+      setProgress({ stage: "Enviando email", current: 0, total: 1 });
       await sendMaintenanceReport({
         email,
         contractNumber: group.contractNumber,
@@ -158,7 +171,7 @@ function ContractReportDrawerContent({
         description: group.description,
         period,
         fileName,
-        fileBase64,
+        fileKey: key,
         reportType,
       });
 
@@ -263,23 +276,6 @@ function ContractReportDrawerContent({
       />
     </>
   );
-}
-
-async function blobToBase64(blob: Blob): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      const result = reader.result;
-      if (typeof result !== "string") {
-        reject(new Error("Failed to read blob"));
-        return;
-      }
-      const commaIdx = result.indexOf(",");
-      resolve(commaIdx >= 0 ? result.slice(commaIdx + 1) : result);
-    };
-    reader.onerror = () => reject(new Error("Failed to read blob"));
-    reader.readAsDataURL(blob);
-  });
 }
 
 function buildInitialSelection(

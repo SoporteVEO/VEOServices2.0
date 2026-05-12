@@ -104,6 +104,11 @@ export class ContractsController {
     return { data: contracts };
   }
 
+  @Post('report-upload-url')
+  async createReportUploadUrl() {
+    return this.contractsService.createReportUploadUrl();
+  }
+
   @Post('send-maintenance-report')
   async sendMaintenanceReport(@Body() dto: SendMaintenanceReportDto) {
     return await this.contractsService.sendMaintenanceReport(dto);

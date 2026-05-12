@@ -18,7 +18,20 @@ export interface UploadBufferInput {
   folder?: string;
 }
 
+export interface PresignedPutInput {
+  extension: string;
+  mimeType: string;
+  folder?: string;
+  expiresIn?: number;
+}
+
+export interface PresignedPutResult {
+  key: string;
+  url: string;
+}
+
 const DEFAULT_SIGNED_URL_EXPIRES = 60 * 60 * 24 * 7;
+const DEFAULT_PUT_URL_EXPIRES = 60 * 10;
 
 @Injectable()
 export class S3StorageService {
@@ -73,6 +86,25 @@ export class S3StorageService {
       new GetObjectCommand({ Bucket: this.bucket, Key: key }),
       { expiresIn },
     );
+  }
+
+  async getPresignedPutUrl(
+    input: PresignedPutInput,
+  ): Promise<PresignedPutResult> {
+    const folder = input.folder ?? 'uploads';
+    const key = `${folder}/${crypto.randomUUID()}.${input.extension}`;
+
+    const url = await getSignedUrl(
+      this.client,
+      new PutObjectCommand({
+        Bucket: this.bucket,
+        Key: key,
+        ContentType: input.mimeType,
+      }),
+      { expiresIn: input.expiresIn ?? DEFAULT_PUT_URL_EXPIRES },
+    );
+
+    return { key, url };
   }
 
   async getObjectBuffer(key: string): Promise<Buffer> {

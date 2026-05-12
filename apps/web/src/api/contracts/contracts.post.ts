@@ -2,6 +2,18 @@ import { apiFetch } from "@/lib/api";
 
 export type ContractReportType = "monthly" | "installation" | "maintenance";
 
+export interface ReportUploadUrl {
+  key: string;
+  url: string;
+}
+
+export async function createReportUploadUrl(): Promise<ReportUploadUrl> {
+  return apiFetch<ReportUploadUrl>("/contracts/report-upload-url", {
+    method: "POST",
+    body: JSON.stringify({}),
+  });
+}
+
 export interface SendMaintenanceReportInput {
   email: string;
   contractNumber: string;
@@ -9,7 +21,7 @@ export interface SendMaintenanceReportInput {
   description?: string;
   period: string;
   fileName: string;
-  fileBase64: string;
+  fileKey: string;
   reportType?: ContractReportType;
 }
 
