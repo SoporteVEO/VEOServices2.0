@@ -1,4 +1,6 @@
 import {
+  ArrayUnique,
+  IsArray,
   IsEmail,
   IsEnum,
   IsOptional,
@@ -10,6 +12,11 @@ enum Role {
   ADMIN = 'ADMIN',
   USER = 'USER',
   LIMITED = 'LIMITED',
+}
+
+enum SubRole {
+  HR = 'HR',
+  USERS_MANAGEMENT = 'USERS_MANAGEMENT',
 }
 
 export class CreateUserDto {
@@ -30,4 +37,10 @@ export class CreateUserDto {
   @IsEnum(Role)
   @IsOptional()
   role?: Role;
+
+  @IsArray()
+  @IsEnum(SubRole, { each: true })
+  @ArrayUnique()
+  @IsOptional()
+  subRoles?: SubRole[];
 }

@@ -9,14 +9,16 @@ import {
   Monitor,
   Image,
   SquareChartGantt,
+  BookUser,
 } from "lucide-react";
-import { UserRole } from "@/api/users/users.types";
+import { SubRole, UserRole } from "@/api/users/users.types";
 
 export interface NavItem {
   title: string;
   href: string;
   icon: LucideIcon;
   allowedRoles?: UserRole[];
+  requiredSubRoles?: SubRole[];
 }
 
 export interface NavGroup {
@@ -54,6 +56,13 @@ export const NAV_GROUPS: NavGroup[] = [
         icon: Image,
         allowedRoles: ["ADMIN", "USER", "LIMITED"],
       },
+      {
+        title: "Recursos Humanos",
+        href: "/dashboard/rh",
+        icon: BookUser,
+        allowedRoles: [],
+        requiredSubRoles: ["HR"],
+      },
     ],
   },
   {
@@ -70,7 +79,8 @@ export const NAV_GROUPS: NavGroup[] = [
         title: "Usuarios",
         href: "/dashboard/users",
         icon: Users,
-        allowedRoles: ["ADMIN"],
+        allowedRoles: [],
+        requiredSubRoles: ["USERS_MANAGEMENT"],
       },
     ],
   },
@@ -78,20 +88,77 @@ export const NAV_GROUPS: NavGroup[] = [
 
 export const NAV_ITEMS: NavItem[] = NAV_GROUPS.flatMap((group) => group.items);
 
-export function canRoleAccessItem(item: NavItem, role?: UserRole): boolean {
-  const allowed = item.allowedRoles ?? DEFAULT_ALLOWED_ROLES;
+const SYSTEM_PATHS = ["/dashboard/me"];
+
+export function canAccessItem(
+  item: NavItem,
+  role?: UserRole,
+  subRoles?: SubRole[],
+): boolean {
   if (!role) return false;
-  return allowed.includes(role);
+
+  const allowedRoles = item.allowedRoles ?? DEFAULT_ALLOWED_ROLES;
+  const hasRoleAccess = allowedRoles.includes(role);
+
+  const requiredSubRoles = item.requiredSubRoles ?? [];
+  const hasSubRoleAccess =
+    requiredSubRoles.length > 0 &&
+    requiredSubRoles.some((sr) => subRoles?.includes(sr));
+
+  return hasRoleAccess || hasSubRoleAccess;
 }
 
-export function filterNavGroupsByRole(
+export function filterNavGroupsByAccess(
   groups: NavGroup[],
   role?: UserRole,
+  subRoles?: SubRole[],
 ): NavGroup[] {
   return groups
     .map((g) => ({
       ...g,
-      items: g.items.filter((i) => canRoleAccessItem(i, role)),
+      items: g.items.filter((i) => canAccessItem(i, role, subRoles)),
     }))
     .filter((g) => g.items.length > 0);
+}
+
+function isUnderPath(pathname: string, base: string): boolean {
+  return pathname === base || pathname.startsWith(`${base}/`);
+}
+
+export function isSystemPath(pathname: string): boolean {
+  return SYSTEM_PATHS.some((p) => isUnderPath(pathname, p));
+}
+
+export function findNavItemForPath(pathname: string): NavItem | undefined {
+  return NAV_ITEMS.filter((i) => isUnderPath(pathname, i.href)).sort(
+    (a, b) => b.href.length - a.href.length,
+  )[0];
+}
+
+export function findFirstAccessibleItem(
+  role?: UserRole,
+  subRoles?: SubRole[],
+): NavItem | undefined {
+  return NAV_ITEMS.find((i) => canAccessItem(i, role, subRoles));
+}
+
+export type AccessResult =
+  | { allowed: true }
+  | { allowed: false; redirectTo: string };
+
+export function resolvePathAccess(
+  pathname: string,
+  role?: UserRole,
+  subRoles?: SubRole[],
+): AccessResult {
+  if (isSystemPath(pathname)) return { allowed: true };
+
+  const item = findNavItemForPath(pathname);
+
+  if (item && canAccessItem(item, role, subRoles)) {
+    return { allowed: true };
+  }
+
+  const fallback = findFirstAccessibleItem(role, subRoles);
+  return { allowed: false, redirectTo: fallback?.href ?? "/dashboard/me" };
 }

@@ -6,14 +6,14 @@ import {
   Patch,
   Param,
   Delete,
-  SetMetadata,
+  HttpCode,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { REQUIRED_ROLES_KEY } from '../auth/decorators.js';
+import { RequiredSubRoles } from '../auth/decorators.js';
 
-@SetMetadata(REQUIRED_ROLES_KEY, ['ADMIN'])
+@RequiredSubRoles('USERS_MANAGEMENT')
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
@@ -40,6 +40,13 @@ export class UsersController {
   async update(@Param('id') id: string, @Body() dto: UpdateUserDto) {
     const updated = await this.usersService.update(id, dto);
     return { data: updated };
+  }
+
+  @Post(':id/force-logout')
+  @HttpCode(200)
+  async forceLogout(@Param('id') id: string) {
+    const result = await this.usersService.forceLogout(id);
+    return { data: result };
   }
 
   @Delete(':id')

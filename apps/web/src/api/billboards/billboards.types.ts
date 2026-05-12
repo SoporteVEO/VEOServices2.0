@@ -48,6 +48,12 @@ export interface BillboardContractHistoryItem {
   price: number | null;
 }
 
+export interface BillboardImageItem {
+  imageId: number;
+  uploadedAt: string | null;
+  notes: string | null;
+}
+
 export interface DashboardKpis {
   totalBillboards: number;
   occupiedBillboards: number;

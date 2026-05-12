@@ -1,0 +1,2 @@
+-- AlterEnum
+ALTER TYPE "SubRole" ADD VALUE 'USERS_MANAGEMENT';

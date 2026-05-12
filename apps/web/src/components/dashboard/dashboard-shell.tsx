@@ -2,8 +2,10 @@
 
 import type { ReactNode } from "react";
 
+import { ActivityTracker } from "@/components/dashboard/activity-tracker";
 import { AppSidebar } from "@/components/dashboard/app-sidebar";
-import { LimitedRoleRedirect } from "@/components/dashboard/limited-role-redirect";
+import { DashboardAccessGuard } from "@/components/dashboard/dashboard-access-guard";
+import { NotificationsButton } from "@/components/dashboard/notifications";
 import { ModeToggle } from "@/components/mode-toggle";
 import { Separator } from "@/components/primitives/ui/separator";
 import {
@@ -23,6 +25,7 @@ export function DashboardShell({ children }: { children: ReactNode }) {
 
   return (
     <SidebarProvider>
+      <ActivityTracker />
       <AppSidebar />
       <SidebarInset className="min-w-0 overflow-hidden">
         <header className="flex h-12 shrink-0 items-center gap-2 border-b border-border px-4 w-full">
@@ -32,16 +35,13 @@ export function DashboardShell({ children }: { children: ReactNode }) {
             {title}
           </span>
           <div className="flex flex-1 items-center justify-end gap-2">
+            <NotificationsButton />
             <ModeToggle />
           </div>
         </header>
         <div className="relative flex min-w-0 flex-1 flex-col overflow-hidden">
-          <div
-            aria-hidden
-            className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_120%_80%_at_50%_-30%,oklch(0.72_0.17_45/0.12),transparent_55%)] dark:bg-[radial-gradient(ellipse_120%_80%_at_50%_-30%,oklch(0.55_0.18_264/0.18),transparent_55%)]"
-          />
-          <div className="flex h-full w-full min-w-0 flex-1 flex-col overflow-x-auto overflow-y-auto p-4">
-            <LimitedRoleRedirect>{children}</LimitedRoleRedirect>
+          <div className="flex h-full w-full min-w-0 flex-1 flex-col overflow-x-auto overflow-y-auto p-4 bg-background">
+            <DashboardAccessGuard>{children}</DashboardAccessGuard>
           </div>
         </div>
       </SidebarInset>

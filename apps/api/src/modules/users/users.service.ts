@@ -7,6 +7,22 @@ import { PrismaService } from '../prisma/prisma.service.js';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 
+const USER_PUBLIC_SELECT = {
+  id: true,
+  publicId: true,
+  firstName: true,
+  lastName: true,
+  email: true,
+  role: true,
+  subRoles: true,
+  disabled: true,
+  lastLoginAt: true,
+  createdAt: true,
+  updatedAt: true,
+  emailVerified: true,
+  image: true,
+} as const;
+
 @Injectable()
 export class UsersService {
   constructor(private readonly prisma: PrismaService) {}
@@ -29,18 +45,10 @@ export class UsersService {
         lastName: dto.lastName ?? null,
         email: dto.email,
         role: dto.role ?? 'USER',
+        subRoles: dto.subRoles ?? [],
         emailVerified: false,
       },
-      select: {
-        id: true,
-        publicId: true,
-        firstName: true,
-        lastName: true,
-        email: true,
-        role: true,
-        createdAt: true,
-        emailVerified: true,
-      },
+      select: USER_PUBLIC_SELECT,
     });
 
     await this.prisma.account.create({
@@ -58,17 +66,7 @@ export class UsersService {
 
   async findAll() {
     return this.prisma.user.findMany({
-      select: {
-        id: true,
-        publicId: true,
-        firstName: true,
-        lastName: true,
-        email: true,
-        role: true,
-        createdAt: true,
-        emailVerified: true,
-        image: true,
-      },
+      select: USER_PUBLIC_SELECT,
       orderBy: { createdAt: 'desc' },
     });
   }
@@ -76,17 +74,7 @@ export class UsersService {
   async findOne(id: string) {
     const user = await this.prisma.user.findUnique({
       where: { id },
-      select: {
-        id: true,
-        publicId: true,
-        firstName: true,
-        lastName: true,
-        email: true,
-        role: true,
-        createdAt: true,
-        emailVerified: true,
-        image: true,
-      },
+      select: USER_PUBLIC_SELECT,
     });
     if (!user) throw new NotFoundException('Usuario no encontrado');
     return user;
@@ -104,22 +92,15 @@ export class UsersService {
       }
     }
 
-    const { password, ...userData } = dto;
+    const { password, disabled, ...userData } = dto;
 
     const user = await this.prisma.user.update({
       where: { id },
-      data: userData,
-      select: {
-        id: true,
-        publicId: true,
-        firstName: true,
-        lastName: true,
-        email: true,
-        role: true,
-        createdAt: true,
-        emailVerified: true,
-        image: true,
+      data: {
+        ...userData,
+        ...(typeof disabled === 'boolean' ? { disabled } : {}),
       },
+      select: USER_PUBLIC_SELECT,
     });
 
     if (password) {
@@ -131,7 +112,19 @@ export class UsersService {
       });
     }
 
+    if (disabled === true) {
+      await this.prisma.session.deleteMany({ where: { userId: id } });
+    }
+
     return user;
+  }
+
+  async forceLogout(id: string): Promise<{ sessionsDeleted: number }> {
+    await this.findOne(id);
+    const result = await this.prisma.session.deleteMany({
+      where: { userId: id },
+    });
+    return { sessionsDeleted: result.count };
   }
 
   async remove(id: string) {

@@ -19,12 +19,14 @@ type DeleteUserDialogProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   user: User | null;
+  onDeleted?: () => void;
 };
 
 export function DeleteUserDialog({
   open,
   onOpenChange,
   user,
+  onDeleted,
 }: DeleteUserDialogProps) {
   const deleteMutation = useDeleteUser();
 
@@ -34,6 +36,7 @@ export function DeleteUserDialog({
       onSuccess: () => {
         toast.success("Usuario eliminado");
         onOpenChange(false);
+        onDeleted?.();
       },
       onError: (err: Error) => toast.error(err.message || "Error al eliminar"),
     });

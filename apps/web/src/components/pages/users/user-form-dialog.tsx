@@ -8,7 +8,6 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
 } from "@/components/ui/dialog";
 import { UserForm, type UserFormValues } from "./user-form";
 
@@ -37,6 +36,7 @@ export function UserFormDialog({
           lastName: values.lastName || undefined,
           email: values.email,
           role: values.role,
+          subRoles: values.subRoles,
           ...(values.password ? { password: values.password } : {}),
         },
         {
@@ -56,6 +56,7 @@ export function UserFormDialog({
           email: values.email,
           password: values.password,
           role: values.role,
+          subRoles: values.subRoles,
         },
         {
           onSuccess: () => {
@@ -89,6 +90,7 @@ export function UserFormDialog({
                   lastName: user.lastName ?? "",
                   email: user.email,
                   role: user.role,
+                  subRoles: user.subRoles ?? [],
                 }
               : undefined
           }

@@ -1,5 +1,7 @@
 export type UserRole = "ADMIN" | "USER" | "LIMITED";
 
+export type SubRole = "HR" | "USERS_MANAGEMENT";
+
 export type User = {
   id: string;
   publicId: string;
@@ -7,7 +9,11 @@ export type User = {
   lastName: string | null;
   email: string;
   role: UserRole;
+  subRoles: SubRole[];
+  disabled: boolean;
+  lastLoginAt: string | null;
   createdAt: string;
+  updatedAt: string;
   emailVerified: boolean;
   image: string | null;
 };
@@ -18,6 +24,7 @@ export type CreateUserInput = {
   email: string;
   password: string;
   role?: UserRole;
+  subRoles?: SubRole[];
 };
 
 export type UpdateUserInput = {
@@ -26,4 +33,6 @@ export type UpdateUserInput = {
   email?: string;
   password?: string;
   role?: UserRole;
+  subRoles?: SubRole[];
+  disabled?: boolean;
 };

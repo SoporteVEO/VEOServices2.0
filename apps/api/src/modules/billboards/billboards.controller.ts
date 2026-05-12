@@ -135,6 +135,17 @@ export class BillboardsController {
     return { data: contracts };
   }
 
+  @Get(':billboardId/images')
+  async getBillboardImages(@Param('billboardId') billboardIdRaw: string) {
+    const billboardId = Number(billboardIdRaw);
+    if (!Number.isFinite(billboardId)) {
+      throw new BadRequestException('billboardId inválido');
+    }
+
+    const images = await this.service.getBillboardImages(billboardId);
+    return { data: images };
+  }
+
   @Get()
   async getAvailableBillboards(
     @Query('departmentId') departmentIdRaw: string,
