@@ -1,9 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Combobox } from "@/components/ui/combobox";
 import {
   Select,
   SelectContent,
@@ -13,12 +12,11 @@ import {
 } from "@/components/ui/select";
 import { ImageUploader } from "@/components/ui/image-uploader";
 import { DialogBody, DialogFooter } from "@/components/ui/dialog";
-import { useStaticBillboardCodes } from "@/api/static-billboard-codes/static-billboard-codes.get";
 import {
   S3_IMAGE_TYPE_OPTIONS,
   type S3ImageType,
 } from "@/api/s3-images/s3-images.get";
-import { CreateStaticBillboardCodeDialog } from "./create-static-billboard-code-dialog";
+import { StaticBillboardCodeCombobox } from "./static-billboard-code-combobox";
 
 export interface UploadImageFormValues {
   imageBase64: string;
@@ -56,19 +54,7 @@ export function UploadImageForm({
   const [staticBillboardCodeId, setStaticBillboardCodeId] = useState<
     string | null
   >(null);
-  const [createCodeOpen, setCreateCodeOpen] = useState(false);
   const [validationError, setValidationError] = useState<string | null>(null);
-
-  const { data: codes, isLoading: isLoadingCodes } = useStaticBillboardCodes();
-
-  const codeOptions = useMemo(
-    () =>
-      (codes ?? []).map((code) => ({
-        value: code.id,
-        label: code.code,
-      })),
-    [codes],
-  );
 
   async function handleImageReady(blob: Blob) {
     const base64 = await blobToBase64(blob);
@@ -91,73 +77,54 @@ export function UploadImageForm({
   }
 
   return (
-    <>
-      <form
-        onSubmit={handleSubmit}
-        className="flex min-h-0 flex-1 flex-col"
-      >
-        <DialogBody className="space-y-4">
-          <Select
-            label="Tipo de imagen"
-            value={type}
-            onValueChange={(v) => setType(v as S3ImageType)}
-          >
-            <SelectTrigger className="w-full">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {S3_IMAGE_TYPE_OPTIONS.map((opt) => (
-                <SelectItem key={opt.value} value={opt.value}>
-                  {opt.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+    <form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col">
+      <DialogBody className="space-y-4">
+        <Select
+          label="Tipo de imagen"
+          value={type}
+          onValueChange={(v) => setType(v as S3ImageType)}
+        >
+          <SelectTrigger className="w-full">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {S3_IMAGE_TYPE_OPTIONS.map((opt) => (
+              <SelectItem key={opt.value} value={opt.value}>
+                {opt.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
 
-          <Combobox
-            label="Código de valla estática"
-            placeholder="Selecciona un código"
-            emptyLabel="No hay códigos creados."
-            options={codeOptions}
-            value={staticBillboardCodeId}
-            isLoading={isLoadingCodes}
-            onChange={(v) =>
-              setStaticBillboardCodeId(v == null ? null : String(v))
-            }
-            addLabel="Crear nuevo código"
-            onAdd={() => setCreateCodeOpen(true)}
-          />
+        <StaticBillboardCodeCombobox
+          label="Código de valla estática"
+          value={staticBillboardCodeId}
+          onChange={setStaticBillboardCodeId}
+        />
 
-          <ImageUploader disableCrop onImageCropped={handleImageReady} />
+        <ImageUploader disableCrop onImageCropped={handleImageReady} />
 
-          {validationError ? (
-            <p className="text-sm text-destructive">{validationError}</p>
-          ) : null}
-          {errorMessage ? (
-            <p className="text-sm text-destructive">{errorMessage}</p>
-          ) : null}
-        </DialogBody>
+        {validationError ? (
+          <p className="text-sm text-destructive">{validationError}</p>
+        ) : null}
+        {errorMessage ? (
+          <p className="text-sm text-destructive">{errorMessage}</p>
+        ) : null}
+      </DialogBody>
 
-        <DialogFooter>
-          <Button type="button" variant="outline" onClick={onCancel}>
-            Cancelar
-          </Button>
-          <Button
-            type="submit"
-            disabled={isPending}
-            icon={isPending ? Loader2 : undefined}
-            iconClassName={isPending ? "animate-spin" : undefined}
-          >
-            {isPending ? "Subiendo..." : "Subir imagen"}
-          </Button>
-        </DialogFooter>
-      </form>
-
-      <CreateStaticBillboardCodeDialog
-        open={createCodeOpen}
-        onOpenChange={setCreateCodeOpen}
-        onCreated={(created) => setStaticBillboardCodeId(created.id)}
-      />
-    </>
+      <DialogFooter>
+        <Button type="button" variant="outline" onClick={onCancel}>
+          Cancelar
+        </Button>
+        <Button
+          type="submit"
+          disabled={isPending}
+          icon={isPending ? Loader2 : undefined}
+          iconClassName={isPending ? "animate-spin" : undefined}
+        >
+          {isPending ? "Subiendo..." : "Subir imagen"}
+        </Button>
+      </DialogFooter>
+    </form>
   );
 }

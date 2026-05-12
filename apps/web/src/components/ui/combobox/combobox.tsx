@@ -1,6 +1,6 @@
 "use client";
 
-import { CheckIcon, ChevronDown, ChevronsDown, Loader2 } from "lucide-react";
+import { CheckIcon, ChevronDown, Loader2 } from "lucide-react";
 import * as React from "react";
 import { type VariantProps } from "class-variance-authority";
 
@@ -19,6 +19,7 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/primitives/ui/command";
+import { useIntersectionObserver } from "@/hooks/use-intersection-observer";
 
 export interface ComboboxOption {
   value: string | number;
@@ -46,11 +47,24 @@ interface ComboboxProps {
   className?: string;
   triggerClassName?: string;
   disabled?: boolean;
+  /** Fires whenever the search input changes. */
   onSearch?: (search: string) => void;
   emptyLabel?: string;
   preserveOptionOrder?: boolean;
   size?: ComboboxSize;
   leadingIcon?: React.ReactNode;
+  /** When true, disables cmdk's internal filter and renders options as-is (use with server-side search). */
+  manualFilter?: boolean;
+  /** Whether more pages are available for infinite scroll. */
+  hasMore?: boolean;
+  /** Called when the bottom sentinel becomes visible. */
+  onLoadMore?: () => void;
+  /** Whether the next page is currently being loaded. */
+  isLoadingMore?: boolean;
+  /** Fallback option used to render the trigger label when `value` is not in `options` (e.g. server-side mode). */
+  selectedOption?: ComboboxOption | null;
+  /** Notifies the parent when the popover open state changes. */
+  onOpenChange?: (open: boolean) => void;
 }
 
 export function Combobox({
@@ -72,28 +86,53 @@ export function Combobox({
   preserveOptionOrder = false,
   size = "default",
   leadingIcon,
+  manualFilter = false,
+  hasMore = false,
+  onLoadMore,
+  isLoadingMore = false,
+  selectedOption,
+  onOpenChange,
 }: ComboboxProps) {
   const [open, setOpen] = React.useState(false);
 
+  function handleOpenChange(next: boolean) {
+    setOpen(next);
+    onOpenChange?.(next);
+  }
+
   const hasSelection = value !== undefined && value !== null && value !== "";
 
-  const sortedOptions = preserveOptionOrder
-    ? [...options]
-    : [...options].sort((a, b) => {
-        const sa =
-          typeof a.label === "string"
-            ? a.label
-            : (a.filterValue ?? String(a.value));
-        const sb =
-          typeof b.label === "string"
-            ? b.label
-            : (b.filterValue ?? String(b.value));
-        return sa.localeCompare(sb, undefined, { sensitivity: "base" });
-      });
+  const sortedOptions =
+    preserveOptionOrder || manualFilter
+      ? options
+      : [...options].sort((a, b) => {
+          const sa =
+            typeof a.label === "string"
+              ? a.label
+              : (a.filterValue ?? String(a.value));
+          const sb =
+            typeof b.label === "string"
+              ? b.label
+              : (b.filterValue ?? String(b.value));
+          return sa.localeCompare(sb, undefined, { sensitivity: "base" });
+        });
 
   const selectedLabel = hasSelection
-    ? sortedOptions.find((option) => option.value === value)?.label
+    ? (sortedOptions.find((option) => option.value === value)?.label ??
+      (selectedOption && selectedOption.value === value
+        ? selectedOption.label
+        : null))
     : null;
+
+  const sentinelRef = useIntersectionObserver<HTMLDivElement>(
+    () => {
+      if (hasMore && !isLoadingMore) onLoadMore?.();
+    },
+    {
+      enabled: open && hasMore && !isLoadingMore && Boolean(onLoadMore),
+      rootMargin: "120px",
+    },
+  );
 
   return (
     <div className={cn("flex flex-col", label ? "gap-2" : "gap-0", className)}>
@@ -103,7 +142,7 @@ export function Combobox({
           {required && <span className="text-red-500 ml-1">*</span>}
         </p>
       )}
-      <Popover open={open} onOpenChange={setOpen}>
+      <Popover open={open} onOpenChange={handleOpenChange}>
         <PopoverTrigger asChild>
           <Button
             type="button"
@@ -135,7 +174,7 @@ export function Combobox({
           side="bottom"
           sideOffset={4}
         >
-          <Command>
+          <Command shouldFilter={!manualFilter}>
             {enableSearch && (
               <CommandInput
                 placeholder={placeholder}
@@ -155,7 +194,8 @@ export function Combobox({
               <CommandGroup>
                 {addLabel && (
                   <CommandItem
-                    value="add"
+                    value="__add__"
+                    keywords={[addLabel]}
                     onSelect={() => {
                       onAdd?.();
                       setOpen(false);
@@ -169,6 +209,7 @@ export function Combobox({
                 {!required && (
                   <CommandItem
                     value="__clear__"
+                    keywords={[placeholder]}
                     onSelect={() => {
                       onChange(undefined);
                       setOpen(false);
@@ -203,6 +244,19 @@ export function Combobox({
                     </CommandItem>
                   );
                 })}
+
+                {hasMore ? (
+                  <div
+                    ref={sentinelRef}
+                    className="flex h-9 items-center justify-center text-xs text-muted-foreground"
+                  >
+                    {isLoadingMore ? (
+                      <Loader2 className="size-4 animate-spin" />
+                    ) : (
+                      <span className="opacity-0">cargar más</span>
+                    )}
+                  </div>
+                ) : null}
               </CommandGroup>
             </CommandList>
           </Command>

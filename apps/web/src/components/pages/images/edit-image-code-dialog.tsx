@@ -51,7 +51,7 @@ export function EditImageCodeDialog({
         {image ? (
           <EditImageCodeForm
             key={image.id}
-            defaultStaticBillboardCodeId={image.staticBillboardCodeId}
+            defaultStaticBillboardCode={image.staticBillboardCode}
             isPending={updateMutation.isPending}
             errorMessage={updateMutation.error?.message}
             onSubmit={handleSubmit}

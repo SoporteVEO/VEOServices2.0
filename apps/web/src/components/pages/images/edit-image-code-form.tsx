@@ -1,19 +1,17 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Combobox } from "@/components/ui/combobox";
 import { DialogBody, DialogFooter } from "@/components/ui/dialog";
-import { useStaticBillboardCodes } from "@/api/static-billboard-codes/static-billboard-codes.get";
-import { CreateStaticBillboardCodeDialog } from "./create-static-billboard-code-dialog";
+import { StaticBillboardCodeCombobox } from "./static-billboard-code-combobox";
 
 export interface EditImageCodeFormValues {
   staticBillboardCodeId: string | null;
 }
 
 interface EditImageCodeFormProps {
-  defaultStaticBillboardCodeId: string | null;
+  defaultStaticBillboardCode: { id: string; code: string } | null;
   isPending?: boolean;
   errorMessage?: string;
   onSubmit: (values: EditImageCodeFormValues) => void;
@@ -21,7 +19,7 @@ interface EditImageCodeFormProps {
 }
 
 export function EditImageCodeForm({
-  defaultStaticBillboardCodeId,
+  defaultStaticBillboardCode,
   isPending = false,
   errorMessage,
   onSubmit,
@@ -29,70 +27,44 @@ export function EditImageCodeForm({
 }: EditImageCodeFormProps) {
   const [staticBillboardCodeId, setStaticBillboardCodeId] = useState<
     string | null
-  >(defaultStaticBillboardCodeId);
-  const [createCodeOpen, setCreateCodeOpen] = useState(false);
-
-  const { data: codes, isLoading: isLoadingCodes } = useStaticBillboardCodes();
-
-  const codeOptions = useMemo(
-    () =>
-      (codes ?? []).map((code) => ({
-        value: code.id,
-        label: code.code,
-      })),
-    [codes],
-  );
+  >(defaultStaticBillboardCode?.id ?? null);
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     onSubmit({ staticBillboardCodeId });
   }
 
-  const isUnchanged = staticBillboardCodeId === defaultStaticBillboardCodeId;
+  const isUnchanged =
+    staticBillboardCodeId === (defaultStaticBillboardCode?.id ?? null);
 
   return (
-    <>
-      <form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col">
-        <DialogBody className="space-y-4">
-          <Combobox
-            label="Código de valla estática"
-            placeholder="Selecciona un código"
-            emptyLabel="No hay códigos creados."
-            options={codeOptions}
-            value={staticBillboardCodeId}
-            isLoading={isLoadingCodes}
-            onChange={(v) =>
-              setStaticBillboardCodeId(v == null ? null : String(v))
-            }
-            addLabel="Crear nuevo código"
-            onAdd={() => setCreateCodeOpen(true)}
-          />
+    <form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col">
+      <DialogBody className="space-y-4">
+        <StaticBillboardCodeCombobox
+          label="Código de valla estática"
+          value={staticBillboardCodeId}
+          onChange={setStaticBillboardCodeId}
+          defaultSelectedCode={defaultStaticBillboardCode}
+        />
 
-          {errorMessage ? (
-            <p className="text-sm text-destructive">{errorMessage}</p>
-          ) : null}
-        </DialogBody>
+        {errorMessage ? (
+          <p className="text-sm text-destructive">{errorMessage}</p>
+        ) : null}
+      </DialogBody>
 
-        <DialogFooter>
-          <Button type="button" variant="outline" onClick={onCancel}>
-            Cancelar
-          </Button>
-          <Button
-            type="submit"
-            disabled={isPending || isUnchanged}
-            icon={isPending ? Loader2 : undefined}
-            iconClassName={isPending ? "animate-spin" : undefined}
-          >
-            {isPending ? "Guardando..." : "Guardar cambios"}
-          </Button>
-        </DialogFooter>
-      </form>
-
-      <CreateStaticBillboardCodeDialog
-        open={createCodeOpen}
-        onOpenChange={setCreateCodeOpen}
-        onCreated={(created) => setStaticBillboardCodeId(created.id)}
-      />
-    </>
+      <DialogFooter>
+        <Button type="button" variant="outline" onClick={onCancel}>
+          Cancelar
+        </Button>
+        <Button
+          type="submit"
+          disabled={isPending || isUnchanged}
+          icon={isPending ? Loader2 : undefined}
+          iconClassName={isPending ? "animate-spin" : undefined}
+        >
+          {isPending ? "Guardando..." : "Guardar cambios"}
+        </Button>
+      </DialogFooter>
+    </form>
   );
 }

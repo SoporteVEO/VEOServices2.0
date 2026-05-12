@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import NextImage from "next/image";
 import {
   Calendar,
@@ -26,7 +26,6 @@ import {
   useDeleteS3Image,
   useUpdateS3Image,
 } from "@/api/s3-images/s3-images.post";
-import { useStaticBillboardCodes } from "@/api/static-billboard-codes/static-billboard-codes.get";
 import { Badge } from "@/components/primitives/ui/badge";
 import {
   Dialog,
@@ -34,7 +33,6 @@ import {
   DialogTitle,
 } from "@/components/primitives/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Combobox } from "@/components/ui/combobox";
 import {
   Select,
   SelectContent,
@@ -44,8 +42,8 @@ import {
 } from "@/components/ui/select";
 import { formatShortDate } from "@/lib/format";
 import { cn } from "@/lib/utils";
-import { CreateStaticBillboardCodeDialog } from "./create-static-billboard-code-dialog";
 import { RelatedImagesScroller } from "./related-images-scroller";
+import { StaticBillboardCodeCombobox } from "./static-billboard-code-combobox";
 
 interface ImagePreviewDialogProps {
   image: S3Image | null;
@@ -248,18 +246,6 @@ function CodeSection({ image, isSaving, onSave }: CodeSectionProps) {
   const [draftCodeId, setDraftCodeId] = useState<string | null>(
     image.staticBillboardCodeId,
   );
-  const [createCodeOpen, setCreateCodeOpen] = useState(false);
-
-  const { data: codes, isLoading: isLoadingCodes } = useStaticBillboardCodes();
-
-  const codeOptions = useMemo(
-    () =>
-      (codes ?? []).map((code) => ({
-        value: code.id,
-        label: code.code,
-      })),
-    [codes],
-  );
 
   const codeLabel = image.staticBillboardCode?.code ?? "Sin código";
   const isUnchanged = draftCodeId === image.staticBillboardCodeId;
@@ -290,15 +276,10 @@ function CodeSection({ image, isSaving, onSave }: CodeSectionProps) {
 
       {isEditing ? (
         <div className="space-y-2">
-          <Combobox
-            placeholder="Selecciona un código"
-            emptyLabel="No hay códigos creados."
-            options={codeOptions}
+          <StaticBillboardCodeCombobox
             value={draftCodeId}
-            isLoading={isLoadingCodes}
-            onChange={(v) => setDraftCodeId(v == null ? null : String(v))}
-            addLabel="Crear nuevo código"
-            onAdd={() => setCreateCodeOpen(true)}
+            onChange={setDraftCodeId}
+            defaultSelectedCode={image.staticBillboardCode}
             triggerClassName="h-9 w-full"
           />
           <div className="flex items-center gap-2">
@@ -324,12 +305,6 @@ function CodeSection({ image, isSaving, onSave }: CodeSectionProps) {
               Cancelar
             </Button>
           </div>
-
-          <CreateStaticBillboardCodeDialog
-            open={createCodeOpen}
-            onOpenChange={setCreateCodeOpen}
-            onCreated={(created) => setDraftCodeId(created.id)}
-          />
         </div>
       ) : (
         <div className="flex items-center justify-between gap-2">
