@@ -44,9 +44,7 @@ function Select({
   ...rootProps
 }: SelectProps) {
   return (
-    <div
-      className={cn("flex flex-col", label ? "gap-2" : "gap-0", className)}
-    >
+    <div className={cn("flex flex-col", label ? "gap-2" : "gap-0", className)}>
       {label ? (
         <p className="text-sm font-medium text-muted-foreground">
           {label}
@@ -64,10 +62,7 @@ export { Select };
 
 type SelectSizeVariant = "sm" | "md" | "lg";
 
-const SIZE_TO_PRIMITIVE: Record<
-  SelectSizeVariant,
-  "sm" | "default" | "lg"
-> = {
+const SIZE_TO_PRIMITIVE: Record<SelectSizeVariant, "sm" | "default" | "lg"> = {
   sm: "sm",
   md: "default",
   lg: "lg",
@@ -82,10 +77,7 @@ type SelectTriggerProps = Omit<
 
 function SelectTrigger({ sizeVariant = "lg", ...props }: SelectTriggerProps) {
   return (
-    <PrimitiveSelectTrigger
-      size={SIZE_TO_PRIMITIVE[sizeVariant]}
-      {...props}
-    />
+    <PrimitiveSelectTrigger size={SIZE_TO_PRIMITIVE[sizeVariant]} {...props} />
   );
 }
 

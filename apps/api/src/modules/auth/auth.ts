@@ -6,11 +6,13 @@ let _auth: any;
 export async function createAuth(): Promise<any> {
   if (_auth) return _auth;
 
-  const [{ betterAuth }, { prismaAdapter }, { bearer }] = await Promise.all([
-    import('better-auth'),
-    import('better-auth/adapters/prisma'),
-    import('better-auth/plugins'),
-  ]);
+  const [{ betterAuth }, { APIError }, { prismaAdapter }, { bearer }] =
+    await Promise.all([
+      import('better-auth'),
+      import('better-auth/api'),
+      import('better-auth/adapters/prisma'),
+      import('better-auth/plugins'),
+    ]);
 
   const adapter = new PrismaPg({
     connectionString: process.env.DATABASE_URL,
@@ -45,6 +47,42 @@ export async function createAuth(): Promise<any> {
           type: 'string[]' as const,
           required: false,
           input: false,
+        },
+        disabled: {
+          type: 'boolean' as const,
+          required: false,
+          input: false,
+          defaultValue: false,
+        },
+        lastLoginAt: {
+          type: 'date' as const,
+          required: false,
+          input: false,
+        },
+      },
+    },
+    databaseHooks: {
+      session: {
+        create: {
+          before: async (session: Record<string, unknown>) => {
+            const userId = session.userId as string;
+            const user = await prisma.user.findUnique({
+              where: { id: userId },
+              select: { disabled: true },
+            });
+            if (user?.disabled) {
+              throw new APIError('FORBIDDEN', {
+                message: 'La cuenta está deshabilitada',
+              });
+            }
+          },
+          after: async (session: Record<string, unknown>) => {
+            const userId = session.userId as string;
+            await prisma.user.update({
+              where: { id: userId },
+              data: { lastLoginAt: new Date() },
+            });
+          },
         },
       },
     },

@@ -8,22 +8,113 @@ datasource db {
 }
 
 model User {
-  id            String    @id
-  publicId      String    @unique @default(uuid()) @map("public_id")
-  firstName     String    @map("first_name")
-  lastName      String?   @map("last_name")
-  email         String    @unique
-  role          Role      @default(USER)
-  subRoles      SubRole[] @default([]) @map("sub_roles")
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  emailVerified Boolean   @default(false)
+  id            String      @id
+  publicId      String      @unique @default(uuid()) @map("public_id")
+  firstName     String      @map("first_name")
+  lastName      String?     @map("last_name")
+  email         String      @unique
+  role          Role        @default(USER)
+  subRoles      SubRole[]   @default([]) @map("sub_roles")
+  disabled      Boolean     @default(false)
+  lastLoginAt   DateTime?   @map("last_login_at")
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  emailVerified Boolean     @default(false)
   image         String?
   accounts      Account[]
   sessions      Session[]
   s3Images      S3Image[]
+  teamMember    TeamMember?
+  absences      Absence[]
+  notifications Notification[]
+  metrics       UserMetrics?
+  metricsDays   UserMetricsDay[]
 
   @@map("users")
+}
+
+model TeamMember {
+  id            String   @id @default(uuid())
+  userId        String   @unique @map("user_id")
+  firstName     String   @map("first_name")
+  lastName      String?  @map("last_name")
+  businessEmail String   @unique @map("business_email")
+  position      String
+  salary        Float
+  vacations     Int      @default(0)
+  usedVacations Int      @default(0) @map("used_vacations")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("team_members")
+}
+
+model Absence {
+  id        String         @id @default(uuid())
+  userId    String         @map("user_id")
+  fromDate  DateTime       @map("from_date")
+  toDate    DateTime       @map("to_date")
+  reason    String
+  status    AbsenceStatus  @default(PENDING)
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+  user      User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  images    AbsenceImage[]
+
+  @@index([userId])
+  @@map("absences")
+}
+
+model AbsenceImage {
+  id        String   @id @default(uuid())
+  absenceId String   @map("absence_id")
+  url       String
+  createdAt DateTime @default(now())
+  absence   Absence  @relation(fields: [absenceId], references: [id], onDelete: Cascade)
+
+  @@index([absenceId])
+  @@map("absence_images")
+}
+
+model Notification {
+  id          String                 @id @default(uuid())
+  userId      String                 @map("user_id")
+  status      UserNotificationStatus @default(PENDING)
+  description String
+  priority    NotificationPriority   @default(MEDIUM)
+  createdAt   DateTime               @default(now())
+  updatedAt   DateTime               @updatedAt
+  user        User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, status])
+  @@index([userId, createdAt])
+  @@map("notifications")
+}
+
+model UserMetrics {
+  id         String   @id @default(uuid())
+  userId     String   @unique @map("user_id")
+  lastTickAt DateTime @default(now()) @map("last_tick_at")
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_metrics")
+}
+
+model UserMetricsDay {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  date      DateTime @db.Date
+  activeMs  Int      @default(0) @map("active_ms")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, date])
+  @@index([userId, date])
+  @@map("user_metrics_days")
 }
 
 model Session {
@@ -200,6 +291,24 @@ enum NotificationStatus {
   PENDING
   SENT
   FAILED
+}
+
+enum AbsenceStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum UserNotificationStatus {
+  PENDING
+  VIEWED
+  DELETED
+}
+
+enum NotificationPriority {
+  HIGH
+  MEDIUM
+  LOW
 }
 
 enum PurchaseStatus {

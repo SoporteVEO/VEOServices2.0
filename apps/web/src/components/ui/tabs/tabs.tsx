@@ -13,7 +13,7 @@ function Tabs({
   className,
   ...props
 }: React.ComponentProps<typeof PrimitiveTabs>) {
-  return <PrimitiveTabs {...props} />;
+  return <PrimitiveTabs className={className} {...props} />;
 }
 
 function TabsList({

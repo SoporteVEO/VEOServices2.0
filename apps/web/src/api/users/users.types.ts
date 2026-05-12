@@ -10,7 +10,10 @@ export type User = {
   email: string;
   role: UserRole;
   subRoles: SubRole[];
+  disabled: boolean;
+  lastLoginAt: string | null;
   createdAt: string;
+  updatedAt: string;
   emailVerified: boolean;
   image: string | null;
 };
@@ -31,4 +34,5 @@ export type UpdateUserInput = {
   password?: string;
   role?: UserRole;
   subRoles?: SubRole[];
+  disabled?: boolean;
 };

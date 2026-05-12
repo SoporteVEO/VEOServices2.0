@@ -224,8 +224,7 @@ function ContractReportDrawerContent({
               <span className="font-medium text-foreground tabular-nums">
                 {stats.billboardsSelected}
               </span>{" "}
-              de{" "}
-              <span className="tabular-nums">{group.totalBillboards}</span>{" "}
+              de <span className="tabular-nums">{group.totalBillboards}</span>{" "}
               vallas con imagen seleccionada
             </p>
             <p className="text-[11px] text-muted-foreground">

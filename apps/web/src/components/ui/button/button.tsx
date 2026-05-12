@@ -51,7 +51,7 @@ function Button({
   return (
     <PrimitiveButton
       className={cn(
-        "cursor-pointer",
+        `cursor-pointer ${props.variant === "outline" ? "bg-accent/50" : ""}`,
         SIZE_VARIANT_CLASS[sizeVariant],
         className,
       )}

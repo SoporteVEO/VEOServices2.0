@@ -21,6 +21,8 @@ const drawerContentSizeVariants = cva(
         md: "data-[vaul-drawer-direction=left]:sm:max-w-md data-[vaul-drawer-direction=right]:sm:max-w-md data-[vaul-drawer-direction=bottom]:max-h-[65vh] data-[vaul-drawer-direction=top]:max-h-[65vh] will-change-transform",
         lg: "data-[vaul-drawer-direction=left]:sm:max-w-lg data-[vaul-drawer-direction=right]:sm:max-w-lg data-[vaul-drawer-direction=bottom]:max-h-[80vh] data-[vaul-drawer-direction=top]:max-h-[80vh] will-change-transform",
         xl: "data-[vaul-drawer-direction=left]:sm:max-w-xl data-[vaul-drawer-direction=right]:sm:max-w-xl data-[vaul-drawer-direction=left]:lg:max-w-2xl data-[vaul-drawer-direction=right]:lg:max-w-3xl data-[vaul-drawer-direction=bottom]:max-h-[90vh] data-[vaul-drawer-direction=top]:max-h-[90vh] will-change-transform",
+        "2xl":
+          "data-[vaul-drawer-direction=left]:sm:max-w-2xl data-[vaul-drawer-direction=right]:sm:max-w-2xl data-[vaul-drawer-direction=left]:lg:max-w-3xl data-[vaul-drawer-direction=right]:lg:max-w-4xl data-[vaul-drawer-direction=bottom]:max-h-[90vh] data-[vaul-drawer-direction=top]:max-h-[90vh] will-change-transform",
       },
     },
   },

@@ -75,6 +75,21 @@ export class S3StorageService {
     );
   }
 
+  async getObjectBuffer(key: string): Promise<Buffer> {
+    const response = await this.client.send(
+      new GetObjectCommand({ Bucket: this.bucket, Key: key }),
+    );
+    if (!response.Body) {
+      throw new Error(`S3 object ${key} returned no body`);
+    }
+    const stream = response.Body as NodeJS.ReadableStream;
+    const chunks: Buffer[] = [];
+    for await (const chunk of stream) {
+      chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
+    }
+    return Buffer.concat(chunks);
+  }
+
   async deleteByKey(key: string): Promise<void> {
     try {
       await this.client.send(

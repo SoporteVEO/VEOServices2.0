@@ -13,6 +13,11 @@ import { ShopModule } from './modules/shop/shop.module.js';
 import { PaypalModule } from './modules/paypal/paypal.module.js';
 import { S3ImagesModule } from './modules/s3-images/s3-images.module.js';
 import { StaticBillboardCodesModule } from './modules/static-billboard-codes/static-billboard-codes.module.js';
+import { TeamMembersModule } from './modules/team-members/team-members.module.js';
+import { MeModule } from './modules/me/me.module.js';
+import { AbsencesModule } from './modules/absences/absences.module.js';
+import { NotificationsModule } from './modules/notifications/notifications.module.js';
+import { UserMetricsModule } from './modules/user-metrics/user-metrics.module.js';
 
 @Module({
   imports: [
@@ -21,6 +26,7 @@ import { StaticBillboardCodesModule } from './modules/static-billboard-codes/sta
     BriloDatabaseModule,
     RedisModule,
     EmailModule,
+    NotificationsModule,
     UsersModule,
     ContractsModule,
     PurchasesModule,
@@ -30,6 +36,10 @@ import { StaticBillboardCodesModule } from './modules/static-billboard-codes/sta
     PaypalModule,
     S3ImagesModule,
     StaticBillboardCodesModule,
+    TeamMembersModule,
+    MeModule,
+    AbsencesModule,
+    UserMetricsModule,
   ],
 })
 export class AppModule {}

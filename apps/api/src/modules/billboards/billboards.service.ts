@@ -10,6 +10,7 @@ import type {
   AvailableState,
   BillboardContractHistoryItem,
   BillboardDashboardAnalytics,
+  BillboardImageItem,
   DashboardDepartmentBreakdown,
   DashboardKpis,
   DashboardMonthlyTrend,
@@ -453,6 +454,24 @@ SELECT i.imagImagen AS [Imagen]
 FROM olVallas.dbo.imagenes i WITH (NOLOCK)
 WHERE i.imagId = @ImagenId
 `;
+
+const BILLBOARD_IMAGES_BY_BILLBOARD_SQL = `
+SELECT
+    i.imagId            AS [ImagenId],
+    i.imagFecha         AS [ImagenFecha],
+    i.imagObservaciones AS [ImagenObservaciones]
+FROM olVallas.dbo.imagenes i WITH (NOLOCK)
+WHERE i.caraId = @CaraId
+  AND i.tiimId <> 1
+  AND i.tiimId <> 5
+ORDER BY i.imagFecha DESC, i.imagId DESC;
+`;
+
+interface BriloBillboardImageRow {
+  ImagenId: number;
+  ImagenFecha: Date | null;
+  ImagenObservaciones: string | null;
+}
 
 const CONTRACTS_IN_RANGE_SQL = `
 SELECT
@@ -1161,6 +1180,9 @@ export class BillboardsService {
   private readonly contractHistoryCache = new TtlCache<
     BillboardContractHistoryItem[]
   >(CACHE_TTL_MS);
+  private readonly billboardImagesCache = new TtlCache<BillboardImageItem[]>(
+    CACHE_TTL_MS,
+  );
   private readonly dashboardAnalyticsCache =
     new TtlCache<BillboardDashboardAnalytics>(CACHE_TTL_MS);
   private readonly imageCache = new TtlCache<{
@@ -1233,6 +1255,33 @@ export class BillboardsService {
     return this.contractHistoryCache.getOrFetch(String(billboardId), () =>
       this.fetchBillboardContractHistory(billboardId),
     );
+  }
+
+  async getBillboardImages(
+    billboardId: number,
+  ): Promise<BillboardImageItem[]> {
+    return this.billboardImagesCache.getOrFetch(String(billboardId), () =>
+      this.fetchBillboardImages(billboardId),
+    );
+  }
+
+  private async fetchBillboardImages(
+    billboardId: number,
+  ): Promise<BillboardImageItem[]> {
+    const rows = await this.brilo.query<BriloBillboardImageRow>(
+      BILLBOARD_IMAGES_BY_BILLBOARD_SQL,
+      { CaraId: billboardId },
+    );
+
+    return rows
+      .filter((r) => r.ImagenId != null)
+      .map(
+        (r): BillboardImageItem => ({
+          imageId: Number(r.ImagenId),
+          uploadedAt: r.ImagenFecha ?? null,
+          notes: r.ImagenObservaciones ?? null,
+        }),
+      );
   }
 
   async getDashboardAnalytics(

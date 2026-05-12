@@ -15,7 +15,10 @@ const USER_PUBLIC_SELECT = {
   email: true,
   role: true,
   subRoles: true,
+  disabled: true,
+  lastLoginAt: true,
   createdAt: true,
+  updatedAt: true,
   emailVerified: true,
   image: true,
 } as const;
@@ -89,11 +92,14 @@ export class UsersService {
       }
     }
 
-    const { password, ...userData } = dto;
+    const { password, disabled, ...userData } = dto;
 
     const user = await this.prisma.user.update({
       where: { id },
-      data: userData,
+      data: {
+        ...userData,
+        ...(typeof disabled === 'boolean' ? { disabled } : {}),
+      },
       select: USER_PUBLIC_SELECT,
     });
 
@@ -106,7 +112,19 @@ export class UsersService {
       });
     }
 
+    if (disabled === true) {
+      await this.prisma.session.deleteMany({ where: { userId: id } });
+    }
+
     return user;
+  }
+
+  async forceLogout(id: string): Promise<{ sessionsDeleted: number }> {
+    await this.findOne(id);
+    const result = await this.prisma.session.deleteMany({
+      where: { userId: id },
+    });
+    return { sessionsDeleted: result.count };
   }
 
   async remove(id: string) {

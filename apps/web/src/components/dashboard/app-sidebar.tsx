@@ -48,6 +48,10 @@ export function AppSidebar() {
     });
   }
 
+  function handleProfile() {
+    router.push("/dashboard/me");
+  }
+
   return (
     <Sidebar collapsible="icon" variant="inset">
       <SidebarHeader className="hover:bg-sidebar-accent hover:text-sidebar-accent-foreground rounded-lg">
@@ -106,6 +110,7 @@ export function AppSidebar() {
           subtitle={userEmail}
           imageUrl={session?.user?.image}
           verified={session?.user?.emailVerified}
+          onProfile={handleProfile}
           onSignOut={handleSignOut}
         />
       </SidebarFooter>

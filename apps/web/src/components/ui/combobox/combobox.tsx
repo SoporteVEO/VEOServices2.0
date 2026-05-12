@@ -1,6 +1,6 @@
 "use client";
 
-import { CheckIcon, ChevronsDown, Loader2 } from "lucide-react";
+import { CheckIcon, ChevronDown, ChevronsDown, Loader2 } from "lucide-react";
 import * as React from "react";
 import { type VariantProps } from "class-variance-authority";
 
@@ -112,8 +112,7 @@ export function Combobox({
             role="combobox"
             aria-expanded={open}
             className={cn(
-              "w-full justify-start gap-2 px-2.5 font-normal",
-              !hasSelection && "text-muted-foreground",
+              "w-full justify-start gap-2 px-2.5 font-medium hover:bg-muted hover:text-foreground",
               disabled && "pointer-events-none opacity-50",
               triggerClassName,
             )}
@@ -127,7 +126,7 @@ export function Combobox({
             <span className="min-w-0 flex-1 truncate text-left">
               {hasSelection ? selectedLabel : placeholder}
             </span>
-            <ChevronsDown className="ml-auto size-4 shrink-0 opacity-50" />
+            <ChevronDown className="ml-auto size-4 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
         <PopoverContent

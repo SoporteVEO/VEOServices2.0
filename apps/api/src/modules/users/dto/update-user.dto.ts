@@ -1,6 +1,7 @@
 import {
   ArrayUnique,
   IsArray,
+  IsBoolean,
   IsEmail,
   IsEnum,
   IsOptional,
@@ -46,4 +47,8 @@ export class UpdateUserDto {
   @ArrayUnique()
   @IsOptional()
   subRoles?: SubRole[];
+
+  @IsBoolean()
+  @IsOptional()
+  disabled?: boolean;
 }

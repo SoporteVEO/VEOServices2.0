@@ -6,6 +6,7 @@ import {
   Patch,
   Param,
   Delete,
+  HttpCode,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -39,6 +40,13 @@ export class UsersController {
   async update(@Param('id') id: string, @Body() dto: UpdateUserDto) {
     const updated = await this.usersService.update(id, dto);
     return { data: updated };
+  }
+
+  @Post(':id/force-logout')
+  @HttpCode(200)
+  async forceLogout(@Param('id') id: string) {
+    const result = await this.usersService.forceLogout(id);
+    return { data: result };
   }
 
   @Delete(':id')

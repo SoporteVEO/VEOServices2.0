@@ -63,6 +63,10 @@ export class AuthGuard implements CanActivate {
 
     if (!session) throw new UnauthorizedException();
 
+    if (session.user.disabled === true) {
+      throw new UnauthorizedException('La cuenta está deshabilitada');
+    }
+
     request.user = session.user;
     request.authSession = session.session;
 
@@ -91,7 +95,8 @@ export class AuthGuard implements CanActivate {
       string[] | undefined
     >(REQUIRED_SUB_ROLES_KEY, [context.getHandler(), context.getClass()]);
     if (requiredSubRoles?.length) {
-      const userSubRoles = (session.user.subRoles as string[] | undefined) ?? [];
+      const userSubRoles =
+        (session.user.subRoles as string[] | undefined) ?? [];
       const hasAny = requiredSubRoles.some((sr) => userSubRoles.includes(sr));
       if (!hasAny) {
         throw new ForbiddenException('No tienes permisos para este recurso');

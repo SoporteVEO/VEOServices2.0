@@ -7,6 +7,7 @@ import type {
   AvailableState,
   BillboardContractHistoryItem,
   BillboardDashboardAnalytics,
+  BillboardImageItem,
 } from "./billboards.types";
 
 export type {
@@ -16,6 +17,7 @@ export type {
   AvailableState,
   BillboardContractHistoryItem,
   BillboardDashboardAnalytics,
+  BillboardImageItem,
   DashboardKpis,
   DashboardMonthlyTrend,
   DashboardYoyTrend,
@@ -162,6 +164,27 @@ export function useBillboardContractHistory(params: {
   return useQuery({
     queryKey: ["billboards", "contracts", billboardId],
     queryFn: () => getBillboardContractHistory(billboardId!),
+    enabled: enabled && billboardId != null,
+    staleTime: STALE_TIME,
+    gcTime: GC_TIME,
+  });
+}
+
+export async function getBillboardImages(billboardId: number) {
+  const response = await apiFetch<{ data: BillboardImageItem[] }>(
+    `/billboards/${billboardId}/images`,
+  );
+  return response.data;
+}
+
+export function useBillboardImages(params: {
+  billboardId: number | null;
+  enabled?: boolean;
+}) {
+  const { billboardId, enabled = true } = params;
+  return useQuery({
+    queryKey: ["billboards", "images", billboardId],
+    queryFn: () => getBillboardImages(billboardId!),
     enabled: enabled && billboardId != null,
     staleTime: STALE_TIME,
     gcTime: GC_TIME,

@@ -1,6 +1,6 @@
 "use client";
 
-import { type ComponentProps } from "react";
+import { type ComponentProps, type ReactNode } from "react";
 import {
   Bar,
   BarChart as RechartsBarChart,
@@ -46,6 +46,8 @@ export interface BarChartProps<T extends object> {
     label: T[keyof T],
     payload: { payload: T }[],
   ) => string;
+  /** Formats numeric series values in the tooltip (defaults to locale string). */
+  tooltipValueFormatter?: (value: number, dataKey: string) => ReactNode;
   /** Show the legend below the chart. Defaults to `true` when `series.length > 1`. */
   showLegend?: boolean;
   /** Show the grid lines. Defaults to `true`. */
@@ -68,6 +70,7 @@ export function BarChart<T extends object>({
   xTickFormatter,
   yTickFormatter,
   tooltipLabelFormatter,
+  tooltipValueFormatter,
   showLegend,
   showGrid = true,
   className,
@@ -120,6 +123,7 @@ export function BarChart<T extends object>({
                       )
                   : undefined
               }
+              valueLabelFormatter={tooltipValueFormatter}
             />
           }
         />

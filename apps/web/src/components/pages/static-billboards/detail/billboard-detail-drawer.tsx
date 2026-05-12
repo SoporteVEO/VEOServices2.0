@@ -22,7 +22,7 @@ import {
   DrawerDescription,
   DrawerHeader,
   DrawerTitle,
-} from "@/components/primitives/ui/drawer";
+} from "@/components/ui/drawer";
 import { Badge } from "@/components/primitives/ui/badge";
 import { Button } from "@/components/primitives/ui/button";
 import { Skeleton } from "@/components/primitives/ui/skeleton";
@@ -38,6 +38,7 @@ import { BillboardOccupancyChart } from "./billboard-occupancy-chart";
 import { BillboardContractsTimeline } from "./billboard-contracts-timeline";
 import { BillboardContractsList } from "./billboard-contracts-list";
 import { BillboardTopCustomers } from "./billboard-top-customers";
+import { BillboardImages } from "./billboard-images";
 import { summarizeContracts } from "./billboard-detail-utils";
 
 interface BillboardDetailDrawerProps {
@@ -174,6 +175,11 @@ function BillboardDetailDrawerContent({
               </div>
             </>
           )}
+
+          <BillboardImages
+            billboardId={billboard.billboardId}
+            billboardCode={billboard.billboardCode}
+          />
         </div>
       </ScrollArea>
     </>

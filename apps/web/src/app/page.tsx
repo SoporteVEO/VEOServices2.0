@@ -9,7 +9,6 @@ import { Input } from "@/components/ui/input";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/primitives/ui/card";
@@ -48,7 +47,9 @@ export default function SignInPage() {
             V
           </div>
           <CardTitle className="text-xl">Bienvenido a VEO</CardTitle>
-          <CardDescription>Inicia sesión para continuar</CardDescription>
+          <p className="text-sm text-muted-foreground">
+            Inicia sesión para continuar
+          </p>
         </CardHeader>
 
         <CardContent>
