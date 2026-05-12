@@ -156,7 +156,7 @@ export function ImagesFilters({
         })
       }
     >
-      <SelectTrigger sizeVariant="lg" className="w-full min-w-0">
+      <SelectTrigger sizeVariant="lg" className="w-fit min-w-0">
         <SelectValue placeholder="Tipo de imagen" />
       </SelectTrigger>
       <SelectContent>
@@ -216,9 +216,7 @@ export function ImagesFilters({
       onClick={() =>
         onChange({ ...DEFAULT_IMAGES_FILTERS, sortOrder: value.sortOrder })
       }
-    >
-      Limpiar
-    </Button>
+    ></Button>
   ) : null;
 
   return (
@@ -313,7 +311,9 @@ export function ImagesFilters({
 
         {dateRangePicker}
 
-        <div className="w-full sm:max-w-72">{typeSelect}</div>
+        <div className="sm:min-w-0 sm:shrink-0 sm:w-48 lg:w-fit">
+          {typeSelect}
+        </div>
 
         <div className="w-full sm:w-56">{uploaderCombobox}</div>
 
