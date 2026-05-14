@@ -43,6 +43,7 @@ export interface ActiveContractGroup {
   totalBillboards: number;
   totalImages: number;
   billboardsWithImages: number;
+  reportsSendedCount: number;
 }
 
 export interface PaginatedActiveContracts {

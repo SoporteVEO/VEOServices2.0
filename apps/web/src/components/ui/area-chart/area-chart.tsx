@@ -1,6 +1,6 @@
 "use client";
 
-import { useId, type ComponentProps } from "react";
+import { useId, type ComponentProps, type ReactNode } from "react";
 import {
   Area,
   AreaChart as RechartsAreaChart,
@@ -48,6 +48,8 @@ export interface AreaChartProps<T extends object> {
     label: T[keyof T],
     payload: { payload: T }[],
   ) => string;
+  /** Formats numeric series values in the tooltip. */
+  tooltipValueFormatter?: (value: number, dataKey: string) => ReactNode;
   /** Show the legend below the chart. Defaults to `true` when `series.length > 1`. */
   showLegend?: boolean;
   /** Show the grid lines. Defaults to `true`. */
@@ -70,6 +72,7 @@ export function AreaChart<T extends object>({
   xTickFormatter,
   yTickFormatter,
   tooltipLabelFormatter,
+  tooltipValueFormatter,
   showLegend,
   showGrid = true,
   className,
@@ -153,6 +156,7 @@ export function AreaChart<T extends object>({
                       )
                   : undefined
               }
+              valueLabelFormatter={tooltipValueFormatter}
             />
           }
         />

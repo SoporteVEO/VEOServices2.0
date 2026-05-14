@@ -18,6 +18,7 @@ import { MeModule } from './modules/me/me.module.js';
 import { AbsencesModule } from './modules/absences/absences.module.js';
 import { NotificationsModule } from './modules/notifications/notifications.module.js';
 import { UserMetricsModule } from './modules/user-metrics/user-metrics.module.js';
+import { AnalyticsModule } from './modules/analytics/analytics.module.js';
 
 @Module({
   imports: [
@@ -40,6 +41,7 @@ import { UserMetricsModule } from './modules/user-metrics/user-metrics.module.js
     MeModule,
     AbsencesModule,
     UserMetricsModule,
+    AnalyticsModule,
   ],
 })
 export class AppModule {}

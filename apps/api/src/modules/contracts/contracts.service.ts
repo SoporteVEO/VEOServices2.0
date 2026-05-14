@@ -53,6 +53,18 @@ const REPORT_TYPE_DB_MAP: Record<ContractReportType, ReportType> = {
   maintenance: ReportType.MAINTENANCE,
 };
 
+const IMAGE_TYPE_TO_REPORT_TYPE: Record<S3ImageType, ReportType> = {
+  [S3ImageType.STATIC_BILLBOARD_MONTHLY]: ReportType.MONTHLY,
+  [S3ImageType.STATIC_BILLBOARD_INSTALLATION]: ReportType.INSTALLATION,
+  [S3ImageType.STATIC_BILLBOARD_MAINTENANCE]: ReportType.MAINTENANCE,
+};
+
+const REPORT_TYPE_TO_API: Record<ReportType, ContractReportType> = {
+  [ReportType.MONTHLY]: 'monthly',
+  [ReportType.INSTALLATION]: 'installation',
+  [ReportType.MAINTENANCE]: 'maintenance',
+};
+
 interface SourceContractRow {
   mconId: number;
   dconId: number;
@@ -376,10 +388,83 @@ export class ContractsService {
         totalBillboards: billboards.length,
         totalImages,
         billboardsWithImages,
+        reportsSendedCount: 0,
       };
     });
 
-    return { data, total, page, pageSize };
+    const reportDbType = IMAGE_TYPE_TO_REPORT_TYPE[imageType];
+    const countByContract = await this.countReportsSendedByContracts(
+      data.map((g) => g.contractNumber),
+      reportDbType,
+    );
+
+    const dataWithCounts = data.map((g) => ({
+      ...g,
+      reportsSendedCount: countByContract.get(g.contractNumber) ?? 0,
+    }));
+
+    return { data: dataWithCounts, total, page, pageSize };
+  }
+
+  async listReportsSended(
+    contractNumber: string,
+    reportType: ContractReportType,
+  ) {
+    const rows = await this.prisma.reportSended.findMany({
+      where: {
+        contractNumber,
+        reportType: REPORT_TYPE_DB_MAP[reportType],
+      },
+      orderBy: { createdAt: 'desc' },
+      take: 200,
+      include: {
+        teamMember: {
+          include: {
+            user: {
+              select: {
+                firstName: true,
+                lastName: true,
+                email: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    return rows.map((r) => ({
+      id: r.id,
+      createdAt: r.createdAt.toISOString(),
+      sentToEmail: r.sentToEmail,
+      reportType: REPORT_TYPE_TO_API[r.reportType],
+      sentBy: {
+        firstName: r.teamMember.user.firstName,
+        lastName: r.teamMember.user.lastName,
+        email: r.teamMember.user.email,
+      },
+    }));
+  }
+
+  private async countReportsSendedByContracts(
+    contractNumbers: string[],
+    reportType: ReportType,
+  ): Promise<Map<string, number>> {
+    const result = new Map<string, number>();
+    if (contractNumbers.length === 0) return result;
+
+    const grouped = await this.prisma.reportSended.groupBy({
+      by: ['contractNumber'],
+      where: {
+        contractNumber: { in: contractNumbers },
+        reportType,
+      },
+      _count: { _all: true },
+    });
+
+    for (const row of grouped) {
+      result.set(row.contractNumber, row._count._all);
+    }
+    return result;
   }
 
   private async fetchContractDetails(

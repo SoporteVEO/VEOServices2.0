@@ -57,6 +57,19 @@ export interface ActiveContractGroup {
   totalBillboards: number;
   totalImages: number;
   billboardsWithImages: number;
+  reportsSendedCount: number;
+}
+
+export interface ContractReportSendedRow {
+  id: string;
+  createdAt: string;
+  sentToEmail: string | null;
+  reportType: "monthly" | "installation" | "maintenance";
+  sentBy: {
+    firstName: string;
+    lastName: string | null;
+    email: string;
+  };
 }
 
 export interface ActiveContractsPage {
@@ -173,5 +186,42 @@ export function useActiveContracts(query: ActiveContractsQuery = {}) {
     ],
     queryFn: () => getActiveContracts(normalized),
     placeholderData: keepPreviousData,
+  });
+}
+
+export async function getContractReportsSended(params: {
+  contractNumber: string;
+  reportType: "monthly" | "installation" | "maintenance";
+}) {
+  const response = await apiFetch<{ data: ContractReportSendedRow[] }>(
+    "/contracts/reports-sended",
+    {
+      method: "GET",
+      query: {
+        contractNumber: params.contractNumber,
+        reportType: params.reportType,
+      },
+    },
+  );
+  return response.data;
+}
+
+export function useContractReportsSended(params: {
+  contractNumber: string | null;
+  reportType: "monthly" | "installation" | "maintenance";
+}) {
+  return useQuery({
+    queryKey: [
+      "contracts",
+      "reports-sended",
+      params.contractNumber ?? "",
+      params.reportType,
+    ],
+    queryFn: () =>
+      getContractReportsSended({
+        contractNumber: params.contractNumber!,
+        reportType: params.reportType,
+      }),
+    enabled: !!params.contractNumber,
   });
 }

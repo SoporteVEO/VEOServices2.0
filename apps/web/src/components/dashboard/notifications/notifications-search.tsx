@@ -38,7 +38,7 @@ export function NotificationsSearch({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         onKeyDown={handleKeyDown}
-        placeholder="Buscar por contrato, descripción..."
+        placeholder="Buscar notificación..."
         aria-label="Buscar notificaciones"
         className="h-9 ps-8 pe-9 text-sm"
       />

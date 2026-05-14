@@ -10,6 +10,7 @@ import {
   Image,
   SquareChartGantt,
   BookUser,
+  ChartArea,
 } from "lucide-react";
 import { SubRole, UserRole } from "@/api/users/users.types";
 
@@ -32,7 +33,18 @@ export const NAV_GROUPS: NavGroup[] = [
   {
     label: "",
     items: [
-      { title: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+      { title: "Dashboard", href: "/dashboard", icon: LayoutDashboard, allowedRoles: ["ADMIN"], },
+    ],
+  },
+  {
+    label: "Administración",
+    items: [
+      {
+        title: "Analíticas",
+        href: "/dashboard/analytics",
+        icon: ChartArea,
+        allowedRoles: ["ADMIN"],
+      },
     ],
   },
   {

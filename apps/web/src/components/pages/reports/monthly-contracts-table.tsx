@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import type { ColumnDef } from "@tanstack/react-table";
-import { Image as ImageIcon, Monitor } from "lucide-react";
+import { Image as ImageIcon, Mail, Monitor } from "lucide-react";
 import { Badge } from "@/components/primitives/ui/badge";
 import { DataTable } from "@/components/ui/data-table";
 import { formatShortDate } from "@/lib/format";
@@ -12,7 +12,6 @@ import {
   type ActiveContractGroup,
 } from "@/api/contracts/contracts.get";
 import { ContractReportDrawer } from "./contract-report-drawer";
-import { ReportType } from "./report-types";
 
 const DEFAULT_PAGE_SIZE = 25;
 
@@ -86,6 +85,16 @@ export function MonthlyContractsTable() {
             </Badge>
           );
         },
+      },
+      {
+        id: "reportsSended",
+        header: "Reportes enviados",
+        cell: ({ row }) => (
+          <Badge variant="outline" className="gap-1 tabular-nums">
+            <Mail className="size-3" aria-hidden />
+            {row.original.reportsSendedCount}
+          </Badge>
+        ),
       },
       {
         accessorKey: "endDate",

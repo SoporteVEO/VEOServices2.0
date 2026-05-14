@@ -9,7 +9,11 @@ import {
 import { S3ImageType } from '@prisma/client';
 import { CurrentUser } from '../auth/decorators.js';
 import { ContractsService } from './contracts.service.js';
-import { SendMaintenanceReportDto } from './dto/send-maintenance-report.dto.js';
+import {
+  CONTRACT_REPORT_TYPES,
+  type ContractReportType,
+  SendMaintenanceReportDto,
+} from './dto/send-maintenance-report.dto.js';
 
 interface AuthUser {
   id: string;
@@ -101,6 +105,30 @@ export class ContractsController {
       search,
       imageType,
     });
+  }
+
+  @Get('reports-sended')
+  async getReportsSended(
+    @Query('contractNumber') contractNumber?: string,
+    @Query('reportType') reportTypeStr?: string,
+  ) {
+    const trimmed = contractNumber?.trim();
+    if (!trimmed) {
+      throw new BadRequestException('contractNumber es requerido');
+    }
+    if (
+      !reportTypeStr ||
+      !CONTRACT_REPORT_TYPES.includes(reportTypeStr as ContractReportType)
+    ) {
+      throw new BadRequestException(
+        `reportType debe ser uno de: ${CONTRACT_REPORT_TYPES.join(', ')}`,
+      );
+    }
+    const data = await this.contractsService.listReportsSended(
+      trimmed,
+      reportTypeStr as ContractReportType,
+    );
+    return { data };
   }
 
   @Get('notified')

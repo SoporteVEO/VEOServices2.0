@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service.js';
 import {
   HEARTBEAT_MAX_DELTA_MS,
@@ -12,10 +12,7 @@ import {
   toMonterreyDateOnly,
 } from './user-metrics.time.js';
 
-export type HeartbeatRejectReason =
-  | 'OUT_OF_HOURS'
-  | 'RATE_LIMITED'
-  | 'AFK_GAP';
+export type HeartbeatRejectReason = 'OUT_OF_HOURS' | 'RATE_LIMITED' | 'AFK_GAP';
 
 export interface HeartbeatResult {
   counted: boolean;
@@ -31,7 +28,32 @@ export interface UserMetricsSummary {
   days: { date: string; activeMs: number }[];
 }
 
+export interface AdminUserAppUsageDailyRow {
+  date: string;
+  totalMs: number;
+  activeUserCount: number;
+}
+
+export interface AdminUserAppUsageUserRow {
+  userId: string;
+  publicId: string;
+  email: string;
+  firstName: string;
+  lastName: string | null;
+  role: string;
+  disabled: boolean;
+  totalMs: number;
+  activeDays: number;
+}
+
+export interface AdminUserAppUsageReport {
+  range: { from: string; to: string };
+  daily: AdminUserAppUsageDailyRow[];
+  users: AdminUserAppUsageUserRow[];
+}
+
 const SUMMARY_DAYS_WINDOW = 30;
+const ADMIN_USAGE_MAX_RANGE_DAYS = 400;
 
 @Injectable()
 export class UserMetricsService {
@@ -68,6 +90,90 @@ export class UserMetricsService {
     return this.getSummary(userId, new Date());
   }
 
+  async getAdminUserAppUsageReport(
+    from: Date,
+    to: Date,
+  ): Promise<AdminUserAppUsageReport> {
+    const spanDays =
+      Math.floor((to.getTime() - from.getTime()) / (24 * 60 * 60 * 1000)) + 1;
+    if (spanDays > ADMIN_USAGE_MAX_RANGE_DAYS) {
+      throw new BadRequestException(
+        `El rango no puede superar ${ADMIN_USAGE_MAX_RANGE_DAYS} días.`,
+      );
+    }
+
+    const [byUser, byDay] = await Promise.all([
+      this.prisma.userMetricsDay.groupBy({
+        by: ['userId'],
+        where: { date: { gte: from, lte: to } },
+        _sum: { activeMs: true },
+        _count: { _all: true },
+      }),
+      this.prisma.userMetricsDay.groupBy({
+        by: ['date'],
+        where: { date: { gte: from, lte: to } },
+        _sum: { activeMs: true },
+        _count: { userId: true },
+      }),
+    ]);
+
+    const userIds = byUser.map((r) => r.userId);
+    const userRows =
+      userIds.length === 0
+        ? []
+        : await this.prisma.user.findMany({
+            where: { id: { in: userIds } },
+            select: {
+              id: true,
+              publicId: true,
+              email: true,
+              firstName: true,
+              lastName: true,
+              role: true,
+              disabled: true,
+            },
+          });
+
+    const userMap = new Map(userRows.map((u) => [u.id, u]));
+
+    const users: AdminUserAppUsageUserRow[] = byUser
+      .flatMap((row) => {
+        const u = userMap.get(row.userId);
+        if (!u) return [];
+        return [
+          {
+            userId: u.id,
+            publicId: u.publicId,
+            email: u.email,
+            firstName: u.firstName,
+            lastName: u.lastName,
+            role: u.role as string,
+            disabled: u.disabled,
+            totalMs: row._sum.activeMs ?? 0,
+            activeDays: row._count._all,
+          },
+        ];
+      })
+      .sort((a, b) => b.totalMs - a.totalMs);
+
+    const daily: AdminUserAppUsageDailyRow[] = [...byDay]
+      .sort((a, b) => a.date.getTime() - b.date.getTime())
+      .map((row) => ({
+        date: row.date.toISOString().slice(0, 10),
+        totalMs: row._sum.activeMs ?? 0,
+        activeUserCount: row._count.userId,
+      }));
+
+    return {
+      range: {
+        from: from.toISOString().slice(0, 10),
+        to: to.toISOString().slice(0, 10),
+      },
+      daily,
+      users,
+    };
+  }
+
   private async applyTick(
     userId: string,
     now: Date,
@@ -89,7 +195,7 @@ export class UserMetricsService {
         return { counted: false, creditedMs: 0 };
       }
 
-      const lastTickAt = locked[0]!.last_tick_at;
+      const lastTickAt = locked[0].last_tick_at;
       const deltaMs = now.getTime() - lastTickAt.getTime();
 
       if (deltaMs < HEARTBEAT_MIN_INTERVAL_MS) {

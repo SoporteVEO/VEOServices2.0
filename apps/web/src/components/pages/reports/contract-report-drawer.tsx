@@ -34,6 +34,7 @@ import {
 import { uploadBlobToPresignedUrl } from "@/lib/upload-blob-to-presigned-url";
 import { cn } from "@/lib/utils";
 import { SendReportDialog } from "./send-report-dialog";
+import { ContractReportsSendedSection } from "./contract-reports-sended-section";
 import { REPORT_TYPE_CONFIG, type ReportType } from "./report-types";
 
 const REPORT_FILE_MIME_TYPE =
@@ -178,6 +179,8 @@ function ContractReportDrawerContent({
       });
 
       toast.success(`Reporte enviado a ${email}.`);
+      queryClient.invalidateQueries({ queryKey: ["contracts", "active"] });
+      queryClient.invalidateQueries({ queryKey: ["contracts", "reports-sended"] });
       queryClient.invalidateQueries({ queryKey: ["notifications", "active"] });
       setIsSendOpen(false);
     } catch (error) {
@@ -232,6 +235,11 @@ function ContractReportDrawerContent({
             />
           ))}
         </div>
+
+        <ContractReportsSendedSection
+          contractNumber={group.contractNumber}
+          reportType={reportType}
+        />
       </div>
 
       <DrawerFooter className="border-t bg-muted/20">
