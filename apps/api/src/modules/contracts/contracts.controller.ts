@@ -7,8 +7,13 @@ import {
   Query,
 } from '@nestjs/common';
 import { S3ImageType } from '@prisma/client';
+import { CurrentUser } from '../auth/decorators.js';
 import { ContractsService } from './contracts.service.js';
 import { SendMaintenanceReportDto } from './dto/send-maintenance-report.dto.js';
+
+interface AuthUser {
+  id: string;
+}
 
 function parseDate(value: string | undefined, field: string): Date | undefined {
   if (!value) return undefined;
@@ -110,8 +115,11 @@ export class ContractsController {
   }
 
   @Post('send-maintenance-report')
-  async sendMaintenanceReport(@Body() dto: SendMaintenanceReportDto) {
-    return await this.contractsService.sendMaintenanceReport(dto);
+  async sendMaintenanceReport(
+    @CurrentUser() user: AuthUser,
+    @Body() dto: SendMaintenanceReportDto,
+  ) {
+    return await this.contractsService.sendMaintenanceReport(user.id, dto);
   }
 
   @Post('worker/ending-soon')

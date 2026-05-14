@@ -1,6 +1,6 @@
 "use client";
 
-import { CalendarOff, LayoutGrid } from "lucide-react";
+import { CalendarOff, LayoutGrid, Mail } from "lucide-react";
 import { useMyProfile, useMyTeamMember } from "@/api/me/me.get";
 import {
   IncapacidadesTab,
@@ -36,7 +36,7 @@ export default function MePage() {
             className="w-full justify-start gap-2 px-3"
           >
             <CalendarOff className="size-4" />
-            Incapacidades
+            Mis Incapacidades
           </TabsTrigger>
         </TabsList>
       </aside>

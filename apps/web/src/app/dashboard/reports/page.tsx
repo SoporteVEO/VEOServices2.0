@@ -15,15 +15,15 @@ export default function ReportsPage() {
         <TabsTrigger value="mantenimiento">Mantenimiento</TabsTrigger>
       </TabsList>
 
-      <TabsContent value="mensual" className="pt-4">
+      <TabsContent value="mensual">
         <ContractsReportTable reportType="monthly" />
       </TabsContent>
 
-      <TabsContent value="instalacion" className="pt-4">
+      <TabsContent value="instalacion">
         <ContractsReportTable reportType="installation" />
       </TabsContent>
 
-      <TabsContent value="mantenimiento" className="pt-4">
+      <TabsContent value="mantenimiento">
         <ContractsReportTable reportType="maintenance" />
       </TabsContent>
     </Tabs>

@@ -14,11 +14,11 @@ export default function RHPage() {
         <TabsTrigger value="incapacidades">Incapacidades</TabsTrigger>
       </TabsList>
 
-      <TabsContent value="plantilla" className="pt-4">
+      <TabsContent value="plantilla">
         <PlantillaTab />
       </TabsContent>
 
-      <TabsContent value="incapacidades" className="pt-4">
+      <TabsContent value="incapacidades">
         <HrIncapacidadesTab />
       </TabsContent>
     </Tabs>

@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import NextImage from "next/image";
+import { useQueryClient } from "@tanstack/react-query";
 import { Check, Eye, ImageOff, ImagePlus, MapPin, Send } from "lucide-react";
 import { toast } from "sonner";
 import type {
@@ -94,6 +95,7 @@ function ContractReportDrawerContent({
   reportType: ReportType;
 }) {
   const config = REPORT_TYPE_CONFIG[reportType];
+  const queryClient = useQueryClient();
 
   const [preview, setPreview] = useState<S3Image | null>(null);
   const [selectedImageIds, setSelectedImageIds] = useState<
@@ -176,6 +178,7 @@ function ContractReportDrawerContent({
       });
 
       toast.success(`Reporte enviado a ${email}.`);
+      queryClient.invalidateQueries({ queryKey: ["notifications", "active"] });
       setIsSendOpen(false);
     } catch (error) {
       console.error("Error sending contract report:", error);

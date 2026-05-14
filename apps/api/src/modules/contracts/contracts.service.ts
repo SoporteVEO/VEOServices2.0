@@ -10,7 +10,8 @@ import {
   type PresignedPutResult,
 } from '../s3-images/s3-storage.service.js';
 import { EmailService } from '../email/email.service.js';
-import { NotificationStatus, S3ImageType } from '@prisma/client';
+import { NotificationsService } from '../notifications/notifications.service.js';
+import { NotificationStatus, ReportType, S3ImageType } from '@prisma/client';
 import type { EndingSoonContract } from './entities/ending-soon-contract.js';
 import type {
   ActiveContractGroup,
@@ -44,6 +45,12 @@ const REPORT_TYPE_EMAIL_LABELS: Record<
     heading: 'Reporte de Mantenimiento de Vallas',
     body: 'el reporte de mantenimiento de vallas',
   },
+};
+
+const REPORT_TYPE_DB_MAP: Record<ContractReportType, ReportType> = {
+  monthly: ReportType.MONTHLY,
+  installation: ReportType.INSTALLATION,
+  maintenance: ReportType.MAINTENANCE,
 };
 
 interface SourceContractRow {
@@ -205,6 +212,7 @@ export class ContractsService {
     private readonly brilo: BriloDatabaseService,
     private readonly s3Storage: S3StorageService,
     private readonly email: EmailService,
+    private readonly notifications: NotificationsService,
   ) {}
 
   async getEndingSoonContracts(
@@ -462,7 +470,7 @@ export class ContractsService {
     });
   }
 
-  async sendMaintenanceReport(dto: SendMaintenanceReportDto) {
+  async sendMaintenanceReport(userId: string, dto: SendMaintenanceReportDto) {
     let fileBuffer: Buffer;
     try {
       fileBuffer = await this.s3Storage.getObjectBuffer(dto.fileKey);
@@ -475,7 +483,8 @@ export class ContractsService {
       );
     }
 
-    const labels = REPORT_TYPE_EMAIL_LABELS[dto.reportType ?? 'monthly'];
+    const reportType = dto.reportType ?? 'monthly';
+    const labels = REPORT_TYPE_EMAIL_LABELS[reportType];
     const subject = `${labels.subject} - Contrato ${dto.contractNumber} (${dto.period})`;
     const htmlContent = buildMaintenanceReportEmailHtml({
       contractNumber: dto.contractNumber,
@@ -506,9 +515,63 @@ export class ContractsService {
         );
       }
 
+      await this.recordSentReport({
+        userId,
+        contractNumber: dto.contractNumber,
+        email: dto.email,
+        reportType,
+      });
+
       return { success: true };
     } finally {
       await this.s3Storage.deleteByKey(dto.fileKey);
+    }
+  }
+
+  private async recordSentReport(input: {
+    userId: string;
+    contractNumber: string;
+    email: string;
+    reportType: ContractReportType;
+  }) {
+    try {
+      const teamMember = await this.prisma.teamMember.findUnique({
+        where: { userId: input.userId },
+        select: { id: true },
+      });
+
+      if (teamMember) {
+        await this.prisma.reportSended.create({
+          data: {
+            teamMemberId: teamMember.id,
+            contractNumber: input.contractNumber,
+            sentToEmail: input.email,
+            reportType: REPORT_TYPE_DB_MAP[input.reportType],
+          },
+        });
+      } else {
+        this.logger.warn(
+          `No se registró ReportSended: el usuario ${input.userId} no es miembro de plantilla`,
+        );
+      }
+    } catch (err) {
+      this.logger.warn(
+        `No se pudo registrar ReportSended para el usuario ${input.userId}`,
+        err instanceof Error ? err.stack : err,
+      );
+    }
+
+    try {
+      await this.notifications.createOne({
+        userId: input.userId,
+        description: `Tu reporte del contrato ${input.contractNumber} se ha enviado correctamente al correo ${input.email}`,
+        priority: 'LOW',
+      });
+    } catch (err) {
+      this.logger.warn(
+        `No se pudo crear la notificación de reporte enviado para el usuario ${input.userId}`,
+        err instanceof Error ? err.stack : err,
+      );
     }
   }
 

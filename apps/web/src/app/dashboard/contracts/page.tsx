@@ -37,14 +37,14 @@ export default function ContractsPage() {
         <TabsTrigger value="notificaciones">Notificados</TabsTrigger>
       </TabsList>
 
-      <TabsContent value="contratos-por-vencer" className="pt-4">
+      <TabsContent value="contratos-por-vencer">
         <ContractsTable
           contracts={endingSoonContracts}
           isLoading={isEndingSoonContractsLoading}
         />
       </TabsContent>
 
-      <TabsContent value="notificaciones" className="pt-4">
+      <TabsContent value="notificaciones">
         <NotifiedContractsTable
           contracts={notifiedContracts}
           isLoading={isNotifiedContractsLoading}

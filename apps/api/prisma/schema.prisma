@@ -79,7 +79,9 @@ model TeamMember {
   updatedAt                    DateTime            @updatedAt
   user                         User                @relation("TeamMemberUser", fields: [userId], references: [id], onDelete: Cascade)
   teamMemberComments           TeamMemberComment[]
+  reportSended                 ReportSended[]
 
+  @@index([userId])
   @@map("team_members")
 }
 
@@ -385,11 +387,33 @@ model S3Image {
 }
 
 model StaticBillboardCodes {
-  id        String    @id @default(uuid())
-  code      String    @unique
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  s3Images  S3Image[]
+  id            String         @id @default(uuid())
+  code          String         @unique
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  s3Images      S3Image[]
+  reportSendeds ReportSended[]
 
   @@map("static_billboard_codes")
+}
+
+enum ReportType {
+  MONTHLY
+  INSTALLATION
+  MAINTENANCE
+}
+
+model ReportSended {
+  id                    String                @id @default(uuid())
+  teamMemberId          String                @map("team_member_id")
+  teamMember            TeamMember            @relation(fields: [teamMemberId], references: [id])
+  createdAt             DateTime              @default(now())
+  updatedAt             DateTime              @updatedAt
+  reportType            ReportType            @default(MONTHLY)
+  contractNumber        String                @map("contract_number")
+  staticBillboardCodeId String?
+  staticBillboardCode   StaticBillboardCodes? @relation(fields: [staticBillboardCodeId], references: [id])
+  sentToEmail           String?               @map("sent_to_email")
+
+  @@map("report_sended")
 }

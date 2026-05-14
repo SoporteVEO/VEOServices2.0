@@ -1,7 +1,8 @@
 "use client";
 
 import * as React from "react";
-import { Bell, BellOff, CheckCheck, Loader2 } from "lucide-react";
+import { Bell, BellOff, CheckCheck, Loader2, SearchX } from "lucide-react";
+import type { Notification } from "@/api/notifications/notifications.types";
 import { useActiveNotifications } from "@/api/notifications/notifications.get";
 import {
   useDeleteNotification,
@@ -18,6 +19,8 @@ import { ScrollArea } from "@/components/primitives/ui/scroll-area";
 import { Separator } from "@/components/primitives/ui/separator";
 import { cn } from "@/lib/utils";
 import { NotificationItem } from "./notification-item";
+import { NotificationsSearch } from "./notifications-search";
+import { filterNotifications } from "./notifications-filter";
 
 const MAX_BADGE_COUNT = 9;
 
@@ -27,6 +30,8 @@ type NotificationsButtonProps = {
 
 export function NotificationsButton({ className }: NotificationsButtonProps) {
   const [open, setOpen] = React.useState(false);
+  const [searchQuery, setSearchQuery] = React.useState("");
+
   const { data, isLoading, isError, refetch, isFetching } =
     useActiveNotifications();
   const updateStatusMutation = useUpdateNotificationStatus();
@@ -36,6 +41,17 @@ export function NotificationsButton({ className }: NotificationsButtonProps) {
   const notifications = data?.data ?? [];
   const pendingCount = data?.pendingCount ?? 0;
   const hasPending = pendingCount > 0;
+  const hasNotifications = notifications.length > 0;
+
+  const filteredNotifications = React.useMemo(
+    () => filterNotifications(notifications, searchQuery),
+    [notifications, searchQuery],
+  );
+
+  function handleOpenChange(nextOpen: boolean) {
+    setOpen(nextOpen);
+    if (!nextOpen) setSearchQuery("");
+  }
 
   function handleViewNotification(id: string) {
     const notification = notifications.find((n) => n.id === id);
@@ -53,7 +69,7 @@ export function NotificationsButton({ className }: NotificationsButtonProps) {
   }
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover open={open} onOpenChange={handleOpenChange}>
       <PopoverTrigger asChild>
         <Button
           variant="ghost"
@@ -83,12 +99,10 @@ export function NotificationsButton({ className }: NotificationsButtonProps) {
         sideOffset={8}
         className="w-[22rem] p-0 sm:w-[24rem]"
       >
-        <div className="flex items-center justify-between gap-2 p-3">
-          <div className="flex min-w-0 flex-col">
-            <h3 className="text-sm font-semibold leading-none">
-              Notificaciones
-            </h3>
-          </div>
+        <div className="flex items-center justify-between gap-2 px-3 pt-3 pb-2">
+          <h3 className="min-w-0 truncate text-sm font-semibold leading-none">
+            Notificaciones
+          </h3>
           <Button
             variant="ghost"
             size="sm"
@@ -105,14 +119,25 @@ export function NotificationsButton({ className }: NotificationsButtonProps) {
             <span>Marcar todas</span>
           </Button>
         </div>
+        {hasNotifications ? (
+          <div className="px-3 pb-3">
+            <NotificationsSearch
+              value={searchQuery}
+              onChange={setSearchQuery}
+            />
+          </div>
+        ) : null}
         <Separator />
         <NotificationsList
           isLoading={isLoading}
           isError={isError}
           isFetching={isFetching}
-          notifications={notifications}
+          notifications={filteredNotifications}
+          hasUnfilteredNotifications={hasNotifications}
+          searchQuery={searchQuery.trim()}
           onView={handleViewNotification}
           onDelete={handleDeleteNotification}
+          onClearSearch={() => setSearchQuery("")}
           onRetry={() => refetch()}
         />
       </PopoverContent>
@@ -124,15 +149,12 @@ type NotificationsListProps = {
   isLoading: boolean;
   isError: boolean;
   isFetching: boolean;
-  notifications: ReturnType<typeof useActiveNotifications>["data"] extends
-    | infer D
-    | undefined
-    ? D extends { data: infer N }
-      ? N
-      : never
-    : never;
+  notifications: Notification[];
+  hasUnfilteredNotifications: boolean;
+  searchQuery: string;
   onView: (id: string) => void;
   onDelete: (id: string) => void;
+  onClearSearch: () => void;
   onRetry: () => void;
 };
 
@@ -140,8 +162,11 @@ function NotificationsList({
   isLoading,
   isError,
   notifications,
+  hasUnfilteredNotifications,
+  searchQuery,
   onView,
   onDelete,
+  onClearSearch,
   onRetry,
 }: NotificationsListProps) {
   if (isLoading) {
@@ -170,6 +195,26 @@ function NotificationsList({
   }
 
   if (notifications.length === 0) {
+    if (hasUnfilteredNotifications && searchQuery.length > 0) {
+      return (
+        <div className="flex flex-col items-center justify-center gap-3 px-4 py-10 text-center">
+          <div className="flex size-10 items-center justify-center rounded-full bg-muted">
+            <SearchX className="size-5 text-muted-foreground" />
+          </div>
+          <div className="space-y-1">
+            <p className="text-sm font-medium">Sin coincidencias</p>
+            <p className="text-xs text-muted-foreground">
+              No encontramos notificaciones que coincidan con &quot;
+              {searchQuery}&quot;.
+            </p>
+          </div>
+          <Button variant="outline" size="sm" onClick={onClearSearch}>
+            Limpiar búsqueda
+          </Button>
+        </div>
+      );
+    }
+
     return (
       <div className="flex flex-col items-center justify-center gap-2 px-4 py-10 text-center">
         <div className="flex size-10 items-center justify-center rounded-full bg-muted">
