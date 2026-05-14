@@ -24,7 +24,7 @@ type ButtonProps = React.ComponentProps<typeof PrimitiveButton> & {
 
 function Button({
   className,
-  sizeVariant = "lg",
+  sizeVariant = "md",
   icon: Icon,
   iconPosition = "left",
   iconClassName,

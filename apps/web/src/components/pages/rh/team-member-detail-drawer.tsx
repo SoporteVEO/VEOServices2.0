@@ -60,14 +60,14 @@ import {
   parseYYYYMMDD,
   toYYYYMMDD,
 } from "@/lib/format";
-import { cn } from "@/lib/utils";
 import {
   ComboboxEditField,
   DateEditField,
   NumberEditField,
   SelectEditField,
   TextEditField,
-} from "./team-member-edit-fields";
+} from "@/components/ui/edit-field";
+import { cn } from "@/lib/utils";
 
 type TeamMemberDetailDrawerProps = {
   teamMemberId: string | null;
