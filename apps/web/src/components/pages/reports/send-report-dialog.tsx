@@ -19,7 +19,7 @@ const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 export interface SendReportDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  defaultEmail: string;
+  defaultEmail: string | null;
   contractNumber: string;
   totalBillboardsCount: number;
   selectedImagesCount: number;
@@ -54,7 +54,7 @@ function SendReportDialogContent({
   onSubmit,
   onOpenChange,
 }: SendReportDialogProps) {
-  const [email, setEmail] = useState(defaultEmail);
+  const [email, setEmail] = useState(defaultEmail ?? "");
   const [touched, setTouched] = useState(false);
 
   const trimmed = email.trim();

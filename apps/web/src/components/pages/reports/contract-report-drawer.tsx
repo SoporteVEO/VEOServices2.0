@@ -134,7 +134,7 @@ function ContractReportDrawerContent({
 
         return {
           billboardCode: billboard.billboardCode,
-          billboardAddress: billboard.billboardAddress,
+          billboardAddress: billboard.billboardAddress ?? "",
           latitude: billboard.billboardLatitude,
           longitude: billboard.billboardLongitude,
           imageUrl: selectedImage?.url ?? null,
@@ -144,9 +144,9 @@ function ContractReportDrawerContent({
 
       const { blob, fileName, period } = await generateContractReport({
         contractNumber: group.contractNumber,
-        customerName: group.customerName,
-        customerEmail: group.customerEmail,
-        description: group.description,
+        customerName: group.customerName ?? "",
+        customerEmail: group.customerEmail ?? "",
+        description: group.description ?? "",
         dateFrom: new Date(group.startDate),
         dateTo: new Date(group.endDate),
         billboards: reportBillboards,
@@ -167,8 +167,8 @@ function ContractReportDrawerContent({
       await sendMaintenanceReport({
         email,
         contractNumber: group.contractNumber,
-        customerName: group.customerName,
-        description: group.description,
+        customerName: group.customerName ?? "",
+        description: group.description ?? undefined,
         period,
         fileName,
         fileKey: key,
@@ -195,7 +195,8 @@ function ContractReportDrawerContent({
       <DrawerHeader>
         <DrawerTitle>{group.contractNumber}</DrawerTitle>
         <DrawerDescription>
-          {group.customerName} · {group.customerEmail}
+          {[group.customerName, group.customerEmail].filter(Boolean).join(" · ") ||
+            "Sin cliente"}
         </DrawerDescription>
       </DrawerHeader>
 

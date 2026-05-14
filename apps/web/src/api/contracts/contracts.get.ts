@@ -32,25 +32,25 @@ export interface ActiveContractImage {
 export interface ActiveContract {
   contractSourceId: number;
   contractDetailSourceId: number;
-  description: string;
+  description: string | null;
   startDate: string;
   endDate: string;
   contractNumber: string;
   billboardCode: string;
-  billboardAddress: string;
+  billboardAddress: string | null;
   billboardLatitude: number | null;
   billboardLongitude: number | null;
-  customerName: string;
-  customerEmail: string;
+  customerName: string | null;
+  customerEmail: string | null;
   images: ActiveContractImage[];
 }
 
 export interface ActiveContractGroup {
   contractNumber: string;
   contractSourceId: number;
-  description: string;
-  customerName: string;
-  customerEmail: string;
+  description: string | null;
+  customerName: string | null;
+  customerEmail: string | null;
   startDate: string;
   endDate: string;
   billboards: ActiveContract[];

@@ -57,9 +57,9 @@ export function ContractsReportTable({
         header: "Cliente",
         cell: ({ row }) => (
           <div className="min-w-0">
-            <p className="truncate">{row.original.customerName}</p>
+            <p className="truncate">{row.original.customerName ?? "—"}</p>
             <p className="truncate text-xs text-muted-foreground">
-              {row.original.customerEmail}
+              {row.original.customerEmail ?? "Sin correo"}
             </p>
           </div>
         ),
