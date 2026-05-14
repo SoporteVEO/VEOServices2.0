@@ -1,6 +1,7 @@
 export { PlantillaTab } from "./plantilla-tab";
 export { TeamMembersTable } from "./team-members-table";
 export { TeamMemberFormDialog } from "./team-member-form-dialog";
+export { TeamMemberDetailDrawer } from "./team-member-detail-drawer";
 export { DeleteTeamMemberDialog } from "./delete-team-member-dialog";
 export { HrIncapacidadesTab } from "./incapacidades-tab";
 export { HrAbsencesTable } from "./hr-absences-table";

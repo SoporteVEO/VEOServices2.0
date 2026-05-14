@@ -141,7 +141,7 @@ export function DataTable<TData, TValue>({
           )}
         </div>
       )}
-      <Table className="rounded-lg border">
+      <Table>
         <TableHeader className="bg-accent/50">
           {table.getHeaderGroups().map((headerGroup) => (
             <TableRow key={headerGroup.id}>
@@ -166,7 +166,7 @@ export function DataTable<TData, TValue>({
               <TableRow
                 key={`skeleton-${rowIndex}`}
                 className={cn(
-                  "hover:bg-transparent rounded-md",
+                  "hover:bg-transparent",
                   rowIndex % 2 === 0 ? "bg-accent/10" : "bg-accent/25",
                 )}
               >

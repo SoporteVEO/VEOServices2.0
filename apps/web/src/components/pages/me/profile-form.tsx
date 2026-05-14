@@ -66,14 +66,11 @@ export function ProfileForm({ profile }: { profile: MeProfile }) {
     <Card>
       <CardHeader>
         <CardTitleWithInfo info="Actualiza tu nombre y contraseña. El correo no se puede modificar.">
-          Información personal
+          Datos de la cuenta
         </CardTitleWithInfo>
       </CardHeader>
       <CardContent>
-        <form
-          onSubmit={handleSubmit(onSubmit)}
-          className="flex flex-col gap-4"
-        >
+        <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Input
               label="Nombre"

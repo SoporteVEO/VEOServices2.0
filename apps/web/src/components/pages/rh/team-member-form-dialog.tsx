@@ -14,7 +14,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { TeamMemberForm, type TeamMemberFormValues } from "./team-member-form";
+import {
+  buildTeamMemberPayload,
+  teamMemberToFormDefaults,
+} from "./team-member-payload";
+import {
+  TeamMemberForm,
+  type TeamMemberFormValues,
+} from "./team-member-form";
 
 type TeamMemberFormDialogProps = {
   open: boolean;
@@ -38,24 +45,14 @@ export function TeamMemberFormDialog({
   const availableUsers = useMemo(() => {
     if (isEdit && teamMember) {
       return users.filter(
-        (u) =>
-          u.id === teamMember.userId || !existingUserIds.includes(u.id),
+        (u) => u.id === teamMember.userId || !existingUserIds.includes(u.id),
       );
     }
     return users.filter((u) => !existingUserIds.includes(u.id));
   }, [users, existingUserIds, isEdit, teamMember]);
 
   function handleSubmit(values: TeamMemberFormValues) {
-    const payload = {
-      userId: values.userId,
-      firstName: values.firstName,
-      lastName: values.lastName || undefined,
-      businessEmail: values.businessEmail,
-      position: values.position,
-      salary: values.salary,
-      vacations: values.vacations,
-      usedVacations: values.usedVacations,
-    };
+    const payload = buildTeamMemberPayload(values, isEdit);
 
     if (isEdit && teamMember) {
       updateMutation.mutate(
@@ -83,7 +80,7 @@ export function TeamMemberFormDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent size="md">
+      <DialogContent size="xl">
         <DialogHeader>
           <DialogTitle>
             {isEdit ? "Editar miembro" : "Agregar miembro a plantilla"}
@@ -94,20 +91,10 @@ export function TeamMemberFormDialog({
           key={teamMember?.id}
           isEdit={isEdit}
           isPending={isPending}
-          users={availableUsers}
+          linkableUsers={availableUsers}
+          bossCandidateUsers={users}
           defaultValues={
-            teamMember
-              ? {
-                  userId: teamMember.userId,
-                  firstName: teamMember.firstName,
-                  lastName: teamMember.lastName ?? "",
-                  businessEmail: teamMember.businessEmail,
-                  position: teamMember.position,
-                  salary: teamMember.salary,
-                  vacations: teamMember.vacations,
-                  usedVacations: teamMember.usedVacations,
-                }
-              : undefined
+            teamMember ? teamMemberToFormDefaults(teamMember) : undefined
           }
           onSubmit={handleSubmit}
           onCancel={() => onOpenChange(false)}

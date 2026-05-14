@@ -8,6 +8,7 @@ import {
   Post,
 } from '@nestjs/common';
 import { TeamMembersService } from './team-members.service';
+import { CreateTeamMemberCommentDto } from './dto/create-team-member-comment.dto';
 import { CreateTeamMemberDto } from './dto/create-team-member.dto';
 import { UpdateTeamMemberDto } from './dto/update-team-member.dto';
 import { RequiredSubRoles } from '../auth/decorators.js';
@@ -27,6 +28,15 @@ export class TeamMembersController {
   async findAll() {
     const teamMembers = await this.teamMembersService.findAll();
     return { data: teamMembers };
+  }
+
+  @Post(':id/comments')
+  async addComment(
+    @Param('id') id: string,
+    @Body() dto: CreateTeamMemberCommentDto,
+  ) {
+    const created = await this.teamMembersService.addComment(id, dto);
+    return { data: created };
   }
 
   @Get(':id')

@@ -8,6 +8,7 @@ type InputProps = React.ComponentProps<typeof PrimitiveInput> & {
   isSearch?: boolean;
   label?: React.ReactNode;
   labelClassName?: string;
+  required?: boolean;
 };
 
 function Input({
@@ -16,6 +17,7 @@ function Input({
   label,
   labelClassName,
   id,
+  required = false,
   ...props
 }: InputProps) {
   const generatedId = React.useId();
@@ -32,6 +34,7 @@ function Input({
           )}
         >
           {label}
+          {required ? <span className="text-red-500 -ml-1">*</span> : null}
         </Label>
       ) : null}
       <div className="relative w-full">

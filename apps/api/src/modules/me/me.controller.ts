@@ -9,6 +9,7 @@ import {
 } from '@nestjs/common';
 import { MeService } from './me.service.js';
 import { UpdateMeDto } from './dto/update-me.dto.js';
+import { UpdateMyTeamMemberDto } from './dto/update-my-team-member.dto.js';
 import { AllowLimited, CurrentUser } from '../auth/decorators.js';
 import { AbsencesService } from '../absences/absences.service.js';
 import { CreateAbsenceDto } from '../absences/dto/create-absence.dto.js';
@@ -37,6 +38,15 @@ export class MeController {
   @Get('team-member')
   async getTeamMember(@CurrentUser() user: AuthUser) {
     const teamMember = await this.meService.getTeamMember(user.id);
+    return { data: teamMember };
+  }
+
+  @Patch('team-member')
+  async updateMyTeamMember(
+    @CurrentUser() user: AuthUser,
+    @Body() dto: UpdateMyTeamMemberDto,
+  ) {
+    const teamMember = await this.meService.updateMyTeamMember(user.id, dto);
     return { data: teamMember };
   }
 

@@ -8,46 +8,91 @@ datasource db {
 }
 
 model User {
-  id            String      @id
-  publicId      String      @unique @default(uuid()) @map("public_id")
-  firstName     String      @map("first_name")
-  lastName      String?     @map("last_name")
-  email         String      @unique
-  role          Role        @default(USER)
-  subRoles      SubRole[]   @default([]) @map("sub_roles")
-  disabled      Boolean     @default(false)
-  lastLoginAt   DateTime?   @map("last_login_at")
-  createdAt     DateTime    @default(now())
-  updatedAt     DateTime    @updatedAt
-  emailVerified Boolean     @default(false)
-  image         String?
-  accounts      Account[]
-  sessions      Session[]
-  s3Images      S3Image[]
-  teamMember    TeamMember?
-  absences      Absence[]
-  notifications Notification[]
-  metrics       UserMetrics?
-  metricsDays   UserMetricsDay[]
+  id                String           @id
+  publicId          String           @unique @default(uuid()) @map("public_id")
+  firstName         String           @map("first_name")
+  lastName          String?          @map("last_name")
+  email             String           @unique
+  role              Role             @default(USER)
+  subRoles          SubRole[]        @default([]) @map("sub_roles")
+  disabled          Boolean          @default(false)
+  lastLoginAt       DateTime?        @map("last_login_at")
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  emailVerified     Boolean          @default(false)
+  image             String?
+  accounts          Account[]
+  sessions          Session[]
+  s3Images          S3Image[]
+  teamMember        TeamMember?      @relation("TeamMemberUser")
+  teamMembersAsBoss TeamMember[]     @relation("TeamMemberDirectBoss")
+  absences          Absence[]
+  notifications     Notification[]
+  metrics           UserMetrics?
+  metricsDays       UserMetricsDay[]
 
   @@map("users")
 }
 
+enum ContractType {
+  FULL_TIME
+  TEMPORAL
+  FREELANCE
+  PART_TIME
+  INTERNSHIP
+  PROFESSIONAL_SERVICES
+}
+
+enum TeamMemberStatus {
+  ACTIVE
+  INACTIVE
+  TERMINATED
+}
+
 model TeamMember {
-  id            String   @id @default(uuid())
-  userId        String   @unique @map("user_id")
-  firstName     String   @map("first_name")
-  lastName      String?  @map("last_name")
-  businessEmail String   @unique @map("business_email")
-  position      String
-  salary        Float
-  vacations     Int      @default(0)
-  usedVacations Int      @default(0) @map("used_vacations")
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id                           String              @id @default(uuid())
+  userId                       String              @unique @map("user_id")
+  firstName                    String              @map("first_name")
+  lastName                     String?             @map("last_name")
+  secondLastName               String?             @map("second_last_name")
+  fullName                     String              @map("full_name")
+  dui                          String?             @map("dui")
+  inss                         String?             @map("inss")
+  afpNumber                    String?             @map("afp_number")
+  afpEntity                    String?             @map("afp_entity")
+  bankName                     String?             @map("bank_name")
+  bankAccount                  String?             @map("bank_account")
+  bornDate                     DateTime?           @map("born_date")
+  startDate                    DateTime?           @map("start_date")
+  endDate                      DateTime?           @map("end_date")
+  contractType                 ContractType        @default(FULL_TIME)
+  status                       TeamMemberStatus    @default(ACTIVE)
+  emergencyContactName         String?             @map("emergency_contact_name")
+  emergencyContactPhone        String?             @map("emergency_contact_phone")
+  emergencyContactRelationship String?             @map("emergency_contact_relationship")
+  directBoss                   User?               @relation("TeamMemberDirectBoss", fields: [directBossId], references: [id])
+  directBossId                 String?             @map("direct_boss_id")
+  businessEmail                String              @unique @map("business_email")
+  position                     String
+  salary                       Float
+  createdAt                    DateTime            @default(now())
+  updatedAt                    DateTime            @updatedAt
+  user                         User                @relation("TeamMemberUser", fields: [userId], references: [id], onDelete: Cascade)
+  teamMemberComments           TeamMemberComment[]
 
   @@map("team_members")
+}
+
+model TeamMemberComment {
+  id           String     @id @default(uuid())
+  teamMemberId String     @map("team_member_id")
+  comment      String
+  showToUser   Boolean    @default(false) @map("show_to_user")
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  teamMember   TeamMember @relation(fields: [teamMemberId], references: [id], onDelete: Cascade)
+
+  @@map("team_member_comments")
 }
 
 model Absence {

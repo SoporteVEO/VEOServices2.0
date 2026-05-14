@@ -13,7 +13,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { formatMoney } from "@/lib/format";
+import { STATUS_LABELS } from "@/lib/team-member-labels";
 import { TeamMemberFormDialog } from "./team-member-form-dialog";
+import { TeamMemberDetailDrawer } from "./team-member-detail-drawer";
 import { DeleteTeamMemberDialog } from "./delete-team-member-dialog";
 
 function ActionsCell({
@@ -26,27 +28,34 @@ function ActionsCell({
   onDelete: (m: TeamMember) => void;
 }) {
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="ghost" sizeVariant="sm" className="size-8 p-0">
-          <MoreHorizontal className="size-4" />
-          <span className="sr-only">Acciones</span>
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        <DropdownMenuItem onSelect={() => onEdit(teamMember)}>
-          <Pencil className="mr-2 size-3.5" />
-          Editar
-        </DropdownMenuItem>
-        <DropdownMenuItem
-          variant="destructive"
-          onSelect={() => onDelete(teamMember)}
-        >
-          <Trash2 className="mr-2 size-3.5" />
-          Eliminar
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <div
+      className="flex justify-end"
+      onClick={(e) => e.stopPropagation()}
+      onKeyDown={(e) => e.stopPropagation()}
+      role="presentation"
+    >
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" sizeVariant="sm" className="size-8 p-0">
+            <MoreHorizontal className="size-4" />
+            <span className="sr-only">Acciones</span>
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          <DropdownMenuItem onSelect={() => onEdit(teamMember)}>
+            <Pencil className="mr-2 size-3.5" />
+            Editar
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            variant="destructive"
+            onSelect={() => onDelete(teamMember)}
+          >
+            <Trash2 className="mr-2 size-3.5" />
+            Eliminar
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </div>
   );
 }
 
@@ -59,6 +68,7 @@ export function TeamMembersTable({
 }) {
   const [editMember, setEditMember] = useState<TeamMember | null>(null);
   const [deleteMember, setDeleteMember] = useState<TeamMember | null>(null);
+  const [drawerMemberId, setDrawerMemberId] = useState<string | null>(null);
 
   const existingUserIds = useMemo(
     () => teamMembers.map((m) => m.userId),
@@ -99,22 +109,11 @@ export function TeamMembersTable({
       cell: ({ row }) => formatMoney(row.original.salary),
     },
     {
-      id: "vacations",
-      header: "Vacaciones",
-      cell: ({ row }) => {
-        const { vacations, usedVacations } = row.original;
-        const remaining = vacations - usedVacations;
-        return (
-          <div className="flex flex-col text-sm">
-            <span className="font-medium">
-              {remaining} {remaining === 1 ? "día" : "días"} disponibles
-            </span>
-            <span className="text-xs text-muted-foreground">
-              {usedVacations} usados de {vacations}
-            </span>
-          </div>
-        );
-      },
+      id: "status",
+      header: "Estado",
+      cell: ({ row }) => (
+        <span className="text-sm">{STATUS_LABELS[row.original.status]}</span>
+      ),
     },
     {
       id: "linkedUser",
@@ -146,6 +145,15 @@ export function TeamMembersTable({
         isLoading={isLoading}
         skeletonRowCount={5}
         emptyMessage="No hay miembros registrados en la plantilla."
+        onRowClick={(row) => setDrawerMemberId(row.id)}
+      />
+
+      <TeamMemberDetailDrawer
+        teamMemberId={drawerMemberId}
+        open={drawerMemberId !== null}
+        onOpenChange={(open) => {
+          if (!open) setDrawerMemberId(null);
+        }}
       />
 
       <TeamMemberFormDialog

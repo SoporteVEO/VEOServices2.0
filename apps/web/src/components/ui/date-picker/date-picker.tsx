@@ -21,10 +21,14 @@ export interface DatePickerProps {
   onChange: (date: Date | undefined) => void;
   /** Optional label rendered above the trigger. */
   label?: React.ReactNode;
+  /** When true, shows a required indicator next to the label. */
+  required?: boolean;
   /** Placeholder shown when no date is selected. */
   placeholder?: string;
   /** Disable interactions. */
   disabled?: boolean;
+  /** When true and a date is selected, shows an action to clear the value. */
+  allowClear?: boolean;
   /** Disable any date strictly before this one. */
   minDate?: Date;
   /** Disable any date strictly after this one. */
@@ -43,8 +47,10 @@ export function DatePicker({
   value,
   onChange,
   label,
+  required = false,
   placeholder = "Selecciona una fecha",
   disabled = false,
+  allowClear = false,
   minDate,
   maxDate,
   className,
@@ -63,6 +69,7 @@ export function DatePicker({
           className="text-xs font-medium text-muted-foreground"
         >
           {label}
+          {required ? <span className="text-red-500"> *</span> : null}
         </Label>
       ) : null}
 
@@ -99,6 +106,22 @@ export function DatePicker({
             }}
             captionLayout="dropdown"
           />
+          {allowClear && value ? (
+            <div className="border-t border-border p-2">
+              <Button
+                type="button"
+                variant="ghost"
+                sizeVariant="sm"
+                className="w-full text-muted-foreground hover:text-foreground"
+                onClick={() => {
+                  onChange(undefined);
+                  setOpen(false);
+                }}
+              >
+                Quitar fecha
+              </Button>
+            </div>
+          ) : null}
         </PopoverContent>
       </Popover>
     </div>

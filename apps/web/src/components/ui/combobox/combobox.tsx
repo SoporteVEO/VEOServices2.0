@@ -142,7 +142,7 @@ export function Combobox({
           {required && <span className="text-red-500 ml-1">*</span>}
         </p>
       )}
-      <Popover open={open} onOpenChange={handleOpenChange}>
+      <Popover open={open} onOpenChange={handleOpenChange} modal>
         <PopoverTrigger asChild>
           <Button
             type="button"

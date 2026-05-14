@@ -1,29 +1,34 @@
 "use client";
 
-import { Briefcase, CalendarDays, DollarSign, Mail } from "lucide-react";
+import {
+  Briefcase,
+  BadgeCheck,
+  CalendarRange,
+  DollarSign,
+  Mail,
+} from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import type { MeTeamMember } from "@/api/me/me.types";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
-  CardTitle,
   CardTitleWithInfo,
 } from "@/components/ui/card";
-import { formatMoney } from "@/lib/format";
+import { formatDate, formatMoney } from "@/lib/format";
+import {
+  CONTRACT_TYPE_LABELS,
+  STATUS_LABELS,
+} from "@/lib/team-member-labels";
 
-type InfoRow = {
-  icon: LucideIcon;
-  label: string;
-  value: React.ReactNode;
-  hint?: string;
-};
+type Row = { icon: LucideIcon; label: string; value: React.ReactNode };
 
-export function TeamMemberInfo({ teamMember }: { teamMember: MeTeamMember }) {
-  const remainingVacations = teamMember.vacations - teamMember.usedVacations;
-
-  const rows: InfoRow[] = [
+export function MeTeamMemberBusinessReadonly({
+  teamMember,
+}: {
+  teamMember: MeTeamMember;
+}) {
+  const rows: Row[] = [
     {
       icon: Briefcase,
       label: "Cargo",
@@ -47,18 +52,34 @@ export function TeamMemberInfo({ teamMember }: { teamMember: MeTeamMember }) {
       value: formatMoney(teamMember.salary),
     },
     {
-      icon: CalendarDays,
-      label: "Vacaciones",
-      value: `${remainingVacations} ${remainingVacations === 1 ? "día" : "días"} disponibles`,
-      hint: `${teamMember.usedVacations} usados de ${teamMember.vacations}`,
+      icon: Briefcase,
+      label: "Tipo de contrato",
+      value: CONTRACT_TYPE_LABELS[teamMember.contractType],
+    },
+    {
+      icon: BadgeCheck,
+      label: "Estado en plantilla",
+      value: STATUS_LABELS[teamMember.status],
+    },
+    {
+      icon: CalendarRange,
+      label: "Inicio de labores",
+      value: teamMember.startDate
+        ? formatDate(teamMember.startDate)
+        : "—",
+    },
+    {
+      icon: CalendarRange,
+      label: "Fin de labores",
+      value: teamMember.endDate ? formatDate(teamMember.endDate) : "—",
     },
   ];
 
   return (
     <Card>
       <CardHeader>
-        <CardTitleWithInfo info="Datos registrados en la plantilla de la empresa.">
-          Información laboral
+        <CardTitleWithInfo info="Solo recursos humanos puede modificar estos datos.">
+          Información corporativa
         </CardTitleWithInfo>
       </CardHeader>
       <CardContent>
@@ -75,13 +96,8 @@ export function TeamMemberInfo({ teamMember }: { teamMember: MeTeamMember }) {
                 <p className="text-xs font-medium text-muted-foreground">
                   {row.label}
                 </p>
-                <div className="mt-0.5 flex items-center gap-2 text-sm wrap-break-word text-foreground">
-                  <span className="min-w-0 truncate">{row.value}</span>
-                  {row.hint ? (
-                    <span className="shrink-0 text-xs text-muted-foreground">
-                      ({row.hint})
-                    </span>
-                  ) : null}
+                <div className="mt-0.5 text-sm wrap-break-word text-foreground">
+                  {row.value}
                 </div>
               </div>
             </li>

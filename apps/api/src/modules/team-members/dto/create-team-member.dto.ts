@@ -1,6 +1,8 @@
+import { ContractType, TeamMemberStatus } from '@prisma/client';
 import {
+  IsDateString,
   IsEmail,
-  IsInt,
+  IsEnum,
   IsNumber,
   IsOptional,
   IsString,
@@ -18,6 +20,70 @@ export class CreateTeamMemberDto {
   @IsOptional()
   lastName?: string;
 
+  @IsString()
+  @IsOptional()
+  secondLastName?: string;
+
+  @IsString()
+  @IsOptional()
+  dui?: string;
+
+  @IsString()
+  @IsOptional()
+  inss?: string;
+
+  @IsString()
+  @IsOptional()
+  afpNumber?: string;
+
+  @IsString()
+  @IsOptional()
+  afpEntity?: string;
+
+  @IsString()
+  @IsOptional()
+  bankName?: string;
+
+  @IsString()
+  @IsOptional()
+  bankAccount?: string;
+
+  @IsOptional()
+  @IsDateString()
+  bornDate?: string;
+
+  @IsOptional()
+  @IsDateString()
+  startDate?: string;
+
+  @IsOptional()
+  @IsDateString()
+  endDate?: string;
+
+  @IsOptional()
+  @IsEnum(ContractType)
+  contractType?: ContractType;
+
+  @IsOptional()
+  @IsEnum(TeamMemberStatus)
+  status?: TeamMemberStatus;
+
+  @IsString()
+  @IsOptional()
+  emergencyContactName?: string;
+
+  @IsString()
+  @IsOptional()
+  emergencyContactPhone?: string;
+
+  @IsString()
+  @IsOptional()
+  emergencyContactRelationship?: string;
+
+  @IsOptional()
+  @IsString()
+  directBossId?: string | null;
+
   @IsEmail()
   businessEmail!: string;
 
@@ -27,12 +93,4 @@ export class CreateTeamMemberDto {
   @IsNumber()
   @Min(0)
   salary!: number;
-
-  @IsInt()
-  @Min(0)
-  vacations!: number;
-
-  @IsInt()
-  @Min(0)
-  usedVacations!: number;
 }
