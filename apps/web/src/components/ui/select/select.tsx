@@ -46,7 +46,7 @@ function Select({
   return (
     <div className={cn("flex flex-col", label ? "gap-2" : "gap-0", className)}>
       {label ? (
-        <p className="text-sm font-medium text-muted-foreground">
+        <p className="text-xs font-medium text-muted-foreground">
           {label}
           {required ? <span className="text-red-500 ml-1">*</span> : null}
         </p>
@@ -75,9 +75,17 @@ type SelectTriggerProps = Omit<
   sizeVariant?: SelectSizeVariant;
 };
 
-function SelectTrigger({ sizeVariant = "lg", ...props }: SelectTriggerProps) {
+function SelectTrigger({
+  className,
+  sizeVariant = "md",
+  ...props
+}: SelectTriggerProps) {
   return (
-    <PrimitiveSelectTrigger size={SIZE_TO_PRIMITIVE[sizeVariant]} {...props} />
+    <PrimitiveSelectTrigger
+      className={cn("bg-input border border-border", className)}
+      size={SIZE_TO_PRIMITIVE[sizeVariant]}
+      {...props}
+    />
   );
 }
 

@@ -116,10 +116,7 @@ export function TeamMemberForm({
     () => parseYYYYMMDD(startDateStr),
     [startDateStr],
   );
-  const endDateAsDate = useMemo(
-    () => parseYYYYMMDD(endDateStr),
-    [endDateStr],
-  );
+  const endDateAsDate = useMemo(() => parseYYYYMMDD(endDateStr), [endDateStr]);
 
   const bossOptions: ComboboxOption[] = useMemo(() => {
     return bossCandidateUsers

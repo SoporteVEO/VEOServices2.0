@@ -8,7 +8,7 @@ function Table({ className, ...props }: React.ComponentProps<"table">) {
   return (
     <div
       data-slot="table-container"
-      className="relative w-full overflow-x-auto rounded-md border border-input"
+      className="relative w-full overflow-x-auto rounded-md border border-border"
     >
       <table
         data-slot="table"
@@ -30,9 +30,7 @@ function TableHeader({ className, ...props }: React.ComponentProps<"thead">) {
 }
 
 function TableBody({ className, ...props }: React.ComponentProps<"tbody">) {
-  return (
-    <tbody data-slot="table-body" className={className} {...props} />
-  );
+  return <tbody data-slot="table-body" className={className} {...props} />;
 }
 
 function TableFooter({ className, ...props }: React.ComponentProps<"tfoot">) {

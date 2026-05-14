@@ -151,8 +151,10 @@ export function Combobox({
             role="combobox"
             aria-expanded={open}
             className={cn(
-              "w-full justify-start gap-2 px-2.5 font-medium hover:bg-muted hover:text-foreground",
+              "w-full justify-start gap-2 px-2.5 font-medium",
               disabled && "pointer-events-none opacity-50",
+              !hasSelection &&
+                "text-muted-foreground hover:text-muted-foreground!",
               triggerClassName,
             )}
             disabled={disabled}

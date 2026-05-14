@@ -59,6 +59,7 @@ export default function StaticBillboardsPage() {
               id={showAllId}
               checked={showAll}
               onCheckedChange={setShowAll}
+              className="bg-input"
             />
             <Label htmlFor={showAllId} className="text-sm font-normal">
               Mostrar todas

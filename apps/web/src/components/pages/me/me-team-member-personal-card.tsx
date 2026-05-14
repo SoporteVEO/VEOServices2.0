@@ -43,8 +43,8 @@ export function MeTeamMemberPersonalCard({
   teamMember: MeTeamMember;
 }) {
   const mutation = useUpdateMyTeamMember();
-  const { register, handleSubmit, control, formState } = useForm<PersonalValues>(
-    {
+  const { register, handleSubmit, control, formState } =
+    useForm<PersonalValues>({
       values: {
         firstName: teamMember.firstName,
         lastName: teamMember.lastName ?? "",
@@ -53,8 +53,7 @@ export function MeTeamMemberPersonalCard({
         dui: teamMember.dui ?? "",
         inss: teamMember.inss ?? "",
       },
-    },
-  );
+    });
 
   function onSubmit(values: PersonalValues) {
     mutation.mutate(
@@ -82,10 +81,7 @@ export function MeTeamMemberPersonalCard({
         </CardTitleWithInfo>
       </CardHeader>
       <CardContent>
-        <form
-          onSubmit={handleSubmit(onSubmit)}
-          className="flex flex-col gap-4"
-        >
+        <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
             <Input
               label="Nombre"

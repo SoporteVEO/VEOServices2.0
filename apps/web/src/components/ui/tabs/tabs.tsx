@@ -22,7 +22,7 @@ function TabsList({
 }: React.ComponentProps<typeof PrimitiveTabsList>) {
   return (
     <PrimitiveTabsList
-      className={cn("hover:bg-accent hover:text-accent-foreground", className)}
+      className={cn("hover:text-accent-foreground", className)}
       {...props}
     />
   );

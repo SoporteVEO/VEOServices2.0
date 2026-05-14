@@ -83,8 +83,8 @@ export function DatePicker({
             aria-invalid={rest["aria-invalid"]}
             icon={CalendarIcon}
             className={cn(
-              "w-full justify-start bg-accent/50 px-3 font-normal",
-              !value && "text-muted-foreground",
+              "w-full justify-start",
+              !value && "text-muted-foreground hover:text-muted-foreground!",
               buttonClassName,
             )}
           >

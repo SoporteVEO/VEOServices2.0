@@ -300,7 +300,9 @@ export const DateRangePicker: FC<DateRangePickerProps> & {
     isSelected: boolean;
   }): React.JSX.Element => (
     <Button
-      className={cn(isSelected && "pointer-events-none")}
+      className={cn(
+        isSelected && "pointer-events-none shadow-none border-none bg-muted",
+      )}
       variant="ghost"
       onClick={() => {
         setPreset(preset);
@@ -343,7 +345,10 @@ export const DateRangePicker: FC<DateRangePickerProps> & {
       }}
     >
       <PopoverTrigger asChild>
-        <Button size={"lg"} variant="outline">
+        <Button
+          variant="outline"
+          className="justify-start gap-2 pr-4 font-medium"
+        >
           <div className="text-right">
             <div className="py-1">
               <div>{`${formatDate(range.from, locale)}${
@@ -361,11 +366,11 @@ export const DateRangePicker: FC<DateRangePickerProps> & {
               </div>
             )}
           </div>
-          <div className="pl-1 opacity-60 -mr-2 scale-125">
+          <div className="">
             {isOpen ? (
-              <ChevronUpIcon width={24} />
+              <ChevronUpIcon className="ml-auto size-4 shrink-0 opacity-50" />
             ) : (
-              <ChevronDownIcon width={24} />
+              <ChevronDownIcon className="ml-auto size-4 shrink-0 opacity-50" />
             )}
           </div>
         </Button>

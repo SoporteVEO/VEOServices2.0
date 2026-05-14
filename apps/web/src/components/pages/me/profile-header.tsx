@@ -43,7 +43,7 @@ export function ProfileHeader({
 
   return (
     <Card>
-      <CardContent className="pt-6">
+      <CardContent>
         <div className="flex flex-col gap-6 lg:flex-row lg:items-stretch lg:justify-between">
           <div className="flex min-w-0 flex-1 flex-col items-start gap-4 sm:flex-row sm:items-center">
             <Avatar size="lg" className="size-16 shrink-0">

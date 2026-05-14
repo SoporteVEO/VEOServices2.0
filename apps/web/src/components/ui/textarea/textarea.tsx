@@ -9,7 +9,7 @@ type TextareaProps = React.ComponentProps<typeof PrimitiveTextarea> & {
 };
 
 function Textarea({
-  className,
+  className = "shadow-sm",
   label,
   labelClassName,
   id,
@@ -33,7 +33,7 @@ function Textarea({
       ) : null}
       <PrimitiveTextarea
         id={textareaId}
-        className={cn("px-3 py-1.5 bg-accent/50", className)}
+        className={cn("px-3 py-1.5 bg-input", className)}
         {...props}
       />
     </div>

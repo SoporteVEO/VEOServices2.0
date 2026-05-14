@@ -13,12 +13,12 @@ export function DashboardAccessGuard({ children }: { children: ReactNode }) {
 
   const sessionUser = session?.user as Record<string, unknown> | undefined;
   const userRole = sessionUser?.role as UserRole | undefined;
-  const userSubRoles =
-    (sessionUser?.subRoles as SubRole[] | undefined) ?? [];
+  const userSubRoles = (sessionUser?.subRoles as SubRole[] | undefined) ?? [];
 
-  const access = !isPending && userRole
-    ? resolvePathAccess(pathname, userRole, userSubRoles)
-    : null;
+  const access =
+    !isPending && userRole
+      ? resolvePathAccess(pathname, userRole, userSubRoles)
+      : null;
 
   useEffect(() => {
     if (access && !access.allowed) {
@@ -30,5 +30,5 @@ export function DashboardAccessGuard({ children }: { children: ReactNode }) {
     return null;
   }
 
-  return <>{children}</>;
+  return <div>{children}</div>;
 }

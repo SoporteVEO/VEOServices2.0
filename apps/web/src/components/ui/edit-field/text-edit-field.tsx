@@ -2,11 +2,8 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
-import {
-  Editable,
-  EditableArea,
-} from "@/components/primitives/ui/editable";
-import { Input as PrimitiveInput } from "@/components/primitives/ui/input";
+import { Editable, EditableArea } from "@/components/primitives/ui/editable";
+import { Input } from "@/components/ui/input";
 import {
   EditFieldPreview,
   EditFieldShell,
@@ -87,7 +84,7 @@ export function TextEditField({
         <EditableArea className="block w-full">
           {editing ? (
             <div className="flex flex-col gap-2">
-              <PrimitiveInput
+              <Input
                 type={type}
                 value={draft}
                 onChange={(e) => setDraft(e.target.value)}

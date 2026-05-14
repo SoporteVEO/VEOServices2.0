@@ -126,7 +126,7 @@ export function DataTable<TData, TValue>({
       {(onSearchChange || sideButtons) && (
         <div className="flex items-center gap-2 py-2">
           {onSearchChange && (
-            <div className="w-full max-w-sm min-w-0 shrink-0">
+            <div className="w-full max-w-sm min-w-0 shrink-0 ml-1">
               <Input
                 placeholder={searchPlaceholder}
                 value={searchValue ?? ""}
@@ -142,7 +142,7 @@ export function DataTable<TData, TValue>({
         </div>
       )}
       <Table>
-        <TableHeader className="bg-accent/50">
+        <TableHeader className="bg-muted">
           {table.getHeaderGroups().map((headerGroup) => (
             <TableRow key={headerGroup.id}>
               {headerGroup.headers.map((header) => {
@@ -167,7 +167,7 @@ export function DataTable<TData, TValue>({
                 key={`skeleton-${rowIndex}`}
                 className={cn(
                   "hover:bg-transparent",
-                  rowIndex % 2 === 0 ? "bg-accent/10" : "bg-accent/25",
+                  rowIndex % 2 === 0 ? "bg-background" : "bg-muted/75",
                 )}
               >
                 {columns.map((_, colIndex) => (
@@ -175,6 +175,7 @@ export function DataTable<TData, TValue>({
                     <Skeleton
                       className={cn(
                         "h-4",
+                        rowIndex % 2 === 0 ? "bg-muted" : "bg-background",
                         SKELETON_CELL_WIDTHS[
                           colIndex % SKELETON_CELL_WIDTHS.length
                         ],
@@ -192,7 +193,7 @@ export function DataTable<TData, TValue>({
                 className={cn(
                   onRowClick && "cursor-pointer",
                   "hover:bg-primary/5",
-                  index % 2 === 0 ? "bg-accent/10" : "bg-accent/25",
+                  index % 2 === 0 ? "bg-background" : "bg-muted/75",
                 )}
                 onClick={
                   onRowClick

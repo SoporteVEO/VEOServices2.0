@@ -23,7 +23,7 @@ export function FormSection({
       )}
     >
       <header className="mb-4 pb-3">
-        <h3 className="text-sm font-semibold tracking-tight text-foreground">
+        <h3 className="text-base font-medium tracking-tight text-muted-foreground">
           {title}
         </h3>
         {description ? (

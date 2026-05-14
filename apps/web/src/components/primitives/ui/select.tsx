@@ -77,7 +77,7 @@ function SelectTrigger({
       data-size={size}
       className={cn(
         selectTriggerVariants({ size }) +
-          " bg-accent/50 hover:bg-muted hover:text-foreground font-medium",
+          "bg-input border border-border shadow-sm hover:bg-accent font-medium",
         className,
       )}
       {...props}

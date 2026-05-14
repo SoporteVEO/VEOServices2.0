@@ -40,7 +40,7 @@ export function DashboardShell({ children }: { children: ReactNode }) {
           </div>
         </header>
         <div className="relative flex min-w-0 flex-1 flex-col overflow-hidden">
-          <div className="flex h-full w-full min-w-0 flex-1 flex-col overflow-x-auto overflow-y-auto p-4 bg-background">
+          <div className="flex h-full w-full min-w-0 flex-1 flex-col overflow-x-auto overflow-y-auto p-3 bg-background">
             <DashboardAccessGuard>{children}</DashboardAccessGuard>
           </div>
         </div>

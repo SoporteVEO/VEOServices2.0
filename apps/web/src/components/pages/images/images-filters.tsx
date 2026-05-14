@@ -123,7 +123,6 @@ export function ImagesFilters({
       placeholder="Buscar por código..."
       value={value.code}
       onChange={(e) => onChange({ ...value, code: e.target.value })}
-      className="h-9"
     />
   );
 
@@ -156,7 +155,7 @@ export function ImagesFilters({
         })
       }
     >
-      <SelectTrigger sizeVariant="lg" className="w-fit min-w-0">
+      <SelectTrigger className="w-fit min-w-0">
         <SelectValue placeholder="Tipo de imagen" />
       </SelectTrigger>
       <SelectContent>
@@ -173,7 +172,7 @@ export function ImagesFilters({
   const uploaderCombobox = (
     <Combobox
       className="w-full"
-      triggerClassName="h-9 w-full"
+      triggerClassName="w-full"
       placeholder="Subido por"
       emptyLabel="No hay usuarios."
       options={uploaderOptions}
@@ -193,7 +192,7 @@ export function ImagesFilters({
       value={value.sortOrder}
       onValueChange={(v) => onChange({ ...value, sortOrder: v as SortOrder })}
     >
-      <SelectTrigger sizeVariant="lg" className="w-full">
+      <SelectTrigger className="w-full">
         <SelectValue />
       </SelectTrigger>
       <SelectContent>

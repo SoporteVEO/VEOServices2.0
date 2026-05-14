@@ -133,7 +133,12 @@ export function TeamMemberDetailDrawer({
   const { data: detail, isLoading } = useTeamMember(teamMemberId, open);
 
   return (
-    <Drawer open={open} onOpenChange={onOpenChange} direction="right" handleOnly>
+    <Drawer
+      open={open}
+      onOpenChange={onOpenChange}
+      direction="right"
+      handleOnly
+    >
       <DrawerContent
         size="2xl"
         className="flex max-h-dvh data-[vaul-drawer-direction=right]:h-screen data-[vaul-drawer-direction=right]:w-[96vw] data-[vaul-drawer-direction=right]:sm:max-w-[720px] data-[vaul-drawer-direction=right]:lg:max-w-[920px]"
@@ -235,10 +240,7 @@ function SectionSkeleton({
       </CardHeader>
       <CardContent className="space-y-4">
         {Array.from({ length: rows }).map((_, rowIdx) => (
-          <div
-            key={`row-${rowIdx}`}
-            className={cn("grid gap-4", gridCols)}
-          >
+          <div key={`row-${rowIdx}`} className={cn("grid gap-4", gridCols)}>
             {Array.from({ length: fieldsPerRow }).map((_, fieldIdx) => (
               <div
                 key={`field-${rowIdx}-${fieldIdx}`}
@@ -450,18 +452,14 @@ function TeamMemberDetailContent({
                   initialValue={detail.contractType}
                   options={CONTRACT_OPTIONS}
                   isPending={isPending}
-                  onSubmit={(v) =>
-                    update({ contractType: v as ContractType })
-                  }
+                  onSubmit={(v) => update({ contractType: v as ContractType })}
                 />
                 <SelectEditField
                   label="Estado"
                   initialValue={detail.status}
                   options={STATUS_OPTIONS}
                   isPending={isPending}
-                  onSubmit={(v) =>
-                    update({ status: v as TeamMemberStatus })
-                  }
+                  onSubmit={(v) => update({ status: v as TeamMemberStatus })}
                 />
               </div>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -558,9 +556,7 @@ function TeamMemberDetailContent({
                   label="Parentesco"
                   initialValue={detail.emergencyContactRelationship}
                   isPending={isPending}
-                  onSubmit={(v) =>
-                    update({ emergencyContactRelationship: v })
-                  }
+                  onSubmit={(v) => update({ emergencyContactRelationship: v })}
                 />
               </div>
             </CardContent>
@@ -661,7 +657,7 @@ function CommentsCard({ detail }: { detail: TeamMemberDetail }) {
             {detail.teamMemberComments.map((c) => (
               <li
                 key={c.id}
-                className="rounded-md border border-border/60 bg-muted/15 p-3 text-sm"
+                className="rounded-md border border-border bg-muted p-3 text-sm"
               >
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="text-[11px] text-muted-foreground">
@@ -700,6 +696,7 @@ function CommentsCard({ detail }: { detail: TeamMemberDetail }) {
                 checked={showCommentToUser}
                 onCheckedChange={(v) => setShowCommentToUser(v === true)}
                 disabled={isPending}
+                className="shadow-sm"
               />
               <Label
                 htmlFor="show-comment-to-user"

@@ -37,7 +37,7 @@ function Button({
       <PrimitiveButton
         asChild
         className={cn(
-          "cursor-pointer",
+          "cursor-pointer shadow-sm border-border border",
           SIZE_VARIANT_CLASS[sizeVariant],
           className,
         )}
@@ -51,7 +51,7 @@ function Button({
   return (
     <PrimitiveButton
       className={cn(
-        `cursor-pointer ${props.variant === "outline" ? "bg-accent/50" : ""}`,
+        `cursor-pointer shadow-sm border-border border`,
         SIZE_VARIANT_CLASS[sizeVariant],
         className,
       )}
