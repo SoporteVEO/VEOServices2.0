@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import {
   DeleteObjectCommand,
   GetObjectCommand,
+  HeadObjectCommand,
   PutObjectCommand,
   S3Client,
 } from '@aws-sdk/client-s3';
@@ -105,6 +106,13 @@ export class S3StorageService {
     );
 
     return { key, url };
+  }
+
+  async getObjectSize(key: string): Promise<number> {
+    const response = await this.client.send(
+      new HeadObjectCommand({ Bucket: this.bucket, Key: key }),
+    );
+    return response.ContentLength ?? 0;
   }
 
   async getObjectBuffer(key: string): Promise<Buffer> {

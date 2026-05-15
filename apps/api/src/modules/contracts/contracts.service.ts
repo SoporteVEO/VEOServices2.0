@@ -9,7 +9,7 @@ import {
   S3StorageService,
   type PresignedPutResult,
 } from '../s3-images/s3-storage.service.js';
-import { EmailService } from '../email/email.service.js';
+import { EmailService, type EmailAttachment } from '../email/email.service.js';
 import { NotificationsService } from '../notifications/notifications.service.js';
 import { NotificationStatus, ReportType, S3ImageType } from '@prisma/client';
 import type { EndingSoonContract } from './entities/ending-soon-contract.js';
@@ -214,6 +214,13 @@ ORDER BY maecon.mconId, detcon.dconFechaHasta ASC
 const REPORT_FILE_MIME_TYPE =
   'application/vnd.openxmlformats-officedocument.presentationml.presentation';
 const REPORT_FILE_EXTENSION = 'pptx';
+
+// Resend caps the total email size (HTML + attachments after base64 encoding)
+// at 40MB. Base64 inflates payloads ~33%, so we keep raw attachments below
+// this threshold and fall back to a download link when they exceed it.
+const MAX_EMAIL_ATTACHMENT_BYTES = 25 * 1024 * 1024;
+// AWS SigV4 caps presigned URLs at 7 days (604800 seconds).
+const REPORT_DOWNLOAD_URL_EXPIRES_SECONDS = 60 * 60 * 24 * 7;
 
 @Injectable()
 export class ContractsService {
@@ -556,16 +563,60 @@ export class ContractsService {
   }
 
   async sendMaintenanceReport(userId: string, dto: SendMaintenanceReportDto) {
-    let fileBuffer: Buffer;
+    let fileSize: number;
     try {
-      fileBuffer = await this.s3Storage.getObjectBuffer(dto.fileKey);
+      fileSize = await this.s3Storage.getObjectSize(dto.fileKey);
     } catch (err) {
       this.logger.error(
-        `No se pudo descargar el reporte ${dto.fileKey}: ${String(err)}`,
+        `No se pudo obtener el tamaño del reporte ${dto.fileKey}: ${String(err)}`,
       );
       throw new InternalServerErrorException(
         'No se pudo recuperar el archivo del reporte',
       );
+    }
+
+    const useDownloadLink = fileSize > MAX_EMAIL_ATTACHMENT_BYTES;
+
+    let attachments: EmailAttachment[] | undefined;
+    let downloadUrl: string | undefined;
+    let downloadUrlExpiresInDays: number | undefined;
+
+    if (useDownloadLink) {
+      try {
+        downloadUrl = await this.s3Storage.getSignedUrl(
+          dto.fileKey,
+          REPORT_DOWNLOAD_URL_EXPIRES_SECONDS,
+        );
+        downloadUrlExpiresInDays = Math.floor(
+          REPORT_DOWNLOAD_URL_EXPIRES_SECONDS / 86400,
+        );
+      } catch (err) {
+        this.logger.error(
+          `No se pudo generar el enlace de descarga para ${dto.fileKey}: ${String(err)}`,
+        );
+        throw new InternalServerErrorException(
+          'No se pudo recuperar el archivo del reporte',
+        );
+      }
+    } else {
+      let fileBuffer: Buffer;
+      try {
+        fileBuffer = await this.s3Storage.getObjectBuffer(dto.fileKey);
+      } catch (err) {
+        this.logger.error(
+          `No se pudo descargar el reporte ${dto.fileKey}: ${String(err)}`,
+        );
+        throw new InternalServerErrorException(
+          'No se pudo recuperar el archivo del reporte',
+        );
+      }
+      attachments = [
+        {
+          filename: dto.fileName,
+          content: fileBuffer,
+          contentType: REPORT_FILE_MIME_TYPE,
+        },
+      ];
     }
 
     const reportType = dto.reportType ?? 'monthly';
@@ -578,6 +629,9 @@ export class ContractsService {
       period: dto.period,
       heading: labels.heading,
       body: labels.body,
+      downloadUrl,
+      downloadUrlExpiresInDays,
+      fileSizeMB: useDownloadLink ? fileSize / 1024 / 1024 : undefined,
     });
 
     try {
@@ -585,13 +639,7 @@ export class ContractsService {
         dto.email,
         subject,
         htmlContent,
-        [
-          {
-            filename: dto.fileName,
-            content: fileBuffer,
-            contentType: REPORT_FILE_MIME_TYPE,
-          },
-        ],
+        attachments,
       );
 
       if (error) {
@@ -609,7 +657,12 @@ export class ContractsService {
 
       return { success: true };
     } finally {
-      await this.s3Storage.deleteByKey(dto.fileKey);
+      // When a download link is used, the S3 object must remain available
+      // until the presigned URL expires. Cleanup of those files is delegated
+      // to an out-of-band lifecycle policy / cleanup job.
+      if (!useDownloadLink) {
+        await this.s3Storage.deleteByKey(dto.fileKey);
+      }
     }
   }
 
@@ -698,10 +751,23 @@ function buildMaintenanceReportEmailHtml(params: {
   period: string;
   heading: string;
   body: string;
+  downloadUrl?: string;
+  downloadUrlExpiresInDays?: number;
+  fileSizeMB?: number;
 }): string {
   const greeting = params.customerName
     ? `Estimado(a) ${escapeHtml(params.customerName)},`
     : 'Estimado(a) cliente,';
+
+  const deliverySection = params.downloadUrl
+    ? buildDownloadLinkSection({
+        downloadUrl: params.downloadUrl,
+        expiresInDays: params.downloadUrlExpiresInDays ?? 7,
+        fileSizeMB: params.fileSizeMB,
+      })
+    : `<p style="margin:0 0 8px;font-size:14px;line-height:1.6;">
+                  El archivo está adjunto a este correo en formato PowerPoint (.pptx).
+                </p>`;
 
   return `<!doctype html>
 <html lang="es">
@@ -739,9 +805,7 @@ function buildMaintenanceReportEmailHtml(params: {
                     </td>
                   </tr>
                 </table>
-                <p style="margin:0 0 8px;font-size:14px;line-height:1.6;">
-                  El archivo está adjunto a este correo en formato PowerPoint (.pptx).
-                </p>
+                ${deliverySection}
               </td>
             </tr>
             <tr>
@@ -767,6 +831,34 @@ function buildMaintenanceReportEmailHtml(params: {
 </html>`;
 }
 
+function buildDownloadLinkSection(params: {
+  downloadUrl: string;
+  expiresInDays: number;
+  fileSizeMB?: number;
+}): string {
+  const sizeLabel = params.fileSizeMB
+    ? ` (${params.fileSizeMB.toFixed(1)} MB)`
+    : '';
+  const expiresLabel =
+    params.expiresInDays === 1 ? '1 día' : `${params.expiresInDays} días`;
+
+  return `<p style="margin:0 0 16px;font-size:14px;line-height:1.6;">
+                  Por su tamaño${escapeHtml(sizeLabel)}, el reporte no se pudo adjuntar a este correo. Descárgalo desde el siguiente enlace:
+                </p>
+                <table role="presentation" cellspacing="0" cellpadding="0" style="margin:0 0 16px;">
+                  <tr>
+                    <td style="background:#003366;border-radius:8px;">
+                      <a href="${escapeHtmlAttr(params.downloadUrl)}" style="display:inline-block;padding:12px 24px;font-size:14px;font-weight:bold;color:#ffffff;text-decoration:none;">
+                        Descargar reporte (.pptx)
+                      </a>
+                    </td>
+                  </tr>
+                </table>
+                <p style="margin:0 0 8px;font-size:12px;line-height:1.6;color:#6b7280;">
+                  El enlace estará disponible por ${escapeHtml(expiresLabel)}.
+                </p>`;
+}
+
 function escapeHtml(value: string): string {
   return value
     .replace(/&/g, '&amp;')
@@ -774,4 +866,8 @@ function escapeHtml(value: string): string {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;');
+}
+
+function escapeHtmlAttr(value: string): string {
+  return escapeHtml(value);
 }
