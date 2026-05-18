@@ -17,7 +17,7 @@ export interface MultiImageUploaderProps {
   onChange: (files: File[]) => void;
   /** Maximum number of files allowed. Defaults to `10`. */
   maxFiles?: number;
-  /** Maximum size per file in bytes. Defaults to `5MB`. */
+  /** Maximum size per file in bytes. Defaults to `25MB`. */
   maxSize?: number;
   /** Allowed mime types. */
   acceptedFileTypes?: readonly string[];
@@ -38,7 +38,7 @@ export function MultiImageUploader({
   value,
   onChange,
   maxFiles = 10,
-  maxSize = 5 * 1024 * 1024,
+  maxSize = 25 * 1024 * 1024,
   acceptedFileTypes = DEFAULT_ACCEPTED_TYPES,
   label,
   hint,

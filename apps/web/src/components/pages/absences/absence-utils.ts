@@ -1,3 +1,5 @@
+import { blobToBase64, compressImage } from "@/lib/compress-image";
+
 export function computeAbsenceDays(fromIso: string, toIso: string): number {
   const from = new Date(fromIso);
   const to = new Date(toIso);
@@ -6,15 +8,14 @@ export function computeAbsenceDays(fromIso: string, toIso: string): number {
   return Math.max(1, Math.round(ms / (1000 * 60 * 60 * 24)) + 1);
 }
 
-export function fileToBase64(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => {
-      const result = String(reader.result ?? "");
-      const cleaned = result.includes(",") ? result.split(",")[1] : result;
-      resolve(cleaned);
-    };
-    reader.onerror = () => reject(new Error("No se pudo leer la imagen"));
-    reader.readAsDataURL(file);
-  });
+/**
+ * Compresses an absence image and returns its base64 contents (no data: prefix).
+ *
+ * Compression keeps request bodies well below Vercel's 4.5MB serverless
+ * function payload limit (FUNCTION_PAYLOAD_TOO_LARGE) and matches the
+ * server-side image processing target.
+ */
+export async function fileToBase64(file: File): Promise<string> {
+  const { blob } = await compressImage(file);
+  return blobToBase64(blob);
 }

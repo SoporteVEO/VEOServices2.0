@@ -439,8 +439,10 @@ function DocumentsEditor({
     try {
       const base64s = await Promise.all(filesArr.map(fileToBase64));
       await onUpdate({ addedImages: base64s });
-    } catch {
-      // toast handled upstream
+    } catch (err) {
+      toast.error(
+        err instanceof Error ? err.message : "Error al procesar imágenes",
+      );
     } finally {
       setIsAdding(false);
       if (inputRef.current) inputRef.current.value = "";

@@ -16,6 +16,7 @@ import {
   S3_IMAGE_TYPE_OPTIONS,
   type S3ImageType,
 } from "@/api/s3-images/s3-images.get";
+import { blobToBase64, compressImage } from "@/lib/compress-image";
 import { StaticBillboardCodeCombobox } from "./static-billboard-code-combobox";
 
 export interface UploadImageFormValues {
@@ -32,16 +33,6 @@ interface UploadImageFormProps {
   onCancel: () => void;
 }
 
-async function blobToBase64(blob: Blob): Promise<string> {
-  const dataUrl = await new Promise<string>((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(String(reader.result ?? ""));
-    reader.onerror = () => reject(new Error("No se pudo leer la imagen"));
-    reader.readAsDataURL(blob);
-  });
-  return dataUrl.includes(",") ? dataUrl.split(",")[1] : dataUrl;
-}
-
 export function UploadImageForm({
   defaultType = "STATIC_BILLBOARD_MONTHLY",
   isPending = false,
@@ -55,15 +46,33 @@ export function UploadImageForm({
     string | null
   >(null);
   const [validationError, setValidationError] = useState<string | null>(null);
+  const [isCompressing, setIsCompressing] = useState(false);
 
   async function handleImageReady(blob: Blob) {
-    const base64 = await blobToBase64(blob);
-    setImageBase64(base64);
     setValidationError(null);
+    setIsCompressing(true);
+    setImageBase64(null);
+    try {
+      const compressed = await compressImage(blob);
+      const base64 = await blobToBase64(compressed.blob);
+      setImageBase64(base64);
+    } catch (err) {
+      setValidationError(
+        err instanceof Error
+          ? err.message
+          : "No se pudo procesar la imagen. Intenta con otra.",
+      );
+    } finally {
+      setIsCompressing(false);
+    }
   }
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    if (isCompressing) {
+      setValidationError("Espera a que termine de procesarse la imagen.");
+      return;
+    }
     if (!imageBase64) {
       setValidationError("Debes subir una imagen primero.");
       return;
@@ -75,6 +84,13 @@ export function UploadImageForm({
       staticBillboardCodeId,
     });
   }
+
+  const isSubmitDisabled = isPending || isCompressing;
+  const submitLabel = isCompressing
+    ? "Procesando imagen..."
+    : isPending
+      ? "Subiendo..."
+      : "Subir imagen";
 
   return (
     <form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col">
@@ -118,11 +134,11 @@ export function UploadImageForm({
         </Button>
         <Button
           type="submit"
-          disabled={isPending}
-          icon={isPending ? Loader2 : undefined}
-          iconClassName={isPending ? "animate-spin" : undefined}
+          disabled={isSubmitDisabled}
+          icon={isSubmitDisabled ? Loader2 : undefined}
+          iconClassName={isSubmitDisabled ? "animate-spin" : undefined}
         >
-          {isPending ? "Subiendo..." : "Subir imagen"}
+          {submitLabel}
         </Button>
       </DialogFooter>
     </form>

@@ -1,10 +1,12 @@
 "use client";
 
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { ImageUploader } from "@/components/ui/image-uploader";
 import { Input } from "@/components/ui/input";
 import type { DigitalBillboardInput } from "@/api/digital-billboards/digital-billboards.post";
+import { blobToBase64, compressImage } from "@/lib/compress-image";
 
 interface DigitalBillboardFormProps {
   isPending?: boolean;
@@ -23,17 +25,25 @@ export function DigitalBillboardForm({
       imageBase64: null,
     },
   });
+  const [imageError, setImageError] = useState<string | null>(null);
+  const [isCompressing, setIsCompressing] = useState(false);
 
   async function handleImageCropped(blob: Blob) {
-    const dataUrl = await new Promise<string>((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(String(reader.result ?? ""));
-      reader.onerror = () => reject(new Error("No se pudo leer la imagen"));
-      reader.readAsDataURL(blob);
-    });
-
-    const base64 = dataUrl.includes(",") ? dataUrl.split(",")[1] : dataUrl;
-    setValue("imageBase64", base64, { shouldDirty: true });
+    setImageError(null);
+    setIsCompressing(true);
+    try {
+      const compressed = await compressImage(blob);
+      const base64 = await blobToBase64(compressed.blob);
+      setValue("imageBase64", base64, { shouldDirty: true });
+    } catch (err) {
+      setImageError(
+        err instanceof Error
+          ? err.message
+          : "No se pudo procesar la imagen. Intenta con otra.",
+      );
+    } finally {
+      setIsCompressing(false);
+    }
   }
 
   return (
@@ -103,10 +113,21 @@ export function DigitalBillboardForm({
           aspectRatio={16 / 9}
           onImageCropped={handleImageCropped}
         />
+        {imageError ? (
+          <p className="text-sm text-destructive">{imageError}</p>
+        ) : null}
       </div>
 
-      <Button type="submit" className="w-full" disabled={isPending}>
-        {isPending ? "Creando..." : "Crear valla"}
+      <Button
+        type="submit"
+        className="w-full"
+        disabled={isPending || isCompressing}
+      >
+        {isCompressing
+          ? "Procesando imagen..."
+          : isPending
+            ? "Creando..."
+            : "Crear valla"}
       </Button>
 
       {errorMessage ? (

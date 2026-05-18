@@ -50,7 +50,7 @@ interface ImageUploaderProps {
 
   /**
    * Maximum file size in bytes
-   * @default 5242880 (5MB)
+   * @default 26214400 (25MB)
    */
   maxSize?: number;
 
@@ -84,7 +84,7 @@ interface ImageUploaderProps {
  */
 export function ImageUploader({
   aspectRatio = 1,
-  maxSize = 5 * 1024 * 1024, // 5MB
+  maxSize = 25 * 1024 * 1024,
   acceptedFileTypes = ["image/jpeg", "image/png", "image/webp"],
   className,
   disableCrop = false,
