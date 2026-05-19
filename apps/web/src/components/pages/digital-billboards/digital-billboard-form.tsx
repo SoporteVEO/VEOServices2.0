@@ -92,7 +92,7 @@ export function DigitalBillboardForm({
           <Input
             id="price"
             label="Precio"
-            {...register("price", { required: true })}
+            {...register("price", { required: true, valueAsNumber: true })}
           />
         </div>
       </div>
