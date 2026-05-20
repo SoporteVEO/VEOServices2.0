@@ -72,7 +72,7 @@ export function DashboardYoyChart({ yoy, isLoading }: DashboardYoyChartProps) {
           <div className="flex flex-col gap-0.5">
             <CardTitle className="text-sm">Año contra año</CardTitle>
             <CardDescription className="text-xs">
-              Ingresos estimados comparados con el mismo periodo del año
+              Ingresos facturados comparados con el mismo periodo del año
               anterior
             </CardDescription>
           </div>

@@ -7,6 +7,17 @@
     "pdfx": {
       "command": "npx",
       "args": ["-y", "pdfx-cli@latest", "mcp"]
+    },
+    "brilo-sqlserver": {
+      "command": "node",
+      "args": ["D:/veo/brilo_mcp/dist/index.js"],
+      "cwd": "D:/veo/brilo_mcp",
+      "env": {
+        "SQLSERVER_HOST": "45.164.207.238",
+        "SQLSERVER_PORT": "20032",
+        "SQLSERVER_USERNAME": "olimporeader",
+        "SQLSERVER_PASSWORD": "olimporeader"
+      }
     }
   }
 }

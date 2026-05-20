@@ -48,7 +48,7 @@ export function DashboardTopBillboards({
           <div className="flex flex-col gap-0.5">
             <CardTitle className="text-sm">Vallas más rentables</CardTitle>
             <CardDescription className="text-xs">
-              Top {billboards.length} por ingresos estimados en el rango
+              Top {billboards.length} por ingresos estimados de contratos
             </CardDescription>
           </div>
           <span className="flex items-center gap-1 rounded-md bg-violet-500/10 px-2 py-1 text-[11px] font-medium text-violet-600 dark:text-violet-400">

@@ -1,6 +1,6 @@
 "use client";
 
-import { Mail, Repeat, Trophy, Users } from "lucide-react";
+import { Mail, Receipt, Trophy, Users } from "lucide-react";
 
 import {
   Card,
@@ -48,7 +48,7 @@ export function DashboardTopCustomers({
           <div className="flex flex-col gap-0.5">
             <CardTitle className="text-sm">Mejores clientes</CardTitle>
             <CardDescription className="text-xs">
-              Ordenados por ingresos estimados en el rango
+              Ordenados por monto facturado en el rango
             </CardDescription>
           </div>
           <span className="flex items-center gap-1 rounded-md bg-sky-500/10 px-2 py-1 text-[11px] font-medium text-sky-600 dark:text-sky-400">
@@ -85,7 +85,7 @@ export function DashboardTopCustomers({
                       </a>
                     ) : c.lastContractEnd ? (
                       <span className="truncate text-[11px] text-muted-foreground">
-                        Último vence: {formatHumanDate(c.lastContractEnd)}
+                        Última factura: {formatHumanDate(c.lastContractEnd)}
                       </span>
                     ) : null}
                   </div>
@@ -96,11 +96,11 @@ export function DashboardTopCustomers({
                   </span>
                   {c.contractsCount > 1 ? (
                     <Badge className="h-4 gap-1 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-transparent text-[10px]">
-                      <Repeat className="size-2.5" />×{c.contractsCount}
+                      <Receipt className="size-2.5" />×{c.contractsCount}
                     </Badge>
                   ) : (
                     <span className="text-[11px] text-muted-foreground">
-                      1 contrato
+                      1 factura
                     </span>
                   )}
                 </div>

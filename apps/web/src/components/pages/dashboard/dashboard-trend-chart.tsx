@@ -26,7 +26,7 @@ interface DashboardTrendChartProps {
 
 const CHART_CONFIG = {
   estimatedRevenue: {
-    label: "Ingresos estimados",
+    label: "Ingresos facturados",
     color: "var(--chart-1)",
   },
   contractsStarted: {
@@ -71,7 +71,7 @@ export function DashboardTrendChart({
           <div className="flex flex-col gap-0.5">
             <CardTitle className="text-sm">Tendencia mensual</CardTitle>
             <CardDescription className="text-xs">
-              Ingresos estimados y contratos iniciados por mes
+              Ingresos facturados y contratos iniciados por mes
             </CardDescription>
           </div>
           <span className="flex items-center gap-1 rounded-md bg-emerald-500/10 px-2 py-1 text-[11px] font-medium text-emerald-600 dark:text-emerald-400">

@@ -1,12 +1,17 @@
 import { BadRequestException, Controller, Get, Query } from '@nestjs/common';
 import { RequiredRoles } from '../auth/decorators.js';
 import { UserMetricsService } from '../user-metrics/user-metrics.service.js';
+import { SalesByCostCenterQueryDto } from './dto/sales-by-cost-center-query.dto.js';
 import { UserAppUsageQueryDto } from './dto/user-app-usage-query.dto.js';
+import { SalesByCostCenterService } from './services/sales-by-cost-center.service.js';
 
 @RequiredRoles('ADMIN')
 @Controller('analytics')
 export class AnalyticsController {
-  constructor(private readonly userMetricsService: UserMetricsService) {}
+  constructor(
+    private readonly userMetricsService: UserMetricsService,
+    private readonly salesByCostCenterService: SalesByCostCenterService,
+  ) {}
 
   @Get('user-app-usage')
   async userAppUsage(@Query() query: UserAppUsageQueryDto) {
@@ -21,6 +26,19 @@ export class AnalyticsController {
       from,
       to,
     );
+    return { data };
+  }
+
+  @Get('sales-by-cost-center')
+  async salesByCostCenter(@Query() query: SalesByCostCenterQueryDto) {
+    const from = new Date(`${query.from}T00:00:00.000Z`);
+    const to = new Date(`${query.to}T00:00:00.000Z`);
+    if (from.getTime() > to.getTime()) {
+      throw new BadRequestException(
+        'El rango de fechas es inválido (from > to).',
+      );
+    }
+    const data = await this.salesByCostCenterService.getReport(from, to);
     return { data };
   }
 }

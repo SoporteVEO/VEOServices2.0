@@ -58,7 +58,7 @@ export function DashboardDepartmentBreakdownCard({
         <div className="flex flex-col gap-0.5">
           <CardTitle className="text-sm">Por departamento</CardTitle>
           <CardDescription className="text-xs">
-            Inventario, ocupación e ingresos estimados por zona
+            Inventario y ocupación de contratos por zona
           </CardDescription>
         </div>
       </CardHeader>

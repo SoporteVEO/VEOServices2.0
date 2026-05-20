@@ -73,13 +73,13 @@ export function DashboardKpisRow({ kpis, isLoading }: DashboardKpisProps) {
   const items: KpiItem[] = [
     {
       icon: DollarSign,
-      label: "Ingresos estimados",
+      label: "Ingresos facturados",
       value: kpis.estimatedRevenue,
       prefix: "USD ",
       detail:
-        kpis.totalContracts > 0
-          ? `Promedio: ${formatMoney(kpis.averageContractValue)}/contrato`
-          : "Sin contratos en el rango",
+        kpis.uniqueCustomers > 0
+          ? `Promedio: ${formatMoney(kpis.averageContractValue)}/factura`
+          : "Sin facturas en el rango",
       tone: "emerald",
     },
     {
@@ -115,7 +115,7 @@ export function DashboardKpisRow({ kpis, isLoading }: DashboardKpisProps) {
       label: "Clientes únicos",
       value: kpis.uniqueCustomers,
       detail:
-        kpis.uniqueCustomers === 0 ? "Sin clientes" : "Compraron en el rango",
+        kpis.uniqueCustomers === 0 ? "Sin clientes" : "Facturaron en el rango",
       tone: "sky",
     },
     {
