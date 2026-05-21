@@ -7,6 +7,7 @@ import {
   StaticBillboardsTable,
   GenerateReportButton,
   ExportStaticBillboardsExcelButton,
+  GenerateQuotationButton,
 } from "@/components/pages/static-billboards";
 import { DateRangePicker } from "@/components/ui/date-range-picker";
 import { Switch } from "@/components/primitives/ui/switch";
@@ -48,45 +49,54 @@ export default function StaticBillboardsPage() {
   });
 
   return (
-    <StaticBillboardsTable
-      billboards={billboardsQuery.data ?? []}
-      isLoading={billboardsQuery.isLoading}
-      showAvailabilityColumn={showAll}
-      sideButtons={({ filtered }) => (
-        <>
-          <div className="flex items-center gap-2">
-            <Switch
-              id={showAllId}
-              checked={showAll}
-              onCheckedChange={setShowAll}
-              className="bg-input"
+    <div className="flex h-[calc(100vh-6rem)] min-h-0 flex-col gap-4">
+      <StaticBillboardsTable
+        billboards={billboardsQuery.data ?? []}
+        isLoading={billboardsQuery.isLoading}
+        showAvailabilityColumn={showAll}
+        enableRowSelection
+        sideButtons={({ filtered, selectedRows, clearSelection }) => (
+          <>
+            <div className="flex items-center gap-2">
+              <Switch
+                id={showAllId}
+                checked={showAll}
+                onCheckedChange={setShowAll}
+                className="bg-input"
+              />
+              <Label htmlFor={showAllId} className="text-sm font-normal">
+                Mostrar todas
+              </Label>
+            </div>
+            <DateRangePicker
+              align="start"
+              locale="es-ES"
+              showCompare={false}
+              initialDateFrom={initialFrom}
+              initialDateTo={initialTo}
+              onUpdate={({ range }) => {
+                const to = range.to ?? range.from;
+                setFromStr(toYYYYMMDD(range.from));
+                setToStr(toYYYYMMDD(to));
+              }}
             />
-            <Label htmlFor={showAllId} className="text-sm font-normal">
-              Mostrar todas
-            </Label>
-          </div>
-          <DateRangePicker
-            align="start"
-            locale="es-ES"
-            showCompare={false}
-            initialDateFrom={initialFrom}
-            initialDateTo={initialTo}
-            onUpdate={({ range }) => {
-              const to = range.to ?? range.from;
-              setFromStr(toYYYYMMDD(range.from));
-              setToStr(toYYYYMMDD(to));
-            }}
-          />
-          <ExportStaticBillboardsExcelButton
-            rows={filtered}
-            from={fromStr}
-            to={toStr}
-            disabled={billboardsQuery.isLoading}
-            includeAvailabilityColumn={showAll}
-          />
-          <GenerateReportButton from={fromStr} to={toStr} />
-        </>
-      )}
-    />
+            <GenerateQuotationButton
+              selectedRows={selectedRows}
+              defaultStartDate={initialFrom}
+              defaultEndDate={initialTo}
+              onSuccess={clearSelection}
+            />
+            <ExportStaticBillboardsExcelButton
+              rows={filtered}
+              from={fromStr}
+              to={toStr}
+              disabled={billboardsQuery.isLoading}
+              includeAvailabilityColumn={showAll}
+            />
+            <GenerateReportButton from={fromStr} to={toStr} />
+          </>
+        )}
+      />
+    </div>
   );
 }

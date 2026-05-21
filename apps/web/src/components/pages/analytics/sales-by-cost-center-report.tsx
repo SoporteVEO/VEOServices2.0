@@ -120,10 +120,7 @@ export function SalesByCostCenterReport() {
         </div>
       </div>
 
-      <SalesByCostCenterSummaryCards
-        report={filteredReport}
-        isLoading={busy}
-      />
+      <SalesByCostCenterSummaryCards report={filteredReport} isLoading={busy} />
 
       <Card>
         <CardHeader className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
@@ -137,34 +134,36 @@ export function SalesByCostCenterReport() {
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
-          <SalesByCostCenterTable
-            rows={visibleRows}
-            isLoading={busy}
-            searchValue={search}
-            onSearchChange={setSearch}
-            sideButtons={
-              <div className="flex flex-wrap items-center gap-2">
-                <ExportSalesByCostCenterExcelButton
-                  report={filteredReport}
-                  disabled={busy || isError}
-                />
-                <Button
-                  type="button"
-                  variant="outline"
-                  icon={FileDown}
-                  disabled={
-                    busy ||
-                    isError ||
-                    !filteredReport ||
-                    filteredReport.rows.length === 0
-                  }
-                  onClick={() => void onPdf()}
-                >
-                  Descargar PDF
-                </Button>
-              </div>
-            }
-          />
+          <div className="flex h-[calc(100vh-10rem)] min-h-0 flex-col gap-4">
+            <SalesByCostCenterTable
+              rows={visibleRows}
+              isLoading={busy}
+              searchValue={search}
+              onSearchChange={setSearch}
+              sideButtons={
+                <div className="flex flex-wrap items-center gap-2">
+                  <ExportSalesByCostCenterExcelButton
+                    report={filteredReport}
+                    disabled={busy || isError}
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    icon={FileDown}
+                    disabled={
+                      busy ||
+                      isError ||
+                      !filteredReport ||
+                      filteredReport.rows.length === 0
+                    }
+                    onClick={() => void onPdf()}
+                  >
+                    Descargar PDF
+                  </Button>
+                </div>
+              }
+            />
+          </div>
         </CardContent>
       </Card>
     </div>

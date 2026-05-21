@@ -16,8 +16,7 @@ export default function UsersPage() {
   const [createOpen, setCreateOpen] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
 
-  const selectedUser =
-    users.find((u) => u.id === selectedUserId) ?? null;
+  const selectedUser = users.find((u) => u.id === selectedUserId) ?? null;
 
   return (
     <div className="flex flex-1 flex-col gap-4">
@@ -29,11 +28,13 @@ export default function UsersPage() {
         </Button>
       </div>
 
-      <UsersTable
-        users={users}
-        isLoading={isLoading}
-        onRowClick={(user: User) => setSelectedUserId(user.id)}
-      />
+      <div className="flex h-[calc(100vh-8.5rem)] min-h-0 flex-col gap-4">
+        <UsersTable
+          users={users}
+          isLoading={isLoading}
+          onRowClick={(user: User) => setSelectedUserId(user.id)}
+        />
+      </div>
 
       <UserFormDialog open={createOpen} onOpenChange={setCreateOpen} />
 

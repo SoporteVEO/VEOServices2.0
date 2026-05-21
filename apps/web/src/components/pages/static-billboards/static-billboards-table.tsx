@@ -1,7 +1,7 @@
 "use client";
 
 import { type ReactNode, useState, useMemo } from "react";
-import type { ColumnDef } from "@tanstack/react-table";
+import type { ColumnDef, RowSelectionState } from "@tanstack/react-table";
 import type { AvailableBillboardListing } from "@/api/billboards/billboards.get";
 import { DataTable } from "@/components/ui/data-table";
 import { Badge } from "@/components/primitives/ui/badge";
@@ -123,17 +123,25 @@ const availabilityColumn: ColumnDef<AvailableBillboardListing> = {
 
 export type StaticBillboardsSideButtonsContext = {
   filtered: AvailableBillboardListing[];
+  selectedRows: AvailableBillboardListing[];
+  clearSelection: () => void;
 };
+
+function getBillboardRowId(b: AvailableBillboardListing): string {
+  return String(b.billboardId);
+}
 
 export function StaticBillboardsTable({
   billboards,
   isLoading = false,
   showAvailabilityColumn = false,
+  enableRowSelection = false,
   sideButtons,
 }: {
   billboards: AvailableBillboardListing[];
   isLoading?: boolean;
   showAvailabilityColumn?: boolean;
+  enableRowSelection?: boolean;
   sideButtons?:
     | ReactNode
     | ((ctx: StaticBillboardsSideButtonsContext) => ReactNode);
@@ -142,6 +150,7 @@ export function StaticBillboardsTable({
   const [selected, setSelected] = useState<AvailableBillboardListing | null>(
     null,
   );
+  const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
 
   const columns = useMemo(
     () =>
@@ -164,8 +173,17 @@ export function StaticBillboardsTable({
     );
   }, [billboards, search]);
 
+  const selectedRows = useMemo(() => {
+    if (!enableRowSelection) return [];
+    return filtered.filter((b) => rowSelection[getBillboardRowId(b)]);
+  }, [filtered, rowSelection, enableRowSelection]);
+
+  const clearSelection = () => setRowSelection({});
+
   const resolvedSideButtons =
-    typeof sideButtons === "function" ? sideButtons({ filtered }) : sideButtons;
+    typeof sideButtons === "function"
+      ? sideButtons({ filtered, selectedRows, clearSelection })
+      : sideButtons;
 
   return (
     <>
@@ -180,6 +198,15 @@ export function StaticBillboardsTable({
         sideButtons={resolvedSideButtons}
         pagination={{ pageSize: 25 }}
         onRowClick={setSelected}
+        rowSelection={
+          enableRowSelection
+            ? {
+                state: rowSelection,
+                onChange: setRowSelection,
+                getRowId: getBillboardRowId,
+              }
+            : undefined
+        }
       />
       <BillboardDetailDrawer
         billboard={selected}

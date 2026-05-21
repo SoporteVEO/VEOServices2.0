@@ -12,6 +12,8 @@ import { BillboardsModule } from './modules/billboards/billboards.module.js';
 import { ShopModule } from './modules/shop/shop.module.js';
 import { PaypalModule } from './modules/paypal/paypal.module.js';
 import { S3ImagesModule } from './modules/s3-images/s3-images.module.js';
+import { ClientsModule } from './modules/clients/clients.module.js';
+import { OffersModule } from './modules/offers/offers.module.js';
 import { StaticBillboardCodesModule } from './modules/static-billboard-codes/static-billboard-codes.module.js';
 import { TeamMembersModule } from './modules/team-members/team-members.module.js';
 import { MeModule } from './modules/me/me.module.js';
@@ -36,6 +38,8 @@ import { AnalyticsModule } from './modules/analytics/analytics.module.js';
     ShopModule,
     PaypalModule,
     S3ImagesModule,
+    ClientsModule,
+    OffersModule,
     StaticBillboardCodesModule,
     TeamMembersModule,
     MeModule,

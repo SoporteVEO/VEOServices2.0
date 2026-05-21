@@ -122,8 +122,9 @@ export function ContractsReportTable({
   }
 
   return (
-    <>
+    <div className="flex h-[calc(100vh-9rem)] min-h-0 flex-col gap-4">
       <DataTable
+        className="min-h-0 flex-1"
         columns={columns}
         data={data?.data ?? []}
         isLoading={isLoading}
@@ -148,6 +149,6 @@ export function ContractsReportTable({
           if (!open) setSelected(null);
         }}
       />
-    </>
+    </div>
   );
 }
