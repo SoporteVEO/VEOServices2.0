@@ -1,4 +1,7 @@
+import { theme } from '../../../lib/pdfx-theme';
 import type { ChartLayout, GraphDataPoint, GraphSeries, GraphWidthOptions } from './pdfx-graph.types';
+
+type PdfxTheme = typeof theme;
 
 /** Standard A4 page width in PDF points. */
 export const A4_WIDTH = 595;
