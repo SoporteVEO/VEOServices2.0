@@ -110,6 +110,16 @@ export interface DashboardDepartmentBreakdown {
   estimatedRevenue: number;
 }
 
+export interface DashboardOffersByTeamMember {
+  userId: string;
+  fullName: string;
+  position: string | null;
+  email: string | null;
+  offerCount: number;
+  totalRentalAmount: number;
+  totalImpressionAmount: number;
+}
+
 export interface BillboardDashboardAnalytics {
   kpis: DashboardKpis;
   monthlyTrend: DashboardMonthlyTrend[];
@@ -117,4 +127,11 @@ export interface BillboardDashboardAnalytics {
   topCustomers: DashboardTopCustomer[];
   topBillboards: DashboardTopBillboard[];
   byDepartment: DashboardDepartmentBreakdown[];
+  offersByTeamMember: DashboardOffersByTeamMember[];
+}
+
+export interface DashboardCostCenter {
+  costCenterId: number;
+  code: string | null;
+  name: string;
 }

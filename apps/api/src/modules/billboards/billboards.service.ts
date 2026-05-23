@@ -12,7 +12,9 @@ import type {
   BillboardContractHistoryItem,
   BillboardDashboardAnalytics,
   BillboardImageItem,
+  DashboardCostCenter,
 } from './entities/available-billboard.js';
+import type { DashboardAnalyticsOptions } from './services/dashboard-analytics.service.js';
 
 const CACHE_TTL_MS =
   Number(process.env.BILLBOARD_CACHE_TTL_MS) || 5 * 60 * 1000;
@@ -732,8 +734,13 @@ export class BillboardsService {
   async getDashboardAnalytics(
     from: Date,
     to: Date,
+    options: DashboardAnalyticsOptions = {},
   ): Promise<BillboardDashboardAnalytics> {
-    return this.dashboardAnalytics.getDashboardAnalytics(from, to);
+    return this.dashboardAnalytics.getDashboardAnalytics(from, to, options);
+  }
+
+  async getDashboardCostCenters(): Promise<DashboardCostCenter[]> {
+    return this.dashboardAnalytics.getCostCenters();
   }
 
   private async fetchBillboardContractHistory(

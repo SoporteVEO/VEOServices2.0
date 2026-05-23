@@ -1,7 +1,13 @@
 "use client";
 
 import { useMemo } from "react";
-import { Building2, DollarSign, FileText, Users } from "lucide-react";
+import {
+  Building2,
+  DollarSign,
+  FileText,
+  Users,
+  type LucideIcon,
+} from "lucide-react";
 import type {
   SalesByCostCenterReport,
   SalesByCostCenterRow,
@@ -13,7 +19,39 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { NativeCounterUp } from "@/components/ui/counter-up";
 import { Skeleton } from "@/components/primitives/ui/skeleton";
+import { cn } from "@/lib/utils";
+
+type Tone =
+  | "primary"
+  | "emerald"
+  | "amber"
+  | "rose"
+  | "sky"
+  | "violet"
+  | "neutral";
+
+const TONE_ICON_STYLES: Record<Tone, string> = {
+  primary: "bg-primary/10 text-primary",
+  emerald: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
+  amber: "bg-amber-500/10 text-amber-600 dark:text-amber-400",
+  rose: "bg-rose-500/10 text-rose-600 dark:text-rose-400",
+  sky: "bg-sky-500/10 text-sky-600 dark:text-sky-400",
+  violet: "bg-violet-500/10 text-violet-600 dark:text-violet-400",
+  neutral: "bg-muted text-muted-foreground",
+};
+
+const BREAKDOWN_BAR_COLORS = [
+  "bg-emerald-500",
+  "bg-sky-500",
+  "bg-violet-500",
+  "bg-amber-500",
+  "bg-rose-500",
+  "bg-primary",
+  "bg-cyan-500",
+  "bg-orange-500",
+] as const;
 
 function formatCurrency(value: number): string {
   const sign = value < 0 ? "-" : "";
@@ -63,11 +101,19 @@ function StatCard({
   description,
   icon: Icon,
   value,
+  prefix,
+  suffix,
+  decimals = 0,
+  tone = "neutral",
 }: {
   title: string;
   description: string;
-  icon: React.ComponentType<{ className?: string }>;
-  value: string;
+  icon: LucideIcon;
+  value: number;
+  prefix?: string;
+  suffix?: string;
+  decimals?: number;
+  tone?: Tone;
 }) {
   return (
     <Card>
@@ -76,12 +122,27 @@ function StatCard({
           <CardTitle className="text-sm font-medium text-muted-foreground">
             {title}
           </CardTitle>
-          <Icon className="size-4 text-muted-foreground" />
+          <span
+            className={cn(
+              "flex size-8 items-center justify-center rounded-md",
+              TONE_ICON_STYLES[tone],
+            )}
+          >
+            <Icon className="size-4" />
+          </span>
         </div>
       </CardHeader>
       <CardContent>
-        <p className="text-2xl font-semibold tabular-nums">{value}</p>
-        <p className="text-xs text-muted-foreground">{description}</p>
+        <NativeCounterUp
+          value={value}
+          prefix={prefix}
+          suffix={suffix}
+          decimals={decimals}
+          label={title}
+          duration={1.4}
+          className="text-2xl font-semibold tracking-tight"
+        />
+        <p className="mt-1 text-xs text-muted-foreground">{description}</p>
       </CardContent>
     </Card>
   );
@@ -108,22 +169,25 @@ function BreakdownCard({
         {data.length === 0 ? (
           <p className="text-sm text-muted-foreground">Sin datos.</p>
         ) : (
-          data.map((item) => {
+          data.map((item, index) => {
             const pct =
               total !== 0 ? Math.round((item.total / total) * 1000) / 10 : 0;
+            const barColor =
+              BREAKDOWN_BAR_COLORS[index % BREAKDOWN_BAR_COLORS.length];
             return (
               <div key={item.key} className="space-y-1">
                 <div className="flex items-baseline justify-between gap-3 text-sm">
-                  <span className="font-medium line-clamp-1">
-                    {item.label}
-                  </span>
+                  <span className="font-medium line-clamp-1">{item.label}</span>
                   <span className="tabular-nums font-medium">
                     {formatCurrency(item.total)}
                   </span>
                 </div>
                 <div className="relative h-1.5 w-full overflow-hidden rounded bg-muted">
                   <div
-                    className="absolute inset-y-0 left-0 rounded bg-primary"
+                    className={cn(
+                      "absolute inset-y-0 left-0 rounded transition-[width] duration-500",
+                      barColor,
+                    )}
                     style={{
                       width: `${Math.max(0, Math.min(100, pct))}%`,
                     }}
@@ -155,9 +219,19 @@ export function SalesByCostCenterSummaryCards({
     const rows = report?.rows ?? [];
     const total = report?.total ?? 0;
 
+    const byCostCenter = aggregateBy(rows, (r) => ({
+      key: r.costCenterId ?? r.costCenterName,
+      label: r.costCenterName,
+    }));
+
     const bySubCenter = aggregateBy(rows, (r) => ({
       key: r.subCostCenterId ?? r.subCostCenterName,
       label: r.subCostCenterName ?? "Sin sub centro",
+    }));
+
+    const byTipoVenta = aggregateBy(rows, (r) => ({
+      key: r.tipoVentaId ?? r.tipoVentaName,
+      label: r.tipoVentaName,
     }));
 
     const bySeller = aggregateBy(rows, (r) => ({
@@ -166,8 +240,17 @@ export function SalesByCostCenterSummaryCards({
     }));
 
     const uniqueCustomers = new Set(rows.map((r) => r.customerName)).size;
+    const uniqueInvoices = new Set(rows.map((r) => r.invoiceId)).size;
 
-    return { total, bySubCenter, bySeller, uniqueCustomers };
+    return {
+      total,
+      byCostCenter,
+      bySubCenter,
+      byTipoVenta,
+      bySeller,
+      uniqueCustomers,
+      uniqueInvoices,
+    };
   }, [report]);
 
   if (isLoading && !report) {
@@ -188,42 +271,65 @@ export function SalesByCostCenterSummaryCards({
     );
   }
 
-  const rows = report?.rows ?? [];
+  const totalTone: Tone =
+    aggregates.total < 0
+      ? "rose"
+      : aggregates.total > 0
+        ? "emerald"
+        : "neutral";
 
   return (
     <div className="grid grid-cols-1 gap-4">
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard
           title="Total general"
-          description="Suma neta del período (incluye NDC)"
+          description="Suma con IVA e impuestos (incluye NDC)"
           icon={DollarSign}
-          value={formatCurrency(aggregates.total)}
+          value={Math.abs(aggregates.total)}
+          prefix={aggregates.total < 0 ? "-$" : "$"}
+          decimals={2}
+          tone={totalTone}
         />
         <StatCard
           title="Facturas"
           description="Documentos CCF, FCF y NDC"
           icon={FileText}
-          value={rows.length.toLocaleString("en-US")}
+          value={aggregates.uniqueInvoices}
+          tone="violet"
         />
         <StatCard
           title="Clientes únicos"
           description="Clientes con al menos una factura"
           icon={Users}
-          value={aggregates.uniqueCustomers.toLocaleString("en-US")}
+          value={aggregates.uniqueCustomers}
+          tone="sky"
         />
         <StatCard
           title="Vendedores"
           description="Vendedores con ventas en el período"
           icon={Building2}
-          value={aggregates.bySeller.length.toLocaleString("en-US")}
+          value={aggregates.bySeller.length}
+          tone="amber"
         />
       </div>
 
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
         <BreakdownCard
-          title="Por Sub Centro de Costo"
-          description="Distribución por unidad de negocio"
+          title="Por Centro de Costos"
+          description="Distribución por centro de costos a nivel de línea"
+          data={aggregates.byCostCenter}
+          total={aggregates.total}
+        />
+        <BreakdownCard
+          title="Por Sub Centro de Costos"
+          description="Distribución por sub centro de costos a nivel de línea"
           data={aggregates.bySubCenter}
+          total={aggregates.total}
+        />
+        <BreakdownCard
+          title="Por Tipo de Venta"
+          description="Distribución por tipo de venta"
+          data={aggregates.byTipoVenta}
           total={aggregates.total}
         />
         <BreakdownCard

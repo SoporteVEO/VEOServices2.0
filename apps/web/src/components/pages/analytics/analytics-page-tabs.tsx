@@ -12,7 +12,7 @@ export function AnalyticsPageTabs() {
   return (
     <Tabs value={tab} onValueChange={setTab}>
       <TabsList>
-        <TabsTrigger value="ventas">Ventas por centro de costo</TabsTrigger>
+        <TabsTrigger value="ventas">Facturación por centro de costos</TabsTrigger>
         <TabsTrigger value="uso-app">Uso de la aplicación</TabsTrigger>
       </TabsList>
 

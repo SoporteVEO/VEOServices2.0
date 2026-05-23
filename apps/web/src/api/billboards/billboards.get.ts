@@ -8,6 +8,7 @@ import type {
   BillboardContractHistoryItem,
   BillboardDashboardAnalytics,
   BillboardImageItem,
+  DashboardCostCenter,
 } from "./billboards.types";
 
 export type {
@@ -18,12 +19,14 @@ export type {
   BillboardContractHistoryItem,
   BillboardDashboardAnalytics,
   BillboardImageItem,
+  DashboardCostCenter,
   DashboardKpis,
   DashboardMonthlyTrend,
   DashboardYoyTrend,
   DashboardTopCustomer,
   DashboardTopBillboard,
   DashboardDepartmentBreakdown,
+  DashboardOffersByTeamMember,
 } from "./billboards.types";
 
 const STALE_TIME = 5 * 60 * 1000;
@@ -194,10 +197,18 @@ export function useBillboardImages(params: {
 export async function getBillboardDashboardAnalytics(params: {
   from: string;
   to: string;
+  costCenterId?: number | null;
 }) {
+  const query: Record<string, string> = {
+    from: params.from,
+    to: params.to,
+  };
+  if (params.costCenterId != null) {
+    query.costCenterId = String(params.costCenterId);
+  }
   const response = await apiFetch<{ data: BillboardDashboardAnalytics }>(
     "/billboards/dashboard/analytics",
-    { query: { from: params.from, to: params.to } },
+    { query },
   );
   return response.data;
 }
@@ -205,15 +216,43 @@ export async function getBillboardDashboardAnalytics(params: {
 export function useBillboardDashboardAnalytics(params: {
   from: string;
   to: string;
+  costCenterId?: number | null;
   enabled?: boolean;
 }) {
-  const { from, to, enabled = true } = params;
+  const { from, to, costCenterId = null, enabled = true } = params;
   return useQuery({
-    queryKey: ["billboards", "dashboard", "analytics", from, to],
-    queryFn: () => getBillboardDashboardAnalytics({ from, to }),
+    queryKey: [
+      "billboards",
+      "dashboard",
+      "analytics",
+      from,
+      to,
+      costCenterId,
+    ],
+    queryFn: () => getBillboardDashboardAnalytics({ from, to, costCenterId }),
     enabled,
     staleTime: STALE_TIME,
     gcTime: GC_TIME,
     placeholderData: keepPreviousData,
+  });
+}
+
+export async function getBillboardDashboardCostCenters() {
+  const response = await apiFetch<{ data: DashboardCostCenter[] }>(
+    "/billboards/dashboard/cost-centers",
+  );
+  return response.data;
+}
+
+export function useBillboardDashboardCostCenters(params?: {
+  enabled?: boolean;
+}) {
+  const enabled = params?.enabled ?? true;
+  return useQuery({
+    queryKey: ["billboards", "dashboard", "cost-centers"],
+    queryFn: () => getBillboardDashboardCostCenters(),
+    enabled,
+    staleTime: 30 * 60 * 1000,
+    gcTime: 30 * 60 * 1000,
   });
 }

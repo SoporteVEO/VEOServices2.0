@@ -54,6 +54,7 @@ function formatRangeDate(value: string): string {
 type SellerGroup = {
   sellerKey: string;
   sellerName: string;
+  tipoVentaName: string;
   rows: SalesByCostCenterRow[];
   total: number;
 };
@@ -100,12 +101,13 @@ function buildGroups(rows: SalesByCostCenterRow[]): CostCenterGroup[] {
       cc.subs.push(sub);
     }
 
-    const sellerKey = `${subKey}:${row.sellerId ?? row.sellerName}`;
+    const sellerKey = `${subKey}:${row.tipoVentaId ?? row.tipoVentaName}:${row.sellerId ?? row.sellerName}`;
     let seller = sub.sellers.find((s) => s.sellerKey === sellerKey);
     if (!seller) {
       seller = {
         sellerKey,
         sellerName: row.sellerName,
+        tipoVentaName: row.tipoVentaName,
         rows: [],
         total: 0,
       };
@@ -145,9 +147,11 @@ function HeaderRow() {
 
 function GroupBanner({
   subName,
+  tipoVentaName,
   sellerName,
 }: {
   subName: string;
+  tipoVentaName: string;
   sellerName: string;
 }) {
   return (
@@ -163,10 +167,10 @@ function GroupBanner({
     >
       <View style={{ flex: 1 }}>
         <Text variant="xs" weight="semibold" noMargin>
-          Sub Centro de Costo: {subName}
+          Sub Centro de Costos (Detalle): {subName}
         </Text>
         <Text variant="xs" color="mutedForeground" noMargin>
-          Vendedor: {sellerName}
+          Tipo de Venta: {tipoVentaName} · Vendedor: {sellerName}
         </Text>
       </View>
     </View>
@@ -187,7 +191,7 @@ export function SalesByCostCenterPdfDocument({
         <Page size="A4" style={pagePad}>
           <View>
             <Heading level={2} noMargin>
-              Ventas por Centro de Costo por Vendedor
+              Facturación por Centro de Costos, Sub Centro y Tipo de Venta
             </Heading>
             <Text variant="sm" color="mutedForeground" noMargin>
               Desde: {formatRangeDate(report.range.from)} — Hasta:{" "}
@@ -221,6 +225,7 @@ export function SalesByCostCenterPdfDocument({
                   <View key={seller.sellerKey}>
                     <GroupBanner
                       subName={sub.subName}
+                      tipoVentaName={seller.tipoVentaName}
                       sellerName={seller.sellerName}
                     />
 

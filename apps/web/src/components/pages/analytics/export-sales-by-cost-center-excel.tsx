@@ -16,11 +16,12 @@ function formatExcelDate(value: string | Date): string {
 
 function reportToSheetData(report: SalesByCostCenterReport) {
   return report.rows.map((row) => ({
-    "Centro de Costo": row.costCenterName,
-    "Sub Centro de Costo": row.subCostCenterName ?? "",
+    "Centro de Costos (Detalle)": row.costCenterName,
+    "Sub Centro de Costos (Detalle)": row.subCostCenterName ?? "",
+    "Tipo de Venta": row.tipoVentaName,
     Vendedor: row.sellerName,
     Cliente: row.customerName,
-    Total: row.total,
+    "Monto con IVA mas Impuestos": row.total,
     Fecha: formatExcelDate(row.date),
     Tipo: row.documentType,
     "Num. Documento": row.guid || row.documentNumber || "",
@@ -44,11 +45,12 @@ export function ExportSalesByCostCenterExcelButton({
       const ws = XLSX.utils.json_to_sheet(reportToSheetData(report));
 
       ws["!cols"] = [
-        { wch: 24 },
-        { wch: 28 },
+        { wch: 30 },
+        { wch: 30 },
+        { wch: 20 },
         { wch: 28 },
         { wch: 40 },
-        { wch: 12 },
+        { wch: 22 },
         { wch: 12 },
         { wch: 6 },
         { wch: 40 },

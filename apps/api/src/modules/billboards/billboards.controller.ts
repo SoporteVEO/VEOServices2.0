@@ -85,6 +85,7 @@ export class BillboardsController {
   async getDashboardAnalytics(
     @Query('from') fromRaw?: string,
     @Query('to') toRaw?: string,
+    @Query('costCenterId') costCenterIdRaw?: string,
   ) {
     const from = fromRaw ? new Date(fromRaw) : new Date();
     const to = toRaw
@@ -95,8 +96,25 @@ export class BillboardsController {
       throw new BadRequestException('Fechas inválidas');
     }
 
-    const analytics = await this.service.getDashboardAnalytics(from, to);
+    let costCenterId: number | null = null;
+    if (costCenterIdRaw != null && costCenterIdRaw.trim() !== '') {
+      const parsed = Number(costCenterIdRaw);
+      if (!Number.isFinite(parsed)) {
+        throw new BadRequestException('costCenterId inválido');
+      }
+      costCenterId = parsed;
+    }
+
+    const analytics = await this.service.getDashboardAnalytics(from, to, {
+      costCenterId,
+    });
     return { data: analytics };
+  }
+
+  @Get('dashboard/cost-centers')
+  async getDashboardCostCenters() {
+    const data = await this.service.getDashboardCostCenters();
+    return { data };
   }
 
   @Get('image/:imageId')

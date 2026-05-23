@@ -37,6 +37,8 @@ export type SalesByCostCenterRow = {
   subCostCenterId: number | null;
   subCostCenterCode: string | null;
   subCostCenterName: string | null;
+  tipoVentaId: number | null;
+  tipoVentaName: string;
   sellerId: number | null;
   sellerCode: string | null;
   sellerName: string;

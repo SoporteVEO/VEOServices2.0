@@ -1,11 +1,14 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { BriloDatabaseService } from '../../brilo-database/brilo-database.service.js';
+import { PrismaService } from '../../prisma/prisma.service.js';
 import { TtlCache } from '../../../lib/ttl-cache.js';
 import type {
   BillboardDashboardAnalytics,
+  DashboardCostCenter,
   DashboardDepartmentBreakdown,
   DashboardKpis,
   DashboardMonthlyTrend,
+  DashboardOffersByTeamMember,
   DashboardTopBillboard,
   DashboardTopCustomer,
   DashboardYoyTrend,
@@ -13,8 +16,7 @@ import type {
 
 const CACHE_TTL_MS =
   Number(process.env.BILLBOARD_CACHE_TTL_MS) || 5 * 60 * 1000;
-
-const VEO_COST_CENTER_ID = 7;
+const COST_CENTERS_TTL_MS = 30 * 60 * 1000;
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 const AVG_DAYS_PER_MONTH = 30.4375;
@@ -131,27 +133,72 @@ WHERE car.caraActivo = 1
 GROUP BY dpto.dptoId, dpto.dptoNombre;
 `;
 
-const DASHBOARD_SALES_SQL = `
+function buildDashboardSalesSql(filterByCostCenter: boolean): string {
+  return `
 SELECT
     mf.mfaId AS [InvoiceId],
     mf.mfaFecha AS [Fecha],
     mf.mfaTipoDoc AS [TipoDoc],
-    ((ISNULL(mf.mfaSumasAfecto, 0) + ISNULL(mf.mfaSumasExento, 0)) * ISNULL(tdv.tdvnSignoVenta, 1)) AS [Total],
     cli.cliId AS [CliId],
     cli.cliNombres AS [CliNombres],
-    cli.cliEmail AS [CliEmail]
-FROM olVentas.dbo.maeFacturas mf WITH (NOLOCK)
+    cli.cliEmail AS [CliEmail],
+    SUM(
+        (
+            CASE
+                WHEN df.dfaExento = 1 THEN
+                    ISNULL(df.dfaTotalLinea, df.dfaPrecio * df.dfaCantidad * (1.0 - ISNULL(df.dfaPorcentDesc, 0) / 100.0))
+                ELSE
+                    ISNULL(df.dfaTotalLinea, df.dfaPrecio * df.dfaCantidad * (1.0 - ISNULL(df.dfaPorcentDesc, 0) / 100.0))
+                    * (1.0 + ISNULL(mf.mfaPorcentIVA, 0) / 100.0)
+            END
+            + ISNULL(impLine.impuestosLinea, 0)
+        ) * ISNULL(tdv.tdvnSignoVenta, 1)
+    ) AS [Total]
+FROM olVentas.dbo.detFacturas df WITH (NOLOCK)
+INNER JOIN olVentas.dbo.maeFacturas mf WITH (NOLOCK)
+    ON mf.mfaId = df.mfaId
 LEFT JOIN olVentas.dbo.TiposDocVen tdv WITH (NOLOCK)
     ON tdv.tdvnCodigo = mf.mfaTipoDoc
 LEFT JOIN olComun.dbo.Clientes cli WITH (NOLOCK)
     ON cli.cliId = mf.cliIdInvoiceTo
+OUTER APPLY (
+    SELECT SUM(impdf.impdfValorImpuesto * impdf.impdfSignoImpuesto) AS impuestosLinea
+    FROM olVentas.dbo.impdetFacturas impdf WITH (NOLOCK)
+    WHERE impdf.dfaId = df.dfaId
+      AND impdf.impdfHabilitado = 1
+) AS impLine
 WHERE mf.mfaFecha >= @FechaInicio
   AND mf.mfaFecha < @FechaFin
   AND mf.mfaAnulada = 0
   AND mf.mfaPosteada = 1
-  AND mf.cecoId = @CecoId
-  AND mf.mfaTipoDoc IN ('CCF', 'FCF', 'NDC');
+  AND mf.mfaTipoDoc IN ('CCF', 'FCF', 'NDC')
+  ${filterByCostCenter ? 'AND df.cecoId = @CecoId' : ''}
+GROUP BY
+    mf.mfaId,
+    mf.mfaFecha,
+    mf.mfaTipoDoc,
+    cli.cliId,
+    cli.cliNombres,
+    cli.cliEmail;
 `;
+}
+
+const DASHBOARD_COST_CENTERS_SQL = `
+SELECT
+    ceco.cecoId    AS [CostCenterId],
+    ceco.cecoCodigo AS [Code],
+    ceco.cecoNombre AS [Name]
+FROM olComun.dbo.CentrosCosto ceco WITH (NOLOCK)
+WHERE ceco.cecoActivo = 1
+  AND ceco.cecoEsSub = 0
+ORDER BY ceco.cecoNombre ASC;
+`;
+
+interface BriloDashboardCostCenterRow {
+  CostCenterId: number;
+  Code: string | null;
+  Name: string | null;
+}
 
 function startOfDay(date: Date): Date {
   return new Date(
@@ -277,8 +324,13 @@ interface DashboardComputationInput {
   totalsRows: BriloDashboardTotalsRow[];
   saleRows: BriloDashboardSaleRow[];
   previousSaleRows: BriloDashboardSaleRow[];
+  offersByTeamMember: DashboardOffersByTeamMember[];
   rangeFrom: Date;
   rangeTo: Date;
+}
+
+export interface DashboardAnalyticsOptions {
+  costCenterId?: number | null;
 }
 
 @Injectable()
@@ -287,24 +339,50 @@ export class DashboardAnalyticsService {
   private readonly cache = new TtlCache<BillboardDashboardAnalytics>(
     CACHE_TTL_MS,
   );
+  private readonly costCentersCache = new TtlCache<DashboardCostCenter[]>(
+    COST_CENTERS_TTL_MS,
+  );
 
-  constructor(private readonly brilo: BriloDatabaseService) {
+  constructor(
+    private readonly brilo: BriloDatabaseService,
+    private readonly prisma: PrismaService,
+  ) {
     this.logger.log(`Dashboard analytics cache TTL: ${CACHE_TTL_MS}ms`);
   }
 
   async getDashboardAnalytics(
     from: Date,
     to: Date,
+    options: DashboardAnalyticsOptions = {},
   ): Promise<BillboardDashboardAnalytics> {
-    const key = `${from.toISOString()}|${to.toISOString()}`;
+    const costCenterId = options.costCenterId ?? null;
+    const key = `${from.toISOString()}|${to.toISOString()}|cc=${costCenterId ?? 'all'}`;
     return this.cache.getOrFetch(key, () =>
-      this.fetchDashboardAnalytics(from, to),
+      this.fetchDashboardAnalytics(from, to, costCenterId),
     );
+  }
+
+  async getCostCenters(): Promise<DashboardCostCenter[]> {
+    return this.costCentersCache.getOrFetch('cost-centers', async () => {
+      const rows = await this.brilo.query<BriloDashboardCostCenterRow>(
+        DASHBOARD_COST_CENTERS_SQL,
+      );
+      return rows
+        .filter((r) => r.CostCenterId != null && r.Name)
+        .map(
+          (r): DashboardCostCenter => ({
+            costCenterId: Number(r.CostCenterId),
+            code: r.Code ?? null,
+            name: (r.Name ?? '').trim(),
+          }),
+        );
+    });
   }
 
   private async fetchDashboardAnalytics(
     from: Date,
     to: Date,
+    costCenterId: number | null,
   ): Promise<BillboardDashboardAnalytics> {
     const previousFrom = shiftYears(from, -1);
     const previousTo = shiftYears(to, -1);
@@ -312,35 +390,102 @@ export class DashboardAnalyticsService {
     const exclusiveTo = toExclusiveEnd(to);
     const previousExclusiveTo = toExclusiveEnd(previousTo);
 
-    const [contractRows, totalsRows, saleRows, previousSaleRows] =
-      await Promise.all([
-        this.brilo.query<BriloDashboardContractRow>(DASHBOARD_CONTRACTS_SQL, {
-          FechaInicio: from,
-          FechaFin: to,
-        }),
-        this.brilo.query<BriloDashboardTotalsRow>(
-          DASHBOARD_BILLBOARD_TOTALS_SQL,
-        ),
-        this.brilo.query<BriloDashboardSaleRow>(DASHBOARD_SALES_SQL, {
-          FechaInicio: from,
-          FechaFin: exclusiveTo,
-          CecoId: VEO_COST_CENTER_ID,
-        }),
-        this.brilo.query<BriloDashboardSaleRow>(DASHBOARD_SALES_SQL, {
-          FechaInicio: previousFrom,
-          FechaFin: previousExclusiveTo,
-          CecoId: VEO_COST_CENTER_ID,
-        }),
-      ]);
+    const salesSql = buildDashboardSalesSql(costCenterId != null);
+    const salesParams = (fechaInicio: Date, fechaFin: Date) =>
+      costCenterId != null
+        ? { FechaInicio: fechaInicio, FechaFin: fechaFin, CecoId: costCenterId }
+        : { FechaInicio: fechaInicio, FechaFin: fechaFin };
+
+    const [
+      contractRows,
+      totalsRows,
+      saleRows,
+      previousSaleRows,
+      offersByTeamMember,
+    ] = await Promise.all([
+      this.brilo.query<BriloDashboardContractRow>(DASHBOARD_CONTRACTS_SQL, {
+        FechaInicio: from,
+        FechaFin: to,
+      }),
+      this.brilo.query<BriloDashboardTotalsRow>(
+        DASHBOARD_BILLBOARD_TOTALS_SQL,
+      ),
+      this.brilo.query<BriloDashboardSaleRow>(
+        salesSql,
+        salesParams(from, exclusiveTo),
+      ),
+      this.brilo.query<BriloDashboardSaleRow>(
+        salesSql,
+        salesParams(previousFrom, previousExclusiveTo),
+      ),
+      this.fetchOffersByTeamMember(from, exclusiveTo),
+    ]);
 
     return computeDashboardAnalytics({
       contractRows,
       totalsRows,
       saleRows,
       previousSaleRows,
+      offersByTeamMember,
       rangeFrom: from,
       rangeTo: to,
     });
+  }
+
+  private async fetchOffersByTeamMember(
+    from: Date,
+    exclusiveTo: Date,
+  ): Promise<DashboardOffersByTeamMember[]> {
+    const grouped = await this.prisma.offerCreated.groupBy({
+      by: ['createdByUserId'],
+      where: { createdAt: { gte: from, lt: exclusiveTo } },
+      _count: { _all: true },
+      _sum: { totalRental: true, totalImpression: true },
+    });
+
+    if (grouped.length === 0) return [];
+
+    const userIds = grouped.map((g) => g.createdByUserId);
+
+    const [teamMembers, users] = await Promise.all([
+      this.prisma.teamMember.findMany({
+        where: { userId: { in: userIds } },
+        select: { userId: true, fullName: true, position: true },
+      }),
+      this.prisma.user.findMany({
+        where: { id: { in: userIds } },
+        select: { id: true, firstName: true, lastName: true, email: true },
+      }),
+    ]);
+
+    const memberByUserId = new Map(teamMembers.map((m) => [m.userId, m]));
+    const userById = new Map(users.map((u) => [u.id, u]));
+
+    const items: DashboardOffersByTeamMember[] = grouped.map((g) => {
+      const member = memberByUserId.get(g.createdByUserId);
+      const user = userById.get(g.createdByUserId);
+      const composedName = [user?.firstName, user?.lastName]
+        .filter((p): p is string => Boolean(p && p.trim()))
+        .join(' ')
+        .trim();
+      const fullName =
+        member?.fullName?.trim() ||
+        composedName ||
+        user?.email ||
+        'Sin nombre';
+      return {
+        userId: g.createdByUserId,
+        fullName,
+        position: member?.position ?? null,
+        email: user?.email ?? null,
+        offerCount: g._count?._all ?? 0,
+        totalRentalAmount: Number(g._sum?.totalRental ?? 0),
+        totalImpressionAmount: Number(g._sum?.totalImpression ?? 0),
+      };
+    });
+
+    items.sort((a, b) => b.offerCount - a.offerCount);
+    return items;
   }
 }
 
@@ -349,6 +494,7 @@ function computeDashboardAnalytics({
   totalsRows,
   saleRows,
   previousSaleRows,
+  offersByTeamMember,
   rangeFrom,
   rangeTo,
 }: DashboardComputationInput): BillboardDashboardAnalytics {
@@ -673,5 +819,6 @@ function computeDashboardAnalytics({
     topCustomers,
     topBillboards,
     byDepartment,
+    offersByTeamMember,
   };
 }

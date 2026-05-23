@@ -41,12 +41,28 @@ export function SalesByCostCenterTable({
   const columns = useMemo<ColumnDef<SalesByCostCenterRow>[]>(
     () => [
       {
-        accessorKey: "subCostCenterName",
-        header: "Sub Centro de Costo",
+        accessorKey: "costCenterName",
+        header: "Centro de Costos (Detalle)",
         cell: ({ row }) => (
-          <span className="text-muted-foreground">
+          <span className="line-clamp-1 text-muted-foreground">
+            {row.original.costCenterName}
+          </span>
+        ),
+      },
+      {
+        accessorKey: "subCostCenterName",
+        header: "Sub Centro de Costos (Detalle)",
+        cell: ({ row }) => (
+          <span className="line-clamp-1 text-muted-foreground">
             {row.original.subCostCenterName ?? "—"}
           </span>
+        ),
+      },
+      {
+        accessorKey: "tipoVentaName",
+        header: "Tipo de Venta",
+        cell: ({ row }) => (
+          <span className="line-clamp-1">{row.original.tipoVentaName}</span>
         ),
       },
       {
@@ -94,7 +110,9 @@ export function SalesByCostCenterTable({
       },
       {
         accessorKey: "total",
-        header: () => <div className="text-right">Total</div>,
+        header: () => (
+          <div className="text-right">Monto con IVA + Impuestos</div>
+        ),
         cell: ({ row }) => (
           <div
             className={`text-right tabular-nums font-medium ${
@@ -117,7 +135,7 @@ export function SalesByCostCenterTable({
       pagination={{ pageSize: 25 }}
       searchValue={searchValue}
       onSearchChange={onSearchChange}
-      searchPlaceholder="Buscar cliente, vendedor o documento..."
+      searchPlaceholder="Buscar centro, tipo de venta, cliente, vendedor o documento..."
       emptyMessage="No hay ventas en el período seleccionado."
       sideButtons={sideButtons}
     />

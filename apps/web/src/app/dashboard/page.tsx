@@ -2,16 +2,21 @@
 
 import { useMemo, useState } from "react";
 
-import { useBillboardDashboardAnalytics } from "@/api/billboards/billboards.get";
+import {
+  useBillboardDashboardAnalytics,
+  useBillboardDashboardCostCenters,
+} from "@/api/billboards/billboards.get";
 import {
   DashboardAvailabilityDonut,
   DashboardDepartmentBreakdownCard,
   DashboardKpisRow,
+  DashboardOffersByTeamMemberCard,
   DashboardTopBillboards,
   DashboardTopCustomers,
   DashboardTrendChart,
   DashboardYoyChart,
 } from "@/components/pages/dashboard";
+import { Combobox, type ComboboxOption } from "@/components/ui/combobox";
 import { DateRangePicker } from "@/components/ui/date-range-picker";
 import { parseYYYYMMDD, toYYYYMMDD, formatHumanDate } from "@/lib/format";
 
@@ -32,6 +37,7 @@ function defaultTo() {
 export default function DashboardPage() {
   const [fromStr, setFromStr] = useState(() => toYYYYMMDD(defaultFrom()));
   const [toStr, setToStr] = useState(() => toYYYYMMDD(defaultTo()));
+  const [costCenterId, setCostCenterId] = useState<number | null>(null);
 
   const initialFrom = useMemo(
     () => parseYYYYMMDD(fromStr) ?? defaultFrom(),
@@ -42,10 +48,26 @@ export default function DashboardPage() {
   const analyticsQuery = useBillboardDashboardAnalytics({
     from: fromStr,
     to: toStr,
+    costCenterId,
   });
+
+  const costCentersQuery = useBillboardDashboardCostCenters();
 
   const data = analyticsQuery.data;
   const isLoading = analyticsQuery.isLoading;
+
+  const costCenterOptions = useMemo<ComboboxOption[]>(() => {
+    const list = costCentersQuery.data ?? [];
+    return list.map((c) => ({ value: c.costCenterId, label: c.name }));
+  }, [costCentersQuery.data]);
+
+  const selectedCostCenterLabel = useMemo(() => {
+    if (costCenterId == null) return "Todos los centros de costos";
+    return (
+      costCentersQuery.data?.find((c) => c.costCenterId === costCenterId)
+        ?.name ?? `Centro #${costCenterId}`
+    );
+  }, [costCenterId, costCentersQuery.data]);
 
   return (
     <div className="flex flex-1 flex-col gap-4 p-4 md:p-6">
@@ -55,21 +77,35 @@ export default function DashboardPage() {
             Resumen de operaciones
           </h1>
           <p className="text-xs text-muted-foreground">
-            {formatHumanDate(initialFrom)} – {formatHumanDate(initialTo)}
+            {formatHumanDate(initialFrom)} – {formatHumanDate(initialTo)} ·{" "}
+            {selectedCostCenterLabel}
           </p>
         </div>
-        <DateRangePicker
-          align="end"
-          locale="es-ES"
-          showCompare={false}
-          initialDateFrom={initialFrom}
-          initialDateTo={initialTo}
-          onUpdate={({ range }) => {
-            const to = range.to ?? range.from;
-            setFromStr(toYYYYMMDD(range.from));
-            setToStr(toYYYYMMDD(to));
-          }}
-        />
+        <div className="flex flex-wrap items-center justify-end gap-2 sm:ml-auto">
+          <Combobox
+            triggerClassName="w-64"
+            placeholder="Todos los centros de costos"
+            emptyLabel="Sin centros de costos."
+            options={costCenterOptions}
+            value={costCenterId}
+            isLoading={costCentersQuery.isLoading}
+            onChange={(v) =>
+              setCostCenterId(v == null ? null : Number(v))
+            }
+          />
+          <DateRangePicker
+            align="end"
+            locale="es-ES"
+            showCompare={false}
+            initialDateFrom={initialFrom}
+            initialDateTo={initialTo}
+            onUpdate={({ range }) => {
+              const to = range.to ?? range.from;
+              setFromStr(toYYYYMMDD(range.from));
+              setToStr(toYYYYMMDD(to));
+            }}
+          />
+        </div>
       </header>
 
       <DashboardKpisRow kpis={data?.kpis} isLoading={isLoading} />
@@ -91,11 +127,16 @@ export default function DashboardPage() {
           customers={data?.topCustomers ?? []}
           isLoading={isLoading}
         />
-        <DashboardTopBillboards
-          billboards={data?.topBillboards ?? []}
+        <DashboardOffersByTeamMemberCard
+          offers={data?.offersByTeamMember ?? []}
           isLoading={isLoading}
         />
       </div>
+
+      <DashboardTopBillboards
+        billboards={data?.topBillboards ?? []}
+        isLoading={isLoading}
+      />
 
       <DashboardDepartmentBreakdownCard
         departments={data?.byDepartment ?? []}

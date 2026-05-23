@@ -16,6 +16,8 @@ export interface SalesByCostCenterRow {
   subCostCenterId: number | null;
   subCostCenterCode: string | null;
   subCostCenterName: string | null;
+  tipoVentaId: number | null;
+  tipoVentaName: string;
   sellerId: number | null;
   sellerCode: string | null;
   sellerName: string;
@@ -33,24 +35,22 @@ interface BriloSalesRow {
   mfaTipoDoc: string;
   mfaNumDoc: string | null;
   mfaFecha: Date;
-  mfaSumasAfecto: number | null;
-  mfaSumasExento: number | null;
-  tdvnSignoVenta: number | null;
+  Total: number | null;
   cliId: number | null;
   Cliente: string | null;
-  cecoId: number | null;
-  cecoCodigo: string | null;
-  CentroCosto: string | null;
-  cecoIdSub: number | null;
-  cecoCodigoSub: string | null;
-  SubCentroCosto: string | null;
+  cecoIdDet: number | null;
+  cecoCodigoDet: string | null;
+  CentroCostoDet: string | null;
+  cecoIdSubDet: number | null;
+  cecoCodigoSubDet: string | null;
+  SubCentroCostoDet: string | null;
+  tvesId: number | null;
+  TipoVenta: string | null;
   vndId: number | null;
   vndCodigo: string | null;
   vndNombres: string | null;
   vndApellidos: string | null;
 }
-
-const VEO_COST_CENTER_ID = 7;
 
 const SALES_BY_COST_CENTER_SQL = `
 SELECT
@@ -59,41 +59,69 @@ SELECT
     mf.mfaTipoDoc,
     mf.mfaNumDoc,
     mf.mfaFecha,
-    mf.mfaSumasAfecto,
-    mf.mfaSumasExento,
-    tdv.tdvnSignoVenta,
     cli.cliId,
     cli.cliNombres AS Cliente,
-    ceco.cecoId,
-    ceco.cecoCodigo,
-    ceco.cecoNombre AS CentroCosto,
-    cecoSub.cecoId AS cecoIdSub,
-    cecoSub.cecoCodigo AS cecoCodigoSub,
-    cecoSub.cecoNombre AS SubCentroCosto,
+    cecoDet.cecoId AS cecoIdDet,
+    cecoDet.cecoCodigo AS cecoCodigoDet,
+    cecoDet.cecoNombre AS CentroCostoDet,
+    cecoSubDet.cecoId AS cecoIdSubDet,
+    cecoSubDet.cecoCodigo AS cecoCodigoSubDet,
+    cecoSubDet.cecoNombre AS SubCentroCostoDet,
+    tves.tvesId,
+    tves.tvesNombre AS TipoVenta,
     vnd.vndId,
     vnd.vndCodigo,
     vnd.vndNombres,
-    vnd.vndApellidos
-FROM olVentas.dbo.maeFacturas mf WITH (NOLOCK)
+    vnd.vndApellidos,
+    SUM(
+        (
+            CASE
+                WHEN df.dfaExento = 1 THEN
+                    ISNULL(df.dfaTotalLinea, df.dfaPrecio * df.dfaCantidad * (1.0 - ISNULL(df.dfaPorcentDesc, 0) / 100.0))
+                ELSE
+                    ISNULL(df.dfaTotalLinea, df.dfaPrecio * df.dfaCantidad * (1.0 - ISNULL(df.dfaPorcentDesc, 0) / 100.0))
+                    * (1.0 + ISNULL(mf.mfaPorcentIVA, 0) / 100.0)
+            END
+            + ISNULL(impLine.impuestosLinea, 0)
+        ) * ISNULL(tdv.tdvnSignoVenta, 1)
+    ) AS Total
+FROM olVentas.dbo.detFacturas df WITH (NOLOCK)
+INNER JOIN olVentas.dbo.maeFacturas mf WITH (NOLOCK)
+    ON mf.mfaId = df.mfaId
 LEFT JOIN olVentas.dbo.TiposDocVen tdv WITH (NOLOCK)
     ON tdv.tdvnCodigo = mf.mfaTipoDoc
+LEFT JOIN olVentas.dbo.TiposVentasEspec tves WITH (NOLOCK)
+    ON tves.tvesId = mf.tvesId
 LEFT JOIN olComun.dbo.Clientes cli WITH (NOLOCK)
     ON cli.cliId = mf.cliIdInvoiceTo
-LEFT JOIN olComun.dbo.CentrosCosto ceco WITH (NOLOCK)
-    ON ceco.cecoId = mf.cecoId
-LEFT JOIN olComun.dbo.CentrosCosto cecoSub WITH (NOLOCK)
-    ON cecoSub.cecoId = mf.cecoIdSub
+LEFT JOIN olComun.dbo.CentrosCosto cecoDet WITH (NOLOCK)
+    ON cecoDet.cecoId = df.cecoId
+LEFT JOIN olComun.dbo.CentrosCosto cecoSubDet WITH (NOLOCK)
+    ON cecoSubDet.cecoId = df.cecoIdSub
 LEFT JOIN olComun.dbo.Vendedores vnd WITH (NOLOCK)
     ON vnd.vndId = mf.vndId
+OUTER APPLY (
+    SELECT SUM(impdf.impdfValorImpuesto * impdf.impdfSignoImpuesto) AS impuestosLinea
+    FROM olVentas.dbo.impdetFacturas impdf WITH (NOLOCK)
+    WHERE impdf.dfaId = df.dfaId
+      AND impdf.impdfHabilitado = 1
+) AS impLine
 WHERE mf.mfaFecha >= @FechaInicio
   AND mf.mfaFecha < @FechaFin
   AND mf.mfaAnulada = 0
   AND mf.mfaPosteada = 1
-  AND mf.cecoId = @CecoId
   AND mf.mfaTipoDoc IN ('CCF', 'FCF', 'NDC')
+GROUP BY
+    mf.mfaId, mf.mfaGUID, mf.mfaTipoDoc, mf.mfaNumDoc, mf.mfaFecha,
+    cli.cliId, cli.cliNombres,
+    cecoDet.cecoId, cecoDet.cecoCodigo, cecoDet.cecoNombre,
+    cecoSubDet.cecoId, cecoSubDet.cecoCodigo, cecoSubDet.cecoNombre,
+    tves.tvesId, tves.tvesNombre,
+    vnd.vndId, vnd.vndCodigo, vnd.vndNombres, vnd.vndApellidos
 ORDER BY
-    ceco.cecoNombre ASC,
-    cecoSub.cecoNombre ASC,
+    cecoDet.cecoNombre ASC,
+    cecoSubDet.cecoNombre ASC,
+    tves.tvesNombre ASC,
     vnd.vndNombres ASC,
     vnd.vndApellidos ASC,
     cli.cliNombres ASC,
@@ -115,6 +143,10 @@ function composeSellerName(
   return full || 'Sin vendedor';
 }
 
+function round2(value: number): number {
+  return Math.round(value * 100) / 100;
+}
+
 @Injectable()
 export class SalesByCostCenterService {
   constructor(private readonly brilo: BriloDatabaseService) {}
@@ -128,16 +160,10 @@ export class SalesByCostCenterService {
       {
         FechaInicio: from,
         FechaFin: exclusiveTo,
-        CecoId: VEO_COST_CENTER_ID,
       },
     );
 
     const mapped = rows.map((r): SalesByCostCenterRow => {
-      const sign = r.tdvnSignoVenta ?? 1;
-      const subtotal =
-        Number(r.mfaSumasAfecto ?? 0) + Number(r.mfaSumasExento ?? 0);
-      const total = Math.round(subtotal * sign * 100) / 100;
-
       return {
         invoiceId: Number(r.mfaId),
         guid: r.mfaGUID ?? '',
@@ -146,23 +172,24 @@ export class SalesByCostCenterService {
         date: r.mfaFecha,
         customerId: r.cliId ?? null,
         customerName: cleanName(r.Cliente) || 'Sin cliente',
-        total,
-        costCenterId: r.cecoId ?? null,
-        costCenterCode: r.cecoCodigo ?? null,
-        costCenterName: cleanName(r.CentroCosto) || 'Sin centro de costo',
-        subCostCenterId: r.cecoIdSub ?? null,
-        subCostCenterCode: r.cecoCodigoSub ?? null,
-        subCostCenterName: r.SubCentroCosto
-          ? cleanName(r.SubCentroCosto)
-          : null,
+        total: round2(Number(r.Total ?? 0)),
+        costCenterId: r.cecoIdDet ?? null,
+        costCenterCode: r.cecoCodigoDet ?? null,
+        costCenterName:
+          cleanName(r.CentroCostoDet) || 'Centro de Costos- N/A',
+        subCostCenterId: r.cecoIdSubDet ?? null,
+        subCostCenterCode: r.cecoCodigoSubDet ?? null,
+        subCostCenterName:
+          cleanName(r.SubCentroCostoDet) || 'Sub Centro de Costos- N/A',
+        tipoVentaId: r.tvesId ?? null,
+        tipoVentaName: cleanName(r.TipoVenta) || 'Tipo de Venta- N/A',
         sellerId: r.vndId ?? null,
         sellerCode: r.vndCodigo ?? null,
         sellerName: composeSellerName(r.vndNombres, r.vndApellidos),
       };
     });
 
-    const total =
-      Math.round(mapped.reduce((sum, r) => sum + r.total, 0) * 100) / 100;
+    const total = round2(mapped.reduce((sum, r) => sum + r.total, 0));
 
     const formatDate = (d: Date): string => {
       const y = d.getUTCFullYear();

@@ -5,3 +5,4 @@ export { DashboardTopCustomers } from "./dashboard-top-customers";
 export { DashboardTopBillboards } from "./dashboard-top-billboards";
 export { DashboardAvailabilityDonut } from "./dashboard-availability-donut";
 export { DashboardDepartmentBreakdownCard } from "./dashboard-department-breakdown";
+export { DashboardOffersByTeamMemberCard } from "./dashboard-offers-by-team-member";
