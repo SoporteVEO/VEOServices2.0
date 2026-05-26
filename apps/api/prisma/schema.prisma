@@ -424,6 +424,7 @@ model Client {
   name        String
   company     String?
   email       String         @unique
+  billingEmail String?       @map("billing_email")
   contact     String?
   createdAt   DateTime       @default(now())
   updatedAt   DateTime       @updatedAt
@@ -434,6 +435,12 @@ model Client {
   @@map("clients")
 }
 
+enum OfferStatus {
+  PENDING
+  DECLINED
+  ACCEPTED
+}
+
 model OfferCreated {
   id                    String             @id @default(uuid())
   offerNumber           String             @unique @map("offer_number")
@@ -442,10 +449,13 @@ model OfferCreated {
   customerName          String             @map("customer_name")
   customerCompany       String?            @map("customer_company")
   customerEmail         String?            @map("customer_email")
+  billingEmail          String?            @map("billing_email")
   customerContact       String?            @map("customer_contact")
   validUntil            DateTime           @map("valid_until")
   specialConditions     String?            @map("special_conditions")
   advisorFullName       String?            @map("advisor_full_name")
+  status                OfferStatus        @default(PENDING)
+  briloMconId           Int?               @map("brilo_mcon_id")
   subtotalImpression    Float              @map("subtotal_impression")
   ivaImpression         Float              @map("iva_impression")
   totalImpression       Float              @map("total_impression")
@@ -462,6 +472,7 @@ model OfferCreated {
   @@index([createdAt])
   @@index([createdByUserId])
   @@index([clientId])
+  @@index([status])
   @@map("offers_created")
 }
 

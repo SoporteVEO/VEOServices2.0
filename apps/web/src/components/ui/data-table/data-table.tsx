@@ -312,7 +312,7 @@ export function DataTable<TData, TValue>({
         </Table>
       </div>
       {showPagination && paginationConfig && (
-        <div className="shrink-0 border-t border-border">
+        <div className="shrink-0">
           <DataTablePagination
             pageIndex={table.getState().pagination.pageIndex}
             pageSize={table.getState().pagination.pageSize}
@@ -327,7 +327,7 @@ export function DataTable<TData, TValue>({
         </div>
       )}
       {showPagination && manualPagination && (
-        <div className="shrink-0 border-t border-border">
+        <div className="shrink-0">
           <DataTablePagination
             pageIndex={manualPagination.pageIndex}
             pageSize={manualPagination.pageSize}

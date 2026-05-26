@@ -42,3 +42,22 @@ export function useSalesByCostCenterReport(from: string, to: string) {
     enabled: Boolean(from && to && from <= to),
   });
 }
+
+export const mySalesByCostCenterQueryKey = (from: string, to: string) =>
+  ["analytics", "sales-by-cost-center", "mine", from, to] as const;
+
+export async function getMySalesByCostCenterReport(from: string, to: string) {
+  const response = await apiFetch<{ data: SalesByCostCenterReport }>(
+    "/analytics/sales-by-cost-center/mine",
+    { query: { from, to } },
+  );
+  return response.data;
+}
+
+export function useMySalesByCostCenterReport(from: string, to: string) {
+  return useQuery({
+    queryKey: mySalesByCostCenterQueryKey(from, to),
+    queryFn: () => getMySalesByCostCenterReport(from, to),
+    enabled: Boolean(from && to && from <= to),
+  });
+}

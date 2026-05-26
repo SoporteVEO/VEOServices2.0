@@ -51,6 +51,7 @@ export interface ActiveContractGroup {
   description: string | null;
   customerName: string | null;
   customerEmail: string | null;
+  createdByName: string | null;
   startDate: string;
   endDate: string;
   billboards: ActiveContract[];
@@ -86,6 +87,8 @@ export interface ActiveContractsQuery {
   pageSize?: number;
   search?: string;
   imageType?: S3ImageType;
+  /** When true (default for mine), contracts starting in the current month are hidden. */
+  excludeCreatedThisMonth?: boolean;
 }
 
 export interface NotifiedContract {
@@ -96,6 +99,30 @@ export interface NotifiedContract {
   status: "PENDING" | "SENT" | "FAILED";
   errorMessage: string | null;
   createdAt: string;
+}
+
+export interface MyContractsSnapshot {
+  activeCount: number;
+  reportsSentThisMonth: number;
+  reportsPendingThisMonth: number;
+}
+
+export interface MyReportsTrendPoint {
+  monthKey: string;
+  monthly: number;
+  installation: number;
+  maintenance: number;
+}
+
+export interface MyReportsTrend {
+  range: { from: string; to: string };
+  totals: {
+    monthly: number;
+    installation: number;
+    maintenance: number;
+    total: number;
+  };
+  trend: MyReportsTrendPoint[];
 }
 
 export async function getEndingSoonContracts({ from, to }: { from: Date, to: Date }) {
@@ -189,6 +216,66 @@ export function useActiveContracts(query: ActiveContractsQuery = {}) {
   });
 }
 
+function buildActiveContractsQueryParams(
+  query: ActiveContractsQuery,
+  from: Date,
+  to: Date,
+): Record<string, string> {
+  const params: Record<string, string> = {
+    from: from.toISOString(),
+    to: to.toISOString(),
+  };
+  if (query.page) params.page = String(query.page);
+  if (query.pageSize) params.pageSize = String(query.pageSize);
+  if (query.search) params.search = query.search;
+  if (query.imageType) params.imageType = query.imageType;
+  if (query.excludeCreatedThisMonth != null) {
+    params.excludeCreatedThisMonth = String(query.excludeCreatedThisMonth);
+  }
+  return params;
+}
+
+export async function getMyActiveContracts(query: ActiveContractsQuery = {}) {
+  const from = query.from ?? startOfCurrentMonth();
+  const to = query.to ?? startOfNextMonth();
+
+  return apiFetch<ActiveContractsPage>("/contracts/active/mine", {
+    method: "GET",
+    query: buildActiveContractsQueryParams(query, from, to),
+  });
+}
+
+export function useMyActiveContracts(query: ActiveContractsQuery = {}) {
+  const from = query.from ?? startOfCurrentMonth();
+  const to = query.to ?? startOfNextMonth();
+  const normalized: ActiveContractsQuery = {
+    from,
+    to,
+    page: query.page,
+    pageSize: query.pageSize,
+    search: query.search,
+    imageType: query.imageType,
+    excludeCreatedThisMonth: query.excludeCreatedThisMonth,
+  };
+
+  return useQuery({
+    queryKey: [
+      "contracts",
+      "active",
+      "mine",
+      from.toISOString(),
+      to.toISOString(),
+      normalized.page ?? 1,
+      normalized.pageSize ?? null,
+      normalized.search ?? "",
+      normalized.imageType ?? "",
+      normalized.excludeCreatedThisMonth ?? true,
+    ],
+    queryFn: () => getMyActiveContracts(normalized),
+    placeholderData: keepPreviousData,
+  });
+}
+
 export async function getContractReportsSended(params: {
   contractNumber: string;
   reportType: "monthly" | "installation" | "maintenance";
@@ -223,5 +310,48 @@ export function useContractReportsSended(params: {
         reportType: params.reportType,
       }),
     enabled: !!params.contractNumber,
+  });
+}
+
+export async function getMyContractsSnapshot(): Promise<MyContractsSnapshot> {
+  const response = await apiFetch<{ data: MyContractsSnapshot }>(
+    "/contracts/mine/snapshot",
+  );
+  return response.data;
+}
+
+export function useMyContractsSnapshot(options: { enabled?: boolean } = {}) {
+  return useQuery({
+    queryKey: ["contracts", "mine", "snapshot"],
+    queryFn: getMyContractsSnapshot,
+    enabled: options.enabled ?? true,
+    placeholderData: keepPreviousData,
+  });
+}
+
+export async function getMyReportsTrend(params: {
+  from: string;
+  to: string;
+}): Promise<MyReportsTrend> {
+  const response = await apiFetch<{ data: MyReportsTrend }>(
+    "/contracts/mine/reports-trend",
+    {
+      method: "GET",
+      query: { from: params.from, to: params.to },
+    },
+  );
+  return response.data;
+}
+
+export function useMyReportsTrend(params: {
+  from: string;
+  to: string;
+  enabled?: boolean;
+}) {
+  return useQuery({
+    queryKey: ["contracts", "mine", "reports-trend", params.from, params.to],
+    queryFn: () => getMyReportsTrend({ from: params.from, to: params.to }),
+    enabled: params.enabled ?? true,
+    placeholderData: keepPreviousData,
   });
 }

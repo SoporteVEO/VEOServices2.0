@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { BriloDatabaseService } from '../../brilo-database/brilo-database.service.js';
+import { PrismaService } from '../../prisma/prisma.service.js';
 
 export interface SalesByCostCenterRow {
   invoiceId: number;
@@ -27,6 +28,12 @@ export interface SalesByCostCenterReport {
   range: { from: string; to: string };
   total: number;
   rows: SalesByCostCenterRow[];
+}
+
+export interface SellerNameMatch {
+  fullName: string | null;
+  firstName: string | null;
+  lastName: string | null;
 }
 
 interface BriloSalesRow {
@@ -111,6 +118,16 @@ WHERE mf.mfaFecha >= @FechaInicio
   AND mf.mfaAnulada = 0
   AND mf.mfaPosteada = 1
   AND mf.mfaTipoDoc IN ('CCF', 'FCF', 'NDC')
+  AND (
+      @ApplyVendedorFilter = 0
+      OR (
+          vnd.vndId IS NOT NULL
+          AND (ISNULL(vnd.vndNombres, '') + ' ' + ISNULL(vnd.vndApellidos, '')) LIKE @VToken1Like ESCAPE '\\'
+          AND (@VTokenCount < 2 OR (ISNULL(vnd.vndNombres, '') + ' ' + ISNULL(vnd.vndApellidos, '')) LIKE @VToken2Like ESCAPE '\\')
+          AND (@VTokenCount < 3 OR (ISNULL(vnd.vndNombres, '') + ' ' + ISNULL(vnd.vndApellidos, '')) LIKE @VToken3Like ESCAPE '\\')
+          AND (@VTokenCount < 4 OR (ISNULL(vnd.vndNombres, '') + ' ' + ISNULL(vnd.vndApellidos, '')) LIKE @VToken4Like ESCAPE '\\')
+      )
+  )
 GROUP BY
     mf.mfaId, mf.mfaGUID, mf.mfaTipoDoc, mf.mfaNumDoc, mf.mfaFecha,
     cli.cliId, cli.cliNombres,
@@ -127,6 +144,9 @@ ORDER BY
     cli.cliNombres ASC,
     mf.mfaFecha ASC;
 `;
+
+const MIN_VENDEDOR_NAME_TOKEN_LENGTH = 2;
+const MAX_VENDEDOR_NAME_TOKENS = 4;
 
 function cleanName(value: string | null | undefined): string {
   if (value == null) return '';
@@ -147,19 +167,95 @@ function round2(value: number): number {
   return Math.round(value * 100) / 100;
 }
 
+function escapeLikePattern(value: string): string {
+  return value.replace(/[\\%_[]/g, (char) => `\\${char}`);
+}
+
+function sellerNameMatchFromParts(parts: {
+  fullName?: string | null;
+  firstName?: string | null;
+  lastName?: string | null;
+}): SellerNameMatch | null {
+  const fullName = parts.fullName?.trim() || null;
+  const firstName = parts.firstName?.trim() || null;
+  const lastName = parts.lastName?.trim() || null;
+
+  if (!fullName && !firstName && !lastName) return null;
+  return { fullName, firstName, lastName };
+}
+
+function buildSellerNameTokens(match: SellerNameMatch): string[] {
+  const firstName = match.firstName?.trim() ?? '';
+  const lastName = match.lastName?.trim() ?? '';
+
+  if (firstName && lastName) {
+    return [firstName, lastName].filter(
+      (t) => t.length >= MIN_VENDEDOR_NAME_TOKEN_LENGTH,
+    );
+  }
+
+  const source = match.fullName?.trim() || firstName || lastName;
+  return source
+    .split(/\s+/)
+    .filter((t) => t.length >= MIN_VENDEDOR_NAME_TOKEN_LENGTH)
+    .slice(0, MAX_VENDEDOR_NAME_TOKENS);
+}
+
+function buildVendedorSqlParams(match?: SellerNameMatch | null) {
+  const emptyTokens = {
+    ApplyVendedorFilter: 0,
+    VTokenCount: 0,
+    VToken1Like: '%',
+    VToken2Like: '%',
+    VToken3Like: '%',
+    VToken4Like: '%',
+  };
+
+  if (!match) return emptyTokens;
+
+  const tokens = buildSellerNameTokens(match);
+  if (tokens.length === 0) return emptyTokens;
+
+  return {
+    ApplyVendedorFilter: 1,
+    VTokenCount: tokens.length,
+    VToken1Like: `%${escapeLikePattern(tokens[0]!)}%`,
+    VToken2Like: tokens[1] ? `%${escapeLikePattern(tokens[1])}%` : '%',
+    VToken3Like: tokens[2] ? `%${escapeLikePattern(tokens[2])}%` : '%',
+    VToken4Like: tokens[3] ? `%${escapeLikePattern(tokens[3])}%` : '%',
+  };
+}
+
+function formatDate(d: Date): string {
+  const y = d.getUTCFullYear();
+  const m = String(d.getUTCMonth() + 1).padStart(2, '0');
+  const day = String(d.getUTCDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+
 @Injectable()
 export class SalesByCostCenterService {
-  constructor(private readonly brilo: BriloDatabaseService) {}
+  constructor(
+    private readonly brilo: BriloDatabaseService,
+    private readonly prisma: PrismaService,
+  ) {}
 
-  async getReport(from: Date, to: Date): Promise<SalesByCostCenterReport> {
+  async getReport(
+    from: Date,
+    to: Date,
+    options?: { sellerNameMatch?: SellerNameMatch | null },
+  ): Promise<SalesByCostCenterReport> {
     const exclusiveTo = new Date(to.getTime());
     exclusiveTo.setUTCDate(exclusiveTo.getUTCDate() + 1);
+
+    const vendedorParams = buildVendedorSqlParams(options?.sellerNameMatch);
 
     const rows = await this.brilo.query<BriloSalesRow>(
       SALES_BY_COST_CENTER_SQL,
       {
         FechaInicio: from,
         FechaFin: exclusiveTo,
+        ...vendedorParams,
       },
     );
 
@@ -191,17 +287,58 @@ export class SalesByCostCenterService {
 
     const total = round2(mapped.reduce((sum, r) => sum + r.total, 0));
 
-    const formatDate = (d: Date): string => {
-      const y = d.getUTCFullYear();
-      const m = String(d.getUTCMonth() + 1).padStart(2, '0');
-      const day = String(d.getUTCDate()).padStart(2, '0');
-      return `${y}-${m}-${day}`;
-    };
-
     return {
       range: { from: formatDate(from), to: formatDate(to) },
       total,
       rows: mapped,
     };
+  }
+
+  async getMyReport(
+    userId: string,
+    from: Date,
+    to: Date,
+  ): Promise<SalesByCostCenterReport> {
+    const sellerNameMatch = await this.resolveSellerNameMatch(userId);
+    if (!sellerNameMatch) {
+      return {
+        range: { from: formatDate(from), to: formatDate(to) },
+        total: 0,
+        rows: [],
+      };
+    }
+    return this.getReport(from, to, { sellerNameMatch });
+  }
+
+  private async resolveSellerNameMatch(
+    userId: string,
+  ): Promise<SellerNameMatch | null> {
+    const member = await this.prisma.teamMember.findUnique({
+      where: { userId },
+      select: {
+        fullName: true,
+        user: { select: { firstName: true, lastName: true } },
+      },
+    });
+
+    if (member) {
+      const match = sellerNameMatchFromParts({
+        fullName: member.fullName,
+        firstName: member.user.firstName,
+        lastName: member.user.lastName,
+      });
+      if (match) return match;
+    }
+
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { firstName: true, lastName: true },
+    });
+    if (!user) return null;
+
+    return sellerNameMatchFromParts({
+      firstName: user.firstName,
+      lastName: user.lastName,
+    });
   }
 }

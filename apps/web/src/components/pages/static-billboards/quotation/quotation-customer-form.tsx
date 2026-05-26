@@ -13,6 +13,7 @@ export interface QuotationCustomerFormValues {
   customerName: string;
   customerCompany: string;
   customerEmail: string;
+  customerBillingEmail: string;
   customerContact: string;
   validUntil: Date | null;
   specialConditions: string;
@@ -59,7 +60,7 @@ export function QuotationCustomerForm({
           {...register("customerCompany")}
         />
         <Input
-          label="Correo electrónico"
+          label="Correo cliente"
           type="email"
           placeholder="cliente@ejemplo.com"
           {...register("customerEmail", {
@@ -69,6 +70,18 @@ export function QuotationCustomerForm({
             },
           })}
           aria-invalid={!!formState.errors.customerEmail}
+        />
+        <Input
+          label="Correo Facturacion"
+          type="email"
+          placeholder="facturacion@ejemplo.com"
+          {...register("customerBillingEmail", {
+            pattern: {
+              value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+              message: "Correo no válido",
+            },
+          })}
+          aria-invalid={!!formState.errors.customerBillingEmail}
         />
         <Input
           label="Contacto"

@@ -14,6 +14,9 @@ export interface QuotationItem {
   height: number | null;
   quantity: number;
   impressionPrice: number;
+  /** Per 30-day period base rate from the billboard catalog. */
+  monthlyRentalPrice: number;
+  /** Total rental for the selected duration (monthlyRentalPrice × 30-day periods). */
   rentalPrice: number;
   startDate: Date | null;
   endDate: Date | null;
@@ -24,6 +27,7 @@ export interface QuotationData {
   customerName: string;
   customerCompany: string;
   customerEmail: string;
+  customerBillingEmail: string;
   customerContact: string;
   validUntil: Date;
   specialConditions: string;
@@ -44,6 +48,55 @@ function round2(value: number): number {
   return Math.round(value * 100) / 100;
 }
 
+function stripTime(value: Date): Date {
+  return new Date(value.getFullYear(), value.getMonth(), value.getDate());
+}
+
+const MS_PER_DAY = 86_400_000;
+const RENTAL_PERIOD_DAYS = 30;
+
+/** Inclusive 30-day billing periods between start and end (minimum 1). */
+export function calculateRentalMonths(
+  startDate: Date | null,
+  endDate: Date | null,
+): number {
+  if (!startDate || !endDate) return 1;
+  const start = stripTime(startDate);
+  const end = stripTime(endDate);
+  if (end < start) return 1;
+  const inclusiveDays =
+    Math.ceil((end.getTime() - start.getTime()) / MS_PER_DAY) + 1;
+  return Math.max(1, Math.ceil(inclusiveDays / RENTAL_PERIOD_DAYS));
+}
+
+export function calculateRentalPrice(
+  monthlyRentalPrice: number,
+  startDate: Date | null,
+  endDate: Date | null,
+): number {
+  const months = calculateRentalMonths(startDate, endDate);
+  return round2(Math.max(0, monthlyRentalPrice) * months);
+}
+
+export function formatRentalPeriodMultiplier(periods: number): string {
+  if (periods <= 1) return "× 1";
+  return `× ${periods}`;
+}
+
+export function formatRentalSubtotalPeriodsHint(
+  items: Pick<QuotationItem, "startDate" | "endDate">[],
+): string | null {
+  if (items.length === 0) return null;
+  const periodCounts = items.map((item) =>
+    calculateRentalMonths(item.startDate, item.endDate),
+  );
+  const unique = [...new Set(periodCounts)].sort((a, b) => a - b);
+  if (unique.length === 1) {
+    return formatRentalPeriodMultiplier(unique[0]!);
+  }
+  return unique.map((n) => formatRentalPeriodMultiplier(n)).join(", ");
+}
+
 export function calculateImpressionPrice(
   width: number | null,
   height: number | null,
@@ -62,10 +115,30 @@ export function buildItemDescription(b: AvailableBillboardListing): string {
   return parts.join(" · ") || "—";
 }
 
+export function applyQuotationItemDateRange(
+  item: QuotationItem,
+  startDate: Date | null,
+  endDate: Date | null,
+): QuotationItem {
+  return {
+    ...item,
+    startDate,
+    endDate,
+    rentalPrice: calculateRentalPrice(
+      item.monthlyRentalPrice,
+      startDate,
+      endDate,
+    ),
+  };
+}
+
 export function billboardToQuotationItem(
   b: AvailableBillboardListing,
   defaults?: { startDate?: Date | null; endDate?: Date | null },
 ): QuotationItem {
+  const startDate = defaults?.startDate ?? null;
+  const endDate = defaults?.endDate ?? null;
+  const monthlyRentalPrice = b.price ?? 0;
   return {
     id: String(b.billboardId),
     billboardId: b.billboardId,
@@ -77,9 +150,10 @@ export function billboardToQuotationItem(
     height: b.height,
     quantity: 1,
     impressionPrice: calculateImpressionPrice(b.width, b.height),
-    rentalPrice: b.price ?? 0,
-    startDate: defaults?.startDate ?? null,
-    endDate: defaults?.endDate ?? null,
+    monthlyRentalPrice,
+    rentalPrice: calculateRentalPrice(monthlyRentalPrice, startDate, endDate),
+    startDate,
+    endDate,
   };
 }
 

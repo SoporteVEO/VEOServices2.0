@@ -1,13 +1,21 @@
 "use client";
 
+import { useMemo } from "react";
 import { Trash2 } from "lucide-react";
+import { formatMoney } from "@/lib/format";
 import { Button } from "@/components/ui/button";
 import { ItemDateRangeCell } from "./item-date-range-cell";
 import { NumericCellInput } from "./numeric-cell-input";
-import type { QuotationItem } from "./quotation-types";
+import type { ContractRange } from "../detail/billboard-detail-utils";
+import {
+  calculateRentalMonths,
+  formatRentalPeriodMultiplier,
+  type QuotationItem,
+} from "./quotation-types";
 
 export interface QuotationItemRowProps {
   item: QuotationItem;
+  occupiedRanges?: ContractRange[];
   onChangeQuantity: (value: number) => void;
   onChangeImpression: (value: number) => void;
   onChangeRental: (value: number) => void;
@@ -20,6 +28,7 @@ export interface QuotationItemRowProps {
 
 export function QuotationItemRow({
   item,
+  occupiedRanges = [],
   onChangeQuantity,
   onChangeImpression,
   onChangeRental,
@@ -31,11 +40,26 @@ export function QuotationItemRow({
       ? `${item.width.toFixed(2)} × ${item.height.toFixed(2)}`
       : "—";
 
+  const rentalPeriods = useMemo(
+    () => calculateRentalMonths(item.startDate, item.endDate),
+    [item.startDate, item.endDate],
+  );
+
+  const rentalBreakdown = useMemo(() => {
+    const multiplier = formatRentalPeriodMultiplier(rentalPeriods);
+    const periodLabel =
+      rentalPeriods === 1 ? "período de 30 días" : "períodos de 30 días";
+    return `${formatMoney(item.monthlyRentalPrice)} ${multiplier} ${periodLabel}`;
+  }, [item.monthlyRentalPrice, rentalPeriods]);
+
   return (
     <tr className="border-t">
       <td className="px-2 py-1.5 font-medium">{item.billboardCode ?? "—"}</td>
-      <td className="max-w-[240px] truncate px-2 py-1.5 text-muted-foreground">
-        {item.description}
+      <td className="max-w-[240px] px-2 py-1.5 text-muted-foreground">
+        <p className="truncate">{item.description}</p>
+        <p className="mt-0.5 text-xs tabular-nums text-muted-foreground/80">
+          Arrend. {rentalBreakdown}
+        </p>
       </td>
       <td className="px-2 py-1.5 text-right tabular-nums">{dims}</td>
       <td className="px-2 py-1.5 text-right">
@@ -68,6 +92,7 @@ export function QuotationItemRow({
           <ItemDateRangeCell
             startDate={item.startDate}
             endDate={item.endDate}
+            occupiedRanges={occupiedRanges}
             onChange={onChangeDateRange}
           />
         </div>

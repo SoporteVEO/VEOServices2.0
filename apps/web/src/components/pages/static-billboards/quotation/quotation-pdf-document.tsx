@@ -198,9 +198,10 @@ function ContactBlock({ data }: { data: QuotationData }) {
       </Text>
       <ContactField label="Contacto" value={data.customerContact || "—"} />
       <ContactField label="Nombre" value={data.customerName || "—"} />
+      <ContactField label="Correo cliente" value={data.customerEmail || "—"} />
       <ContactField
-        label="Correo Electrónico"
-        value={data.customerEmail || "—"}
+        label="Correo Facturacion"
+        value={data.customerBillingEmail || "—"}
       />
       <ContactField label="Empresa" value={data.customerCompany || "—"} />
     </View>

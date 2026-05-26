@@ -3,6 +3,7 @@ export interface Client {
   name: string;
   company: string | null;
   email: string;
+  billingEmail: string | null;
   contact: string | null;
   createdAt: string;
   updatedAt: string;
@@ -17,5 +18,6 @@ export interface CreateClientInput {
   name: string;
   company?: string | null;
   email: string;
+  billingEmail?: string | null;
   contact?: string | null;
 }

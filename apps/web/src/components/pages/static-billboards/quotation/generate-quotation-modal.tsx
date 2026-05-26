@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { Download, Loader2 } from "lucide-react";
 import { toast } from "sonner";
@@ -24,9 +24,16 @@ import type { QuotationCustomerFormValues } from "./quotation-customer-form";
 import { QuotationItemsTable } from "./quotation-items-table";
 import { QuotationPdfDocument } from "./quotation-pdf-document";
 import {
+  applyQuotationItemDateRange,
   billboardToQuotationItem,
   type QuotationItem,
 } from "./quotation-types";
+import {
+  dateRangeOverlapsOccupied,
+  resolveDefaultQuotationDateRange,
+  type ContractRange,
+} from "../detail/billboard-detail-utils";
+import { useQuotationBillboardContractRanges } from "./use-quotation-billboard-contracts";
 
 function defaultValidUntil(): Date {
   const d = new Date();
@@ -47,6 +54,7 @@ function emptyFormValues(): QuotationCustomerFormValues {
     customerName: "",
     customerCompany: "",
     customerEmail: "",
+    customerBillingEmail: "",
     customerContact: "",
     validUntil: defaultValidUntil(),
     specialConditions: "",
@@ -78,6 +86,19 @@ function downloadBlob(blob: Blob, fileName: string) {
   a.rel = "noopener";
   a.click();
   URL.revokeObjectURL(url);
+}
+
+function buildQuotationItems(
+  billboards: AvailableBillboardListing[],
+  defaultStartDate: Date | null,
+  defaultEndDate: Date | null,
+): QuotationItem[] {
+  return billboards.map((b) =>
+    billboardToQuotationItem(b, {
+      startDate: defaultStartDate,
+      endDate: defaultEndDate,
+    }),
+  );
 }
 
 export interface GenerateQuotationModalProps {
@@ -119,13 +140,10 @@ export function GenerateQuotationModal({
   }, [teamMemberQuery.data, profileQuery.data]);
 
   const [items, setItems] = useState<QuotationItem[]>(() =>
-    billboards.map((b) =>
-      billboardToQuotationItem(b, {
-        startDate: defaultStartDate,
-        endDate: defaultEndDate,
-      }),
-    ),
+    buildQuotationItems(billboards, defaultStartDate, defaultEndDate),
   );
+  const datesSanitizedForKeyRef = useRef<string | null>(null);
+  const contractRangesRef = useRef<Map<number, ContractRange[]>>(new Map());
   const [billboardsKey, setBillboardsKey] = useState(() =>
     billboards.map((b) => b.billboardId).join(","),
   );
@@ -135,17 +153,65 @@ export function GenerateQuotationModal({
     [billboards],
   );
 
+  const billboardIds = useMemo(
+    () => billboards.map((b) => b.billboardId),
+    [nextBillboardsKey],
+  );
+
   if (nextBillboardsKey !== billboardsKey) {
     setBillboardsKey(nextBillboardsKey);
     setItems(
-      billboards.map((b) =>
-        billboardToQuotationItem(b, {
-          startDate: defaultStartDate,
-          endDate: defaultEndDate,
-        }),
-      ),
+      buildQuotationItems(billboards, defaultStartDate, defaultEndDate),
     );
+    datesSanitizedForKeyRef.current = null;
   }
+
+  const { contractRangesByBillboardId, isContractsReady } =
+    useQuotationBillboardContractRanges(billboardIds, open);
+
+  contractRangesRef.current = contractRangesByBillboardId;
+
+  useEffect(() => {
+    if (!open) {
+      datesSanitizedForKeyRef.current = null;
+      return;
+    }
+    if (!isContractsReady) return;
+
+    const sanitizeKey = `${nextBillboardsKey}|${defaultStartDate?.toISOString() ?? ""}|${defaultEndDate?.toISOString() ?? ""}`;
+    if (datesSanitizedForKeyRef.current === sanitizeKey) return;
+    datesSanitizedForKeyRef.current = sanitizeKey;
+
+    setItems((prev) =>
+      prev.map((item) => {
+        const ranges =
+          contractRangesRef.current.get(item.billboardId) ?? [];
+        const overlaps = dateRangeOverlapsOccupied(
+          item.startDate,
+          item.endDate,
+          ranges,
+        );
+        if (!overlaps) return item;
+
+        const resolved = resolveDefaultQuotationDateRange(
+          defaultStartDate,
+          defaultEndDate,
+          ranges,
+        );
+        return applyQuotationItemDateRange(
+          item,
+          resolved.startDate,
+          resolved.endDate,
+        );
+      }),
+    );
+  }, [
+    open,
+    isContractsReady,
+    nextBillboardsKey,
+    defaultStartDate,
+    defaultEndDate,
+  ]);
 
   const form = useForm<QuotationCustomerFormValues>({
     defaultValues: emptyFormValues(),
@@ -161,6 +227,7 @@ export function GenerateQuotationModal({
     form.setValue("customerName", client.name);
     form.setValue("customerCompany", client.company ?? "");
     form.setValue("customerEmail", client.email);
+    form.setValue("customerBillingEmail", client.billingEmail ?? "");
     form.setValue("customerContact", client.contact ?? "");
   }
 
@@ -183,6 +250,32 @@ export function GenerateQuotationModal({
       return;
     }
 
+    const itemWithoutDuration = items.find(
+      (item) => !item.startDate || !item.endDate,
+    );
+    if (itemWithoutDuration) {
+      toast.warning(
+        `Selecciona la duración de la valla ${itemWithoutDuration.billboardCode ?? itemWithoutDuration.billboardId}.`,
+      );
+      return;
+    }
+
+    const itemWithOccupiedRange = items.find((item) =>
+      dateRangeOverlapsOccupied(
+        item.startDate,
+        item.endDate,
+        contractRangesRef.current.get(item.billboardId) ??
+          contractRangesByBillboardId.get(item.billboardId) ??
+          [],
+      ),
+    );
+    if (itemWithOccupiedRange) {
+      toast.warning(
+        `La valla ${itemWithOccupiedRange.billboardCode ?? itemWithOccupiedRange.billboardId} tiene fechas que coinciden con un contrato existente.`,
+      );
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       // 1. Persist the offer metadata first so the server assigns the real
@@ -192,6 +285,7 @@ export function GenerateQuotationModal({
         customerName: values.customerName.trim(),
         customerCompany: values.customerCompany.trim() || null,
         customerEmail: values.customerEmail.trim() || null,
+        customerBillingEmail: values.customerBillingEmail.trim() || null,
         customerContact: values.customerContact.trim() || null,
         validUntil: values.validUntil.toISOString(),
         specialConditions: values.specialConditions.trim() || null,
@@ -219,6 +313,7 @@ export function GenerateQuotationModal({
             customerName: values.customerName,
             customerCompany: values.customerCompany,
             customerEmail: values.customerEmail,
+            customerBillingEmail: values.customerBillingEmail,
             customerContact: values.customerContact,
             validUntil: values.validUntil,
             specialConditions: values.specialConditions,
@@ -280,7 +375,11 @@ export function GenerateQuotationModal({
               onSelectClient={handleSelectClient}
             />
 
-            <QuotationItemsTable items={items} onChange={setItems} />
+            <QuotationItemsTable
+              items={items}
+              contractRangesByBillboardId={contractRangesByBillboardId}
+              onChange={setItems}
+            />
           </DialogBody>
 
           <DialogFooter>

@@ -2,24 +2,33 @@
 
 import { useMemo } from "react";
 import { formatMoney } from "@/lib/format";
+import type { ContractRange } from "../detail/billboard-detail-utils";
 import { QuotationItemRow } from "./quotation-item-row";
 import {
-  IMPRESSION_RATE_PER_M2,
   IVA_RATE,
+  calculateRentalMonths,
+  calculateRentalPrice,
   computeQuotationTotals,
+  formatRentalSubtotalPeriodsHint,
   type QuotationItem,
 } from "./quotation-types";
 
 export interface QuotationItemsTableProps {
   items: QuotationItem[];
+  contractRangesByBillboardId?: Map<number, ContractRange[]>;
   onChange: (items: QuotationItem[]) => void;
 }
 
 export function QuotationItemsTable({
   items,
+  contractRangesByBillboardId,
   onChange,
 }: QuotationItemsTableProps) {
   const totals = useMemo(() => computeQuotationTotals(items), [items]);
+  const rentalPeriodsHint = useMemo(
+    () => formatRentalSubtotalPeriodsHint(items),
+    [items],
+  );
 
   function updateItem<K extends keyof QuotationItem>(
     id: string,
@@ -36,11 +45,32 @@ export function QuotationItemsTable({
     range: { startDate: Date | null; endDate: Date | null },
   ) {
     onChange(
-      items.map((item) =>
-        item.id === id
-          ? { ...item, startDate: range.startDate, endDate: range.endDate }
-          : item,
-      ),
+      items.map((item) => {
+        if (item.id !== id) return item;
+        return {
+          ...item,
+          startDate: range.startDate,
+          endDate: range.endDate,
+          rentalPrice: calculateRentalPrice(
+            item.monthlyRentalPrice,
+            range.startDate,
+            range.endDate,
+          ),
+        };
+      }),
+    );
+  }
+
+  function updateRentalPrice(id: string, totalRental: number) {
+    onChange(
+      items.map((item) => {
+        if (item.id !== id) return item;
+        const rentalPrice = Math.max(0, totalRental);
+        const months = calculateRentalMonths(item.startDate, item.endDate);
+        const monthlyRentalPrice =
+          months > 0 ? Math.max(0, rentalPrice / months) : rentalPrice;
+        return { ...item, rentalPrice, monthlyRentalPrice };
+      }),
     );
   }
 
@@ -80,15 +110,16 @@ export function QuotationItemsTable({
                 <QuotationItemRow
                   key={item.id}
                   item={item}
+                  occupiedRanges={
+                    contractRangesByBillboardId?.get(item.billboardId) ?? []
+                  }
                   onChangeQuantity={(qty) =>
                     updateItem(item.id, "quantity", qty)
                   }
                   onChangeImpression={(value) =>
                     updateItem(item.id, "impressionPrice", value)
                   }
-                  onChangeRental={(value) =>
-                    updateItem(item.id, "rentalPrice", value)
-                  }
+                  onChangeRental={(value) => updateRentalPrice(item.id, value)}
                   onChangeDateRange={(range) => updateDateRange(item.id, range)}
                   onRemove={() => removeItem(item.id)}
                 />
@@ -102,7 +133,12 @@ export function QuotationItemsTable({
                   {formatMoney(totals.subtotalImpression)}
                 </td>
                 <td className="px-2 py-1.5 text-right tabular-nums">
-                  {formatMoney(totals.subtotalRental)}
+                  <div>{formatMoney(totals.subtotalRental)}</div>
+                  {rentalPeriodsHint ? (
+                    <div className="mt-0.5 font-normal text-muted-foreground">
+                      {rentalPeriodsHint}
+                    </div>
+                  ) : null}
                 </td>
                 <td colSpan={2}></td>
               </tr>

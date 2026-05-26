@@ -4,6 +4,7 @@ import { useCallback, useMemo, useState } from "react";
 import { endOfMonth, startOfMonth, subMonths } from "date-fns";
 import { FileDown, FileText } from "lucide-react";
 import { toast } from "sonner";
+import type { UseQueryResult } from "@tanstack/react-query";
 import { useSalesByCostCenterReport } from "@/api/analytics/analytics.get";
 import type {
   SalesByCostCenterReport,
@@ -25,6 +26,19 @@ import { downloadSalesByCostCenterExecutivePdf } from "./download-sales-by-cost-
 import { ExportSalesByCostCenterExcelButton } from "./export-sales-by-cost-center-excel";
 import { SalesByCostCenterSummaryCards } from "./sales-by-cost-center-summary";
 import { SalesByCostCenterTable } from "./sales-by-cost-center-table";
+
+type SalesReportQueryHook = (
+  from: string,
+  to: string,
+) => Pick<
+  UseQueryResult<SalesByCostCenterReport | undefined>,
+  "data" | "isLoading" | "isFetching" | "isError"
+>;
+
+const DEFAULT_TITLE =
+  "Facturación por Centro de Costos, Sub Centro y Tipo de Venta";
+const DEFAULT_DESCRIPTION =
+  "Reporte de facturación (CCF, FCF, NDC) con Monto con IVA más Impuestos, agrupado por Centro de Costos (Detalle), Sub Centro de Costos (Detalle) y Tipo de Venta.";
 
 function defaultRange(): { from: Date; to: Date } {
   const previousMonth = subMonths(new Date(), 1);
@@ -77,7 +91,19 @@ function filterReport(
   return { ...report, rows: filteredRows, total };
 }
 
-export function SalesByCostCenterReport() {
+export interface SalesByCostCenterReportProps {
+  useReportQuery?: SalesReportQueryHook;
+  title?: string;
+  description?: string;
+  showHeader?: boolean;
+}
+
+export function SalesByCostCenterReport({
+  useReportQuery = useSalesByCostCenterReport,
+  title = DEFAULT_TITLE,
+  description = DEFAULT_DESCRIPTION,
+  showHeader = true,
+}: SalesByCostCenterReportProps = {}) {
   const [range, setRange] = useState(defaultRange);
   const [search, setSearch] = useState("");
   const [costCenterFilter, setCostCenterFilter] = useState<string | null>(null);
@@ -85,7 +111,7 @@ export function SalesByCostCenterReport() {
 
   const fromStr = toYYYYMMDD(range.from);
   const toStr = toYYYYMMDD(range.to);
-  const { data, isLoading, isFetching, isError } = useSalesByCostCenterReport(
+  const { data, isLoading, isFetching, isError } = useReportQuery(
     fromStr,
     toStr,
   );
@@ -157,16 +183,12 @@ export function SalesByCostCenterReport() {
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center justify-between">
-        <div>
-          <h2 className="text-lg font-semibold">
-            Facturación por Centro de Costos, Sub Centro y Tipo de Venta
-          </h2>
-          <p className="text-sm text-muted-foreground">
-            Reporte de facturación (CCF, FCF, NDC) con Monto con IVA más
-            Impuestos, agrupado por Centro de Costos (Detalle), Sub Centro de
-            Costos (Detalle) y Tipo de Venta.
-          </p>
-        </div>
+        {showHeader ? (
+          <div>
+            <h2 className="text-lg font-semibold">{title}</h2>
+            <p className="text-sm text-muted-foreground">{description}</p>
+          </div>
+        ) : null}
         <div className="flex flex-wrap items-center justify-end gap-2 sm:ml-auto">
           <Combobox
             triggerClassName="w-64"

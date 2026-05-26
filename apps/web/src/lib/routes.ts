@@ -11,6 +11,8 @@ import {
   SquareChartGantt,
   BookUser,
   ChartArea,
+  UserRoundSearch,
+  House,
 } from "lucide-react";
 import { SubRole, UserRole } from "@/api/users/users.types";
 
@@ -34,6 +36,7 @@ export const NAV_GROUPS: NavGroup[] = [
     label: "",
     items: [
       { title: "Dashboard", href: "/dashboard", icon: LayoutDashboard, allowedRoles: ["ADMIN"], },
+      { title: "Mi Espacio", href: "/dashboard/my-space", icon: House, allowedRoles: ["USER", "ADMIN"], },
     ],
   },
   {
@@ -67,6 +70,12 @@ export const NAV_GROUPS: NavGroup[] = [
         href: "/dashboard/images",
         icon: Image,
         allowedRoles: ["ADMIN", "USER", "LIMITED"],
+      },
+      {
+        title: "Clientes",
+        href: "/dashboard/clients",
+        icon: UserRoundSearch,
+        allowedRoles: ["ADMIN", "USER"],
       },
       {
         title: "Recursos Humanos",

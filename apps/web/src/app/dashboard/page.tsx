@@ -70,7 +70,7 @@ export default function DashboardPage() {
   }, [costCenterId, costCentersQuery.data]);
 
   return (
-    <div className="flex flex-1 flex-col gap-4 p-4 md:p-6">
+    <div className="flex flex-1 flex-col gap-4">
       <header className="flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center">
         <div className="flex flex-col gap-1">
           <h1 className="text-2xl font-semibold tracking-tight">
@@ -89,9 +89,7 @@ export default function DashboardPage() {
             options={costCenterOptions}
             value={costCenterId}
             isLoading={costCentersQuery.isLoading}
-            onChange={(v) =>
-              setCostCenterId(v == null ? null : Number(v))
-            }
+            onChange={(v) => setCostCenterId(v == null ? null : Number(v))}
           />
           <DateRangePicker
             align="end"

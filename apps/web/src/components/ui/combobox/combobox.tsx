@@ -26,6 +26,8 @@ export interface ComboboxOption {
   label: React.ReactNode;
   /** Used by cmdk for filtering when `label` is not a plain string. */
   filterValue?: string;
+  /** Optional metadata for custom `renderOption` / `renderValue` callbacks. */
+  data?: unknown;
 }
 
 export type ComboboxSize = Exclude<
@@ -63,6 +65,12 @@ interface ComboboxProps {
   isLoadingMore?: boolean;
   /** Fallback option used to render the trigger label when `value` is not in `options` (e.g. server-side mode). */
   selectedOption?: ComboboxOption | null;
+  /** Custom layout for each row in the dropdown. Defaults to `option.label`. */
+  renderOption?: (option: ComboboxOption) => React.ReactNode;
+  /** Custom layout for the trigger when a value is selected. Defaults to `option.label`. */
+  renderValue?: (option: ComboboxOption) => React.ReactNode;
+  /** Extra classes for the dropdown panel. */
+  popoverClassName?: string;
   /** Notifies the parent when the popover open state changes. */
   onOpenChange?: (open: boolean) => void;
 }
@@ -91,6 +99,9 @@ export function Combobox({
   onLoadMore,
   isLoadingMore = false,
   selectedOption,
+  renderOption,
+  renderValue,
+  popoverClassName,
   onOpenChange,
 }: ComboboxProps) {
   const [open, setOpen] = React.useState(false);
@@ -117,12 +128,21 @@ export function Combobox({
           return sa.localeCompare(sb, undefined, { sensitivity: "base" });
         });
 
+  const resolvedSelected =
+    sortedOptions.find((option) => option.value === value) ??
+    (selectedOption && selectedOption.value === value ? selectedOption : null);
+
   const selectedLabel = hasSelection
-    ? (sortedOptions.find((option) => option.value === value)?.label ??
-      (selectedOption && selectedOption.value === value
-        ? selectedOption.label
-        : null))
+    ? (resolvedSelected?.label ?? null)
     : null;
+
+  const selectedDisplay =
+    hasSelection && resolvedSelected
+      ? (renderValue?.(resolvedSelected) ?? selectedLabel)
+      : null;
+
+  const usesCustomValue = Boolean(renderValue && hasSelection);
+  const usesCustomOptions = Boolean(renderOption);
 
   const sentinelRef = useIntersectionObserver<HTMLDivElement>(
     () => {
@@ -152,6 +172,7 @@ export function Combobox({
             aria-expanded={open}
             className={cn(
               "w-full justify-start gap-2 px-2.5 font-medium",
+              usesCustomValue && "h-auto min-h-10 items-start py-2",
               disabled && "pointer-events-none opacity-50",
               !hasSelection &&
                 "text-muted-foreground hover:text-muted-foreground!",
@@ -164,14 +185,22 @@ export function Combobox({
                 {leadingIcon}
               </span>
             ) : null}
-            <span className="min-w-0 flex-1 truncate text-left">
-              {hasSelection ? selectedLabel : placeholder}
+            <span
+              className={cn(
+                "min-w-0 flex-1 text-left",
+                usesCustomValue ? "whitespace-normal" : "truncate",
+              )}
+            >
+              {hasSelection ? selectedDisplay : placeholder}
             </span>
             <ChevronDown className="ml-auto size-4 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
         <PopoverContent
-          className="min-w-(--radix-popover-trigger-width) w-max max-w-[min(100vw-2rem,36rem)] p-0"
+          className={cn(
+            "min-w-(--radix-popover-trigger-width) w-max max-w-[min(100vw-2rem,36rem)] p-0",
+            popoverClassName,
+          )}
           align="start"
           side="bottom"
           sideOffset={4}
@@ -234,15 +263,21 @@ export function Combobox({
                         onChange(option.value);
                         setOpen(false);
                       }}
-                      className="cursor-pointer"
+                      className={cn(
+                        "cursor-pointer",
+                        usesCustomOptions && "items-start gap-2 py-2.5",
+                      )}
                     >
                       <CheckIcon
                         className={cn(
-                          "mr-2 size-4 shrink-0",
+                          "size-4 shrink-0",
+                          usesCustomOptions ? "mt-0.5" : "mr-2",
                           value === option.value ? "opacity-100" : "opacity-0",
                         )}
                       />
-                      {option.label}
+                      <div className="min-w-0 flex-1">
+                        {renderOption?.(option) ?? option.label}
+                      </div>
                     </CommandItem>
                   );
                 })}

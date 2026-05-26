@@ -8,6 +8,7 @@ export interface ClientListItem {
   name: string;
   company: string | null;
   email: string;
+  billingEmail: string | null;
   contact: string | null;
   createdAt: string;
   updatedAt: string;
@@ -50,6 +51,7 @@ export class ClientsService {
             { name: { contains: search, mode: 'insensitive' } },
             { company: { contains: search, mode: 'insensitive' } },
             { email: { contains: search, mode: 'insensitive' } },
+            { billingEmail: { contains: search, mode: 'insensitive' } },
             { contact: { contains: search, mode: 'insensitive' } },
           ],
         }
@@ -101,6 +103,12 @@ export class ClientsService {
       if (contact !== existing.contact) {
         updates.contact = contact;
       }
+      const billingEmail = dto.billingEmail?.trim()
+        ? normalizeEmail(dto.billingEmail)
+        : null;
+      if (billingEmail !== existing.billingEmail) {
+        updates.billingEmail = billingEmail;
+      }
       if (Object.keys(updates).length === 0) {
         return this.toListItem(existing);
       }
@@ -116,6 +124,9 @@ export class ClientsService {
         name: dto.name.trim(),
         company: dto.company?.trim() || null,
         email,
+        billingEmail: dto.billingEmail?.trim()
+          ? normalizeEmail(dto.billingEmail)
+          : null,
         contact: dto.contact?.trim() || null,
       },
     });
@@ -131,6 +142,7 @@ export class ClientsService {
     name: string;
     company: string | null;
     email: string;
+    billingEmail: string | null;
     contact: string | null;
     createdAt: Date;
     updatedAt: Date;
@@ -140,6 +152,7 @@ export class ClientsService {
       name: row.name,
       company: row.company,
       email: row.email,
+      billingEmail: row.billingEmail,
       contact: row.contact,
       createdAt: row.createdAt.toISOString(),
       updatedAt: row.updatedAt.toISOString(),

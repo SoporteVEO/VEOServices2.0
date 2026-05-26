@@ -15,8 +15,19 @@ export type BillboardOccupancySummary = {
   isCurrentlyOccupied: boolean;
 };
 
-export function parseContractDate(value: string): Date {
-  return new Date(value);
+export function parseContractDate(value: string | Date): Date {
+  if (value instanceof Date) {
+    return stripTime(value);
+  }
+  const dateOnly = value.slice(0, 10);
+  const [yearStr, monthStr, dayStr] = dateOnly.split("-");
+  const year = Number(yearStr);
+  const month = Number(monthStr);
+  const day = Number(dayStr);
+  if (year && month && day) {
+    return new Date(year, month - 1, day);
+  }
+  return stripTime(new Date(value));
 }
 
 export function getContractRanges(
@@ -29,6 +40,90 @@ export function getContractRanges(
     }))
     .filter((r) => !isNaN(r.start.getTime()) && !isNaN(r.end.getTime()))
     .sort((a, b) => a.start.getTime() - b.start.getTime());
+}
+
+function stripTime(value: Date): Date {
+  return new Date(value.getFullYear(), value.getMonth(), value.getDate());
+}
+
+export function isDateWithinContractRanges(
+  date: Date,
+  ranges: ContractRange[],
+): boolean {
+  const day = stripTime(date);
+  return ranges.some((range) => {
+    const start = stripTime(range.start);
+    const end = stripTime(range.end);
+    return day >= start && day <= end;
+  });
+}
+
+export function dateRangeOverlapsOccupied(
+  startDate: Date | null,
+  endDate: Date | null,
+  ranges: ContractRange[],
+): boolean {
+  if (!startDate || !endDate || ranges.length === 0) return false;
+  const from = stripTime(startDate <= endDate ? startDate : endDate);
+  const to = stripTime(startDate <= endDate ? endDate : startDate);
+  const cursor = new Date(from);
+  while (cursor <= to) {
+    if (isDateWithinContractRanges(cursor, ranges)) return true;
+    cursor.setDate(cursor.getDate() + 1);
+  }
+  return false;
+}
+
+const MS_PER_DAY = 86_400_000;
+
+function addDays(date: Date, days: number): Date {
+  const next = new Date(date);
+  next.setDate(next.getDate() + days);
+  return stripTime(next);
+}
+
+function inclusiveDayCount(startDate: Date, endDate: Date): number {
+  const start = stripTime(startDate);
+  const end = stripTime(endDate);
+  if (end < start) return 1;
+  return Math.ceil((end.getTime() - start.getTime()) / MS_PER_DAY) + 1;
+}
+
+/** Picks the page default range, or the first free window of the same length. */
+export function resolveDefaultQuotationDateRange(
+  preferredStart: Date | null,
+  preferredEnd: Date | null,
+  ranges: ContractRange[],
+  options?: { searchLimitDays?: number },
+): { startDate: Date | null; endDate: Date | null } {
+  if (!preferredStart || !preferredEnd) {
+    return { startDate: null, endDate: null };
+  }
+
+  const start = stripTime(preferredStart);
+  const end = stripTime(preferredEnd);
+  if (end < start) {
+    return { startDate: null, endDate: null };
+  }
+
+  if (!dateRangeOverlapsOccupied(start, end, ranges)) {
+    return { startDate: start, endDate: end };
+  }
+
+  const windowDays = inclusiveDayCount(start, end);
+  const searchLimit = options?.searchLimitDays ?? 365;
+  const searchEnd = addDays(start, searchLimit);
+
+  let cursor = new Date(start);
+  while (cursor <= searchEnd) {
+    const windowEnd = addDays(cursor, windowDays - 1);
+    if (!dateRangeOverlapsOccupied(cursor, windowEnd, ranges)) {
+      return { startDate: new Date(cursor), endDate: windowEnd };
+    }
+    cursor = addDays(cursor, 1);
+  }
+
+  return { startDate: null, endDate: null };
 }
 
 export function summarizeContracts(

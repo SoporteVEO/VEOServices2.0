@@ -37,6 +37,7 @@ export interface ActiveContractGroup {
   description: string;
   customerName: string;
   customerEmail: string;
+  createdByName: string | null;
   startDate: Date;
   endDate: Date;
   billboards: ActiveContractWithImages[];

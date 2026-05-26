@@ -87,7 +87,39 @@ export function formatShortDate(date: Date) {
     month: "long",
     year: "numeric",
   });
-};
+}
+
+/** Brilo/SQL datetimes are calendar dates at midnight (e.g. 2026-03-20 00:00:00.000). */
+export function parseBriloDate(
+  value: Date | string | null | undefined,
+): Date | null {
+  if (value == null) return null;
+  if (value instanceof Date) {
+    if (isNaN(value.getTime())) return null;
+    return new Date(
+      value.getUTCFullYear(),
+      value.getUTCMonth(),
+      value.getUTCDate(),
+    );
+  }
+  const trimmed = String(value).trim();
+  if (!trimmed) return null;
+  const match = /^(\d{4})-(\d{2})-(\d{2})/.exec(trimmed);
+  if (!match) return null;
+  const year = Number(match[1]);
+  const month = Number(match[2]);
+  const day = Number(match[3]);
+  const parsed = new Date(year, month - 1, day);
+  return isNaN(parsed.getTime()) ? null : parsed;
+}
+
+export function formatBriloShortDate(
+  value: Date | string | null | undefined,
+): string {
+  const d = parseBriloDate(value);
+  if (!d) return "—";
+  return formatShortDate(d);
+}
 
 export function formatPrice(value: number | null): string {
   if (value == null) return "—";

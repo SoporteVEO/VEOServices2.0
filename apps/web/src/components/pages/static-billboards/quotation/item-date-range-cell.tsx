@@ -2,6 +2,7 @@
 
 import { useMemo, useRef, useState } from "react";
 import { CalendarRange, ChevronDownIcon } from "lucide-react";
+import { toast } from "sonner";
 import { Calendar } from "@/components/primitives/ui/calendar";
 import {
   Popover,
@@ -10,6 +11,11 @@ import {
 } from "@/components/primitives/ui/popover";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import {
+  dateRangeOverlapsOccupied,
+  isDateWithinContractRanges,
+  type ContractRange,
+} from "../detail/billboard-detail-utils";
 
 function formatShortDate(date: Date | null): string {
   if (!date) return "—";
@@ -27,6 +33,7 @@ export interface ItemDateRangeCellProps {
   startDate: Date | null;
   endDate: Date | null;
   minDate?: Date | null;
+  occupiedRanges?: ContractRange[];
   className?: string;
   onChange: (range: { startDate: Date | null; endDate: Date | null }) => void;
 }
@@ -35,6 +42,7 @@ export function ItemDateRangeCell({
   startDate,
   endDate,
   minDate,
+  occupiedRanges = [],
   className,
   onChange,
 }: ItemDateRangeCellProps) {
@@ -58,6 +66,17 @@ export function ItemDateRangeCell({
     [startDate, endDate],
   );
 
+  const calendarKey = useMemo(
+    () =>
+      occupiedRanges
+        .map(
+          (range) =>
+            `${range.start.getTime()}-${range.end.getTime()}`,
+        )
+        .join("|"),
+    [occupiedRanges],
+  );
+
   function handleOpenChange(nextOpen: boolean) {
     if (nextOpen) {
       hasPickedFirstDate.current = false;
@@ -66,11 +85,23 @@ export function ItemDateRangeCell({
   }
 
   function handleSelect(value: { from?: Date; to?: Date } | undefined) {
+    const nextStart = value?.from ?? null;
+    const nextEnd = value?.to ?? null;
+    if (
+      nextStart &&
+      nextEnd &&
+      dateRangeOverlapsOccupied(nextStart, nextEnd, occupiedRanges)
+    ) {
+      toast.warning(
+        "El rango incluye fechas con contrato activo. Elige solo días disponibles.",
+      );
+      return;
+    }
     onChange({
-      startDate: value?.from ?? null,
-      endDate: value?.to ?? null,
+      startDate: nextStart,
+      endDate: nextEnd,
     });
-    const isCompleteRange = !!value?.from && !!value?.to;
+    const isCompleteRange = !!nextStart && !!nextEnd;
     if (!isCompleteRange) {
       // user just started a fresh selection
       hasPickedFirstDate.current = true;
@@ -107,16 +138,22 @@ export function ItemDateRangeCell({
       </PopoverTrigger>
       <PopoverContent align="start" className="w-auto p-0">
         <Calendar
+          key={calendarKey}
           mode="range"
           numberOfMonths={2}
           selected={selected}
           onSelect={handleSelect}
           resetOnSelect
-          disabled={
-            minDate
-              ? (date) => date < stripTime(minDate)
-              : undefined
-          }
+          disabled={(date) => {
+            if (minDate && date < stripTime(minDate)) return true;
+            if (
+              occupiedRanges.length > 0 &&
+              isDateWithinContractRanges(date, occupiedRanges)
+            ) {
+              return true;
+            }
+            return false;
+          }}
           defaultMonth={startDate ?? minDate ?? new Date()}
         />
       </PopoverContent>

@@ -65,7 +65,7 @@ export default function StaticBillboardsPage() {
                 className="bg-input"
               />
               <Label htmlFor={showAllId} className="text-sm font-normal">
-                Mostrar todas
+                Mostrar ocupadas
               </Label>
             </div>
             <DateRangePicker

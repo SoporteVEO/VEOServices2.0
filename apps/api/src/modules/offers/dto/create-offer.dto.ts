@@ -77,6 +77,10 @@ export class CreateOfferDto {
   customerEmail?: string | null;
 
   @IsOptional()
+  @IsEmail()
+  customerBillingEmail?: string | null;
+
+  @IsOptional()
   @IsString()
   customerContact?: string | null;
 

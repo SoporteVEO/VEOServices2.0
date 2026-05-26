@@ -57,7 +57,7 @@ export function ClientCombobox({
     return clients.map((client) => ({
       value: client.id,
       label: buildClientLabel(client),
-      filterValue: `${client.name} ${client.company ?? ""} ${client.email}`,
+      filterValue: `${client.name} ${client.company ?? ""} ${client.email} ${client.billingEmail ?? ""}`,
     }));
   }, [clients]);
 

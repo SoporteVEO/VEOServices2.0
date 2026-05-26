@@ -89,6 +89,7 @@ interface ActiveContractGroupRow {
   mconAtencionA: string;
   cliNombres: string;
   cliEmail: string;
+  createdByName: string | null;
   earliestStart: Date;
   latestEnd: Date;
   totalCount: number;
@@ -96,6 +97,46 @@ interface ActiveContractGroupRow {
 
 const DEFAULT_PAGE_SIZE = 25;
 const MAX_PAGE_SIZE = 100;
+
+const MY_ACTIVE_CONTRACT_CODES_SQL = `
+SELECT
+    maecon.mconCodigo
+FROM olVallas.dbo.maeContratos maecon WITH (NOLOCK)
+INNER JOIN olVallas.dbo.detContratos detcon WITH (NOLOCK)
+    ON detcon.mconId = maecon.mconId
+LEFT JOIN olVallas.dbo.Ejecutivos ej WITH (NOLOCK)
+    ON ej.ejecId = maecon.ejecId
+WHERE maecon.mconPosteado <> 0
+  AND maecon.mconAnulado <> 1
+  AND detcon.dconFechaHasta >= @ActiveAsOf
+  AND NOT EXISTS (
+      SELECT 1
+      FROM olVallas.dbo.maeContratos child WITH (NOLOCK)
+      WHERE child.mconIdPadre = maecon.mconId
+        AND child.mconAnulado <> 1
+        AND child.mconPosteado <> 0
+  )
+  AND (
+      @ApplyEjecutivoFilter = 0
+      OR (
+          (
+              ej.ejecNombre IS NOT NULL
+              AND ej.ejecNombre LIKE @Token1Like ESCAPE '\\'
+              AND (@TokenCount < 2 OR ej.ejecNombre LIKE @Token2Like ESCAPE '\\')
+              AND (@TokenCount < 3 OR ej.ejecNombre LIKE @Token3Like ESCAPE '\\')
+              AND (@TokenCount < 4 OR ej.ejecNombre LIKE @Token4Like ESCAPE '\\')
+          )
+          OR (
+              maecon.mconAtencionA IS NOT NULL
+              AND maecon.mconAtencionA LIKE @Token1Like ESCAPE '\\'
+              AND (@TokenCount < 2 OR maecon.mconAtencionA LIKE @Token2Like ESCAPE '\\')
+              AND (@TokenCount < 3 OR maecon.mconAtencionA LIKE @Token3Like ESCAPE '\\')
+              AND (@TokenCount < 4 OR maecon.mconAtencionA LIKE @Token4Like ESCAPE '\\')
+          )
+      )
+  )
+GROUP BY maecon.mconCodigo
+`;
 
 const ENDING_SOON_CONTRACTS_SQL = `
 SELECT DISTINCT
@@ -140,7 +181,8 @@ WITH FilteredContracts AS (
         MAX(maecon.mconCodigo) AS mconCodigo,
         MAX(maecon.mconAtencionA) AS mconAtencionA,
         MAX(cli.cliNombres) AS cliNombres,
-        MAX(cli.cliEmail) AS cliEmail
+        MAX(cli.cliEmail) AS cliEmail,
+        MAX(ej.ejecNombre) AS createdByName
     FROM olVallas.dbo.maeContratos maecon
     INNER JOIN olVallas.dbo.detContratos detcon
         ON detcon.mconId = maecon.mconId
@@ -150,9 +192,15 @@ WITH FilteredContracts AS (
         ON car.sitiId = siti.sitiId
     INNER JOIN olComun.dbo.Clientes cli
         ON maecon.cliId = cli.cliId
+    LEFT JOIN olVallas.dbo.Ejecutivos ej
+        ON ej.ejecId = maecon.ejecId
     WHERE maecon.mconPosteado <> 0
       AND maecon.mconAnulado <> 1
       AND detcon.dconFechaHasta >= @FechaDesde
+      AND (
+          @RequireStillActive = 0
+          OR detcon.dconFechaHasta >= @ActiveAsOf
+      )
       AND NOT EXISTS (
           SELECT 1
           FROM olVallas.dbo.maeContratos child
@@ -166,9 +214,34 @@ WITH FilteredContracts AS (
           OR maecon.mconAtencionA LIKE @SearchLike ESCAPE '\\'
           OR cli.cliNombres LIKE @SearchLike ESCAPE '\\'
           OR cli.cliEmail LIKE @SearchLike ESCAPE '\\'
+          OR ej.ejecNombre LIKE @SearchLike ESCAPE '\\'
           OR car.caraCodigo LIKE @SearchLike ESCAPE '\\'
       )
+      AND (
+          @ApplyEjecutivoFilter = 0
+          OR (
+              (
+                  ej.ejecNombre IS NOT NULL
+                  AND ej.ejecNombre LIKE @Token1Like ESCAPE '\\'
+                  AND (@TokenCount < 2 OR ej.ejecNombre LIKE @Token2Like ESCAPE '\\')
+                  AND (@TokenCount < 3 OR ej.ejecNombre LIKE @Token3Like ESCAPE '\\')
+                  AND (@TokenCount < 4 OR ej.ejecNombre LIKE @Token4Like ESCAPE '\\')
+              )
+              OR (
+                  maecon.mconAtencionA IS NOT NULL
+                  AND maecon.mconAtencionA LIKE @Token1Like ESCAPE '\\'
+                  AND (@TokenCount < 2 OR maecon.mconAtencionA LIKE @Token2Like ESCAPE '\\')
+                  AND (@TokenCount < 3 OR maecon.mconAtencionA LIKE @Token3Like ESCAPE '\\')
+                  AND (@TokenCount < 4 OR maecon.mconAtencionA LIKE @Token4Like ESCAPE '\\')
+              )
+          )
+      )
     GROUP BY maecon.mconId
+    HAVING (
+        @ExcludeCreatedThisMonth = 0
+        OR MIN(detcon.dconFechaDesde) < @MonthStart
+        OR MIN(detcon.dconFechaDesde) >= @MonthEnd
+    )
 )
 SELECT
     mconId,
@@ -176,6 +249,7 @@ SELECT
     mconAtencionA,
     cliNombres,
     cliEmail,
+    createdByName,
     earliestStart,
     latestEnd,
     COUNT(*) OVER () AS totalCount
@@ -298,6 +372,32 @@ export class ContractsService {
     });
   }
 
+  async getMyActiveContractsWithImages(
+    userId: string,
+    args: {
+      from: Date;
+      to: Date;
+      imageType?: S3ImageType;
+      page?: number;
+      pageSize?: number;
+      search?: string;
+      excludeCreatedThisMonth?: boolean;
+    },
+  ): Promise<PaginatedActiveContracts> {
+    const ejecutivoNameMatch = await this.resolveAdvisorNameMatch(userId);
+    if (!ejecutivoNameMatch) {
+      const page = clampPage(args.page);
+      const pageSize = clampPageSize(args.pageSize);
+      return { data: [], total: 0, page, pageSize };
+    }
+
+    return this.getActiveContractsWithImages({
+      ...args,
+      ejecutivoNameMatch,
+      requireStillActive: true,
+    });
+  }
+
   async getActiveContractsWithImages(args: {
     from: Date;
     to: Date;
@@ -305,20 +405,37 @@ export class ContractsService {
     page?: number;
     pageSize?: number;
     search?: string;
+    ejecutivoNameMatch?: AdvisorNameMatch;
+    /** When true, only contracts with end date on or after today are included. */
+    requireStillActive?: boolean;
+    /** When true, contracts whose earliest start date falls in the current month are excluded. */
+    excludeCreatedThisMonth?: boolean;
   }): Promise<PaginatedActiveContracts> {
     const page = clampPage(args.page);
     const pageSize = clampPageSize(args.pageSize);
     const search = (args.search ?? '').trim();
     const searchLike = `%${escapeLikePattern(search)}%`;
+    const ejecutivoFilter = buildEjecutivoNameSqlParams(args.ejecutivoNameMatch);
     const offset = (page - 1) * pageSize;
     const imageType = args.imageType ?? S3ImageType.STATIC_BILLBOARD_MONTHLY;
+
+    const requireStillActive = args.requireStillActive ?? false;
+    const excludeCreatedThisMonth = args.excludeCreatedThisMonth ?? false;
+    const monthStart = startOfCurrentMonth();
+    const monthEnd = startOfNextMonth();
 
     const groupRows = await this.brilo.query<ActiveContractGroupRow>(
       ACTIVE_CONTRACTS_PAGE_SQL,
       {
         FechaDesde: args.from,
+        RequireStillActive: requireStillActive ? 1 : 0,
+        ActiveAsOf: requireStillActive ? startOfToday() : args.from,
+        ExcludeCreatedThisMonth: excludeCreatedThisMonth ? 1 : 0,
+        MonthStart: monthStart,
+        MonthEnd: monthEnd,
         Search: search,
         SearchLike: searchLike,
+        ...ejecutivoFilter,
         Offset: offset,
         PageSize: pageSize,
       },
@@ -389,6 +506,7 @@ export class ContractsService {
         description: row.mconAtencionA,
         customerName: row.cliNombres,
         customerEmail: row.cliEmail,
+        createdByName: row.createdByName?.trim() || null,
         startDate: row.earliestStart,
         endDate: row.latestEnd,
         billboards,
@@ -411,6 +529,169 @@ export class ContractsService {
     }));
 
     return { data: dataWithCounts, total, page, pageSize };
+  }
+
+  async getMyContractsSnapshot(userId: string): Promise<{
+    activeCount: number;
+    reportsSentThisMonth: number;
+    reportsPendingThisMonth: number;
+  }> {
+    const ejecutivoNameMatch = await this.resolveAdvisorNameMatch(userId);
+    if (!ejecutivoNameMatch) {
+      return {
+        activeCount: 0,
+        reportsSentThisMonth: 0,
+        reportsPendingThisMonth: 0,
+      };
+    }
+
+    const ejecutivoFilter = buildEjecutivoNameSqlParams(ejecutivoNameMatch);
+    const rows = await this.brilo.query<{ mconCodigo: string }>(
+      MY_ACTIVE_CONTRACT_CODES_SQL,
+      {
+        ActiveAsOf: startOfToday(),
+        ...ejecutivoFilter,
+      },
+    );
+
+    const activeContractNumbers = Array.from(
+      new Set(rows.map((r) => r.mconCodigo).filter(Boolean)),
+    );
+    const activeCount = activeContractNumbers.length;
+
+    if (activeCount === 0) {
+      return {
+        activeCount: 0,
+        reportsSentThisMonth: 0,
+        reportsPendingThisMonth: 0,
+      };
+    }
+
+    const monthStart = startOfCurrentMonth();
+    const monthEnd = startOfNextMonth();
+
+    const sentThisMonth = await this.prisma.reportSended.findMany({
+      where: {
+        contractNumber: { in: activeContractNumbers },
+        reportType: ReportType.MONTHLY,
+        createdAt: { gte: monthStart, lt: monthEnd },
+      },
+      select: { contractNumber: true },
+      distinct: ['contractNumber'],
+    });
+
+    const reportsSentThisMonth = sentThisMonth.length;
+    const reportsPendingThisMonth = Math.max(
+      0,
+      activeCount - reportsSentThisMonth,
+    );
+
+    return {
+      activeCount,
+      reportsSentThisMonth,
+      reportsPendingThisMonth,
+    };
+  }
+
+  async getMyReportsTrend(
+    userId: string,
+    from: Date,
+    to: Date,
+  ): Promise<{
+    range: { from: string; to: string };
+    totals: {
+      monthly: number;
+      installation: number;
+      maintenance: number;
+      total: number;
+    };
+    trend: Array<{
+      monthKey: string;
+      monthly: number;
+      installation: number;
+      maintenance: number;
+    }>;
+  }> {
+    const teamMember = await this.prisma.teamMember.findUnique({
+      where: { userId },
+      select: { id: true },
+    });
+
+    const baseTotals = { monthly: 0, installation: 0, maintenance: 0, total: 0 };
+    const monthKeys = enumerateMonthKeysContracts(from, to);
+    const baseTrend = monthKeys.map((monthKey) => ({
+      monthKey,
+      monthly: 0,
+      installation: 0,
+      maintenance: 0,
+    }));
+
+    if (!teamMember) {
+      return {
+        range: { from: from.toISOString(), to: to.toISOString() },
+        totals: baseTotals,
+        trend: baseTrend,
+      };
+    }
+
+    const rows = await this.prisma.$queryRaw<
+      Array<{
+        month_key: string;
+        report_type: ReportType;
+        report_count: bigint | number;
+      }>
+    >`
+      SELECT
+        to_char(date_trunc('month', "createdAt"), 'YYYY-MM') AS month_key,
+        "reportType" AS report_type,
+        COUNT(*)::bigint AS report_count
+      FROM "report_sended"
+      WHERE "team_member_id" = ${teamMember.id}
+        AND "createdAt" >= ${from}
+        AND "createdAt" < ${to}
+      GROUP BY 1, 2
+      ORDER BY 1 ASC
+    `;
+
+    const trendByMonth = new Map(
+      baseTrend.map((point) => [point.monthKey, { ...point }]),
+    );
+    const totals = { ...baseTotals };
+
+    for (const row of rows) {
+      const count = Number(row.report_count);
+      let point = trendByMonth.get(row.month_key);
+      if (!point) {
+        point = {
+          monthKey: row.month_key,
+          monthly: 0,
+          installation: 0,
+          maintenance: 0,
+        };
+        trendByMonth.set(row.month_key, point);
+      }
+      if (row.report_type === ReportType.MONTHLY) {
+        point.monthly += count;
+        totals.monthly += count;
+      } else if (row.report_type === ReportType.INSTALLATION) {
+        point.installation += count;
+        totals.installation += count;
+      } else if (row.report_type === ReportType.MAINTENANCE) {
+        point.maintenance += count;
+        totals.maintenance += count;
+      }
+      totals.total += count;
+    }
+
+    const trend = Array.from(trendByMonth.values()).sort((a, b) =>
+      a.monthKey.localeCompare(b.monthKey),
+    );
+
+    return {
+      range: { from: from.toISOString(), to: to.toISOString() },
+      totals,
+      trend,
+    };
   }
 
   async listReportsSended(
@@ -459,11 +740,15 @@ export class ContractsService {
     const result = new Map<string, number>();
     if (contractNumbers.length === 0) return result;
 
+    const monthStart = startOfCurrentMonth();
+    const monthEnd = startOfNextMonth();
+
     const grouped = await this.prisma.reportSended.groupBy({
       by: ['contractNumber'],
       where: {
         contractNumber: { in: contractNumbers },
         reportType,
+        createdAt: { gte: monthStart, lt: monthEnd },
       },
       _count: { _all: true },
     });
@@ -472,6 +757,38 @@ export class ContractsService {
       result.set(row.contractNumber, row._count._all);
     }
     return result;
+  }
+
+  private async resolveAdvisorNameMatch(
+    userId: string,
+  ): Promise<AdvisorNameMatch | null> {
+    const member = await this.prisma.teamMember.findUnique({
+      where: { userId },
+      select: {
+        fullName: true,
+        user: { select: { firstName: true, lastName: true } },
+      },
+    });
+
+    if (member) {
+      const match = advisorNameMatchFromParts({
+        fullName: member.fullName,
+        firstName: member.user.firstName,
+        lastName: member.user.lastName,
+      });
+      if (match) return match;
+    }
+
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { firstName: true, lastName: true },
+    });
+    if (!user) return null;
+
+    return advisorNameMatchFromParts({
+      firstName: user.firstName,
+      lastName: user.lastName,
+    });
   }
 
   private async fetchContractDetails(
@@ -730,6 +1047,21 @@ export class ContractsService {
   }
 }
 
+function startOfToday(): Date {
+  const now = new Date();
+  return new Date(now.getFullYear(), now.getMonth(), now.getDate());
+}
+
+function startOfCurrentMonth(): Date {
+  const now = new Date();
+  return new Date(now.getFullYear(), now.getMonth(), 1);
+}
+
+function startOfNextMonth(): Date {
+  const now = new Date();
+  return new Date(now.getFullYear(), now.getMonth() + 1, 1);
+}
+
 function clampPage(value: number | undefined): number {
   if (!value || !Number.isFinite(value) || value < 1) return 1;
   return Math.floor(value);
@@ -742,6 +1074,92 @@ function clampPageSize(value: number | undefined): number {
 
 function escapeLikePattern(value: string): string {
   return value.replace(/[\\%_[]/g, (char) => `\\${char}`);
+}
+
+function enumerateMonthKeysContracts(from: Date, to: Date): string[] {
+  const keys: string[] = [];
+  const start = new Date(from.getFullYear(), from.getMonth(), 1);
+  const end = new Date(to.getFullYear(), to.getMonth(), 1);
+  const cursor = new Date(start);
+  while (cursor <= end) {
+    const year = cursor.getFullYear();
+    const month = String(cursor.getMonth() + 1).padStart(2, '0');
+    keys.push(`${year}-${month}`);
+    cursor.setMonth(cursor.getMonth() + 1);
+  }
+  return keys;
+}
+
+interface AdvisorNameMatch {
+  fullName: string | null;
+  firstName: string | null;
+  lastName: string | null;
+}
+
+const MIN_EJECUTIVO_NAME_TOKEN_LENGTH = 2;
+const MAX_EJECUTIVO_NAME_TOKENS = 4;
+
+function advisorNameMatchFromParts(parts: {
+  fullName?: string | null;
+  firstName?: string | null;
+  lastName?: string | null;
+}): AdvisorNameMatch | null {
+  const fullName = parts.fullName?.trim() || null;
+  const firstName = parts.firstName?.trim() || null;
+  const lastName = parts.lastName?.trim() || null;
+
+  if (!fullName && !firstName && !lastName) return null;
+
+  return { fullName, firstName, lastName };
+}
+
+/** All returned tokens must appear in ejecNombre (AND), avoiding first-name-only collisions. */
+function buildEjecutivoNameTokens(match: AdvisorNameMatch): string[] {
+  const firstName = match.firstName?.trim() ?? '';
+  const lastName = match.lastName?.trim() ?? '';
+
+  if (firstName && lastName) {
+    return [firstName, lastName].filter(
+      (t) => t.length >= MIN_EJECUTIVO_NAME_TOKEN_LENGTH,
+    );
+  }
+
+  const source = match.fullName?.trim() || firstName || lastName;
+  return source
+    .split(/\s+/)
+    .filter((t) => t.length >= MIN_EJECUTIVO_NAME_TOKEN_LENGTH)
+    .slice(0, MAX_EJECUTIVO_NAME_TOKENS);
+}
+
+function buildEjecutivoNameSqlParams(match?: AdvisorNameMatch) {
+  const emptyTokens = {
+    ApplyEjecutivoFilter: 0,
+    TokenCount: 0,
+    Token1Like: '%',
+    Token2Like: '%',
+    Token3Like: '%',
+    Token4Like: '%',
+  };
+
+  if (!match) return emptyTokens;
+
+  const tokens = buildEjecutivoNameTokens(match);
+  if (tokens.length === 0) return emptyTokens;
+
+  return {
+    ApplyEjecutivoFilter: 1,
+    TokenCount: tokens.length,
+    Token1Like: `%${escapeLikePattern(tokens[0]!)}%`,
+    Token2Like: tokens[1]
+      ? `%${escapeLikePattern(tokens[1])}%`
+      : '%',
+    Token3Like: tokens[2]
+      ? `%${escapeLikePattern(tokens[2])}%`
+      : '%',
+    Token4Like: tokens[3]
+      ? `%${escapeLikePattern(tokens[3])}%`
+      : '%',
+  };
 }
 
 function buildMaintenanceReportEmailHtml(params: {

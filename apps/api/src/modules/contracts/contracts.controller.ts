@@ -40,6 +40,18 @@ function parsePositiveInt(
   return Math.floor(parsed);
 }
 
+function parseBooleanQuery(
+  value: string | undefined,
+  defaultValue: boolean,
+): boolean {
+  if (value == null) return defaultValue;
+  if (value === 'true' || value === '1') return true;
+  if (value === 'false' || value === '0') return false;
+  throw new BadRequestException(
+    'excludeCreatedThisMonth debe ser true o false',
+  );
+}
+
 function startOfCurrentMonth(): Date {
   const now = new Date();
   return new Date(now.getFullYear(), now.getMonth(), 1);
@@ -105,6 +117,73 @@ export class ContractsController {
       search,
       imageType,
     });
+  }
+
+  @Get('active/mine')
+  async getMyActiveContracts(
+    @CurrentUser() user: AuthUser,
+    @Query('from') fromStr?: string,
+    @Query('to') toStr?: string,
+    @Query('page') pageStr?: string,
+    @Query('pageSize') pageSizeStr?: string,
+    @Query('search') search?: string,
+    @Query('imageType') imageTypeStr?: string,
+    @Query('excludeCreatedThisMonth') excludeCreatedThisMonthStr?: string,
+  ) {
+    const from = parseDate(fromStr, 'from') ?? startOfCurrentMonth();
+    const to = parseDate(toStr, 'to') ?? startOfNextMonth();
+
+    if (from >= to) {
+      throw new BadRequestException('"from" debe ser anterior a "to"');
+    }
+
+    const page = parsePositiveInt(pageStr, 'page');
+    const pageSize = parsePositiveInt(pageSizeStr, 'pageSize');
+    const excludeCreatedThisMonth = parseBooleanQuery(
+      excludeCreatedThisMonthStr,
+      true,
+    );
+
+    if (imageTypeStr && !(imageTypeStr in S3ImageType)) {
+      throw new BadRequestException(
+        `imageType debe ser uno de: ${Object.keys(S3ImageType).join(', ')}`,
+      );
+    }
+    const imageType = imageTypeStr as S3ImageType | undefined;
+
+    return this.contractsService.getMyActiveContractsWithImages(user.id, {
+      from,
+      to,
+      page,
+      pageSize,
+      search,
+      imageType,
+      excludeCreatedThisMonth,
+    });
+  }
+
+  @Get('mine/snapshot')
+  async getMyContractsSnapshot(@CurrentUser() user: AuthUser) {
+    const data = await this.contractsService.getMyContractsSnapshot(user.id);
+    return { data };
+  }
+
+  @Get('mine/reports-trend')
+  async getMyReportsTrend(
+    @CurrentUser() user: AuthUser,
+    @Query('from') fromStr?: string,
+    @Query('to') toStr?: string,
+  ) {
+    const from = parseDate(fromStr, 'from');
+    const to = parseDate(toStr, 'to');
+    if (!from || !to) {
+      throw new BadRequestException('"from" y "to" son requeridos');
+    }
+    if (from >= to) {
+      throw new BadRequestException('"from" debe ser anterior a "to"');
+    }
+    const data = await this.contractsService.getMyReportsTrend(user.id, from, to);
+    return { data };
   }
 
   @Get('reports-sended')

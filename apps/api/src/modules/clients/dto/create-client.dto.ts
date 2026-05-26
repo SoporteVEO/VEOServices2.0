@@ -13,6 +13,10 @@ export class CreateClientDto {
   email!: string;
 
   @IsOptional()
+  @IsEmail()
+  billingEmail?: string | null;
+
+  @IsOptional()
   @IsString()
   contact?: string | null;
 }
