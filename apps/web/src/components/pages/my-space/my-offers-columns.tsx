@@ -29,9 +29,10 @@ export const MY_OFFERS_COLUMNS: ColumnDef<OfferListItem>[] = [
     ),
   },
   {
-    accessorKey: "totalRental",
-    header: "Total arrendamiento",
-    cell: ({ row }) => formatMoney(row.original.totalRental),
+    id: "grandTotal",
+    header: "Total general",
+    cell: ({ row }) =>
+      formatMoney(row.original.totalRental + row.original.totalImpression),
   },
   {
     accessorKey: "validUntil",
