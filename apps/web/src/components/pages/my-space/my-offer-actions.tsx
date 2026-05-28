@@ -8,14 +8,17 @@ import type { OfferListItem } from "@/api/offers/offers.types";
 import { Button } from "@/components/ui/button";
 import { AcceptOfferModal } from "./accept-offer-modal";
 import { MyOfferDownloadButton } from "./my-offer-download-button";
+import { useMySpaceViewAs } from "./my-space-view-as-context";
 
 type MyOfferActionsProps = {
   offer: OfferListItem;
 };
 
 export function MyOfferActions({ offer }: MyOfferActionsProps) {
+  const { viewAsUserId } = useMySpaceViewAs();
   const [acceptOpen, setAcceptOpen] = useState(false);
   const declineMutation = useDeclineOffer();
+  const readOnly = Boolean(viewAsUserId);
   const isPending = offer.status === "PENDING";
 
   function handleDecline() {
@@ -32,7 +35,7 @@ export function MyOfferActions({ offer }: MyOfferActionsProps) {
         className="flex flex-wrap items-center justify-end gap-1.5"
         onClick={(event) => event.stopPropagation()}
       >
-        {isPending ? (
+        {isPending && !readOnly ? (
           <>
             <Button
               type="button"

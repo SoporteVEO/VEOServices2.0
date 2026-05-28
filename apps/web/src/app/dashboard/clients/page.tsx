@@ -1,3 +1,5 @@
+import { ClientsSection } from "@/components/pages/clients";
+
 export default function ClientsPage() {
-  return <div>Clients</div>;
+  return <ClientsSection />;
 }

@@ -50,6 +50,7 @@ import { MyOfferDownloadButton } from "./my-offer-download-button";
 import { MY_OFFER_ITEMS_COLUMNS } from "./my-offer-items-columns";
 import { MyOfferStatusBadge } from "./my-offer-status-badge";
 import { MyOfferTotalsSummary } from "./my-offer-totals-summary";
+import { useMySpaceViewAs } from "./my-space-view-as-context";
 
 const STATUS_OPTIONS: { value: OfferStatus; label: string }[] = [
   { value: "PENDING", label: "Pendiente" },
@@ -95,7 +96,10 @@ function MyOfferDetailDrawerBody({
   offerId: string;
   onClose: () => void;
 }) {
-  const { data: offer, isLoading, isError } = useOffer(offerId);
+  const { viewAsUserId } = useMySpaceViewAs();
+  const { data: offer, isLoading, isError } = useOffer(offerId, {
+    viewAsUserId,
+  });
 
   if (isLoading) {
     return <MyOfferDetailSkeleton />;
@@ -114,15 +118,23 @@ function MyOfferDetailDrawerBody({
     );
   }
 
-  return <MyOfferDetailContent offer={offer} onClose={onClose} />;
+  return (
+    <MyOfferDetailContent
+      offer={offer}
+      onClose={onClose}
+      readOnly={Boolean(viewAsUserId)}
+    />
+  );
 }
 
 function MyOfferDetailContent({
   offer,
   onClose,
+  readOnly,
 }: {
   offer: OfferDetail;
   onClose: () => void;
+  readOnly: boolean;
 }) {
   const updateMutation = useUpdateOffer();
   const [status, setStatus] = useState<OfferStatus>(offer.status);
@@ -279,7 +291,11 @@ function MyOfferDetailContent({
           <Section
             icon={Activity}
             title="Seguimiento"
-            description="Actualiza el estado y vincula el contrato de Brilo correspondiente."
+            description={
+              readOnly
+                ? "Estás revisando esta cotización en modo lectura."
+                : "Actualiza el estado y vincula el contrato de Brilo correspondiente."
+            }
           >
             <div className="flex flex-col gap-3">
               <div className="space-y-1.5">
@@ -287,6 +303,7 @@ function MyOfferDetailContent({
                 <Select
                   value={status}
                   onValueChange={(v) => handleStatusChange(v as OfferStatus)}
+                  disabled={readOnly}
                 >
                   <SelectTrigger id="offer-status" className="w-full">
                     <SelectValue />
@@ -305,7 +322,7 @@ function MyOfferDetailContent({
                 <BriloContractCombobox
                   label="Contrato Brilo vinculado"
                   value={linkedContract?.mconId ?? null}
-                  onChange={setLinkedContract}
+                  onChange={readOnly ? () => undefined : setLinkedContract}
                   defaultSelectedContract={linkedContract}
                   required
                 />
@@ -327,13 +344,15 @@ function MyOfferDetailContent({
             <Button type="button" variant="outline" onClick={onClose}>
               Cerrar
             </Button>
-            <Button
-              type="button"
-              disabled={!isDirty || updateMutation.isPending}
-              onClick={handleSave}
-            >
-              {updateMutation.isPending ? "Guardando…" : "Guardar cambios"}
-            </Button>
+            {readOnly ? null : (
+              <Button
+                type="button"
+                disabled={!isDirty || updateMutation.isPending}
+                onClick={handleSave}
+              >
+                {updateMutation.isPending ? "Guardando…" : "Guardar cambios"}
+              </Button>
+            )}
           </div>
         </div>
       </DrawerFooter>

@@ -18,6 +18,14 @@ export type User = {
   image: string | null;
 };
 
+export type UserLookupItem = {
+  id: string;
+  firstName: string;
+  lastName: string | null;
+  email: string;
+  role: UserRole;
+};
+
 export type CreateUserInput = {
   firstName: string;
   lastName?: string;

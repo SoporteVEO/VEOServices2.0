@@ -14,6 +14,7 @@ import { Skeleton } from "@/components/primitives/ui/skeleton";
 import type { ChartConfig } from "@/components/primitives/ui/chart";
 import { BarChart } from "@/components/ui/bar-chart";
 import { useMyReportsTrend } from "@/api/contracts/contracts.get";
+import { useMySpaceViewAs } from "../my-space-view-as-context";
 
 import {
   formatCompactNumber,
@@ -38,12 +39,14 @@ const CHART_CONFIG = {
 } satisfies ChartConfig;
 
 export function MySpaceReportsTrendChart() {
+  const { viewAsUserId } = useMySpaceViewAs();
   const [year, setYear] = useState(() => new Date().getFullYear());
   const range = useMemo(() => yearRangeIso(year), [year]);
 
   const { data: reports, isLoading } = useMyReportsTrend({
     from: range.from,
     to: range.to,
+    viewAsUserId,
   });
 
   return (

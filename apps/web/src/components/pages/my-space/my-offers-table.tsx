@@ -12,8 +12,10 @@ import {
   MY_OFFERS_EMPTY_MESSAGE,
   MY_OFFERS_SEARCH_PLACEHOLDER,
 } from "./const";
+import { useMySpaceViewAs } from "./my-space-view-as-context";
 
 export function MyOffersTable() {
+  const { viewAsUserId } = useMySpaceViewAs();
   const [search, setSearch] = useState("");
   const [pageIndex, setPageIndex] = useState(0);
   const [pageSize, setPageSize] = useState(MY_OFFERS_DEFAULT_PAGE_SIZE);
@@ -27,6 +29,7 @@ export function MyOffersTable() {
     page: pageIndex + 1,
     pageSize,
     search: debouncedSearch || undefined,
+    viewAsUserId,
   });
 
   function handleSearchChange(value: string) {

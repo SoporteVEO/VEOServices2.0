@@ -30,6 +30,7 @@ import { SalesByCostCenterTable } from "./sales-by-cost-center-table";
 type SalesReportQueryHook = (
   from: string,
   to: string,
+  options?: { viewAsUserId?: string | null },
 ) => Pick<
   UseQueryResult<SalesByCostCenterReport | undefined>,
   "data" | "isLoading" | "isFetching" | "isError"
@@ -96,6 +97,7 @@ export interface SalesByCostCenterReportProps {
   title?: string;
   description?: string;
   showHeader?: boolean;
+  viewAsUserId?: string | null;
 }
 
 export function SalesByCostCenterReport({
@@ -103,6 +105,7 @@ export function SalesByCostCenterReport({
   title = DEFAULT_TITLE,
   description = DEFAULT_DESCRIPTION,
   showHeader = true,
+  viewAsUserId,
 }: SalesByCostCenterReportProps = {}) {
   const [range, setRange] = useState(defaultRange);
   const [search, setSearch] = useState("");
@@ -114,6 +117,7 @@ export function SalesByCostCenterReport({
   const { data, isLoading, isFetching, isError } = useReportQuery(
     fromStr,
     toStr,
+    { viewAsUserId },
   );
 
   const busy = isLoading || isFetching;

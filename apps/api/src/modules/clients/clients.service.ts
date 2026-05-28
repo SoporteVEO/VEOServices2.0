@@ -1,7 +1,12 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import type { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { CreateClientDto } from './dto/create-client.dto.js';
+import { UpdateClientDto } from './dto/update-client.dto.js';
 
 export interface ClientListItem {
   id: string;
@@ -20,9 +25,22 @@ export interface ListClientsFilters {
   limit?: number;
 }
 
+export interface ListClientsPageFilters {
+  search?: string;
+  page?: number;
+  pageSize?: number;
+}
+
 export interface PaginatedClients {
   data: ClientListItem[];
   nextCursor: string | null;
+}
+
+export interface PaginatedClientsPage {
+  data: ClientListItem[];
+  total: number;
+  page: number;
+  pageSize: number;
 }
 
 const DEFAULT_PAGE_SIZE = 25;
@@ -33,8 +51,28 @@ function clampLimit(value: number | undefined): number {
   return Math.min(Math.max(Math.floor(value), 1), MAX_PAGE_SIZE);
 }
 
+function clampPage(value: number | undefined): number {
+  if (!value || !Number.isFinite(value)) return 1;
+  return Math.max(Math.floor(value), 1);
+}
+
 function normalizeEmail(email: string): string {
   return email.trim().toLowerCase();
+}
+
+function buildSearchWhere(
+  search: string | undefined,
+): Prisma.ClientWhereInput {
+  if (!search) return {};
+  return {
+    OR: [
+      { name: { contains: search, mode: 'insensitive' } },
+      { company: { contains: search, mode: 'insensitive' } },
+      { email: { contains: search, mode: 'insensitive' } },
+      { billingEmail: { contains: search, mode: 'insensitive' } },
+      { contact: { contains: search, mode: 'insensitive' } },
+    ],
+  };
 }
 
 @Injectable()
@@ -43,19 +81,7 @@ export class ClientsService {
 
   async list(filters: ListClientsFilters = {}): Promise<PaginatedClients> {
     const limit = clampLimit(filters.limit);
-    const search = filters.search?.trim();
-
-    const where: Prisma.ClientWhereInput = search
-      ? {
-          OR: [
-            { name: { contains: search, mode: 'insensitive' } },
-            { company: { contains: search, mode: 'insensitive' } },
-            { email: { contains: search, mode: 'insensitive' } },
-            { billingEmail: { contains: search, mode: 'insensitive' } },
-            { contact: { contains: search, mode: 'insensitive' } },
-          ],
-        }
-      : {};
+    const where = buildSearchWhere(filters.search?.trim());
 
     const rows = await this.prisma.client.findMany({
       where,
@@ -75,10 +101,87 @@ export class ClientsService {
     };
   }
 
+  async listPage(
+    filters: ListClientsPageFilters = {},
+  ): Promise<PaginatedClientsPage> {
+    const page = clampPage(filters.page);
+    const pageSize = clampLimit(filters.pageSize);
+    const where = buildSearchWhere(filters.search?.trim());
+
+    const [rows, total] = await Promise.all([
+      this.prisma.client.findMany({
+        where,
+        skip: (page - 1) * pageSize,
+        take: pageSize,
+        orderBy: [{ name: 'asc' }, { id: 'asc' }],
+      }),
+      this.prisma.client.count({ where }),
+    ]);
+
+    return {
+      data: rows.map((row) => this.toListItem(row)),
+      total,
+      page,
+      pageSize,
+    };
+  }
+
   async findById(id: string): Promise<ClientListItem> {
     const row = await this.prisma.client.findUnique({ where: { id } });
     if (!row) throw new NotFoundException('Cliente no encontrado');
     return this.toListItem(row);
+  }
+
+  async update(id: string, dto: UpdateClientDto): Promise<ClientListItem> {
+    const existing = await this.prisma.client.findUnique({ where: { id } });
+    if (!existing) throw new NotFoundException('Cliente no encontrado');
+
+    const data: Prisma.ClientUpdateInput = {};
+
+    if (dto.name !== undefined) {
+      const trimmed = dto.name.trim();
+      if (!trimmed) {
+        throw new ConflictException('El nombre no puede estar vacío');
+      }
+      data.name = trimmed;
+    }
+
+    if (dto.company !== undefined) {
+      data.company = dto.company === null ? null : dto.company.trim() || null;
+    }
+
+    if (dto.email !== undefined) {
+      const normalized = normalizeEmail(dto.email);
+      if (normalized !== existing.email) {
+        const collision = await this.prisma.client.findUnique({
+          where: { email: normalized },
+        });
+        if (collision && collision.id !== id) {
+          throw new ConflictException(
+            'Ya existe otro cliente con ese correo electrónico',
+          );
+        }
+      }
+      data.email = normalized;
+    }
+
+    if (dto.billingEmail !== undefined) {
+      data.billingEmail =
+        dto.billingEmail === null
+          ? null
+          : normalizeEmail(dto.billingEmail) || null;
+    }
+
+    if (dto.contact !== undefined) {
+      data.contact = dto.contact === null ? null : dto.contact.trim() || null;
+    }
+
+    if (Object.keys(data).length === 0) {
+      return this.toListItem(existing);
+    }
+
+    const updated = await this.prisma.client.update({ where: { id }, data });
+    return this.toListItem(updated);
   }
 
   /**

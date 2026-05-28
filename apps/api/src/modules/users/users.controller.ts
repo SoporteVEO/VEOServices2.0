@@ -7,11 +7,24 @@ import {
   Param,
   Delete,
   HttpCode,
+  Query,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { RequiredSubRoles } from '../auth/decorators.js';
+import {
+  CurrentUser,
+  RequiredRoles,
+  RequiredSubRoles,
+} from '../auth/decorators.js';
+
+interface AuthUser {
+  id: string;
+}
+
+function parseBoolean(value: string | undefined): boolean {
+  return value === 'true' || value === '1';
+}
 
 @RequiredSubRoles('USERS_MANAGEMENT')
 @Controller('users')
@@ -27,6 +40,22 @@ export class UsersController {
   @Get()
   async findAll() {
     const users = await this.usersService.findAll();
+    return { data: users };
+  }
+
+  // Lightweight lookup available to any admin so they can pick a user to
+  // impersonate in flows like "view as" inside Mi Espacio, or filter admin
+  // analytics dashboards. The empty RequiredSubRoles override clears the
+  // class-level USERS_MANAGEMENT requirement on this method.
+  @RequiredSubRoles()
+  @RequiredRoles('ADMIN')
+  @Get('lookup')
+  async lookup(
+    @CurrentUser() user: AuthUser,
+    @Query('includeSelf') includeSelfRaw?: string,
+  ) {
+    const includeSelf = parseBoolean(includeSelfRaw);
+    const users = await this.usersService.findLookup(user.id, { includeSelf });
     return { data: users };
   }
 

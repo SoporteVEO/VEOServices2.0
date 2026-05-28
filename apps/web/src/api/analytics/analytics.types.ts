@@ -49,3 +49,195 @@ export type SalesByCostCenterReport = {
   total: number;
   rows: SalesByCostCenterRow[];
 };
+
+export type OffersAnalyticsStatusBreakdown = {
+  count: number;
+  totalAmount: number;
+  totalRental: number;
+  totalImpression: number;
+};
+
+export type OffersAnalyticsTotals = {
+  count: number;
+  totalAmount: number;
+  totalRental: number;
+  totalImpression: number;
+  uniqueCustomers: number;
+  uniqueCreators: number;
+  averageTicket: number;
+  conversionRate: number;
+  averageItemsPerOffer: number;
+};
+
+export type OffersAnalyticsDailyPoint = {
+  dateKey: string;
+  total: number;
+  pending: number;
+  accepted: number;
+  declined: number;
+  totalAmount: number;
+  pendingAmount: number;
+  acceptedAmount: number;
+  declinedAmount: number;
+};
+
+export type OffersAnalyticsMonthlyPoint = {
+  monthKey: string;
+  total: number;
+  pending: number;
+  accepted: number;
+  declined: number;
+  totalAmount: number;
+  pendingAmount: number;
+  acceptedAmount: number;
+  declinedAmount: number;
+};
+
+export type OffersAnalyticsByUserRow = {
+  userId: string;
+  firstName: string;
+  lastName: string | null;
+  email: string;
+  totalOffers: number;
+  pendingCount: number;
+  acceptedCount: number;
+  declinedCount: number;
+  totalAmount: number;
+  pendingAmount: number;
+  acceptedAmount: number;
+  declinedAmount: number;
+};
+
+export type OffersAnalyticsTopBillboardRow = {
+  groupKey: string;
+  billboardCode: string | null;
+  address: string | null;
+  cityName: string | null;
+  departmentName: string | null;
+  occurrences: number;
+  totalQuantity: number;
+  totalAmount: number;
+};
+
+export type OffersAnalyticsTopCustomerRow = {
+  customerName: string;
+  customerCompany: string | null;
+  customerEmail: string | null;
+  totalOffers: number;
+  totalAmount: number;
+  acceptedAmount: number;
+};
+
+export type OffersAnalyticsOverview = {
+  range: { from: string; to: string };
+  totals: OffersAnalyticsTotals;
+  byStatus: {
+    pending: OffersAnalyticsStatusBreakdown;
+    accepted: OffersAnalyticsStatusBreakdown;
+    declined: OffersAnalyticsStatusBreakdown;
+  };
+  daily: OffersAnalyticsDailyPoint[];
+  monthly: OffersAnalyticsMonthlyPoint[];
+  byUser: OffersAnalyticsByUserRow[];
+  topBillboards: OffersAnalyticsTopBillboardRow[];
+  topCustomers: OffersAnalyticsTopCustomerRow[];
+};
+
+export type OffersAnalyticsListItem = {
+  id: string;
+  offerNumber: string;
+  status: "PENDING" | "ACCEPTED" | "DECLINED";
+  customerName: string;
+  customerCompany: string | null;
+  customerEmail: string | null;
+  itemCount: number;
+  totalRental: number;
+  totalImpression: number;
+  totalAmount: number;
+  validUntil: string;
+  createdAt: string;
+  createdBy: {
+    id: string;
+    firstName: string;
+    lastName: string | null;
+    email: string;
+  };
+};
+
+export type OffersAnalyticsList = {
+  data: OffersAnalyticsListItem[];
+  total: number;
+  page: number;
+  pageSize: number;
+};
+
+export type ReportsAnalyticsTypeBreakdown = {
+  count: number;
+  distinctContracts: number;
+  distinctUsers: number;
+};
+
+export type ReportsAnalyticsTotals = {
+  total: number;
+  monthly: number;
+  installation: number;
+  maintenance: number;
+  distinctUsers: number;
+  distinctContracts: number;
+  averagePerDay: number;
+};
+
+export type ReportsAnalyticsTrendPoint = {
+  key: string;
+  total: number;
+  monthly: number;
+  installation: number;
+  maintenance: number;
+};
+
+export type ReportsAnalyticsByUserRow = {
+  userId: string;
+  firstName: string;
+  lastName: string | null;
+  email: string;
+  totalReports: number;
+  monthlyCount: number;
+  installationCount: number;
+  maintenanceCount: number;
+};
+
+export type ReportsAnalyticsCoverageRow = {
+  userId: string;
+  firstName: string;
+  lastName: string | null;
+  email: string;
+  activeContracts: number;
+  monthlyReportsSent: number;
+  pending: number;
+  coverage: number;
+};
+
+export type ReportsAnalyticsCurrentMonthCompliance = {
+  monthKey: string;
+  rangeFrom: string;
+  rangeTo: string;
+  activeContractsTotal: number;
+  monthlyReportsSent: number;
+  pending: number;
+  coverage: number;
+  perUser: ReportsAnalyticsCoverageRow[];
+};
+
+export type ReportsAnalyticsOverview = {
+  range: { from: string; to: string };
+  totals: ReportsAnalyticsTotals;
+  byType: {
+    monthly: ReportsAnalyticsTypeBreakdown;
+    installation: ReportsAnalyticsTypeBreakdown;
+    maintenance: ReportsAnalyticsTypeBreakdown;
+  };
+  daily: ReportsAnalyticsTrendPoint[];
+  monthly: ReportsAnalyticsTrendPoint[];
+  byUser: ReportsAnalyticsByUserRow[];
+  currentMonthCompliance: ReportsAnalyticsCurrentMonthCompliance;
+};

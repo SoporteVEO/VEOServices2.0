@@ -8,6 +8,7 @@ import {
 } from '@nestjs/common';
 import { S3ImageType } from '@prisma/client';
 import { CurrentUser } from '../auth/decorators.js';
+import { resolveTargetUserId } from '../auth/view-as.helper.js';
 import { ContractsService } from './contracts.service.js';
 import {
   CONTRACT_REPORT_TYPES,
@@ -17,6 +18,7 @@ import {
 
 interface AuthUser {
   id: string;
+  role?: string | null;
 }
 
 function parseDate(value: string | undefined, field: string): Date | undefined {
@@ -129,6 +131,7 @@ export class ContractsController {
     @Query('search') search?: string,
     @Query('imageType') imageTypeStr?: string,
     @Query('excludeCreatedThisMonth') excludeCreatedThisMonthStr?: string,
+    @Query('viewAsUserId') viewAsUserId?: string,
   ) {
     const from = parseDate(fromStr, 'from') ?? startOfCurrentMonth();
     const to = parseDate(toStr, 'to') ?? startOfNextMonth();
@@ -151,7 +154,8 @@ export class ContractsController {
     }
     const imageType = imageTypeStr as S3ImageType | undefined;
 
-    return this.contractsService.getMyActiveContractsWithImages(user.id, {
+    const targetUserId = resolveTargetUserId(user, viewAsUserId);
+    return this.contractsService.getMyActiveContractsWithImages(targetUserId, {
       from,
       to,
       page,
@@ -163,8 +167,13 @@ export class ContractsController {
   }
 
   @Get('mine/snapshot')
-  async getMyContractsSnapshot(@CurrentUser() user: AuthUser) {
-    const data = await this.contractsService.getMyContractsSnapshot(user.id);
+  async getMyContractsSnapshot(
+    @CurrentUser() user: AuthUser,
+    @Query('viewAsUserId') viewAsUserId?: string,
+  ) {
+    const targetUserId = resolveTargetUserId(user, viewAsUserId);
+    const data =
+      await this.contractsService.getMyContractsSnapshot(targetUserId);
     return { data };
   }
 
@@ -173,6 +182,7 @@ export class ContractsController {
     @CurrentUser() user: AuthUser,
     @Query('from') fromStr?: string,
     @Query('to') toStr?: string,
+    @Query('viewAsUserId') viewAsUserId?: string,
   ) {
     const from = parseDate(fromStr, 'from');
     const to = parseDate(toStr, 'to');
@@ -182,7 +192,12 @@ export class ContractsController {
     if (from >= to) {
       throw new BadRequestException('"from" debe ser anterior a "to"');
     }
-    const data = await this.contractsService.getMyReportsTrend(user.id, from, to);
+    const targetUserId = resolveTargetUserId(user, viewAsUserId);
+    const data = await this.contractsService.getMyReportsTrend(
+      targetUserId,
+      from,
+      to,
+    );
     return { data };
   }
 

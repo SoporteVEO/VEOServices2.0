@@ -9,6 +9,7 @@ import {
   Query,
 } from '@nestjs/common';
 import { AllowLimited, CurrentUser } from '../auth/decorators.js';
+import { resolveTargetUserId } from '../auth/view-as.helper.js';
 import { AcceptOfferDto } from './dto/accept-offer.dto.js';
 import { AttachOfferPdfDto } from './dto/attach-offer-pdf.dto.js';
 import { CreateOfferDto } from './dto/create-offer.dto.js';
@@ -17,6 +18,7 @@ import { OffersService } from './offers.service.js';
 
 interface AuthUser {
   id: string;
+  role?: string | null;
 }
 
 function parseDateOrThrow(
@@ -59,6 +61,7 @@ export class OffersController {
     @Query('search') search?: string,
     @Query('page') pageStr?: string,
     @Query('pageSize') pageSizeStr?: string,
+    @Query('viewAsUserId') viewAsUserId?: string,
   ) {
     const page = pageStr ? Number(pageStr) : undefined;
     const pageSize = pageSizeStr ? Number(pageSizeStr) : undefined;
@@ -72,7 +75,8 @@ export class OffersController {
       throw new BadRequestException('pageSize debe ser un entero positivo');
     }
 
-    return this.service.listMine(user.id, {
+    const targetUserId = resolveTargetUserId(user, viewAsUserId);
+    return this.service.listMine(targetUserId, {
       search: search?.trim() || undefined,
       page,
       pageSize,
@@ -84,6 +88,7 @@ export class OffersController {
     @CurrentUser() user: AuthUser,
     @Query('from') fromStr?: string,
     @Query('to') toStr?: string,
+    @Query('viewAsUserId') viewAsUserId?: string,
   ) {
     const from = parseDateOrThrow(fromStr, 'from');
     const to = parseDateOrThrow(toStr, 'to');
@@ -95,7 +100,11 @@ export class OffersController {
       throw new BadRequestException('"from" debe ser anterior a "to"');
     }
 
-    const data = await this.service.getMyOffersSummary(user.id, { from, to });
+    const targetUserId = resolveTargetUserId(user, viewAsUserId);
+    const data = await this.service.getMyOffersSummary(targetUserId, {
+      from,
+      to,
+    });
     return { data };
   }
 
@@ -128,13 +137,20 @@ export class OffersController {
   async getDownloadUrl(
     @Param('id') id: string,
     @CurrentUser() user: AuthUser,
+    @Query('viewAsUserId') viewAsUserId?: string,
   ) {
-    return this.service.getDownloadUrl(id, user.id);
+    const targetUserId = resolveTargetUserId(user, viewAsUserId);
+    return this.service.getDownloadUrl(id, targetUserId);
   }
 
   @Get(':id')
-  async getOne(@Param('id') id: string, @CurrentUser() user: AuthUser) {
-    const data = await this.service.getOfferById(id, user.id);
+  async getOne(
+    @Param('id') id: string,
+    @CurrentUser() user: AuthUser,
+    @Query('viewAsUserId') viewAsUserId?: string,
+  ) {
+    const targetUserId = resolveTargetUserId(user, viewAsUserId);
+    const data = await this.service.getOfferById(id, targetUserId);
     return { data };
   }
 

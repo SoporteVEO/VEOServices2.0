@@ -6,12 +6,14 @@ import { toast } from "sonner";
 import { getOfferDownloadUrl } from "@/api/offers/offers.get";
 import type { OfferListItem } from "@/api/offers/offers.types";
 import { Button } from "@/components/ui/button";
+import { useMySpaceViewAs } from "./my-space-view-as-context";
 
 type MyOfferDownloadButtonProps = {
   offer: OfferListItem;
 };
 
 export function MyOfferDownloadButton({ offer }: MyOfferDownloadButtonProps) {
+  const { viewAsUserId } = useMySpaceViewAs();
   const [isDownloading, setIsDownloading] = useState(false);
 
   async function handleDownload() {
@@ -22,7 +24,7 @@ export function MyOfferDownloadButton({ offer }: MyOfferDownloadButtonProps) {
 
     setIsDownloading(true);
     try {
-      const url = await getOfferDownloadUrl(offer.id);
+      const url = await getOfferDownloadUrl(offer.id, { viewAsUserId });
       const anchor = document.createElement("a");
       anchor.href = url;
       anchor.target = "_blank";

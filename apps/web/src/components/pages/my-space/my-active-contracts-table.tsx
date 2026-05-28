@@ -17,10 +17,12 @@ import {
   MY_ACTIVE_CONTRACTS_EMPTY_MESSAGE,
   MY_ACTIVE_CONTRACTS_SEARCH_PLACEHOLDER,
 } from "./const";
+import { useMySpaceViewAs } from "./my-space-view-as-context";
 
 const MONTHLY_REPORT = REPORT_TYPE_CONFIG.monthly;
 
 export function MyActiveContractsTable() {
+  const { viewAsUserId } = useMySpaceViewAs();
   const [search, setSearch] = useState("");
   const [pageIndex, setPageIndex] = useState(0);
   const [pageSize, setPageSize] = useState(
@@ -38,6 +40,7 @@ export function MyActiveContractsTable() {
     search: debouncedSearch || undefined,
     imageType: MONTHLY_REPORT.imageType,
     excludeCreatedThisMonth,
+    viewAsUserId,
   });
 
   function handleSearchChange(value: string) {
@@ -95,6 +98,7 @@ export function MyActiveContractsTable() {
       <ContractReportDrawer
         group={selected}
         reportType="monthly"
+        readOnly={Boolean(viewAsUserId)}
         onOpenChange={(open) => {
           if (!open) setSelected(null);
         }}

@@ -71,6 +71,32 @@ export class UsersService {
     });
   }
 
+  /**
+   * Lightweight directory used by admins to pick another user (e.g. for "view
+   * as" flows in Mi Espacio or to filter analytics dashboards). Excludes
+   * disabled users; pass `includeSelf` to keep the caller in the result so it
+   * can be used for filtering data the admin themselves created.
+   */
+  async findLookup(
+    currentUserId: string,
+    options: { includeSelf?: boolean } = {},
+  ) {
+    return this.prisma.user.findMany({
+      where: {
+        disabled: false,
+        ...(options.includeSelf ? {} : { id: { not: currentUserId } }),
+      },
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        email: true,
+        role: true,
+      },
+      orderBy: [{ firstName: 'asc' }, { lastName: 'asc' }, { email: 'asc' }],
+    });
+  }
+
   async findOne(id: string) {
     const user = await this.prisma.user.findUnique({
       where: { id },

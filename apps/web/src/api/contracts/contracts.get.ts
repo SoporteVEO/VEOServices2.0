@@ -217,7 +217,7 @@ export function useActiveContracts(query: ActiveContractsQuery = {}) {
 }
 
 function buildActiveContractsQueryParams(
-  query: ActiveContractsQuery,
+  query: ActiveContractsQuery & { viewAsUserId?: string | null },
   from: Date,
   to: Date,
 ): Record<string, string> {
@@ -232,10 +232,13 @@ function buildActiveContractsQueryParams(
   if (query.excludeCreatedThisMonth != null) {
     params.excludeCreatedThisMonth = String(query.excludeCreatedThisMonth);
   }
+  if (query.viewAsUserId) params.viewAsUserId = query.viewAsUserId;
   return params;
 }
 
-export async function getMyActiveContracts(query: ActiveContractsQuery = {}) {
+export async function getMyActiveContracts(
+  query: ActiveContractsQuery & { viewAsUserId?: string | null } = {},
+) {
   const from = query.from ?? startOfCurrentMonth();
   const to = query.to ?? startOfNextMonth();
 
@@ -245,10 +248,12 @@ export async function getMyActiveContracts(query: ActiveContractsQuery = {}) {
   });
 }
 
-export function useMyActiveContracts(query: ActiveContractsQuery = {}) {
+export function useMyActiveContracts(
+  query: ActiveContractsQuery & { viewAsUserId?: string | null } = {},
+) {
   const from = query.from ?? startOfCurrentMonth();
   const to = query.to ?? startOfNextMonth();
-  const normalized: ActiveContractsQuery = {
+  const normalized = {
     from,
     to,
     page: query.page,
@@ -256,6 +261,7 @@ export function useMyActiveContracts(query: ActiveContractsQuery = {}) {
     search: query.search,
     imageType: query.imageType,
     excludeCreatedThisMonth: query.excludeCreatedThisMonth,
+    viewAsUserId: query.viewAsUserId ?? null,
   };
 
   return useQuery({
@@ -270,8 +276,13 @@ export function useMyActiveContracts(query: ActiveContractsQuery = {}) {
       normalized.search ?? "",
       normalized.imageType ?? "",
       normalized.excludeCreatedThisMonth ?? true,
+      normalized.viewAsUserId,
     ],
-    queryFn: () => getMyActiveContracts(normalized),
+    queryFn: () =>
+      getMyActiveContracts({
+        ...normalized,
+        viewAsUserId: normalized.viewAsUserId ?? undefined,
+      }),
     placeholderData: keepPreviousData,
   });
 }
@@ -313,17 +324,25 @@ export function useContractReportsSended(params: {
   });
 }
 
-export async function getMyContractsSnapshot(): Promise<MyContractsSnapshot> {
+export async function getMyContractsSnapshot(
+  options: { viewAsUserId?: string | null } = {},
+): Promise<MyContractsSnapshot> {
+  const query: Record<string, string> = {};
+  if (options.viewAsUserId) query.viewAsUserId = options.viewAsUserId;
   const response = await apiFetch<{ data: MyContractsSnapshot }>(
     "/contracts/mine/snapshot",
+    { query },
   );
   return response.data;
 }
 
-export function useMyContractsSnapshot(options: { enabled?: boolean } = {}) {
+export function useMyContractsSnapshot(
+  options: { enabled?: boolean; viewAsUserId?: string | null } = {},
+) {
   return useQuery({
-    queryKey: ["contracts", "mine", "snapshot"],
-    queryFn: getMyContractsSnapshot,
+    queryKey: ["contracts", "mine", "snapshot", options.viewAsUserId ?? null],
+    queryFn: () =>
+      getMyContractsSnapshot({ viewAsUserId: options.viewAsUserId ?? null }),
     enabled: options.enabled ?? true,
     placeholderData: keepPreviousData,
   });
@@ -332,13 +351,16 @@ export function useMyContractsSnapshot(options: { enabled?: boolean } = {}) {
 export async function getMyReportsTrend(params: {
   from: string;
   to: string;
+  viewAsUserId?: string | null;
 }): Promise<MyReportsTrend> {
+  const query: Record<string, string> = {
+    from: params.from,
+    to: params.to,
+  };
+  if (params.viewAsUserId) query.viewAsUserId = params.viewAsUserId;
   const response = await apiFetch<{ data: MyReportsTrend }>(
     "/contracts/mine/reports-trend",
-    {
-      method: "GET",
-      query: { from: params.from, to: params.to },
-    },
+    { method: "GET", query },
   );
   return response.data;
 }
@@ -347,10 +369,23 @@ export function useMyReportsTrend(params: {
   from: string;
   to: string;
   enabled?: boolean;
+  viewAsUserId?: string | null;
 }) {
   return useQuery({
-    queryKey: ["contracts", "mine", "reports-trend", params.from, params.to],
-    queryFn: () => getMyReportsTrend({ from: params.from, to: params.to }),
+    queryKey: [
+      "contracts",
+      "mine",
+      "reports-trend",
+      params.from,
+      params.to,
+      params.viewAsUserId ?? null,
+    ],
+    queryFn: () =>
+      getMyReportsTrend({
+        from: params.from,
+        to: params.to,
+        viewAsUserId: params.viewAsUserId ?? null,
+      }),
     enabled: params.enabled ?? true,
     placeholderData: keepPreviousData,
   });

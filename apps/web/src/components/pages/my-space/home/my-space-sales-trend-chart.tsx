@@ -15,6 +15,7 @@ import type { ChartConfig } from "@/components/primitives/ui/chart";
 import { AreaChart } from "@/components/ui/area-chart";
 import { useMyOffersSummary } from "@/api/offers/offers.get";
 import { formatMoney } from "@/lib/format";
+import { useMySpaceViewAs } from "../my-space-view-as-context";
 
 import {
   formatCompactMoney,
@@ -35,12 +36,14 @@ const CHART_CONFIG = {
 } satisfies ChartConfig;
 
 export function MySpaceSalesTrendChart() {
+  const { viewAsUserId } = useMySpaceViewAs();
   const [year, setYear] = useState(() => new Date().getFullYear());
   const range = useMemo(() => yearRangeIso(year), [year]);
 
   const { data, isLoading } = useMyOffersSummary({
     from: range.from,
     to: range.to,
+    viewAsUserId,
   });
 
   const trend = data?.trend ?? [];

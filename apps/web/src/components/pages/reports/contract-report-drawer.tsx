@@ -62,10 +62,12 @@ export function ContractReportDrawer({
   group,
   reportType,
   onOpenChange,
+  readOnly = false,
 }: {
   group: ActiveContractGroup | null;
   reportType: ReportType;
   onOpenChange: (open: boolean) => void;
+  readOnly?: boolean;
 }) {
   return (
     <Drawer
@@ -81,6 +83,7 @@ export function ContractReportDrawer({
             key={`${reportType}-${group.contractNumber}`}
             group={group}
             reportType={reportType}
+            readOnly={readOnly}
           />
         ) : null}
       </DrawerContent>
@@ -91,9 +94,11 @@ export function ContractReportDrawer({
 function ContractReportDrawerContent({
   group,
   reportType,
+  readOnly,
 }: {
   group: ActiveContractGroup;
   reportType: ReportType;
+  readOnly: boolean;
 }) {
   const config = REPORT_TYPE_CONFIG[reportType];
   const queryClient = useQueryClient();
@@ -253,18 +258,21 @@ function ContractReportDrawerContent({
               vallas con imagen seleccionada
             </p>
             <p className="text-[11px] text-muted-foreground">
-              Solo se incluirán en el reporte las vallas con imagen
-              seleccionada.
+              {readOnly
+                ? "Modo lectura: no puedes generar reportes en este contrato."
+                : "Solo se incluirán en el reporte las vallas con imagen seleccionada."}
             </p>
           </div>
-          <Button
-            sizeVariant="lg"
-            onClick={() => setIsSendOpen(true)}
-            disabled={isSending}
-            icon={Send}
-          >
-            Generar reporte
-          </Button>
+          {readOnly ? null : (
+            <Button
+              sizeVariant="lg"
+              onClick={() => setIsSendOpen(true)}
+              disabled={isSending}
+              icon={Send}
+            >
+              Generar reporte
+            </Button>
+          )}
         </div>
       </DrawerFooter>
 

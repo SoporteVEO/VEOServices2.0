@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 
 import { useMyContractsSnapshot, useMyReportsTrend } from "@/api/contracts/contracts.get";
 import { useMyOffersSummary } from "@/api/offers/offers.get";
+import { useUsersLookup } from "@/api/users/users.get";
 import { authClient } from "@/lib/auth-client";
 import { formatHumanDate, parseYYYYMMDD, toYYYYMMDD } from "@/lib/format";
 import { DateRangePicker } from "@/components/ui/date-range-picker";
@@ -18,10 +19,26 @@ import {
   defaultDashboardFrom,
   defaultDashboardTo,
 } from "./home";
+import { useMySpaceViewAs } from "./my-space-view-as-context";
 
 export function MySpaceHome() {
   const { data: session } = authClient.useSession();
-  const user = session?.user;
+  const sessionUser = session?.user;
+  const { isAdmin, viewAsUserId } = useMySpaceViewAs();
+  const { data: lookupUsers } = useUsersLookup({
+    enabled: isAdmin && Boolean(viewAsUserId),
+  });
+
+  const impersonatedUser = useMemo(() => {
+    if (!viewAsUserId || !lookupUsers) return null;
+    return lookupUsers.find((u) => u.id === viewAsUserId) ?? null;
+  }, [lookupUsers, viewAsUserId]);
+
+  const greetingName = impersonatedUser
+    ? [impersonatedUser.firstName, impersonatedUser.lastName]
+        .filter(Boolean)
+        .join(" ") || impersonatedUser.email
+    : sessionUser?.name;
 
   const [fromStr, setFromStr] = useState(() => toYYYYMMDD(defaultDashboardFrom()));
   const [toStr, setToStr] = useState(() => toYYYYMMDD(defaultDashboardTo()));
@@ -45,9 +62,17 @@ export function MySpaceHome() {
     return { fromIso: fromDate.toISOString(), toIso: toDate.toISOString() };
   }, [fromStr, toStr]);
 
-  const offersQuery = useMyOffersSummary({ from: fromIso, to: toIso });
-  const reportsQuery = useMyReportsTrend({ from: fromIso, to: toIso });
-  const contractsQuery = useMyContractsSnapshot();
+  const offersQuery = useMyOffersSummary({
+    from: fromIso,
+    to: toIso,
+    viewAsUserId,
+  });
+  const reportsQuery = useMyReportsTrend({
+    from: fromIso,
+    to: toIso,
+    viewAsUserId,
+  });
+  const contractsQuery = useMyContractsSnapshot({ viewAsUserId });
 
   const isLoading =
     offersQuery.isLoading || reportsQuery.isLoading || contractsQuery.isLoading;
@@ -57,7 +82,7 @@ export function MySpaceHome() {
       <header className="flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center">
         <div className="flex flex-col gap-1">
           <h1 className="text-2xl font-semibold tracking-tight">
-            Bienvenido{user?.name ? `, ${user.name}` : ""}
+            Bienvenido{greetingName ? `, ${greetingName}` : ""}
           </h1>
           <p className="text-xs text-muted-foreground">
             {formatHumanDate(initialFrom)} – {formatHumanDate(initialTo)}

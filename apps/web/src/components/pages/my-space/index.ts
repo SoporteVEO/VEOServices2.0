@@ -6,4 +6,6 @@ export * from "./my-space-offers-section";
 export * from "./my-space-invoices-section";
 export * from "./my-active-contracts-table";
 export * from "./my-offers-table";
+export * from "./my-space-view-as-bar";
+export * from "./my-space-view-as-context";
 export * from "./const";

@@ -43,16 +43,19 @@ export function useOffers(params: { search?: string; limit?: number } = {}) {
 }
 
 export async function getMyOffers(
-  query: MyOffersQuery = {},
+  query: MyOffersQuery & { viewAsUserId?: string | null } = {},
 ): Promise<PaginatedMyOffers> {
   const params: Record<string, string> = {};
   if (query.page) params.page = String(query.page);
   if (query.pageSize) params.pageSize = String(query.pageSize);
   if (query.search) params.search = query.search;
+  if (query.viewAsUserId) params.viewAsUserId = query.viewAsUserId;
   return apiFetch<PaginatedMyOffers>("/offers/mine", { query: params });
 }
 
-export function useMyOffers(query: MyOffersQuery = {}) {
+export function useMyOffers(
+  query: MyOffersQuery & { viewAsUserId?: string | null } = {},
+) {
   return useQuery({
     queryKey: [
       "offers",
@@ -60,6 +63,7 @@ export function useMyOffers(query: MyOffersQuery = {}) {
       query.page ?? 1,
       query.pageSize ?? null,
       query.search ?? "",
+      query.viewAsUserId ?? null,
     ],
     queryFn: () => getMyOffers(query),
     staleTime: STALE_TIME,
@@ -71,12 +75,16 @@ export function useMyOffers(query: MyOffersQuery = {}) {
 export async function getMyOffersSummary(params: {
   from: string;
   to: string;
+  viewAsUserId?: string | null;
 }): Promise<MyOffersSummary> {
+  const query: Record<string, string> = {
+    from: params.from,
+    to: params.to,
+  };
+  if (params.viewAsUserId) query.viewAsUserId = params.viewAsUserId;
   const response = await apiFetch<{ data: MyOffersSummary }>(
     "/offers/mine/summary",
-    {
-      query: { from: params.from, to: params.to },
-    },
+    { query },
   );
   return response.data;
 }
@@ -85,10 +93,23 @@ export function useMyOffersSummary(params: {
   from: string;
   to: string;
   enabled?: boolean;
+  viewAsUserId?: string | null;
 }) {
   return useQuery({
-    queryKey: ["offers", "mine", "summary", params.from, params.to],
-    queryFn: () => getMyOffersSummary({ from: params.from, to: params.to }),
+    queryKey: [
+      "offers",
+      "mine",
+      "summary",
+      params.from,
+      params.to,
+      params.viewAsUserId ?? null,
+    ],
+    queryFn: () =>
+      getMyOffersSummary({
+        from: params.from,
+        to: params.to,
+        viewAsUserId: params.viewAsUserId ?? null,
+      }),
     enabled: params.enabled ?? true,
     staleTime: STALE_TIME,
     gcTime: GC_TIME,
@@ -96,21 +117,40 @@ export function useMyOffersSummary(params: {
   });
 }
 
-export async function getOffer(id: string): Promise<OfferDetail> {
-  const response = await apiFetch<{ data: OfferDetail }>(`/offers/${id}`);
+export async function getOffer(
+  id: string,
+  options: { viewAsUserId?: string | null } = {},
+): Promise<OfferDetail> {
+  const query: Record<string, string> = {};
+  if (options.viewAsUserId) query.viewAsUserId = options.viewAsUserId;
+  const response = await apiFetch<{ data: OfferDetail }>(`/offers/${id}`, {
+    query,
+  });
   return response.data;
 }
 
-export function useOffer(id: string | null) {
+export function useOffer(
+  id: string | null,
+  options: { viewAsUserId?: string | null } = {},
+) {
   return useQuery({
-    queryKey: ["offers", id],
-    queryFn: () => getOffer(id as string),
+    queryKey: ["offers", id, options.viewAsUserId ?? null],
+    queryFn: () =>
+      getOffer(id as string, { viewAsUserId: options.viewAsUserId ?? null }),
     enabled: !!id,
   });
 }
 
-export async function getOfferDownloadUrl(id: string): Promise<string> {
-  const response = await apiFetch<{ url: string }>(`/offers/${id}/download-url`);
+export async function getOfferDownloadUrl(
+  id: string,
+  options: { viewAsUserId?: string | null } = {},
+): Promise<string> {
+  const query: Record<string, string> = {};
+  if (options.viewAsUserId) query.viewAsUserId = options.viewAsUserId;
+  const response = await apiFetch<{ url: string }>(
+    `/offers/${id}/download-url`,
+    { query },
+  );
   return response.url;
 }
 
