@@ -255,7 +255,6 @@ export class OffersService {
     const totalImpression = round2(subtotalImpression + ivaImpression);
     const totalRental = round2(subtotalRental + ivaRental);
 
-    const offerNumber = await this.generateOfferNumber();
     const advisorFullName = await this.resolveAdvisorFullName(createdByUserId);
     const clientId = await this.resolveClientId(dto);
 
@@ -273,69 +272,85 @@ export class OffersService {
         ).key
       : null;
 
-    try {
-      const created = await this.prisma.offerCreated.create({
-        data: {
-          offerNumber,
-          clientId,
-          customerName: dto.customerName.trim(),
-          customerCompany: dto.customerCompany?.trim() || null,
-          customerEmail: dto.customerEmail?.trim().toLowerCase() || null,
-          billingEmail: dto.customerBillingEmail?.trim().toLowerCase() || null,
-          customerContact: dto.customerContact?.trim() || null,
-          validUntil,
-          specialConditions: dto.specialConditions?.trim() || null,
-          advisorFullName,
-          subtotalImpression,
-          ivaImpression,
-          totalImpression,
-          subtotalRental,
-          ivaRental,
-          totalRental,
-          pdfS3Key: uploadedKey,
-          createdByUserId,
-          items: {
-            create: dto.items.map((item) => ({
-              billboardId: item.billboardId ?? null,
-              billboardCode: item.billboardCode ?? null,
-              address: item.address ?? null,
-              cityName: item.cityName ?? null,
-              departmentName: item.departmentName ?? null,
-              width: item.width ?? null,
-              height: item.height ?? null,
-              quantity: item.quantity,
-              impressionPrice: item.impressionPrice,
-              rentalPrice: item.rentalPrice,
-              startDate: item.startDate ? new Date(item.startDate) : null,
-              endDate: item.endDate ? new Date(item.endDate) : null,
-            })),
+    const maxCreateAttempts = 3;
+    for (let attempt = 1; attempt <= maxCreateAttempts; attempt++) {
+      const offerNumber = await this.generateOfferNumber();
+      try {
+        const created = await this.prisma.offerCreated.create({
+          data: {
+            offerNumber,
+            clientId,
+            customerName: dto.customerName.trim(),
+            customerCompany: dto.customerCompany?.trim() || null,
+            customerEmail: dto.customerEmail?.trim().toLowerCase() || null,
+            billingEmail: dto.customerBillingEmail?.trim().toLowerCase() || null,
+            customerContact: dto.customerContact?.trim() || null,
+            validUntil,
+            specialConditions: dto.specialConditions?.trim() || null,
+            advisorFullName,
+            subtotalImpression,
+            ivaImpression,
+            totalImpression,
+            subtotalRental,
+            ivaRental,
+            totalRental,
+            pdfS3Key: uploadedKey,
+            createdByUserId,
+            items: {
+              create: dto.items.map((item) => ({
+                billboardId: item.billboardId ?? null,
+                billboardCode: item.billboardCode ?? null,
+                address: item.address ?? null,
+                cityName: item.cityName ?? null,
+                departmentName: item.departmentName ?? null,
+                width: item.width ?? null,
+                height: item.height ?? null,
+                quantity: item.quantity,
+                impressionPrice: item.impressionPrice,
+                rentalPrice: item.rentalPrice,
+                startDate: item.startDate ? new Date(item.startDate) : null,
+                endDate: item.endDate ? new Date(item.endDate) : null,
+              })),
+            },
           },
-        },
-        include: {
-          createdBy: {
-            select: { id: true, firstName: true, lastName: true, email: true },
+          include: {
+            createdBy: {
+              select: { id: true, firstName: true, lastName: true, email: true },
+            },
+            _count: { select: { items: true } },
           },
-          _count: { select: { items: true } },
-        },
-      });
+        });
 
-      return this.mapToListItem(created);
-    } catch (e) {
-      if (uploadedKey) {
-        await this.storage.deleteByKey(uploadedKey);
+        return this.mapToListItem(created);
+      } catch (e) {
+        const isUniqueConflict =
+          typeof e === 'object' &&
+          e !== null &&
+          'code' in e &&
+          (e as { code: string }).code === 'P2002';
+
+        if (isUniqueConflict && attempt < maxCreateAttempts) {
+          continue;
+        }
+
+        if (uploadedKey) {
+          await this.storage.deleteByKey(uploadedKey);
+        }
+        if (isUniqueConflict) {
+          throw new ConflictException(
+            'Se generó un número de cotización duplicado, intenta de nuevo.',
+          );
+        }
+        throw e;
       }
-      if (
-        typeof e === 'object' &&
-        e !== null &&
-        'code' in e &&
-        (e as { code: string }).code === 'P2002'
-      ) {
-        throw new ConflictException(
-          'Se generó un número de cotización duplicado, intenta de nuevo.',
-        );
-      }
-      throw e;
     }
+
+    if (uploadedKey) {
+      await this.storage.deleteByKey(uploadedKey);
+    }
+    throw new ConflictException(
+      'Se generó un número de cotización duplicado, intenta de nuevo.',
+    );
   }
 
   /**
@@ -832,12 +847,28 @@ export class OffersService {
     const yearStart = new Date(now.getFullYear(), 0, 1);
     const yearEnd = new Date(now.getFullYear() + 1, 0, 1);
     const yearSuffix = String(now.getFullYear()).slice(-2);
+    const numberPattern = `^COT[0-9]+/${yearSuffix}$`;
+    const rows = await this.prisma.$queryRaw<Array<{ max_sequence: number | null }>>`
+      SELECT MAX(
+        CASE
+          WHEN "offer_number" ~ ${numberPattern}
+          THEN CAST(
+            SUBSTRING(
+              "offer_number"
+              FROM 4
+              FOR POSITION('/' IN "offer_number") - 4
+            ) AS INTEGER
+          )
+          ELSE NULL
+        END
+      ) AS max_sequence
+      FROM "offers_created"
+      WHERE "createdAt" >= ${yearStart}
+        AND "createdAt" < ${yearEnd}
+    `;
 
-    const count = await this.prisma.offerCreated.count({
-      where: { createdAt: { gte: yearStart, lt: yearEnd } },
-    });
-
-    const sequence = String(count + 1).padStart(4, '0');
+    const maxSequence = Number(rows[0]?.max_sequence ?? 0);
+    const sequence = String(maxSequence + 1).padStart(4, '0');
     return `COT${sequence}/${yearSuffix}`;
   }
 
