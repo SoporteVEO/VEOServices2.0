@@ -23,7 +23,10 @@ export function useUpdateOffer(options?: {
     mutationFn: ({ id, input }: { id: string; input: UpdateOfferInput }) =>
       updateOffer(id, input),
     onSuccess: async (updated) => {
-      await queryClient.invalidateQueries({ queryKey: ["offers"] });
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["offers"] }),
+        queryClient.invalidateQueries({ queryKey: ["digital-billboards"] }),
+      ]);
       queryClient.setQueryData(["offers", updated.id], updated);
       options?.onSuccess?.(updated);
     },
@@ -65,7 +68,10 @@ export function useDeclineOffer(options?: {
   return useMutation({
     mutationFn: declineOffer,
     onSuccess: async (updated) => {
-      await queryClient.invalidateQueries({ queryKey: ["offers"] });
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["offers"] }),
+        queryClient.invalidateQueries({ queryKey: ["digital-billboards"] }),
+      ]);
       options?.onSuccess?.(updated);
     },
     onError: (err) => {
@@ -90,7 +96,10 @@ export function useAcceptOffer(options?: {
       briloMconId: number;
     }) => acceptOffer(id, briloMconId),
     onSuccess: async (updated) => {
-      await queryClient.invalidateQueries({ queryKey: ["offers"] });
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["offers"] }),
+        queryClient.invalidateQueries({ queryKey: ["digital-billboards"] }),
+      ]);
       options?.onSuccess?.(updated);
     },
     onError: (err) => {

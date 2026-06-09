@@ -1,12 +1,15 @@
+import { OfferItemType } from '@prisma/client';
 import {
   ArrayMinSize,
   IsArray,
   IsDateString,
   IsEmail,
+  IsEnum,
   IsInt,
   IsNumber,
   IsOptional,
   IsString,
+  Max,
   Min,
   MinLength,
   ValidateNested,
@@ -14,6 +17,10 @@ import {
 import { Type } from 'class-transformer';
 
 export class CreateOfferItemDto {
+  @IsOptional()
+  @IsEnum(OfferItemType)
+  itemType?: OfferItemType;
+
   @IsOptional()
   @IsInt()
   billboardId?: number | null;
@@ -53,6 +60,25 @@ export class CreateOfferItemDto {
   @IsNumber()
   @Min(0)
   rentalPrice!: number;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  @Max(1)
+  taxRate?: number;
+
+  @IsOptional()
+  @IsString()
+  description?: string | null;
+
+  @IsOptional()
+  @IsString()
+  digitalBillboardId?: string | null;
+
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  spotCount?: number | null;
 
   @IsOptional()
   @IsDateString()

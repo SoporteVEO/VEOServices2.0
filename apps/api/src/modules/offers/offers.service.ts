@@ -5,16 +5,16 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { OfferStatus, type Prisma } from '@prisma/client';
+import { OfferItemType, OfferStatus, type Prisma } from '@prisma/client';
 import { BriloDatabaseService } from '../brilo-database/brilo-database.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { S3StorageService } from '../s3-images/s3-storage.service.js';
 import { ClientsService } from '../clients/clients.service.js';
-import { CreateOfferDto } from './dto/create-offer.dto.js';
+import { CreateOfferDto, CreateOfferItemDto } from './dto/create-offer.dto.js';
 import type { ListBriloContractsFilters } from './dto/list-brilo-contracts-query.dto.js';
 import { UpdateOfferDto } from './dto/update-offer.dto.js';
 
-const IVA_RATE = 0.13;
+const DEFAULT_TAX_RATE = 0.13;
 const OFFER_PDF_FOLDER = 'offers';
 const DEFAULT_PAGE_SIZE = 25;
 const MAX_PAGE_SIZE = 100;
@@ -110,6 +110,7 @@ export interface PaginatedBriloContracts {
 
 export interface OfferDetailItem {
   id: string;
+  itemType: OfferItemType;
   billboardId: number | null;
   billboardCode: string | null;
   address: string | null;
@@ -120,6 +121,10 @@ export interface OfferDetailItem {
   quantity: number;
   impressionPrice: number;
   rentalPrice: number;
+  taxRate: number;
+  description: string | null;
+  digitalBillboardId: string | null;
+  spotCount: number | null;
   startDate: string | null;
   endDate: string | null;
 }
@@ -238,22 +243,17 @@ export class OffersService {
       throw new BadRequestException('Vigencia de oferta inválida');
     }
 
-    const subtotalImpression = round2(
-      dto.items.reduce(
-        (sum, item) => sum + item.impressionPrice * item.quantity,
-        0,
-      ),
-    );
-    const subtotalRental = round2(
-      dto.items.reduce(
-        (sum, item) => sum + item.rentalPrice * item.quantity,
-        0,
-      ),
-    );
-    const ivaImpression = round2(subtotalImpression * IVA_RATE);
-    const ivaRental = round2(subtotalRental * IVA_RATE);
-    const totalImpression = round2(subtotalImpression + ivaImpression);
-    const totalRental = round2(subtotalRental + ivaRental);
+    this.validateItems(dto.items);
+
+    const totals = computeOfferTotals(dto.items);
+    const {
+      subtotalImpression,
+      subtotalRental,
+      ivaImpression,
+      ivaRental,
+      totalImpression,
+      totalRental,
+    } = totals;
 
     const advisorFullName = await this.resolveAdvisorFullName(createdByUserId);
     const clientId = await this.resolveClientId(dto);
@@ -283,7 +283,8 @@ export class OffersService {
             customerName: dto.customerName.trim(),
             customerCompany: dto.customerCompany?.trim() || null,
             customerEmail: dto.customerEmail?.trim().toLowerCase() || null,
-            billingEmail: dto.customerBillingEmail?.trim().toLowerCase() || null,
+            billingEmail:
+              dto.customerBillingEmail?.trim().toLowerCase() || null,
             customerContact: dto.customerContact?.trim() || null,
             validUntil,
             specialConditions: dto.specialConditions?.trim() || null,
@@ -298,6 +299,7 @@ export class OffersService {
             createdByUserId,
             items: {
               create: dto.items.map((item) => ({
+                itemType: item.itemType ?? OfferItemType.STATIC_BILLBOARD,
                 billboardId: item.billboardId ?? null,
                 billboardCode: item.billboardCode ?? null,
                 address: item.address ?? null,
@@ -308,6 +310,10 @@ export class OffersService {
                 quantity: item.quantity,
                 impressionPrice: item.impressionPrice,
                 rentalPrice: item.rentalPrice,
+                taxRate: item.taxRate ?? DEFAULT_TAX_RATE,
+                description: item.description?.trim() || null,
+                digitalBillboardId: item.digitalBillboardId ?? null,
+                spotCount: item.spotCount ?? null,
                 startDate: item.startDate ? new Date(item.startDate) : null,
                 endDate: item.endDate ? new Date(item.endDate) : null,
               })),
@@ -315,7 +321,12 @@ export class OffersService {
           },
           include: {
             createdBy: {
-              select: { id: true, firstName: true, lastName: true, email: true },
+              select: {
+                id: true,
+                firstName: true,
+                lastName: true,
+                email: true,
+              },
             },
             _count: { select: { items: true } },
           },
@@ -577,12 +588,17 @@ export class OffersService {
         totalImpression: Number(row._sum?.totalImpression ?? 0),
       };
       if (row.status === OfferStatus.PENDING) byStatus.pending = breakdown;
-      else if (row.status === OfferStatus.ACCEPTED) byStatus.accepted = breakdown;
-      else if (row.status === OfferStatus.DECLINED) byStatus.declined = breakdown;
+      else if (row.status === OfferStatus.ACCEPTED)
+        byStatus.accepted = breakdown;
+      else if (row.status === OfferStatus.DECLINED)
+        byStatus.declined = breakdown;
     }
 
     const totals = {
-      count: byStatus.pending.count + byStatus.accepted.count + byStatus.declined.count,
+      count:
+        byStatus.pending.count +
+        byStatus.accepted.count +
+        byStatus.declined.count,
       totalRental: round2(
         byStatus.pending.totalRental +
           byStatus.accepted.totalRental +
@@ -746,7 +762,7 @@ export class OffersService {
     userId: string,
     dto: UpdateOfferDto,
   ): Promise<OfferDetail> {
-    await this.findOwnedOffer(id, userId);
+    const existing = await this.findOwnedOffer(id, userId);
 
     if (dto.status === OfferStatus.ACCEPTED) {
       if (!dto.briloMconId) {
@@ -757,17 +773,29 @@ export class OffersService {
       await this.assertBriloContractExists(dto.briloMconId);
     }
 
-    const updated = await this.prisma.offerCreated.update({
-      where: { id },
-      data: {
-        status: dto.status,
-        briloMconId:
-          dto.status === OfferStatus.ACCEPTED ? dto.briloMconId! : null,
-      },
-      include: {
-        ...this.offerListInclude(),
-        items: { orderBy: { createdAt: 'asc' } },
-      },
+    const wasAccepted = existing.status === OfferStatus.ACCEPTED;
+    const willBeAccepted = dto.status === OfferStatus.ACCEPTED;
+
+    const updated = await this.prisma.$transaction(async (tx) => {
+      const row = await tx.offerCreated.update({
+        where: { id },
+        data: {
+          status: dto.status,
+          briloMconId: willBeAccepted ? dto.briloMconId! : null,
+        },
+        include: {
+          ...this.offerListInclude(),
+          items: { orderBy: { createdAt: 'asc' } },
+        },
+      });
+
+      if (wasAccepted && !willBeAccepted) {
+        await this.removeDigitalUsagesForOffer(tx, id);
+      } else if (!wasAccepted && willBeAccepted) {
+        await this.registerDigitalUsagesForOffer(tx, id);
+      }
+
+      return row;
     });
 
     const linkedBriloContract = updated.briloMconId
@@ -779,19 +807,27 @@ export class OffersService {
 
   async declineOffer(id: string, userId: string): Promise<OfferListItem> {
     const offer = await this.findOwnedOffer(id, userId);
-    if (offer.status !== OfferStatus.PENDING) {
-      throw new BadRequestException(
-        'Solo se pueden rechazar cotizaciones pendientes',
-      );
+    if (offer.status === OfferStatus.DECLINED) {
+      throw new BadRequestException('La cotización ya está rechazada');
     }
 
-    const updated = await this.prisma.offerCreated.update({
-      where: { id },
-      data: {
-        status: OfferStatus.DECLINED,
-        briloMconId: null,
-      },
-      include: this.offerListInclude(),
+    const wasAccepted = offer.status === OfferStatus.ACCEPTED;
+
+    const updated = await this.prisma.$transaction(async (tx) => {
+      const row = await tx.offerCreated.update({
+        where: { id },
+        data: {
+          status: OfferStatus.DECLINED,
+          briloMconId: null,
+        },
+        include: this.offerListInclude(),
+      });
+
+      if (wasAccepted) {
+        await this.removeDigitalUsagesForOffer(tx, id);
+      }
+
+      return row;
     });
 
     return this.mapToListItem(updated);
@@ -811,13 +847,19 @@ export class OffersService {
 
     await this.assertBriloContractExists(briloMconId);
 
-    const updated = await this.prisma.offerCreated.update({
-      where: { id },
-      data: {
-        status: OfferStatus.ACCEPTED,
-        briloMconId,
-      },
-      include: this.offerListInclude(),
+    const updated = await this.prisma.$transaction(async (tx) => {
+      const row = await tx.offerCreated.update({
+        where: { id },
+        data: {
+          status: OfferStatus.ACCEPTED,
+          briloMconId,
+        },
+        include: this.offerListInclude(),
+      });
+
+      await this.registerDigitalUsagesForOffer(tx, id);
+
+      return row;
     });
 
     return this.mapToListItem(updated);
@@ -848,7 +890,9 @@ export class OffersService {
     const yearEnd = new Date(now.getFullYear() + 1, 0, 1);
     const yearSuffix = String(now.getFullYear()).slice(-2);
     const numberPattern = `^COT[0-9]+/${yearSuffix}$`;
-    const rows = await this.prisma.$queryRaw<Array<{ max_sequence: number | null }>>`
+    const rows = await this.prisma.$queryRaw<
+      Array<{ max_sequence: number | null }>
+    >`
       SELECT MAX(
         CASE
           WHEN "offer_number" ~ ${numberPattern}
@@ -890,9 +934,112 @@ export class OffersService {
       throw new NotFoundException('Cotización no encontrada');
     }
     if (offer.createdByUserId !== userId) {
-      throw new ForbiddenException('No tienes permiso para modificar esta cotización');
+      throw new ForbiddenException(
+        'No tienes permiso para modificar esta cotización',
+      );
     }
     return offer;
+  }
+
+  /**
+   * Validates type-specific invariants on offer items: digital billboards
+   * need a valid spot count and reference an existing digital billboard;
+   * misc items need a description.
+   */
+  private validateItems(items: CreateOfferItemDto[]): void {
+    for (const item of items) {
+      const type = item.itemType ?? OfferItemType.STATIC_BILLBOARD;
+      if (type === OfferItemType.DIGITAL_BILLBOARD) {
+        if (!item.digitalBillboardId) {
+          throw new BadRequestException(
+            'Cada valla digital debe tener una valla asociada',
+          );
+        }
+        if (!item.spotCount || !ALLOWED_SPOT_COUNTS.has(item.spotCount)) {
+          throw new BadRequestException(
+            'La cantidad de spots debe ser 300, 450, 600 o 900',
+          );
+        }
+        if (!item.startDate || !item.endDate) {
+          throw new BadRequestException(
+            'Cada valla digital debe tener fechas de inicio y fin',
+          );
+        }
+      }
+      if (type === OfferItemType.MISC) {
+        const desc = item.description?.trim();
+        if (!desc) {
+          throw new BadRequestException(
+            'Cada concepto adicional debe tener una descripción',
+          );
+        }
+      }
+    }
+  }
+
+  /**
+   * Creates one usage row per day for each digital billboard item in the
+   * offer, linked back to the originating offer item so they can be
+   * removed if the offer is later rejected.
+   */
+  private async registerDigitalUsagesForOffer(
+    tx: Prisma.TransactionClient,
+    offerId: string,
+  ): Promise<void> {
+    const offer = await tx.offerCreated.findUnique({
+      where: { id: offerId },
+      select: {
+        customerName: true,
+        customerCompany: true,
+        specialConditions: true,
+        items: {
+          select: {
+            id: true,
+            itemType: true,
+            digitalBillboardId: true,
+            spotCount: true,
+            startDate: true,
+            endDate: true,
+            description: true,
+          },
+        },
+      },
+    });
+    if (!offer) return;
+
+    const plans = planDigitalUsages(offer, offer.items);
+    if (plans.length === 0) return;
+
+    const data: Prisma.DigitalBillboardUsageCreateManyInput[] = [];
+    for (const plan of plans) {
+      for (const day of plan.days) {
+        data.push({
+          digitalBillboardId: plan.digitalBillboardId,
+          timestamp: day,
+          duration: plan.spotCount,
+          campaignName: plan.campaignName,
+          campaignDescription: plan.campaignDescription,
+          offerItemId: plan.itemId,
+        });
+      }
+    }
+
+    if (data.length > 0) {
+      await tx.digitalBillboardUsage.createMany({ data });
+    }
+  }
+
+  /**
+   * Deletes all digital billboard usages registered through this offer.
+   * Called when an accepted offer transitions away from ACCEPTED.
+   */
+  private async removeDigitalUsagesForOffer(
+    tx: Prisma.TransactionClient,
+    offerId: string,
+  ): Promise<void> {
+    await tx.digitalBillboardUsage.deleteMany({
+      where: { offerItem: { offerId } },
+    });
   }
 
   private async fetchBriloContractById(
@@ -928,7 +1075,9 @@ export class OffersService {
       { MconId: mconId },
     );
     if (rows.length === 0) {
-      throw new BadRequestException('El contrato de Brilo seleccionado no existe');
+      throw new BadRequestException(
+        'El contrato de Brilo seleccionado no existe',
+      );
     }
   }
 
@@ -964,6 +1113,7 @@ export class OffersService {
       _count: { items: number };
       items: Array<{
         id: string;
+        itemType: OfferItemType;
         billboardId: number | null;
         billboardCode: string | null;
         address: string | null;
@@ -974,6 +1124,10 @@ export class OffersService {
         quantity: number;
         impressionPrice: number;
         rentalPrice: number;
+        taxRate: number;
+        description: string | null;
+        digitalBillboardId: string | null;
+        spotCount: number | null;
         startDate: Date | null;
         endDate: Date | null;
       }>;
@@ -984,6 +1138,7 @@ export class OffersService {
       ...this.mapToListItem(row),
       items: row.items.map((item) => ({
         id: item.id,
+        itemType: item.itemType,
         billboardId: item.billboardId,
         billboardCode: item.billboardCode,
         address: item.address,
@@ -994,6 +1149,10 @@ export class OffersService {
         quantity: item.quantity,
         impressionPrice: item.impressionPrice,
         rentalPrice: item.rentalPrice,
+        taxRate: item.taxRate,
+        description: item.description,
+        digitalBillboardId: item.digitalBillboardId,
+        spotCount: item.spotCount,
         startDate: item.startDate?.toISOString() ?? null,
         endDate: item.endDate?.toISOString() ?? null,
       })),
@@ -1075,4 +1234,120 @@ function enumerateMonthKeys(from: Date, to: Date): string[] {
     cursor.setMonth(cursor.getMonth() + 1);
   }
   return keys;
+}
+
+const ALLOWED_SPOT_COUNTS = new Set([300, 450, 600, 900]);
+
+interface OfferTotals {
+  subtotalImpression: number;
+  subtotalRental: number;
+  ivaImpression: number;
+  ivaRental: number;
+  totalImpression: number;
+  totalRental: number;
+}
+
+/**
+ * Computes offer totals using each item's own `taxRate` so misc lines can
+ * carry custom rates without breaking the standard 13% IVA flow.
+ */
+function computeOfferTotals(items: CreateOfferItemDto[]): OfferTotals {
+  let subtotalImpression = 0;
+  let subtotalRental = 0;
+  let ivaImpression = 0;
+  let ivaRental = 0;
+
+  for (const item of items) {
+    const tax = item.taxRate ?? DEFAULT_TAX_RATE;
+    const lineImpression = item.impressionPrice * item.quantity;
+    const lineRental = item.rentalPrice * item.quantity;
+    subtotalImpression += lineImpression;
+    subtotalRental += lineRental;
+    ivaImpression += lineImpression * tax;
+    ivaRental += lineRental * tax;
+  }
+
+  const subImp = round2(subtotalImpression);
+  const subRen = round2(subtotalRental);
+  const ivaImp = round2(ivaImpression);
+  const ivaRen = round2(ivaRental);
+
+  return {
+    subtotalImpression: subImp,
+    subtotalRental: subRen,
+    ivaImpression: ivaImp,
+    ivaRental: ivaRen,
+    totalImpression: round2(subImp + ivaImp),
+    totalRental: round2(subRen + ivaRen),
+  };
+}
+
+/** Local-time start-of-day helper used to enumerate days within a range. */
+function startOfDay(date: Date): Date {
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+}
+
+/** Inclusive list of days between two dates, normalized to local midnight. */
+function enumerateDays(start: Date, end: Date): Date[] {
+  const days: Date[] = [];
+  const cursor = startOfDay(start);
+  const final = startOfDay(end);
+  while (cursor <= final) {
+    days.push(new Date(cursor));
+    cursor.setDate(cursor.getDate() + 1);
+  }
+  return days;
+}
+
+interface DigitalUsagePlan {
+  itemId: string;
+  digitalBillboardId: string;
+  spotCount: number;
+  days: Date[];
+  campaignName: string | null;
+  campaignDescription: string | null;
+}
+
+/**
+ * Builds the per-day usage plan for digital billboard items in an offer.
+ * Used both when accepting an offer (to register usages) and could be reused
+ * for capacity validation in the future.
+ */
+function planDigitalUsages(
+  offer: {
+    customerName: string;
+    customerCompany: string | null;
+    specialConditions: string | null;
+  },
+  items: Array<{
+    id: string;
+    itemType: OfferItemType;
+    digitalBillboardId: string | null;
+    spotCount: number | null;
+    startDate: Date | null;
+    endDate: Date | null;
+    description: string | null;
+  }>,
+): DigitalUsagePlan[] {
+  const plans: DigitalUsagePlan[] = [];
+  const campaignName =
+    (offer.customerCompany?.trim() || offer.customerName?.trim()) ?? null;
+  const campaignDescription = offer.specialConditions?.trim() || null;
+
+  for (const item of items) {
+    if (item.itemType !== OfferItemType.DIGITAL_BILLBOARD) continue;
+    if (!item.digitalBillboardId || !item.spotCount) continue;
+    if (!item.startDate || !item.endDate) continue;
+    const days = enumerateDays(item.startDate, item.endDate);
+    if (days.length === 0) continue;
+    plans.push({
+      itemId: item.id,
+      digitalBillboardId: item.digitalBillboardId,
+      spotCount: item.spotCount,
+      days,
+      campaignName: item.description?.trim() || campaignName,
+      campaignDescription,
+    });
+  }
+  return plans;
 }

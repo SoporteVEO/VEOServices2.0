@@ -1,4 +1,7 @@
+export type OfferItemType = "STATIC_BILLBOARD" | "DIGITAL_BILLBOARD" | "MISC";
+
 export interface OfferItemInput {
+  itemType?: OfferItemType;
   billboardId?: number | null;
   billboardCode?: string | null;
   address?: string | null;
@@ -9,6 +12,10 @@ export interface OfferItemInput {
   quantity: number;
   impressionPrice: number;
   rentalPrice: number;
+  taxRate?: number;
+  description?: string | null;
+  digitalBillboardId?: string | null;
+  spotCount?: number | null;
   startDate?: string | null;
   endDate?: string | null;
 }
@@ -59,6 +66,7 @@ export interface BriloContractsQuery {
 
 export interface OfferDetailItem {
   id: string;
+  itemType: OfferItemType;
   billboardId: number | null;
   billboardCode: string | null;
   address: string | null;
@@ -69,6 +77,10 @@ export interface OfferDetailItem {
   quantity: number;
   impressionPrice: number;
   rentalPrice: number;
+  taxRate: number;
+  description: string | null;
+  digitalBillboardId: string | null;
+  spotCount: number | null;
   startDate: string | null;
   endDate: string | null;
 }

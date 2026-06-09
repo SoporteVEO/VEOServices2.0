@@ -289,17 +289,20 @@ model Image {
 }
 
 model DigitalBillboardUsage {
-  id                  String           @id @default(uuid())
+  id                  String            @id @default(uuid())
   digitalBillboardId  String
   timestamp           DateTime
   duration            Int
   campaignName        String?
   campaignDescription String?
-  createdAt           DateTime         @default(now())
-  updatedAt           DateTime         @updatedAt
-  digitalBillboard    DigitalBillboard @relation(fields: [digitalBillboardId], references: [id])
+  offerItemId         String?           @map("offer_item_id")
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
+  digitalBillboard    DigitalBillboard  @relation(fields: [digitalBillboardId], references: [id])
+  offerItem           OfferCreatedItem? @relation(fields: [offerItemId], references: [id], onDelete: SetNull)
 
   @@index([digitalBillboardId, timestamp])
+  @@index([offerItemId])
   @@map("digital_billboard_usages")
 }
 
@@ -318,6 +321,7 @@ model DigitalBillboard {
   departmentId           Int?                    @map("department_id")
   departmentName         String?                 @map("department_name")
   digitalBillboardUsages DigitalBillboardUsage[]
+  offerItems             OfferCreatedItem[]
   image                  Image?                  @relation(fields: [imageId], references: [id])
   purchaseItems          PurchaseItem[]
 
@@ -441,6 +445,12 @@ enum OfferStatus {
   ACCEPTED
 }
 
+enum OfferItemType {
+  STATIC_BILLBOARD
+  DIGITAL_BILLBOARD
+  MISC
+}
+
 model OfferCreated {
   id                    String             @id @default(uuid())
   offerNumber           String             @unique @map("offer_number")
@@ -477,23 +487,31 @@ model OfferCreated {
 }
 
 model OfferCreatedItem {
-  id                 String       @id @default(uuid())
-  offerId            String       @map("offer_id")
-  offer              OfferCreated @relation(fields: [offerId], references: [id], onDelete: Cascade)
-  billboardId        Int?         @map("billboard_id")
-  billboardCode      String?      @map("billboard_code")
-  address            String?
-  cityName           String?      @map("city_name")
-  departmentName     String?      @map("department_name")
-  width              Float?
-  height             Float?
-  quantity           Int          @default(1)
-  impressionPrice    Float        @map("impression_price")
-  rentalPrice        Float        @map("rental_price")
-  startDate          DateTime?    @map("start_date")
-  endDate            DateTime?    @map("end_date")
-  createdAt          DateTime     @default(now())
+  id                     String                  @id @default(uuid())
+  offerId                String                  @map("offer_id")
+  offer                  OfferCreated            @relation(fields: [offerId], references: [id], onDelete: Cascade)
+  itemType               OfferItemType           @default(STATIC_BILLBOARD) @map("item_type")
+  billboardId            Int?                    @map("billboard_id")
+  billboardCode          String?                 @map("billboard_code")
+  address                String?
+  cityName               String?                 @map("city_name")
+  departmentName         String?                 @map("department_name")
+  width                  Float?
+  height                 Float?
+  quantity               Int                     @default(1)
+  impressionPrice        Float                   @map("impression_price")
+  rentalPrice            Float                   @map("rental_price")
+  taxRate                Float                   @default(0.13) @map("tax_rate")
+  description            String?
+  digitalBillboardId     String?                 @map("digital_billboard_id")
+  digitalBillboard       DigitalBillboard?       @relation(fields: [digitalBillboardId], references: [id])
+  spotCount              Int?                    @map("spot_count")
+  startDate              DateTime?               @map("start_date")
+  endDate                DateTime?               @map("end_date")
+  createdAt              DateTime                @default(now())
+  digitalBillboardUsages DigitalBillboardUsage[]
 
   @@index([offerId])
+  @@index([digitalBillboardId])
   @@map("offers_created_items")
 }

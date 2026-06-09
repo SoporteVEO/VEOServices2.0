@@ -14,8 +14,14 @@ import {
 import { Text } from "@/components/pdfx/text/pdfx-text";
 import { PdfxThemeProvider } from "@/lib/pdfx-theme-context";
 import { formatDate, formatHumanDate } from "@/lib/format";
-import type { QuotationData, QuotationTotals } from "./quotation-types";
-import { computeQuotationTotals } from "./quotation-types";
+import {
+  computeOfferTotals,
+  type DigitalOfferItem,
+  type MiscOfferItem,
+  type OfferItem,
+  type OfferTotals,
+  type StaticOfferItem,
+} from "./offer-types";
 
 const PAGE_STYLE: Style = {
   paddingTop: 28,
@@ -23,11 +29,6 @@ const PAGE_STYLE: Style = {
   paddingHorizontal: 32,
 };
 
-/**
- * Page 2 uses a flex column with the signatures pinned to the bottom so the
- * "Términos y Condiciones" block and the signatures don't crowd together at
- * the top of the page.
- */
 const PAGE_STYLE_FLEX: Style = {
   ...PAGE_STYLE,
   flexDirection: "column",
@@ -40,7 +41,10 @@ const HEADER_BG = "#f3f4f6";
 const FOOTER_TEXT = "#374151";
 const LABEL_COLOR = "#6b7280";
 
-const COL_WIDTHS = {
+const TOTALS_LABEL_W = "44%";
+const TOTALS_VAL_W = "28%";
+
+const STATIC_COL_W = {
   rental: "14%",
   size: "11%",
   print: "12%",
@@ -50,8 +54,22 @@ const COL_WIDTHS = {
   desc: "26%",
 } as const;
 
-const TOTALS_LABEL_W = "44%";
-const TOTALS_VAL_W = "28%";
+const DIGITAL_COL_W = {
+  rental: "16%",
+  spots: "10%",
+  code: "11%",
+  qty: "8%",
+  duration: "20%",
+  desc: "35%",
+} as const;
+
+const MISC_COL_W = {
+  desc: "44%",
+  qty: "10%",
+  unit: "16%",
+  tax: "12%",
+  total: "18%",
+} as const;
 
 function formatCurrency(value: number): string {
   const sign = value < 0 ? "-" : "";
@@ -176,7 +194,7 @@ function ContactField({ label, value }: { label: string; value: string }) {
   );
 }
 
-function ContactBlock({ data }: { data: QuotationData }) {
+function ContactBlock({ data }: { data: OfferPdfData }) {
   return (
     <View
       style={{
@@ -222,35 +240,199 @@ function HeaderCellLabel({ children }: { children: ReactNode }) {
   );
 }
 
-function HeaderRow() {
+function SectionTitle({ title }: { title: string }) {
   return (
-    <TableRow header variant="compact" style={{ backgroundColor: BRAND_PRIMARY }}>
-      <TableCell header width={COL_WIDTHS.code} align="center">
-        <HeaderCellLabel>CODIGO</HeaderCellLabel>
-      </TableCell>
-      <TableCell header width={COL_WIDTHS.size} align="center">
-        <HeaderCellLabel>MEDIDA</HeaderCellLabel>
-      </TableCell>
-      <TableCell header width={COL_WIDTHS.qty} align="center">
-        <HeaderCellLabel>CANT.</HeaderCellLabel>
-      </TableCell>
-      <TableCell header width={COL_WIDTHS.duration} align="center">
-        <HeaderCellLabel>DURACIÓN</HeaderCellLabel>
-      </TableCell>
-      <TableCell header width={COL_WIDTHS.rental} align="center">
-        <HeaderCellLabel>PRECIO DE{"\n"}ARRENDAMIENTO</HeaderCellLabel>
-      </TableCell>
-      <TableCell header width={COL_WIDTHS.print} align="center">
-        <HeaderCellLabel>IMPRESIÓN</HeaderCellLabel>
-      </TableCell>
-      <TableCell header width={COL_WIDTHS.desc} align="center">
-        <HeaderCellLabel>DESCRIPCIÓN</HeaderCellLabel>
-      </TableCell>
-    </TableRow>
+    <Text
+      variant="xs"
+      weight="bold"
+      color={BRAND_PRIMARY}
+      transform="uppercase"
+      noMargin
+      style={{ marginTop: 8, marginBottom: 4 }}
+    >
+      {title}
+    </Text>
   );
 }
 
-function TotalsBlock({ totals }: { totals: QuotationTotals }) {
+function StaticItemsTable({ items }: { items: StaticOfferItem[] }) {
+  if (items.length === 0) return null;
+  return (
+    <View style={{ marginBottom: 4 }}>
+      <SectionTitle title="VALLAS ESTÁTICAS" />
+      <Table variant="compact" zebraStripe>
+        <TableHeader>
+          <TableRow header variant="compact" style={{ backgroundColor: BRAND_PRIMARY }}>
+            <TableCell header width={STATIC_COL_W.code} align="center">
+              <HeaderCellLabel>CODIGO</HeaderCellLabel>
+            </TableCell>
+            <TableCell header width={STATIC_COL_W.size} align="center">
+              <HeaderCellLabel>MEDIDA</HeaderCellLabel>
+            </TableCell>
+            <TableCell header width={STATIC_COL_W.qty} align="center">
+              <HeaderCellLabel>CANT.</HeaderCellLabel>
+            </TableCell>
+            <TableCell header width={STATIC_COL_W.duration} align="center">
+              <HeaderCellLabel>DURACIÓN</HeaderCellLabel>
+            </TableCell>
+            <TableCell header width={STATIC_COL_W.rental} align="center">
+              <HeaderCellLabel>PRECIO DE{"\n"}ARRENDAMIENTO</HeaderCellLabel>
+            </TableCell>
+            <TableCell header width={STATIC_COL_W.print} align="center">
+              <HeaderCellLabel>IMPRESIÓN</HeaderCellLabel>
+            </TableCell>
+            <TableCell header width={STATIC_COL_W.desc} align="center">
+              <HeaderCellLabel>DESCRIPCIÓN</HeaderCellLabel>
+            </TableCell>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {items.map((item) => (
+            <TableRow key={item.id} variant="compact">
+              <TableCell width={STATIC_COL_W.code} align="center">
+                {item.billboardCode || "—"}
+              </TableCell>
+              <TableCell width={STATIC_COL_W.size} align="center">
+                {formatSize(item.width, item.height)}
+              </TableCell>
+              <TableCell width={STATIC_COL_W.qty} align="center">
+                {String(item.quantity)}
+              </TableCell>
+              <TableCell width={STATIC_COL_W.duration} align="center">
+                {formatItemDuration(item.startDate, item.endDate)}
+              </TableCell>
+              <TableCell width={STATIC_COL_W.rental} align="right">
+                {formatCurrency(item.rentalPrice)}
+              </TableCell>
+              <TableCell width={STATIC_COL_W.print} align="right">
+                {formatCurrency(item.impressionPrice)}
+              </TableCell>
+              <TableCell width={STATIC_COL_W.desc}>
+                {item.description || "—"}
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </View>
+  );
+}
+
+function DigitalItemsTable({ items }: { items: DigitalOfferItem[] }) {
+  if (items.length === 0) return null;
+  return (
+    <View style={{ marginBottom: 4 }}>
+      <SectionTitle title="VALLAS DIGITALES" />
+      <Table variant="compact" zebraStripe>
+        <TableHeader>
+          <TableRow header variant="compact" style={{ backgroundColor: BRAND_PRIMARY }}>
+            <TableCell header width={DIGITAL_COL_W.rental} align="center">
+              <HeaderCellLabel>PRECIO DE{"\n"}ARRENDAMIENTO</HeaderCellLabel>
+            </TableCell>
+            <TableCell header width={DIGITAL_COL_W.spots} align="center">
+              <HeaderCellLabel>SPOTS/{"\n"}DÍA</HeaderCellLabel>
+            </TableCell>
+            <TableCell header width={DIGITAL_COL_W.code} align="center">
+              <HeaderCellLabel>CODIGO</HeaderCellLabel>
+            </TableCell>
+            <TableCell header width={DIGITAL_COL_W.qty} align="center">
+              <HeaderCellLabel>CANT.</HeaderCellLabel>
+            </TableCell>
+            <TableCell header width={DIGITAL_COL_W.duration} align="center">
+              <HeaderCellLabel>DURACIÓN</HeaderCellLabel>
+            </TableCell>
+            <TableCell header width={DIGITAL_COL_W.desc} align="center">
+              <HeaderCellLabel>DESCRIPCIÓN</HeaderCellLabel>
+            </TableCell>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {items.map((item) => (
+            <TableRow key={item.id} variant="compact">
+              <TableCell width={DIGITAL_COL_W.rental} align="right">
+                {formatCurrency(item.rentalPrice)}
+              </TableCell>
+              <TableCell width={DIGITAL_COL_W.spots} align="center">
+                {String(item.spotCount)}
+              </TableCell>
+              <TableCell width={DIGITAL_COL_W.code} align="center">
+                {item.billboardCode || "—"}
+              </TableCell>
+              <TableCell width={DIGITAL_COL_W.qty} align="center">
+                {String(item.quantity)}
+              </TableCell>
+              <TableCell width={DIGITAL_COL_W.duration} align="center">
+                {formatItemDuration(item.startDate, item.endDate)}
+              </TableCell>
+              <TableCell width={DIGITAL_COL_W.desc}>
+                {item.name}
+                {item.address ? `\n${item.address}` : ""}
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </View>
+  );
+}
+
+function MiscItemsTable({ items }: { items: MiscOfferItem[] }) {
+  if (items.length === 0) return null;
+  return (
+    <View style={{ marginBottom: 4 }}>
+      <SectionTitle title="OTROS CONCEPTOS" />
+      <Table variant="compact" zebraStripe>
+        <TableHeader>
+          <TableRow header variant="compact" style={{ backgroundColor: BRAND_PRIMARY }}>
+            <TableCell header width={MISC_COL_W.desc} align="center">
+              <HeaderCellLabel>DESCRIPCIÓN</HeaderCellLabel>
+            </TableCell>
+            <TableCell header width={MISC_COL_W.qty} align="center">
+              <HeaderCellLabel>CANT.</HeaderCellLabel>
+            </TableCell>
+            <TableCell header width={MISC_COL_W.unit} align="center">
+              <HeaderCellLabel>PRECIO</HeaderCellLabel>
+            </TableCell>
+            <TableCell header width={MISC_COL_W.tax} align="center">
+              <HeaderCellLabel>IMPUESTO</HeaderCellLabel>
+            </TableCell>
+            <TableCell header width={MISC_COL_W.total} align="center">
+              <HeaderCellLabel>TOTAL</HeaderCellLabel>
+            </TableCell>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {items.map((item) => {
+            const subtotal = item.rentalPrice * item.quantity;
+            const tax = subtotal * item.taxRate;
+            const total = subtotal + tax;
+            return (
+              <TableRow key={item.id} variant="compact">
+                <TableCell width={MISC_COL_W.desc}>
+                  {item.description || "—"}
+                </TableCell>
+                <TableCell width={MISC_COL_W.qty} align="center">
+                  {String(item.quantity)}
+                </TableCell>
+                <TableCell width={MISC_COL_W.unit} align="right">
+                  {formatCurrency(item.unitPrice)}
+                </TableCell>
+                <TableCell width={MISC_COL_W.tax} align="right">
+                  {formatCurrency(tax)}
+                </TableCell>
+                <TableCell width={MISC_COL_W.total} align="right">
+                  {formatCurrency(total)}
+                </TableCell>
+              </TableRow>
+            );
+          })}
+        </TableBody>
+      </Table>
+    </View>
+  );
+}
+
+function TotalsBlock({ totals }: { totals: OfferTotals }) {
   return (
     <View style={{ marginTop: 8, alignItems: "flex-end" }}>
       <View style={{ width: "65%" }}>
@@ -282,7 +464,7 @@ function TotalsBlock({ totals }: { totals: QuotationTotals }) {
           right={totals.subtotalRental}
         />
         <TotalsRow
-          label="IVA (13%):"
+          label="IVA:"
           left={totals.ivaImpression}
           right={totals.ivaRental}
         />
@@ -354,7 +536,7 @@ function TotalsRow({
   );
 }
 
-function ConditionsBlock({ data }: { data: QuotationData }) {
+function ConditionsBlock({ data }: { data: OfferPdfData }) {
   return (
     <View style={{ marginTop: 14, gap: 6 }}>
       <View style={{ flexDirection: "row", gap: 12 }}>
@@ -470,17 +652,37 @@ function Footer() {
   );
 }
 
-export interface QuotationPdfDocumentProps {
-  data: QuotationData;
+export interface OfferPdfData {
+  offerNumber: string;
+  customerName: string;
+  customerCompany: string;
+  customerEmail: string;
+  customerBillingEmail: string;
+  customerContact: string;
+  validUntil: Date;
+  specialConditions: string;
+  advisorFullName: string | null;
+  items: OfferItem[];
+}
+
+export interface OfferPdfDocumentProps {
+  data: OfferPdfData;
   logoSrc: string;
 }
 
-export function QuotationPdfDocument({
-  data,
-  logoSrc,
-}: QuotationPdfDocumentProps) {
-  const totals = computeQuotationTotals(data.items);
+export function OfferPdfDocument({ data, logoSrc }: OfferPdfDocumentProps) {
+  const totals = computeOfferTotals(data.items);
   const generatedAt = new Date();
+
+  const staticItems = data.items.filter(
+    (item): item is StaticOfferItem => item.type === "STATIC_BILLBOARD",
+  );
+  const digitalItems = data.items.filter(
+    (item): item is DigitalOfferItem => item.type === "DIGITAL_BILLBOARD",
+  );
+  const miscItems = data.items.filter(
+    (item): item is MiscOfferItem => item.type === "MISC",
+  );
 
   return (
     <PdfxThemeProvider>
@@ -498,38 +700,9 @@ export function QuotationPdfDocument({
           <IntroSection />
           <ContactBlock data={data} />
 
-          <Table variant="compact" zebraStripe>
-            <TableHeader>
-              <HeaderRow />
-            </TableHeader>
-            <TableBody>
-              {data.items.map((item) => (
-                <TableRow key={item.id} variant="compact">
-                  <TableCell width={COL_WIDTHS.code} align="center">
-                    {item.billboardCode || "—"}
-                  </TableCell>
-                  <TableCell width={COL_WIDTHS.size} align="center">
-                    {formatSize(item.width, item.height)}
-                  </TableCell>
-                  <TableCell width={COL_WIDTHS.qty} align="center">
-                    {String(item.quantity)}
-                  </TableCell>
-                  <TableCell width={COL_WIDTHS.duration} align="center">
-                    {formatItemDuration(item.startDate, item.endDate)}
-                  </TableCell>
-                  <TableCell width={COL_WIDTHS.rental} align="right">
-                    {formatCurrency(item.rentalPrice)}
-                  </TableCell>
-                  <TableCell width={COL_WIDTHS.print} align="right">
-                    {formatCurrency(item.impressionPrice)}
-                  </TableCell>
-                  <TableCell width={COL_WIDTHS.desc}>
-                    {item.description || "—"}
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+          <StaticItemsTable items={staticItems} />
+          <DigitalItemsTable items={digitalItems} />
+          <MiscItemsTable items={miscItems} />
 
           <TotalsBlock totals={totals} />
           <Footer />
