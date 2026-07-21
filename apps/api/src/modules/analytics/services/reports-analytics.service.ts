@@ -8,27 +8,47 @@ const COVERAGE_USERS_LIMIT = 50;
 const MIN_NAME_TOKEN_LENGTH = 2;
 const MAX_NAME_TOKENS = 4;
 
+// Mirrors the FilteredContracts CTE used by the "Mis contratos" table and the
+// My Space KPI snapshot so the compliance chart resolves the exact same set of
+// active contracts (same joins, one row per mconId, honouring the "hide
+// contracts created this month" rule).
 const ALL_ACTIVE_CONTRACTS_SQL = `
-SELECT
-    maecon.mconCodigo,
-    COALESCE(ej.ejecNombre, '')        AS ejecNombre,
-    COALESCE(maecon.mconAtencionA, '') AS atencionA
-FROM olVallas.dbo.maeContratos maecon WITH (NOLOCK)
-INNER JOIN olVallas.dbo.detContratos detcon WITH (NOLOCK)
-    ON detcon.mconId = maecon.mconId
-LEFT JOIN olVallas.dbo.Ejecutivos ej WITH (NOLOCK)
-    ON ej.ejecId = maecon.ejecId
-WHERE maecon.mconPosteado <> 0
-  AND maecon.mconAnulado <> 1
-  AND detcon.dconFechaHasta >= @ActiveAsOf
-  AND NOT EXISTS (
-      SELECT 1
-      FROM olVallas.dbo.maeContratos child WITH (NOLOCK)
-      WHERE child.mconIdPadre = maecon.mconId
-        AND child.mconAnulado <> 1
-        AND child.mconPosteado <> 0
-  )
-GROUP BY maecon.mconCodigo, ej.ejecNombre, maecon.mconAtencionA
+WITH FilteredContracts AS (
+    SELECT
+        maecon.mconId,
+        MIN(detcon.dconFechaDesde) AS earliestStart,
+        MAX(maecon.mconCodigo) AS mconCodigo,
+        MAX(COALESCE(ej.ejecNombre, '')) AS ejecNombre,
+        MAX(COALESCE(maecon.mconAtencionA, '')) AS atencionA
+    FROM olVallas.dbo.maeContratos maecon WITH (NOLOCK)
+    INNER JOIN olVallas.dbo.detContratos detcon WITH (NOLOCK)
+        ON detcon.mconId = maecon.mconId
+    INNER JOIN olVallas.dbo.Caras car WITH (NOLOCK)
+        ON detcon.caraId = car.caraId
+    INNER JOIN olVallas.dbo.Sitios siti WITH (NOLOCK)
+        ON car.sitiId = siti.sitiId
+    INNER JOIN olComun.dbo.Clientes cli WITH (NOLOCK)
+        ON maecon.cliId = cli.cliId
+    LEFT JOIN olVallas.dbo.Ejecutivos ej WITH (NOLOCK)
+        ON ej.ejecId = maecon.ejecId
+    WHERE maecon.mconPosteado <> 0
+      AND maecon.mconAnulado <> 1
+      AND detcon.dconFechaHasta >= @ActiveAsOf
+      AND NOT EXISTS (
+          SELECT 1
+          FROM olVallas.dbo.maeContratos child WITH (NOLOCK)
+          WHERE child.mconIdPadre = maecon.mconId
+            AND child.mconAnulado <> 1
+            AND child.mconPosteado <> 0
+      )
+    GROUP BY maecon.mconId
+    HAVING (
+        @ExcludeCreatedThisMonth = 0
+        OR MIN(detcon.dconFechaDesde) < @MonthStart
+        OR MIN(detcon.dconFechaDesde) >= @MonthEnd
+    )
+)
+SELECT mconCodigo, ejecNombre, atencionA FROM FilteredContracts
 `;
 
 interface ActiveContractRow {
@@ -113,8 +133,15 @@ export interface ReportsOverview {
   };
   daily: ReportsTrendPoint[];
   monthly: ReportsTrendPoint[];
+  /** Monthly trend spanning the full current calendar year (Jan–Dec). */
+  monthlyYear: ReportsTrendPoint[];
   byUser: ReportsByUserRow[];
   currentMonthCompliance: ReportsCurrentMonthCompliance;
+}
+
+function startOfToday(): Date {
+  const now = new Date();
+  return new Date(now.getFullYear(), now.getMonth(), now.getDate());
 }
 
 function startOfCurrentMonth(): Date {
@@ -127,9 +154,12 @@ function startOfNextMonth(): Date {
   return new Date(now.getFullYear(), now.getMonth() + 1, 1);
 }
 
-function startOfToday(): Date {
-  const now = new Date();
-  return new Date(now.getFullYear(), now.getMonth(), now.getDate());
+function startOfCurrentYear(): Date {
+  return new Date(Date.UTC(new Date().getUTCFullYear(), 0, 1));
+}
+
+function startOfNextYear(): Date {
+  return new Date(Date.UTC(new Date().getUTCFullYear() + 1, 0, 1));
 }
 
 function enumerateMonthKeys(from: Date, to: Date): string[] {
@@ -237,27 +267,41 @@ export class ReportsAnalyticsService {
 
     const reportsWhereTeamMemberId = teamMemberId ?? null;
 
-    const [byTypeRows, daily, monthly, byUser, compliance] = await Promise.all([
-      filterIsImpossible
-        ? Promise.resolve(emptyByType())
-        : this.aggregateByType(from, to, reportsWhereTeamMemberId),
-      filterIsImpossible
-        ? Promise.resolve([])
-        : this.aggregateDaily(from, to, reportsWhereTeamMemberId),
-      filterIsImpossible
-        ? Promise.resolve([])
-        : this.aggregateMonthly(from, to, reportsWhereTeamMemberId),
-      filterIsImpossible
-        ? Promise.resolve([])
-        : this.aggregateByUser(from, to, reportsWhereTeamMemberId),
-      this.aggregateCurrentMonthCompliance(userId ?? null),
-    ]);
+    const yearStart = startOfCurrentYear();
+    const yearEnd = startOfNextYear();
+
+    const [byTypeRows, daily, monthly, monthlyYearRows, byUser, compliance] =
+      await Promise.all([
+        filterIsImpossible
+          ? Promise.resolve(emptyByType())
+          : this.aggregateByType(from, to, reportsWhereTeamMemberId),
+        filterIsImpossible
+          ? Promise.resolve([])
+          : this.aggregateDaily(from, to, reportsWhereTeamMemberId),
+        filterIsImpossible
+          ? Promise.resolve([])
+          : this.aggregateMonthly(from, to, reportsWhereTeamMemberId),
+        filterIsImpossible
+          ? Promise.resolve([])
+          : this.aggregateMonthly(yearStart, yearEnd, reportsWhereTeamMemberId),
+        filterIsImpossible
+          ? Promise.resolve([])
+          : this.aggregateByUser(from, to, reportsWhereTeamMemberId),
+        this.aggregateCurrentMonthCompliance(userId ?? null, from, to),
+      ]);
 
     const dailyKeys = enumerateDayKeys(from, to);
     const monthlyKeys = enumerateMonthKeys(from, to);
+    // enumerateMonthKeys treats the upper bound as inclusive of its month, so
+    // pass December to get exactly Jan–Dec of the current year.
+    const yearMonthlyKeys = enumerateMonthKeys(
+      yearStart,
+      new Date(Date.UTC(yearStart.getUTCFullYear(), 11, 1)),
+    );
 
     const dailyTrend = padTrend(daily, dailyKeys);
     const monthlyTrend = padTrend(monthly, monthlyKeys);
+    const monthlyYearTrend = padTrend(monthlyYearRows, yearMonthlyKeys);
 
     const totals = this.buildTotals(byTypeRows, dailyTrend, byUser);
 
@@ -267,6 +311,7 @@ export class ReportsAnalyticsService {
       byType: byTypeRows,
       daily: dailyTrend,
       monthly: monthlyTrend,
+      monthlyYear: monthlyYearTrend,
       byUser,
       currentMonthCompliance: compliance,
     };
@@ -443,11 +488,13 @@ export class ReportsAnalyticsService {
 
   private async aggregateCurrentMonthCompliance(
     userId: string | null,
+    from: Date,
+    to: Date,
   ): Promise<ReportsCurrentMonthCompliance> {
-    const monthStart = startOfCurrentMonth();
-    const monthEnd = startOfNextMonth();
-    const monthKey = `${monthStart.getFullYear()}-${String(
-      monthStart.getMonth() + 1,
+    // Monthly reports are counted within the selected range; the pool of active
+    // contracts is still measured "as of today" (an inherently current concept).
+    const monthKey = `${from.getUTCFullYear()}-${String(
+      from.getUTCMonth() + 1,
     ).padStart(2, '0')}`;
 
     // Pull every team member with a user — they're the universe of potential
@@ -472,8 +519,8 @@ export class ReportsAnalyticsService {
 
     const baseResponse: ReportsCurrentMonthCompliance = {
       monthKey,
-      rangeFrom: monthStart.toISOString(),
-      rangeTo: monthEnd.toISOString(),
+      rangeFrom: from.toISOString(),
+      rangeTo: to.toISOString(),
       activeContractsTotal: 0,
       monthlyReportsSent: 0,
       pending: 0,
@@ -487,7 +534,12 @@ export class ReportsAnalyticsService {
     try {
       activeContracts = await this.brilo.query<ActiveContractRow>(
         ALL_ACTIVE_CONTRACTS_SQL,
-        { ActiveAsOf: startOfToday() },
+        {
+          ActiveAsOf: startOfToday(),
+          ExcludeCreatedThisMonth: 1,
+          MonthStart: startOfCurrentMonth(),
+          MonthEnd: startOfNextMonth(),
+        },
       );
     } catch {
       // If Brilo is unavailable, fall back to zero active contracts so the
@@ -501,79 +553,94 @@ export class ReportsAnalyticsService {
       atencionA: normalizeForMatch(row.atencionA),
     }));
 
-    // Distinct contract count for the totals row — admins likely care about the
-    // global universe of contracts, not the union of every user's matches.
-    const activeContractsTotal = new Set(
-      normalizedContracts
-        .map((row) => row.mconCodigo)
-        .filter((code) => Boolean(code)),
-    ).size;
+    const activeContractNumbers = Array.from(
+      new Set(
+        normalizedContracts
+          .map((row) => row.mconCodigo)
+          .filter((code) => Boolean(code)),
+      ),
+    );
 
-    const teamMemberIds = teamMembers.map((m) => m.id);
-    const monthlyReportsRows =
-      teamMemberIds.length === 0
+    // A contract counts as "reported" when it has a monthly report in the range
+    // sent by anyone — mirrors the My Space snapshot, which does not restrict by
+    // author, only by the active contract set.
+    const sentRows =
+      activeContractNumbers.length === 0
         ? []
         : await this.prisma.reportSended.findMany({
             where: {
-              teamMemberId: { in: teamMemberIds },
+              contractNumber: { in: activeContractNumbers },
               reportType: ReportType.MONTHLY,
-              createdAt: { gte: monthStart, lt: monthEnd },
+              createdAt: { gte: from, lt: to },
             },
-            select: { teamMemberId: true, contractNumber: true },
+            select: { contractNumber: true },
+            distinct: ['contractNumber'],
           });
+    const sentContractSet = new Set(sentRows.map((row) => row.contractNumber));
 
-    const sentByMember = new Map<string, Set<string>>();
-    for (const row of monthlyReportsRows) {
-      const set = sentByMember.get(row.teamMemberId) ?? new Set<string>();
-      set.add(row.contractNumber);
-      sentByMember.set(row.teamMemberId, set);
-    }
-
-    const perUser: ReportsCoverageRow[] = teamMembers
-      .map<ReportsCoverageRow>((member) => {
-        const tokens = buildNameTokens({
-          fullName: member.fullName,
-          firstName: member.user.firstName,
-          lastName: member.user.lastName,
-        });
-        const matchedContracts = new Set<string>();
-        if (tokens.length > 0) {
-          for (const contract of normalizedContracts) {
-            if (
-              tokensMatchTarget(tokens, contract.ejecNombre) ||
-              tokensMatchTarget(tokens, contract.atencionA)
-            ) {
-              matchedContracts.add(contract.mconCodigo);
-            }
+    const userRows: ReportsCoverageRow[] = teamMembers.map((member) => {
+      const tokens = buildNameTokens({
+        fullName: member.fullName,
+        firstName: member.user.firstName,
+        lastName: member.user.lastName,
+      });
+      const matchedContracts = new Set<string>();
+      if (tokens.length > 0) {
+        for (const contract of normalizedContracts) {
+          if (
+            tokensMatchTarget(tokens, contract.ejecNombre) ||
+            tokensMatchTarget(tokens, contract.atencionA)
+          ) {
+            matchedContracts.add(contract.mconCodigo);
           }
         }
-        const activeContractsForUser = matchedContracts.size;
-        const monthlyReportsSent = sentByMember.get(member.id)?.size ?? 0;
-        const pending = Math.max(
-          0,
-          activeContractsForUser - monthlyReportsSent,
-        );
-        const coverage =
-          activeContractsForUser > 0
-            ? Math.round(
-                (monthlyReportsSent / activeContractsForUser) * 1000,
-              ) / 10
-            : 0;
+      }
 
-        return {
-          userId: member.userId,
-          firstName: member.user.firstName,
-          lastName: member.user.lastName,
-          email: member.user.email,
-          activeContracts: activeContractsForUser,
-          monthlyReportsSent,
-          pending,
-          coverage,
-        };
-      })
-      .filter(
-        (row) => row.activeContracts > 0 || row.monthlyReportsSent > 0,
-      )
+      const activeContractsForUser = matchedContracts.size;
+      // Sent = the user's matched active contracts that have a monthly report,
+      // so it can never exceed the active count (pending stays meaningful).
+      let monthlyReportsSent = 0;
+      for (const code of matchedContracts) {
+        if (sentContractSet.has(code)) monthlyReportsSent += 1;
+      }
+      const pending = activeContractsForUser - monthlyReportsSent;
+      const coverage =
+        activeContractsForUser > 0
+          ? Math.round(
+              (monthlyReportsSent / activeContractsForUser) * 1000,
+            ) / 10
+          : 0;
+
+      return {
+        userId: member.userId,
+        firstName: member.user.firstName,
+        lastName: member.user.lastName,
+        email: member.user.email,
+        activeContracts: activeContractsForUser,
+        monthlyReportsSent,
+        pending,
+        coverage,
+      };
+    });
+
+    // Header totals are the sum of the per-user rows so the summary always
+    // equals the bars shown in the chart.
+    const activeContractsTotal = userRows.reduce(
+      (sum, row) => sum + row.activeContracts,
+      0,
+    );
+    const monthlyReportsSent = userRows.reduce(
+      (sum, row) => sum + row.monthlyReportsSent,
+      0,
+    );
+    const pending = userRows.reduce((sum, row) => sum + row.pending, 0);
+    const coverage =
+      activeContractsTotal > 0
+        ? Math.round((monthlyReportsSent / activeContractsTotal) * 1000) / 10
+        : 0;
+
+    const perUser = userRows
+      .filter((row) => row.activeContracts > 0 || row.monthlyReportsSent > 0)
       .sort((a, b) => {
         if (b.activeContracts !== a.activeContracts) {
           return b.activeContracts - a.activeContracts;
@@ -582,23 +649,10 @@ export class ReportsAnalyticsService {
       })
       .slice(0, COVERAGE_USERS_LIMIT);
 
-    const monthlyReportsSent = monthlyReportsRows.length;
-    // Aggregate "pending" as the sum across users to honour the per-user
-    // matching (a contract assigned to multiple users counts once per user).
-    const pending = perUser.reduce((sum, row) => sum + row.pending, 0);
-    const coverage =
-      activeContractsTotal > 0
-        ? Math.round(
-            (Math.min(monthlyReportsSent, activeContractsTotal) /
-              activeContractsTotal) *
-              1000,
-          ) / 10
-        : 0;
-
     return {
       monthKey,
-      rangeFrom: monthStart.toISOString(),
-      rangeTo: monthEnd.toISOString(),
+      rangeFrom: from.toISOString(),
+      rangeTo: to.toISOString(),
       activeContractsTotal,
       monthlyReportsSent,
       pending,

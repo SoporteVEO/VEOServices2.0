@@ -21,6 +21,7 @@ import { AbsencesModule } from './modules/absences/absences.module.js';
 import { NotificationsModule } from './modules/notifications/notifications.module.js';
 import { UserMetricsModule } from './modules/user-metrics/user-metrics.module.js';
 import { AnalyticsModule } from './modules/analytics/analytics.module.js';
+import { BriloWebapiModule } from './modules/brilo-webapi/brilo-webapi.module.js';
 
 @Module({
   imports: [
@@ -46,6 +47,7 @@ import { AnalyticsModule } from './modules/analytics/analytics.module.js';
     AbsencesModule,
     UserMetricsModule,
     AnalyticsModule,
+    BriloWebapiModule,
   ],
 })
 export class AppModule {}

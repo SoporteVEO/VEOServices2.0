@@ -72,7 +72,11 @@ export function MySpaceHome() {
     to: toIso,
     viewAsUserId,
   });
-  const contractsQuery = useMyContractsSnapshot({ viewAsUserId });
+  const contractsQuery = useMyContractsSnapshot({
+    from: fromIso,
+    to: toIso,
+    viewAsUserId,
+  });
 
   const isLoading =
     offersQuery.isLoading || reportsQuery.isLoading || contractsQuery.isLoading;

@@ -13,6 +13,7 @@ import {
   ChartArea,
   UserRoundSearch,
   House,
+  Banknote,
 } from "lucide-react";
 import { SubRole, UserRole } from "@/api/users/users.types";
 
@@ -91,6 +92,17 @@ export const NAV_GROUPS: NavGroup[] = [
     items: [
       { title: "E-Commerce", href: "/shop", icon: Store },
       { title: "Ordenes", href: "/dashboard/purchases", icon: ShoppingCart },
+    ],
+  },
+  {
+    label: "Herramientas",
+    items: [
+      {
+        title: "CxC",
+        href: "/dashboard/tools/recovery",
+        icon: Banknote,
+        allowedRoles: ["ADMIN"],
+      },
     ],
   },
   {

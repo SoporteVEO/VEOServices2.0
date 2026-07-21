@@ -325,9 +325,15 @@ export function useContractReportsSended(params: {
 }
 
 export async function getMyContractsSnapshot(
-  options: { viewAsUserId?: string | null } = {},
+  options: {
+    from?: string;
+    to?: string;
+    viewAsUserId?: string | null;
+  } = {},
 ): Promise<MyContractsSnapshot> {
   const query: Record<string, string> = {};
+  if (options.from) query.from = options.from;
+  if (options.to) query.to = options.to;
   if (options.viewAsUserId) query.viewAsUserId = options.viewAsUserId;
   const response = await apiFetch<{ data: MyContractsSnapshot }>(
     "/contracts/mine/snapshot",
@@ -337,12 +343,28 @@ export async function getMyContractsSnapshot(
 }
 
 export function useMyContractsSnapshot(
-  options: { enabled?: boolean; viewAsUserId?: string | null } = {},
+  options: {
+    from?: string;
+    to?: string;
+    enabled?: boolean;
+    viewAsUserId?: string | null;
+  } = {},
 ) {
   return useQuery({
-    queryKey: ["contracts", "mine", "snapshot", options.viewAsUserId ?? null],
+    queryKey: [
+      "contracts",
+      "mine",
+      "snapshot",
+      options.from ?? null,
+      options.to ?? null,
+      options.viewAsUserId ?? null,
+    ],
     queryFn: () =>
-      getMyContractsSnapshot({ viewAsUserId: options.viewAsUserId ?? null }),
+      getMyContractsSnapshot({
+        from: options.from,
+        to: options.to,
+        viewAsUserId: options.viewAsUserId ?? null,
+      }),
     enabled: options.enabled ?? true,
     placeholderData: keepPreviousData,
   });

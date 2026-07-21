@@ -93,7 +93,7 @@ export function MySpaceKpisRow({
       icon: CheckCircle2,
       label: "Reportes enviados",
       value: contracts.reportsSentThisMonth,
-      detail: `Mes actual · de ${contracts.activeCount} contrato${
+      detail: `En el rango · de ${contracts.activeCount} contrato${
         contracts.activeCount === 1 ? "" : "s"
       }`,
       tone: "emerald",
@@ -104,7 +104,7 @@ export function MySpaceKpisRow({
       value: contracts.reportsPendingThisMonth,
       detail:
         contracts.reportsPendingThisMonth > 0
-          ? "Por enviar este mes"
+          ? "Por enviar en el rango"
           : "Todos al día",
       tone: contracts.reportsPendingThisMonth > 0 ? "amber" : "emerald",
     },

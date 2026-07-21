@@ -169,11 +169,23 @@ export class ContractsController {
   @Get('mine/snapshot')
   async getMyContractsSnapshot(
     @CurrentUser() user: AuthUser,
+    @Query('from') fromStr?: string,
+    @Query('to') toStr?: string,
     @Query('viewAsUserId') viewAsUserId?: string,
   ) {
+    const from = parseDate(fromStr, 'from') ?? startOfCurrentMonth();
+    const to = parseDate(toStr, 'to') ?? startOfNextMonth();
+
+    if (from >= to) {
+      throw new BadRequestException('"from" debe ser anterior a "to"');
+    }
+
     const targetUserId = resolveTargetUserId(user, viewAsUserId);
-    const data =
-      await this.contractsService.getMyContractsSnapshot(targetUserId);
+    const data = await this.contractsService.getMyContractsSnapshot(
+      targetUserId,
+      from,
+      to,
+    );
     return { data };
   }
 

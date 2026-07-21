@@ -34,15 +34,13 @@ export function ReportsAnalyticsTables({
   overview,
   isLoading,
 }: ReportsAnalyticsTablesProps) {
-  const monthKey = overview?.currentMonthCompliance.monthKey ?? "";
-
   return (
     <Card>
       <CardHeader>
         <CardTitle className="text-base">Detalle por usuario</CardTitle>
         <CardDescription>
-          Resúmenes por usuario en el rango y compliance del mes en curso
-          {monthKey ? ` (${monthKey})` : ""}.
+          Resúmenes por usuario y cumplimiento de reportes mensuales en el rango
+          seleccionado.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -50,7 +48,7 @@ export function ReportsAnalyticsTables({
           <TabsList>
             <TabsTrigger value="totals">Reportes en el rango</TabsTrigger>
             <TabsTrigger value="compliance">
-              Cumplimiento del mes actual
+              Cumplimiento en el rango
             </TabsTrigger>
           </TabsList>
 
@@ -213,7 +211,7 @@ function ComplianceTable({
       data={rows}
       isLoading={isLoading}
       pagination={{ pageSize: 25 }}
-      emptyMessage="No hay usuarios con contratos activos asignados este mes."
+      emptyMessage="No hay usuarios con contratos activos asignados en el rango."
     />
   );
 }

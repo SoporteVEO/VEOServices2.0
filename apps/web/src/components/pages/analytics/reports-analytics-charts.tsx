@@ -92,10 +92,7 @@ function formatCompactNumber(value: number): string {
   return Math.round(value).toLocaleString("en-US");
 }
 
-function shortUserLabel(
-  row: ReportsAnalyticsCoverageRow,
-  maxLen = 18,
-): string {
+function shortUserLabel(row: ReportsAnalyticsCoverageRow, maxLen = 18): string {
   const name = [row.firstName, row.lastName].filter(Boolean).join(" ");
   const base = name.trim() || row.email;
   if (base.length <= maxLen) return base;
@@ -126,7 +123,7 @@ export function ReportsAnalyticsCharts({
       <DailyTrendCard data={overview.daily} />
       <TypeDonutCard overview={overview} />
       <ComplianceChartCard overview={overview} />
-      <MonthlyTrendCard data={overview.monthly} />
+      <MonthlyTrendCard data={overview.monthlyYear} />
     </div>
   );
 }
@@ -174,24 +171,23 @@ function DailyTrendCard({ data }: { data: ReportsAnalyticsTrendPoint[] }) {
   );
 }
 
-function MonthlyTrendCard({
-  data,
-}: {
-  data: ReportsAnalyticsTrendPoint[];
-}) {
+function MonthlyTrendCard({ data }: { data: ReportsAnalyticsTrendPoint[] }) {
   const total = useMemo(
     () => data.reduce((sum, d) => sum + d.total, 0),
     [data],
   );
+  const year = data[0]?.key.slice(0, 4) ?? "";
 
   return (
     <Card size="sm" className="border-border/80 shadow-none lg:col-span-3">
       <CardHeader>
         <div className="flex items-start justify-between gap-2">
           <div className="flex flex-col gap-0.5">
-            <CardTitle className="text-sm">Tendencia mensual</CardTitle>
+            <CardTitle className="text-sm">
+              Tendencia mensual{year ? ` · ${year}` : ""}
+            </CardTitle>
             <CardDescription className="text-xs">
-              Reportes enviados por mes, separados por tipo
+              Reportes enviados por mes durante todo el año, separados por tipo
             </CardDescription>
           </div>
           <span className="rounded-md bg-emerald-500/10 px-2 py-1 text-[11px] font-medium text-emerald-600 dark:text-emerald-400">
@@ -202,7 +198,7 @@ function MonthlyTrendCard({
       </CardHeader>
       <CardContent>
         {total === 0 ? (
-          <EmptyChart message="Sin reportes en el rango seleccionado" />
+          <EmptyChart message="Sin reportes este año" />
         ) : (
           <AreaChart
             data={data}
@@ -221,19 +217,14 @@ function MonthlyTrendCard({
   );
 }
 
-function TypeDonutCard({
-  overview,
-}: {
-  overview: ReportsAnalyticsOverview;
-}) {
+function TypeDonutCard({ overview }: { overview: ReportsAnalyticsOverview }) {
   const slices = [
     { key: "monthly", value: overview.byType.monthly.count },
     { key: "installation", value: overview.byType.installation.count },
     { key: "maintenance", value: overview.byType.maintenance.count },
   ];
   const total = slices.reduce((sum, s) => sum + s.value, 0);
-  const monthlyShare =
-    total > 0 ? overview.byType.monthly.count / total : 0;
+  const monthlyShare = total > 0 ? overview.byType.monthly.count / total : 0;
 
   return (
     <Card size="sm" className="border-border/80 shadow-none">
@@ -324,19 +315,18 @@ function ComplianceChartCard({
       }));
   }, [currentMonthCompliance]);
 
-  const monthLabel = formatMonthLabel(currentMonthCompliance.monthKey);
-
   return (
     <Card size="sm" className="border-border/80 shadow-none lg:col-span-3">
       <CardHeader>
         <div className="flex items-start justify-between gap-2">
           <div className="flex flex-col gap-0.5">
             <CardTitle className="text-sm">
-              Reportes mensuales enviados vs requeridos · {monthLabel}
+              Reportes mensuales enviados vs requeridos
             </CardTitle>
             <CardDescription className="text-xs">
-              Por cada usuario: reportes mensuales enviados este mes versus el
-              número de contratos activos asignados que requieren reporte.
+              Por cada usuario: reportes mensuales enviados en el rango
+              seleccionado versus el número de contratos activos asignados que
+              requieren reporte.
             </CardDescription>
           </div>
           <div className="flex flex-wrap items-center gap-2 text-[11px]">
@@ -354,7 +344,7 @@ function ComplianceChartCard({
       </CardHeader>
       <CardContent>
         {chartData.length === 0 ? (
-          <EmptyChart message="Sin contratos activos asignados a usuarios este mes" />
+          <EmptyChart message="Sin contratos activos asignados a usuarios en el rango" />
         ) : (
           <BarChart
             data={chartData}

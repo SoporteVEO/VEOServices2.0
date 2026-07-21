@@ -98,12 +98,23 @@ interface ActiveContractGroupRow {
 const DEFAULT_PAGE_SIZE = 25;
 const MAX_PAGE_SIZE = 100;
 
-const MY_ACTIVE_CONTRACT_CODES_SQL = `
+// Mirrors the FilteredContracts CTE of ACTIVE_CONTRACTS_PAGE_SQL so the KPI
+// snapshot counts exactly the same contracts as the "Mis contratos" table
+// (still-active as of today, one row per mconId, honouring the "hide contracts
+// created this month" toggle). Returns one row per contract group.
+const MY_ACTIVE_CONTRACT_ROWS_SQL = `
 SELECT
-    maecon.mconCodigo
+    maecon.mconId,
+    MAX(maecon.mconCodigo) AS mconCodigo
 FROM olVallas.dbo.maeContratos maecon WITH (NOLOCK)
 INNER JOIN olVallas.dbo.detContratos detcon WITH (NOLOCK)
     ON detcon.mconId = maecon.mconId
+INNER JOIN olVallas.dbo.Caras car WITH (NOLOCK)
+    ON detcon.caraId = car.caraId
+INNER JOIN olVallas.dbo.Sitios siti WITH (NOLOCK)
+    ON car.sitiId = siti.sitiId
+INNER JOIN olComun.dbo.Clientes cli WITH (NOLOCK)
+    ON maecon.cliId = cli.cliId
 LEFT JOIN olVallas.dbo.Ejecutivos ej WITH (NOLOCK)
     ON ej.ejecId = maecon.ejecId
 WHERE maecon.mconPosteado <> 0
@@ -135,7 +146,12 @@ WHERE maecon.mconPosteado <> 0
           )
       )
   )
-GROUP BY maecon.mconCodigo
+GROUP BY maecon.mconId
+HAVING (
+    @ExcludeCreatedThisMonth = 0
+    OR MIN(detcon.dconFechaDesde) < @MonthStart
+    OR MIN(detcon.dconFechaDesde) >= @MonthEnd
+)
 `;
 
 const ENDING_SOON_CONTRACTS_SQL = `
@@ -531,7 +547,11 @@ export class ContractsService {
     return { data: dataWithCounts, total, page, pageSize };
   }
 
-  async getMyContractsSnapshot(userId: string): Promise<{
+  async getMyContractsSnapshot(
+    userId: string,
+    from: Date,
+    to: Date,
+  ): Promise<{
     activeCount: number;
     reportsSentThisMonth: number;
     reportsPendingThisMonth: number;
@@ -546,18 +566,22 @@ export class ContractsService {
     }
 
     const ejecutivoFilter = buildEjecutivoNameSqlParams(ejecutivoNameMatch);
-    const rows = await this.brilo.query<{ mconCodigo: string }>(
-      MY_ACTIVE_CONTRACT_CODES_SQL,
-      {
-        ActiveAsOf: startOfToday(),
-        ...ejecutivoFilter,
-      },
-    );
+    const rows = await this.brilo.query<{
+      mconId: number;
+      mconCodigo: string;
+    }>(MY_ACTIVE_CONTRACT_ROWS_SQL, {
+      ActiveAsOf: startOfToday(),
+      ExcludeCreatedThisMonth: 1,
+      MonthStart: startOfCurrentMonth(),
+      MonthEnd: startOfNextMonth(),
+      ...ejecutivoFilter,
+    });
 
+    // Active count mirrors the table (one row per contract group / mconId).
+    const activeCount = rows.length;
     const activeContractNumbers = Array.from(
       new Set(rows.map((r) => r.mconCodigo).filter(Boolean)),
     );
-    const activeCount = activeContractNumbers.length;
 
     if (activeCount === 0) {
       return {
@@ -567,20 +591,17 @@ export class ContractsService {
       };
     }
 
-    const monthStart = startOfCurrentMonth();
-    const monthEnd = startOfNextMonth();
-
-    const sentThisMonth = await this.prisma.reportSended.findMany({
+    const sentInRange = await this.prisma.reportSended.findMany({
       where: {
         contractNumber: { in: activeContractNumbers },
         reportType: ReportType.MONTHLY,
-        createdAt: { gte: monthStart, lt: monthEnd },
+        createdAt: { gte: from, lt: to },
       },
       select: { contractNumber: true },
       distinct: ['contractNumber'],
     });
 
-    const reportsSentThisMonth = sentThisMonth.length;
+    const reportsSentThisMonth = sentInRange.length;
     const reportsPendingThisMonth = Math.max(
       0,
       activeCount - reportsSentThisMonth,

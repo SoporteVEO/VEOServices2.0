@@ -238,6 +238,7 @@ export type ReportsAnalyticsOverview = {
   };
   daily: ReportsAnalyticsTrendPoint[];
   monthly: ReportsAnalyticsTrendPoint[];
+  monthlyYear: ReportsAnalyticsTrendPoint[];
   byUser: ReportsAnalyticsByUserRow[];
   currentMonthCompliance: ReportsAnalyticsCurrentMonthCompliance;
 };

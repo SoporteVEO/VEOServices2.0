@@ -134,7 +134,7 @@ export function ReportsAnalyticsKpis({
       detail:
         pending === 0
           ? "Todos los contratos al día"
-          : `Sumatoria por usuario · mes actual`,
+          : `Sumatoria por usuario · en el rango`,
       tone: pending === 0 ? "emerald" : "amber",
     },
     {
