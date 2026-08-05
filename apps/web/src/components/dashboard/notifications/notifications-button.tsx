@@ -1,7 +1,15 @@
 "use client";
 
 import * as React from "react";
-import { Bell, BellOff, CheckCheck, Loader2, SearchX } from "lucide-react";
+import {
+  Bell,
+  BellOff,
+  CheckCheck,
+  Loader2,
+  SearchX,
+  Volume2,
+  VolumeX,
+} from "lucide-react";
 import type { Notification } from "@/api/notifications/notifications.types";
 import { useActiveNotifications } from "@/api/notifications/notifications.get";
 import {
@@ -18,6 +26,11 @@ import {
 import { ScrollArea } from "@/components/primitives/ui/scroll-area";
 import { Separator } from "@/components/primitives/ui/separator";
 import { cn } from "@/lib/utils";
+import {
+  isNotificationSoundMuted,
+  playNotificationSound,
+  setNotificationSoundMuted,
+} from "@/lib/notification-sound";
 import { NotificationItem } from "./notification-item";
 import { NotificationsSearch } from "./notifications-search";
 import { filterNotifications } from "./notifications-filter";
@@ -31,6 +44,9 @@ type NotificationsButtonProps = {
 export function NotificationsButton({ className }: NotificationsButtonProps) {
   const [open, setOpen] = React.useState(false);
   const [searchQuery, setSearchQuery] = React.useState("");
+  const [soundMuted, setSoundMuted] = React.useState<boolean>(() =>
+    isNotificationSoundMuted(),
+  );
 
   const { data, isLoading, isError, refetch, isFetching } =
     useActiveNotifications();
@@ -42,6 +58,30 @@ export function NotificationsButton({ className }: NotificationsButtonProps) {
   const pendingCount = data?.pendingCount ?? 0;
   const hasPending = pendingCount > 0;
   const hasNotifications = notifications.length > 0;
+
+  // Track the previously-observed pending count so we can play a sound only
+  // when it actually increases (new notification arrived) — not on the
+  // initial load, and not when the user dismisses one.
+  const previousPendingCountRef = React.useRef<number | null>(null);
+  React.useEffect(() => {
+    if (data === undefined) return;
+    const previous = previousPendingCountRef.current;
+    previousPendingCountRef.current = pendingCount;
+    if (previous === null) return;
+    if (pendingCount > previous) {
+      void playNotificationSound();
+    }
+  }, [pendingCount, data]);
+
+  function handleToggleSound() {
+    const next = !soundMuted;
+    setSoundMuted(next);
+    setNotificationSoundMuted(next);
+    if (!next) {
+      // Give immediate feedback that sound is back on.
+      void playNotificationSound();
+    }
+  }
 
   const filteredNotifications = React.useMemo(
     () => filterNotifications(notifications, searchQuery),
@@ -103,21 +143,45 @@ export function NotificationsButton({ className }: NotificationsButtonProps) {
           <h3 className="min-w-0 truncate text-sm font-semibold leading-none">
             Notificaciones
           </h3>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleMarkAll}
-            disabled={!hasPending || markAllViewedMutation.isPending}
-            data-icon="inline-start"
-            className="gap-1.5"
-          >
-            {markAllViewedMutation.isPending ? (
-              <Loader2 className="size-3.5 animate-spin" />
-            ) : (
-              <CheckCheck className="size-3.5" />
-            )}
-            <span>Marcar todas</span>
-          </Button>
+          <div className="flex items-center gap-1">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={handleToggleSound}
+              aria-label={
+                soundMuted
+                  ? "Activar sonido de notificaciones"
+                  : "Silenciar sonido de notificaciones"
+              }
+              title={
+                soundMuted
+                  ? "Activar sonido de notificaciones"
+                  : "Silenciar sonido de notificaciones"
+              }
+              className="size-7"
+            >
+              {soundMuted ? (
+                <VolumeX className="size-3.5" />
+              ) : (
+                <Volume2 className="size-3.5" />
+              )}
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleMarkAll}
+              disabled={!hasPending || markAllViewedMutation.isPending}
+              data-icon="inline-start"
+              className="gap-1.5"
+            >
+              {markAllViewedMutation.isPending ? (
+                <Loader2 className="size-3.5 animate-spin" />
+              ) : (
+                <CheckCheck className="size-3.5" />
+              )}
+              <span>Marcar todas</span>
+            </Button>
+          </div>
         </div>
         {hasNotifications ? (
           <div className="px-3 pb-3">

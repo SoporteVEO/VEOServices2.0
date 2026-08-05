@@ -1,5 +1,5 @@
 import type { LucideIcon } from "lucide-react";
-import { FileText, LayoutGrid, Receipt, ScrollText } from "lucide-react";
+import { FileText, LayoutGrid, PackageCheck, Receipt, ScrollText } from "lucide-react";
 
 export const MY_SPACE_BASE_PATH = "/dashboard/my-space";
 
@@ -30,12 +30,25 @@ export const MY_SPACE_NAV_ITEMS: MySpaceNavItem[] = [
     description: "Cotizaciones que has creado en la plataforma",
   },
   {
+    title: "Mis órdenes",
+    href: `${MY_SPACE_BASE_PATH}/production-orders`,
+    icon: PackageCheck,
+    description:
+      "Órdenes de producción generadas por tus cotizaciones aceptadas",
+  },
+  {
     title: "Mis facturas",
     href: `${MY_SPACE_BASE_PATH}/invoices`,
     icon: Receipt,
     description: "Facturación generada bajo tu nombre como vendedor",
   },
 ];
+
+export const MY_PRODUCTION_ORDERS_DEFAULT_PAGE_SIZE = 25;
+export const MY_PRODUCTION_ORDERS_SEARCH_PLACEHOLDER =
+  "Buscar por número de cotización, cliente o empresa...";
+export const MY_PRODUCTION_ORDERS_EMPTY_MESSAGE =
+  "No tienes órdenes de producción activas.";
 
 export const MY_OFFERS_DEFAULT_PAGE_SIZE = 25;
 export const MY_OFFERS_SEARCH_PLACEHOLDER =

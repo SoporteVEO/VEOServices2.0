@@ -17,6 +17,7 @@ enum Role {
 enum SubRole {
   HR = 'HR',
   USERS_MANAGEMENT = 'USERS_MANAGEMENT',
+  PRODUCTION = 'PRODUCTION',
 }
 
 export class CreateUserDto {

@@ -1,6 +1,6 @@
 export type UserRole = "ADMIN" | "USER" | "LIMITED";
 
-export type SubRole = "HR" | "USERS_MANAGEMENT";
+export type SubRole = "HR" | "USERS_MANAGEMENT" | "PRODUCTION";
 
 export type User = {
   id: string;

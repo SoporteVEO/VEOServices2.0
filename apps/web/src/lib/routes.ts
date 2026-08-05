@@ -14,6 +14,7 @@ import {
   UserRoundSearch,
   House,
   Banknote,
+  Factory,
 } from "lucide-react";
 import { SubRole, UserRole } from "@/api/users/users.types";
 
@@ -85,6 +86,13 @@ export const NAV_GROUPS: NavGroup[] = [
         allowedRoles: [],
         requiredSubRoles: ["HR"],
       },
+      {
+        title: "Producción",
+        href: "/dashboard/production",
+        icon: Factory,
+        allowedRoles: [],
+        requiredSubRoles: ["PRODUCTION"],
+      }
     ],
   },
   {

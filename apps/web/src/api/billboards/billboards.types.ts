@@ -21,6 +21,7 @@ export interface AvailableBillboard {
   imageId: number | null;
   imageDate: string | null;
   imageNotes: string | null;
+  s3ImageUrl: string | null;
   monthsWithoutPurchase: number | null;
   availableDiscount: number | null;
   totalPrice: number | null;
@@ -29,7 +30,7 @@ export interface AvailableBillboard {
 
 export type AvailableBillboardListing = Omit<
   AvailableBillboard,
-  "imageId" | "imageDate" | "imageNotes"
+  "imageId" | "imageDate" | "imageNotes" | "s3ImageUrl"
 >;
 
 export interface AvailableBillboardReport extends AvailableBillboard {

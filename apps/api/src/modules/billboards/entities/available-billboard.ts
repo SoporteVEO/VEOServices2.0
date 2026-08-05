@@ -15,6 +15,7 @@ export interface AvailableBillboard {
   imageId: number | null;
   imageDate: Date | null;
   imageNotes: string | null;
+  s3ImageUrl: string | null;
   monthsWithoutPurchase: number | null;
   availableDiscount: number | null;
   totalPrice: number | null;
@@ -24,7 +25,7 @@ export interface AvailableBillboard {
 /** Same as {@link AvailableBillboard} without image fields (listing / dashboard). */
 export type AvailableBillboardListing = Omit<
   AvailableBillboard,
-  'imageId' | 'imageDate' | 'imageNotes'
+  'imageId' | 'imageDate' | 'imageNotes' | 's3ImageUrl'
 >;
 
 /** Extended billboard data used for report generation (includes impression price). */

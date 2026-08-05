@@ -35,6 +35,12 @@ export const subRoleBadge: Record<SubRole, BadgeStyle> = {
     className:
       "border-purple-500/50 bg-purple-500/10 text-purple-700 dark:text-purple-400",
   },
+  PRODUCTION: {
+    label: "Producción",
+    variant: "outline",
+    className:
+      "border-orange-500/50 bg-orange-500/10 text-orange-700 dark:text-orange-400",
+  },
 };
 
 export const SUB_ROLE_OPTIONS: { value: SubRole; label: string; description: string }[] = [
@@ -47,5 +53,11 @@ export const SUB_ROLE_OPTIONS: { value: SubRole; label: string; description: str
     value: "USERS_MANAGEMENT",
     label: "Gestión de usuarios",
     description: "Acceso al módulo de gestión de usuarios",
+  },
+  {
+    value: "PRODUCTION",
+    label: "Producción",
+    description:
+      "Acceso al módulo de producción para gestionar órdenes por valla estática",
   },
 ];

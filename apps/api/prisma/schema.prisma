@@ -337,6 +337,7 @@ enum Role {
 enum SubRole {
   HR
   USERS_MANAGEMENT
+  PRODUCTION
 }
 
 enum NotificationStatus {
@@ -424,15 +425,15 @@ model ReportSended {
 }
 
 model Client {
-  id          String         @id @default(uuid())
-  name        String
-  company     String?
-  email       String         @unique
-  billingEmail String?       @map("billing_email")
-  contact     String?
-  createdAt   DateTime       @default(now())
-  updatedAt   DateTime       @updatedAt
-  offers      OfferCreated[]
+  id           String         @id @default(uuid())
+  name         String
+  company      String?
+  email        String         @unique
+  billingEmail String?        @map("billing_email")
+  contact      String?
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  offers       OfferCreated[]
 
   @@index([company])
   @@index([name])
@@ -452,32 +453,33 @@ enum OfferItemType {
 }
 
 model OfferCreated {
-  id                    String             @id @default(uuid())
-  offerNumber           String             @unique @map("offer_number")
-  clientId              String?            @map("client_id")
-  client                Client?            @relation(fields: [clientId], references: [id])
-  customerName          String             @map("customer_name")
-  customerCompany       String?            @map("customer_company")
-  customerEmail         String?            @map("customer_email")
-  billingEmail          String?            @map("billing_email")
-  customerContact       String?            @map("customer_contact")
-  validUntil            DateTime           @map("valid_until")
-  specialConditions     String?            @map("special_conditions")
-  advisorFullName       String?            @map("advisor_full_name")
-  status                OfferStatus        @default(PENDING)
-  briloMconId           Int?               @map("brilo_mcon_id")
-  subtotalImpression    Float              @map("subtotal_impression")
-  ivaImpression         Float              @map("iva_impression")
-  totalImpression       Float              @map("total_impression")
-  subtotalRental        Float              @map("subtotal_rental")
-  ivaRental             Float              @map("iva_rental")
-  totalRental           Float              @map("total_rental")
-  pdfS3Key              String?            @map("pdf_s3_key")
-  createdByUserId       String             @map("created_by_user_id")
-  createdBy             User               @relation(fields: [createdByUserId], references: [id])
-  createdAt             DateTime           @default(now())
-  updatedAt             DateTime           @updatedAt
-  items                 OfferCreatedItem[]
+  id                 String             @id @default(uuid())
+  offerNumber        String             @unique @map("offer_number")
+  clientId           String?            @map("client_id")
+  client             Client?            @relation(fields: [clientId], references: [id])
+  customerName       String             @map("customer_name")
+  customerCompany    String?            @map("customer_company")
+  customerEmail      String?            @map("customer_email")
+  billingEmail       String?            @map("billing_email")
+  customerContact    String?            @map("customer_contact")
+  validUntil         DateTime           @map("valid_until")
+  specialConditions  String?            @map("special_conditions")
+  advisorFullName    String?            @map("advisor_full_name")
+  status             OfferStatus        @default(PENDING)
+  briloMconId        Int?               @map("brilo_mcon_id")
+  subtotalImpression Float              @map("subtotal_impression")
+  ivaImpression      Float              @map("iva_impression")
+  totalImpression    Float              @map("total_impression")
+  subtotalRental     Float              @map("subtotal_rental")
+  ivaRental          Float              @map("iva_rental")
+  totalRental        Float              @map("total_rental")
+  pdfS3Key           String?            @map("pdf_s3_key")
+  createdByUserId    String             @map("created_by_user_id")
+  createdBy          User               @relation(fields: [createdByUserId], references: [id])
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+  items              OfferCreatedItem[]
+  productionOrder    ProductionOrder?
 
   @@index([createdAt])
   @@index([createdByUserId])
@@ -510,8 +512,44 @@ model OfferCreatedItem {
   endDate                DateTime?               @map("end_date")
   createdAt              DateTime                @default(now())
   digitalBillboardUsages DigitalBillboardUsage[]
+  productionOrderItem    ProductionOrderItem?
 
   @@index([offerId])
   @@index([digitalBillboardId])
   @@map("offers_created_items")
+}
+
+enum ProductionOrderStatus {
+  RECEIVED
+  IN_PRODUCTION
+  COMPLETED
+  CANCELLED
+}
+
+model ProductionOrder {
+  id        String                @id @default(uuid())
+  offerId   String                @unique @map("offer_id")
+  offer     OfferCreated          @relation(fields: [offerId], references: [id], onDelete: Cascade)
+  createdAt DateTime              @default(now())
+  updatedAt DateTime              @updatedAt
+  items     ProductionOrderItem[]
+
+  @@map("production_orders")
+}
+
+model ProductionOrderItem {
+  id                      String                @id @default(uuid())
+  productionOrderId       String                @map("production_order_id")
+  productionOrder         ProductionOrder       @relation(fields: [productionOrderId], references: [id], onDelete: Cascade)
+  offerItemId             String                @unique @map("offer_item_id")
+  offerItem               OfferCreatedItem      @relation(fields: [offerItemId], references: [id], onDelete: Cascade)
+  status                  ProductionOrderStatus @default(RECEIVED)
+  productionDocumentS3Key String?               @map("production_document_s3_key")
+  designDocumentS3Key     String?               @map("design_document_s3_key")
+  createdAt               DateTime              @default(now())
+  updatedAt               DateTime              @updatedAt
+
+  @@index([productionOrderId])
+  @@index([status])
+  @@map("production_order_items")
 }

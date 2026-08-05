@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { BriloDatabaseService } from '../brilo-database/brilo-database.service.js';
 import { RedisService } from '../redis/redis.service.js';
+import { S3StorageService } from '../s3-images/s3-storage.service.js';
 import { TtlCache } from '../../lib/ttl-cache.js';
 import { DashboardAnalyticsService } from './services/dashboard-analytics.service.js';
 import type {
@@ -642,9 +643,61 @@ export class BillboardsService {
     private readonly prisma: PrismaService,
     private readonly brilo: BriloDatabaseService,
     private readonly redis: RedisService,
+    private readonly s3Storage: S3StorageService,
     private readonly dashboardAnalytics: DashboardAnalyticsService,
   ) {
     this.logger.log(`Billboard cache TTL: ${CACHE_TTL_MS}ms`);
+  }
+
+  /**
+   * Returns a map of billboard code -> signed URL of the most recent
+   * STATIC_BILLBOARD_MONTHLY image stored in S3. Codes without an S3 image
+   * are simply absent from the map.
+   */
+  private async getMonthlyS3ImageUrlsByCode(
+    codes: string[],
+  ): Promise<Map<string, string>> {
+    const uniqueCodes = [
+      ...new Set(codes.filter((c): c is string => Boolean(c))),
+    ];
+    if (uniqueCodes.length === 0) return new Map();
+
+    const rows = await this.prisma.s3Image.findMany({
+      where: {
+        type: 'STATIC_BILLBOARD_MONTHLY',
+        staticBillboardCode: { code: { in: uniqueCodes } },
+      },
+      orderBy: { createdAt: 'desc' },
+      select: {
+        deleteUrl: true,
+        staticBillboardCode: { select: { code: true } },
+      },
+    });
+
+    const latestByCode = new Map<string, string>();
+    for (const row of rows) {
+      const code = row.staticBillboardCode?.code;
+      if (!code || latestByCode.has(code)) continue;
+      latestByCode.set(code, row.deleteUrl);
+    }
+
+    const entries = await Promise.all(
+      Array.from(latestByCode.entries()).map(async ([code, key]) => {
+        try {
+          const url = await this.s3Storage.getSignedUrl(key);
+          return [code, url] as const;
+        } catch (err) {
+          this.logger.warn(
+            `Failed to sign S3 image for billboard code ${code}: ${String(err)}`,
+          );
+          return null;
+        }
+      }),
+    );
+
+    return new Map(
+      entries.filter((e): e is readonly [string, string] => e !== null),
+    );
   }
 
   async getAvailableStates(from: Date, to: Date): Promise<AvailableState[]> {
@@ -996,6 +1049,7 @@ export class BillboardsService {
           imageId: r.ImagenId ?? null,
           imageDate: r.ImagenFecha ?? null,
           imageNotes: r.ImagenObservaciones ?? null,
+          s3ImageUrl: null,
           impressionPrice: r.PrecioImpresion ?? null,
           monthsWithoutPurchase,
           availableDiscount,
@@ -1052,51 +1106,58 @@ export class BillboardsService {
       );
     }
 
+    const visible = filtered.filter((r) => !purchasedSet.has(Number(r.caraId)));
+
+    const s3ImageUrlsByCode = await this.getMonthlyS3ImageUrlsByCode(
+      visible.map((r) => r.caraCodigo).filter((c): c is string => Boolean(c)),
+    );
+
     const now = new Date();
-    return filtered
-      .filter((r) => !purchasedSet.has(Number(r.caraId)))
-      .map((r): AvailableBillboard => {
-        const lastDate = r.UltimaFechaContrato;
-        const monthsWithoutPurchase = lastDate
-          ? Math.max(
-              0,
-              (now.getFullYear() - lastDate.getFullYear()) * 12 +
-                (now.getMonth() - lastDate.getMonth()),
-            )
-          : null;
+    return visible.map((r): AvailableBillboard => {
+      const lastDate = r.UltimaFechaContrato;
+      const monthsWithoutPurchase = lastDate
+        ? Math.max(
+            0,
+            (now.getFullYear() - lastDate.getFullYear()) * 12 +
+              (now.getMonth() - lastDate.getMonth()),
+          )
+        : null;
 
-        let availableDiscount: number | null = null;
-        if (monthsWithoutPurchase != null && monthsWithoutPurchase >= 3) {
-          availableDiscount = 45;
-        } else if (monthsWithoutPurchase === 2) {
-          availableDiscount = 30;
-        } else if (monthsWithoutPurchase === 1) {
-          availableDiscount = 20;
-        }
+      let availableDiscount: number | null = null;
+      if (monthsWithoutPurchase != null && monthsWithoutPurchase >= 3) {
+        availableDiscount = 45;
+      } else if (monthsWithoutPurchase === 2) {
+        availableDiscount = 30;
+      } else if (monthsWithoutPurchase === 1) {
+        availableDiscount = 20;
+      }
 
-        return {
-          billboardId: Number(r.caraId),
-          billboardCode: r.caraCodigo ?? null,
-          reference: r.Referencia ?? null,
-          address: r['Dirección'] ?? null,
-          departmentId: r.DepartamentoId ?? null,
-          departmentName: r.Departamento ?? null,
-          cityName: r.Municipio ?? null,
-          streetName: r.Calle ?? null,
-          height: r.Alto ?? null,
-          width: r.Ancho ?? null,
-          latitude: r.Latitud ?? null,
-          longitude: r.Longitud ?? null,
-          price: r.Precio ?? null,
-          imageId: r.ImagenId ?? null,
-          imageDate: r.ImagenFecha ?? null,
-          imageNotes: r.ImagenObservaciones ?? null,
-          monthsWithoutPurchase,
-          availableDiscount,
-          totalPrice: applyDiscount(r.Precio ?? null, availableDiscount),
-          isAvailable: true,
-        };
-      });
+      return {
+        billboardId: Number(r.caraId),
+        billboardCode: r.caraCodigo ?? null,
+        reference: r.Referencia ?? null,
+        address: r['Dirección'] ?? null,
+        departmentId: r.DepartamentoId ?? null,
+        departmentName: r.Departamento ?? null,
+        cityName: r.Municipio ?? null,
+        streetName: r.Calle ?? null,
+        height: r.Alto ?? null,
+        width: r.Ancho ?? null,
+        latitude: r.Latitud ?? null,
+        longitude: r.Longitud ?? null,
+        price: r.Precio ?? null,
+        imageId: r.ImagenId ?? null,
+        imageDate: r.ImagenFecha ?? null,
+        imageNotes: r.ImagenObservaciones ?? null,
+        s3ImageUrl: r.caraCodigo
+          ? (s3ImageUrlsByCode.get(r.caraCodigo) ?? null)
+          : null,
+        monthsWithoutPurchase,
+        availableDiscount,
+        totalPrice: applyDiscount(r.Precio ?? null, availableDiscount),
+        isAvailable: true,
+      };
+    });
   }
 
   async getBillboardImage(

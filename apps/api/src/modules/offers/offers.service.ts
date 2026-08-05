@@ -8,6 +8,10 @@ import {
 import { OfferItemType, OfferStatus, type Prisma } from '@prisma/client';
 import { BriloDatabaseService } from '../brilo-database/brilo-database.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
+import {
+  ProductionOrdersService,
+  type ProductionOrderNotificationMeta,
+} from '../production-orders/production-orders.service.js';
 import { S3StorageService } from '../s3-images/s3-storage.service.js';
 import { ClientsService } from '../clients/clients.service.js';
 import { CreateOfferDto, CreateOfferItemDto } from './dto/create-offer.dto.js';
@@ -228,6 +232,7 @@ export class OffersService {
     private readonly storage: S3StorageService,
     private readonly clients: ClientsService,
     private readonly brilo: BriloDatabaseService,
+    private readonly productionOrders: ProductionOrdersService,
   ) {}
 
   async create(
@@ -776,27 +781,42 @@ export class OffersService {
     const wasAccepted = existing.status === OfferStatus.ACCEPTED;
     const willBeAccepted = dto.status === OfferStatus.ACCEPTED;
 
-    const updated = await this.prisma.$transaction(async (tx) => {
-      const row = await tx.offerCreated.update({
-        where: { id },
-        data: {
-          status: dto.status,
-          briloMconId: willBeAccepted ? dto.briloMconId! : null,
-        },
-        include: {
-          ...this.offerListInclude(),
-          items: { orderBy: { createdAt: 'asc' } },
-        },
-      });
+    const { row: updated, productionOrderMeta } = await this.prisma.$transaction(
+      async (tx) => {
+        const row = await tx.offerCreated.update({
+          where: { id },
+          data: {
+            status: dto.status,
+            briloMconId: willBeAccepted ? dto.briloMconId! : null,
+          },
+          include: {
+            ...this.offerListInclude(),
+            items: { orderBy: { createdAt: 'asc' } },
+          },
+        });
 
-      if (wasAccepted && !willBeAccepted) {
-        await this.removeDigitalUsagesForOffer(tx, id);
-      } else if (!wasAccepted && willBeAccepted) {
-        await this.registerDigitalUsagesForOffer(tx, id);
-      }
+        let productionOrderMeta: ProductionOrderNotificationMeta | null = null;
+        if (wasAccepted && !willBeAccepted) {
+          await this.removeDigitalUsagesForOffer(tx, id);
+          await this.productionOrders.removeForOffer(tx, id);
+        } else if (!wasAccepted && willBeAccepted) {
+          await this.registerDigitalUsagesForOffer(tx, id);
+          const result = await this.productionOrders.createForAcceptedOffer(
+            tx,
+            id,
+          );
+          if (result.created) productionOrderMeta = result.meta;
+        }
 
-      return row;
-    });
+        return { row, productionOrderMeta };
+      },
+    );
+
+    if (productionOrderMeta) {
+      void this.productionOrders.notifyProductionUsersOfNewOrder(
+        productionOrderMeta,
+      );
+    }
 
     const linkedBriloContract = updated.briloMconId
       ? await this.fetchBriloContractById(updated.briloMconId)
@@ -825,6 +845,7 @@ export class OffersService {
 
       if (wasAccepted) {
         await this.removeDigitalUsagesForOffer(tx, id);
+        await this.productionOrders.removeForOffer(tx, id);
       }
 
       return row;
@@ -847,20 +868,35 @@ export class OffersService {
 
     await this.assertBriloContractExists(briloMconId);
 
-    const updated = await this.prisma.$transaction(async (tx) => {
-      const row = await tx.offerCreated.update({
-        where: { id },
-        data: {
-          status: OfferStatus.ACCEPTED,
-          briloMconId,
-        },
-        include: this.offerListInclude(),
-      });
+    const { row: updated, productionOrderMeta } = await this.prisma.$transaction(
+      async (tx) => {
+        const row = await tx.offerCreated.update({
+          where: { id },
+          data: {
+            status: OfferStatus.ACCEPTED,
+            briloMconId,
+          },
+          include: this.offerListInclude(),
+        });
 
-      await this.registerDigitalUsagesForOffer(tx, id);
+        await this.registerDigitalUsagesForOffer(tx, id);
+        const result = await this.productionOrders.createForAcceptedOffer(
+          tx,
+          id,
+        );
 
-      return row;
-    });
+        return {
+          row,
+          productionOrderMeta: result.created ? result.meta : null,
+        };
+      },
+    );
+
+    if (productionOrderMeta) {
+      void this.productionOrders.notifyProductionUsersOfNewOrder(
+        productionOrderMeta,
+      );
+    }
 
     return this.mapToListItem(updated);
   }

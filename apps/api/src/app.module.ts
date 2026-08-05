@@ -14,6 +14,7 @@ import { PaypalModule } from './modules/paypal/paypal.module.js';
 import { S3ImagesModule } from './modules/s3-images/s3-images.module.js';
 import { ClientsModule } from './modules/clients/clients.module.js';
 import { OffersModule } from './modules/offers/offers.module.js';
+import { ProductionOrdersModule } from './modules/production-orders/production-orders.module.js';
 import { StaticBillboardCodesModule } from './modules/static-billboard-codes/static-billboard-codes.module.js';
 import { TeamMembersModule } from './modules/team-members/team-members.module.js';
 import { MeModule } from './modules/me/me.module.js';
@@ -41,6 +42,7 @@ import { BriloWebapiModule } from './modules/brilo-webapi/brilo-webapi.module.js
     S3ImagesModule,
     ClientsModule,
     OffersModule,
+    ProductionOrdersModule,
     StaticBillboardCodesModule,
     TeamMembersModule,
     MeModule,
