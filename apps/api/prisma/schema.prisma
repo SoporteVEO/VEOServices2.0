@@ -8,29 +8,30 @@ datasource db {
 }
 
 model User {
-  id                String           @id
-  publicId          String           @unique @default(uuid()) @map("public_id")
-  firstName         String           @map("first_name")
-  lastName          String?          @map("last_name")
-  email             String           @unique
-  role              Role             @default(USER)
-  subRoles          SubRole[]        @default([]) @map("sub_roles")
-  disabled          Boolean          @default(false)
-  lastLoginAt       DateTime?        @map("last_login_at")
-  createdAt         DateTime         @default(now())
-  updatedAt         DateTime         @updatedAt
-  emailVerified     Boolean          @default(false)
-  image             String?
-  accounts          Account[]
-  sessions          Session[]
-  s3Images          S3Image[]
-  teamMember        TeamMember?      @relation("TeamMemberUser")
-  teamMembersAsBoss TeamMember[]     @relation("TeamMemberDirectBoss")
-  absences          Absence[]
-  notifications     Notification[]
-  metrics           UserMetrics?
-  metricsDays       UserMetricsDay[]
-  offersCreated     OfferCreated[]
+  id                    String                @id
+  publicId              String                @unique @default(uuid()) @map("public_id")
+  firstName             String                @map("first_name")
+  lastName              String?               @map("last_name")
+  email                 String                @unique
+  role                  Role                  @default(USER)
+  subRoles              SubRole[]             @default([]) @map("sub_roles")
+  disabled              Boolean               @default(false)
+  lastLoginAt           DateTime?             @map("last_login_at")
+  createdAt             DateTime              @default(now())
+  updatedAt             DateTime              @updatedAt
+  emailVerified         Boolean               @default(false)
+  image                 String?
+  accounts              Account[]
+  sessions              Session[]
+  s3Images              S3Image[]
+  teamMember            TeamMember?           @relation("TeamMemberUser")
+  teamMembersAsBoss     TeamMember[]          @relation("TeamMemberDirectBoss")
+  absences              Absence[]
+  notifications         Notification[]
+  metrics               UserMetrics?
+  metricsDays           UserMetricsDay[]
+  offersCreated         OfferCreated[]
+  installationsAssigned ProductionOrderItem[] @relation("ProductionOrderInstaller")
 
   @@map("users")
 }
@@ -332,6 +333,8 @@ enum Role {
   ADMIN
   USER
   LIMITED
+  INSTALLER
+  WORKER
 }
 
 enum SubRole {
@@ -388,7 +391,10 @@ model S3Image {
   staticBillboardCodeId String?
   staticBillboardCode   StaticBillboardCodes? @relation(fields: [staticBillboardCodeId], references: [id])
   type                  S3ImageType
+  productionOrderItemId String?               @map("production_order_item_id")
+  productionOrderItem   ProductionOrderItem?  @relation(fields: [productionOrderItemId], references: [id], onDelete: SetNull)
 
+  @@index([productionOrderItemId])
   @@map("s3_images")
 }
 
@@ -546,10 +552,17 @@ model ProductionOrderItem {
   status                  ProductionOrderStatus @default(RECEIVED)
   productionDocumentS3Key String?               @map("production_document_s3_key")
   designDocumentS3Key     String?               @map("design_document_s3_key")
+  assignedInstallerId     String?               @map("assigned_installer_id")
+  assignedInstaller       User?                 @relation("ProductionOrderInstaller", fields: [assignedInstallerId], references: [id], onDelete: SetNull)
+  scheduledInstallationAt DateTime?             @map("scheduled_installation_at")
+  installedAt             DateTime?             @map("installed_at")
+  vulcanizadoImageS3Key   String?               @map("vulcanizado_image_s3_key")
+  installationImages      S3Image[]
   createdAt               DateTime              @default(now())
   updatedAt               DateTime              @updatedAt
 
   @@index([productionOrderId])
   @@index([status])
+  @@index([assignedInstallerId])
   @@map("production_order_items")
 }

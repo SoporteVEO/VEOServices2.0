@@ -13,6 +13,8 @@ enum Role {
   ADMIN = 'ADMIN',
   USER = 'USER',
   LIMITED = 'LIMITED',
+  INSTALLER = 'INSTALLER',
+  WORKER = 'WORKER',
 }
 
 enum SubRole {

@@ -16,7 +16,8 @@ import {
   Banknote,
   Factory,
 } from "lucide-react";
-import { SubRole, UserRole } from "@/api/users/users.types";
+import { isFieldRole, SubRole, UserRole } from "@/api/users/users.types";
+import { INSTALLER_PORTAL_BASE } from "@/lib/installer-portal";
 
 export interface NavItem {
   title: string;
@@ -192,6 +193,11 @@ export function resolvePathAccess(
   role?: UserRole,
   subRoles?: SubRole[],
 ): AccessResult {
+  // Field roles have no dashboard at all; they always belong in the portal.
+  if (isFieldRole(role)) {
+    return { allowed: false, redirectTo: INSTALLER_PORTAL_BASE };
+  }
+
   if (isSystemPath(pathname)) return { allowed: true };
 
   const item = findNavItemForPath(pathname);

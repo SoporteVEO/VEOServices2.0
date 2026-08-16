@@ -1,4 +1,16 @@
-export type UserRole = "ADMIN" | "USER" | "LIMITED";
+export type UserRole =
+  | "ADMIN"
+  | "USER"
+  | "LIMITED"
+  | "INSTALLER"
+  | "WORKER";
+
+/** Roles whose users work in the field and only ever see the installer portal. */
+export const FIELD_ROLES = ["INSTALLER", "WORKER"] as const;
+
+export function isFieldRole(role: UserRole | undefined | null): boolean {
+  return role === "INSTALLER" || role === "WORKER";
+}
 
 export type SubRole = "HR" | "USERS_MANAGEMENT" | "PRODUCTION";
 

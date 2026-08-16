@@ -20,7 +20,53 @@ export const roleBadge: Record<UserRole, BadgeStyle> = {
     className:
       "border-sky-500/50 bg-sky-500/10 text-sky-700 dark:text-sky-400",
   },
+  INSTALLER: {
+    label: "Instalador",
+    variant: "outline",
+    className:
+      "border-teal-500/50 bg-teal-500/10 text-teal-700 dark:text-teal-400",
+  },
+  WORKER: {
+    label: "Operario",
+    variant: "outline",
+    className:
+      "border-slate-500/50 bg-slate-500/10 text-slate-700 dark:text-slate-300",
+  },
 };
+
+export const ROLE_OPTIONS: {
+  value: UserRole;
+  label: string;
+  description: string;
+}[] = [
+  {
+    value: "USER",
+    label: "Usuario",
+    description: "Acceso estándar al dashboard",
+  },
+  {
+    value: "ADMIN",
+    label: "Admin",
+    description: "Acceso total, incluida analítica y herramientas",
+  },
+  {
+    value: "LIMITED",
+    label: "Limitado",
+    description: "Solo puede subir y consultar imágenes",
+  },
+  {
+    value: "INSTALLER",
+    label: "Instalador",
+    description:
+      "Solo accede al portal móvil de instalaciones asignadas mediante QR",
+  },
+  {
+    value: "WORKER",
+    label: "Operario",
+    description:
+      "Solo accede al portal móvil de instalaciones asignadas mediante QR",
+  },
+];
 
 export const subRoleBadge: Record<SubRole, BadgeStyle> = {
   HR: {

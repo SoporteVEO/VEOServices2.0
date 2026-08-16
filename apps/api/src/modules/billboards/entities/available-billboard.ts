@@ -22,6 +22,20 @@ export interface AvailableBillboard {
   isAvailable: boolean;
 }
 
+/** Minimal geo/size payload for a single billboard face, resolved by `caraId`. */
+export interface BillboardLocation {
+  billboardId: number;
+  billboardCode: string | null;
+  address: string | null;
+  reference: string | null;
+  departmentName: string | null;
+  cityName: string | null;
+  height: number | null;
+  width: number | null;
+  latitude: number | null;
+  longitude: number | null;
+}
+
 /** Same as {@link AvailableBillboard} without image fields (listing / dashboard). */
 export type AvailableBillboardListing = Omit<
   AvailableBillboard,

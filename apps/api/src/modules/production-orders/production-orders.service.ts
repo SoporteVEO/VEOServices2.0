@@ -9,6 +9,8 @@ import {
   OfferItemType,
   OfferStatus,
   ProductionOrderStatus,
+  Role,
+  S3ImageType,
   type Prisma,
 } from '@prisma/client';
 import { NotificationsService } from '../notifications/notifications.service.js';
@@ -18,6 +20,14 @@ import { S3StorageService } from '../s3-images/s3-storage.service.js';
 const PRODUCTION_DOCS_FOLDER = 'production-orders';
 
 export type ProductionDocumentKind = 'PRODUCTION' | 'DESIGN';
+
+export interface InstallerSummaryDto {
+  id: string;
+  firstName: string;
+  lastName: string | null;
+  email: string;
+  role: Role;
+}
 
 export interface ProductionOrderItemDto {
   id: string;
@@ -32,6 +42,11 @@ export interface ProductionOrderItemDto {
   quantity: number;
   hasProductionDocument: boolean;
   hasDesignDocument: boolean;
+  assignedInstaller: InstallerSummaryDto | null;
+  scheduledInstallationAt: string | null;
+  installedAt: string | null;
+  hasVulcanizadoImage: boolean;
+  installationImageCount: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -119,44 +134,69 @@ function resolveAggregateStatus(
   return statuses[0];
 }
 
+const ITEM_INCLUDE = {
+  offerItem: {
+    select: {
+      id: true,
+      billboardCode: true,
+      address: true,
+      cityName: true,
+      departmentName: true,
+      width: true,
+      height: true,
+      quantity: true,
+    },
+  },
+  assignedInstaller: {
+    select: {
+      id: true,
+      firstName: true,
+      lastName: true,
+      email: true,
+      role: true,
+    },
+  },
+  installationImages: {
+    where: { type: S3ImageType.STATIC_BILLBOARD_INSTALLATION },
+    select: { id: true },
+  },
+} satisfies Prisma.ProductionOrderItemInclude;
+
+const ORDER_INCLUDE = {
+  offer: {
+    select: {
+      id: true,
+      offerNumber: true,
+      customerName: true,
+      customerCompany: true,
+      advisorFullName: true,
+      createdByUserId: true,
+      createdBy: {
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          email: true,
+        },
+      },
+    },
+  },
+  items: {
+    include: ITEM_INCLUDE,
+    orderBy: [{ createdAt: 'asc' }, { id: 'asc' }],
+  },
+} satisfies Prisma.ProductionOrderInclude;
+
 type ProductionOrderInclude = Prisma.ProductionOrderGetPayload<{
-  include: {
-    offer: {
-      select: {
-        id: true;
-        offerNumber: true;
-        customerName: true;
-        customerCompany: true;
-        advisorFullName: true;
-        createdByUserId: true;
-        createdBy: {
-          select: {
-            id: true;
-            firstName: true;
-            lastName: true;
-            email: true;
-          };
-        };
-      };
-    };
-    items: {
-      include: {
-        offerItem: {
-          select: {
-            id: true;
-            billboardCode: true;
-            address: true;
-            cityName: true;
-            departmentName: true;
-            width: true;
-            height: true;
-            quantity: true;
-          };
-        };
-      };
-    };
-  };
+  include: typeof ORDER_INCLUDE;
 }>;
+
+type ProductionOrderItemInclude = Prisma.ProductionOrderItemGetPayload<{
+  include: typeof ITEM_INCLUDE;
+}>;
+
+/** Roles that may be put on the hook for a physical billboard installation. */
+const INSTALLER_ROLES: Role[] = [Role.INSTALLER, Role.WORKER];
 
 export interface ProductionOrderNotificationMeta {
   offerNumber: string;
@@ -282,6 +322,7 @@ export class ProductionOrdersService {
           select: {
             productionDocumentS3Key: true,
             designDocumentS3Key: true,
+            vulcanizadoImageS3Key: true,
           },
         },
       },
@@ -289,9 +330,11 @@ export class ProductionOrdersService {
     if (!order) return;
 
     const keys = order.items.flatMap((item) =>
-      [item.productionDocumentS3Key, item.designDocumentS3Key].filter(
-        (v): v is string => Boolean(v),
-      ),
+      [
+        item.productionDocumentS3Key,
+        item.designDocumentS3Key,
+        item.vulcanizadoImageS3Key,
+      ].filter((v): v is string => Boolean(v)),
     );
 
     await tx.productionOrder.delete({ where: { id: order.id } });
@@ -409,7 +452,7 @@ export class ProductionOrdersService {
       const updated = await this.prisma.productionOrderItem.update({
         where: { id: itemId },
         data: buildDocumentUpdate(kind, upload.key),
-        include: { offerItem: true },
+        include: ITEM_INCLUDE,
       });
 
       if (previousKey && previousKey !== upload.key) {
@@ -437,7 +480,7 @@ export class ProductionOrdersService {
     const updated = await this.prisma.productionOrderItem.update({
       where: { id: itemId },
       data: buildDocumentUpdate(kind, null),
-      include: { offerItem: true },
+      include: ITEM_INCLUDE,
     });
 
     void this.storage.deleteByKey(key);
@@ -502,16 +545,88 @@ export class ProductionOrdersService {
     const updated = await this.prisma.productionOrderItem.update({
       where: { id: itemId },
       data: { status },
-      include: { offerItem: true },
+      include: ITEM_INCLUDE,
     });
     return this.mapItemToDto(updated);
+  }
+
+  /**
+   * Assigns (or clears) the field user responsible for physically installing
+   * a static billboard, along with the planned installation date. Both fields
+   * feed the QR portal the installer opens on site.
+   */
+  async updateItemAssignment(
+    itemId: string,
+    input: {
+      assignedInstallerId?: string | null;
+      scheduledInstallationAt?: string | null;
+    },
+  ): Promise<ProductionOrderItemDto> {
+    const existing = await this.prisma.productionOrderItem.findUnique({
+      where: { id: itemId },
+      select: { id: true },
+    });
+    if (!existing) {
+      throw new NotFoundException('Orden de producción no encontrada');
+    }
+
+    const data: Prisma.ProductionOrderItemUpdateInput = {};
+
+    if (input.assignedInstallerId !== undefined) {
+      if (input.assignedInstallerId === null) {
+        data.assignedInstaller = { disconnect: true };
+      } else {
+        const installer = await this.prisma.user.findFirst({
+          where: {
+            id: input.assignedInstallerId,
+            disabled: false,
+            role: { in: INSTALLER_ROLES },
+          },
+          select: { id: true },
+        });
+        if (!installer) {
+          throw new BadRequestException(
+            'El usuario seleccionado no es un instalador activo',
+          );
+        }
+        data.assignedInstaller = { connect: { id: installer.id } };
+      }
+    }
+
+    if (input.scheduledInstallationAt !== undefined) {
+      data.scheduledInstallationAt = parseOptionalDate(
+        input.scheduledInstallationAt,
+      );
+    }
+
+    const updated = await this.prisma.productionOrderItem.update({
+      where: { id: itemId },
+      data,
+      include: ITEM_INCLUDE,
+    });
+    return this.mapItemToDto(updated);
+  }
+
+  /** Active users that can be picked as the installer for a billboard. */
+  async listAssignableInstallers(): Promise<InstallerSummaryDto[]> {
+    return this.prisma.user.findMany({
+      where: { disabled: false, role: { in: INSTALLER_ROLES } },
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        email: true,
+        role: true,
+      },
+      orderBy: [{ firstName: 'asc' }, { lastName: 'asc' }],
+    });
   }
 
   private async findItemOwnedByUser(itemId: string, userId: string) {
     const item = await this.prisma.productionOrderItem.findUnique({
       where: { id: itemId },
       include: {
-        offerItem: true,
+        ...ITEM_INCLUDE,
         productionOrder: {
           select: {
             offer: { select: { createdByUserId: true } },
@@ -529,43 +644,7 @@ export class ProductionOrdersService {
   }
 
   private orderInclude() {
-    return {
-      offer: {
-        select: {
-          id: true,
-          offerNumber: true,
-          customerName: true,
-          customerCompany: true,
-          advisorFullName: true,
-          createdByUserId: true,
-          createdBy: {
-            select: {
-              id: true,
-              firstName: true,
-              lastName: true,
-              email: true,
-            },
-          },
-        },
-      },
-      items: {
-        include: {
-          offerItem: {
-            select: {
-              id: true,
-              billboardCode: true,
-              address: true,
-              cityName: true,
-              departmentName: true,
-              width: true,
-              height: true,
-              quantity: true,
-            },
-          },
-        },
-        orderBy: { createdAt: 'asc' as const },
-      },
-    } as const;
+    return ORDER_INCLUDE;
   }
 
   private mapToDto(row: ProductionOrderInclude): ProductionOrderDto {
@@ -596,24 +675,9 @@ export class ProductionOrdersService {
     };
   }
 
-  private mapItemToDto(item: {
-    id: string;
-    offerItemId: string;
-    status: ProductionOrderStatus;
-    productionDocumentS3Key: string | null;
-    designDocumentS3Key: string | null;
-    createdAt: Date;
-    updatedAt: Date;
-    offerItem: {
-      billboardCode: string | null;
-      address: string | null;
-      cityName: string | null;
-      departmentName: string | null;
-      width: number | null;
-      height: number | null;
-      quantity: number;
-    };
-  }): ProductionOrderItemDto {
+  private mapItemToDto(
+    item: ProductionOrderItemInclude,
+  ): ProductionOrderItemDto {
     return {
       id: item.id,
       offerItemId: item.offerItemId,
@@ -627,6 +691,12 @@ export class ProductionOrdersService {
       quantity: item.offerItem.quantity,
       hasProductionDocument: !!item.productionDocumentS3Key,
       hasDesignDocument: !!item.designDocumentS3Key,
+      assignedInstaller: item.assignedInstaller,
+      scheduledInstallationAt:
+        item.scheduledInstallationAt?.toISOString() ?? null,
+      installedAt: item.installedAt?.toISOString() ?? null,
+      hasVulcanizadoImage: !!item.vulcanizadoImageS3Key,
+      installationImageCount: item.installationImages.length,
       createdAt: item.createdAt.toISOString(),
       updatedAt: item.updatedAt.toISOString(),
     };
@@ -643,6 +713,15 @@ function pickDocumentKey(
   return kind === 'PRODUCTION'
     ? item.productionDocumentS3Key
     : item.designDocumentS3Key;
+}
+
+function parseOptionalDate(value: string | null): Date | null {
+  if (value === null || value.trim() === '') return null;
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) {
+    throw new BadRequestException('La fecha de instalación no es válida');
+  }
+  return parsed;
 }
 
 function buildDocumentUpdate(

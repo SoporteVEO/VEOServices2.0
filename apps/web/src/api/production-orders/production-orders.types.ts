@@ -6,6 +6,14 @@ export type ProductionOrderStatus =
 
 export type ProductionDocumentKind = "PRODUCTION" | "DESIGN";
 
+export interface InstallerSummary {
+  id: string;
+  firstName: string;
+  lastName: string | null;
+  email: string;
+  role: "INSTALLER" | "WORKER";
+}
+
 export interface ProductionOrderItem {
   id: string;
   offerItemId: string;
@@ -19,6 +27,11 @@ export interface ProductionOrderItem {
   quantity: number;
   hasProductionDocument: boolean;
   hasDesignDocument: boolean;
+  assignedInstaller: InstallerSummary | null;
+  scheduledInstallationAt: string | null;
+  installedAt: string | null;
+  hasVulcanizadoImage: boolean;
+  installationImageCount: number;
   createdAt: string;
   updatedAt: string;
 }

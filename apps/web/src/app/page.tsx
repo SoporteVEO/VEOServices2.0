@@ -3,7 +3,9 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
+import { isFieldRole, type UserRole } from "@/api/users/users.types";
 import { authClient } from "@/lib/auth-client";
+import { INSTALLER_PORTAL_BASE } from "@/lib/installer-portal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -12,6 +14,17 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/primitives/ui/card";
+
+/**
+ * Honours the `redirect` set by the proxy (typically a QR deep link), and
+ * otherwise sends field roles straight to the installer portal since they
+ * have no dashboard.
+ */
+function resolveLandingPath(role: UserRole | undefined): string {
+  const redirect = new URLSearchParams(window.location.search).get("redirect");
+  if (redirect?.startsWith("/")) return redirect;
+  return isFieldRole(role) ? INSTALLER_PORTAL_BASE : "/dashboard";
+}
 
 export default function SignInPage() {
   const router = useRouter();
@@ -25,7 +38,7 @@ export default function SignInPage() {
     setError("");
     setLoading(true);
 
-    const { error } = await authClient.signIn.email({
+    const { data, error } = await authClient.signIn.email({
       email,
       password,
     });
@@ -36,7 +49,8 @@ export default function SignInPage() {
       return;
     }
 
-    router.push("/dashboard");
+    const role = (data?.user as { role?: UserRole } | undefined)?.role;
+    router.push(resolveLandingPath(role));
   }
 
   return (

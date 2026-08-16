@@ -1,6 +1,7 @@
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { apiFetch } from "@/lib/api";
 import type {
+  InstallerSummary,
   PaginatedProductionOrders,
   ProductionDocumentKind,
   ProductionOrder,
@@ -87,6 +88,22 @@ export function useProductionOrder(
     enabled: !!id,
     staleTime: STALE_TIME,
     gcTime: GC_TIME,
+  });
+}
+
+export async function getAssignableInstallers(): Promise<InstallerSummary[]> {
+  const response = await apiFetch<{ data: InstallerSummary[] }>(
+    "/production-orders/installers",
+  );
+  return response.data;
+}
+
+export function useAssignableInstallers(enabled = true) {
+  return useQuery({
+    queryKey: ["production-orders", "installers"],
+    queryFn: getAssignableInstallers,
+    enabled,
+    staleTime: 5 * 60 * 1000,
   });
 }
 

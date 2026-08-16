@@ -13,6 +13,7 @@ import type {
   BillboardContractHistoryItem,
   BillboardDashboardAnalytics,
   BillboardImageItem,
+  BillboardLocation,
   DashboardCostCenter,
 } from './entities/available-billboard.js';
 import type { DashboardAnalyticsOptions } from './services/dashboard-analytics.service.js';
@@ -68,6 +69,19 @@ interface BriloBillboardListingRow {
 
 interface BriloBillboardReportRow extends BriloBillboardRow {
   PrecioImpresion: number | null;
+}
+
+interface BriloBillboardLocationRow {
+  caraId: number;
+  caraCodigo: string | null;
+  Dirección: string | null;
+  Referencia: string | null;
+  Departamento: string | null;
+  Municipio: string | null;
+  Alto: number | null;
+  Ancho: number | null;
+  Latitud: number | null;
+  Longitud: number | null;
 }
 
 const AVAILABLE_STATES_SQL = `
@@ -453,6 +467,28 @@ FROM olVallas.dbo.imagenes i WITH (NOLOCK)
 WHERE i.imagId = @ImagenId
 `;
 
+const BILLBOARD_LOCATION_SQL = `
+SELECT TOP 1
+    car.caraId,
+    car.caraCodigo,
+    siti.sitiDireccion  AS [Dirección],
+    siti.sitiReferencia AS [Referencia],
+    dpto.dptoNombre     AS [Departamento],
+    muni.muniNombre     AS [Municipio],
+    car.caraAlto        AS [Alto],
+    car.caraAncho       AS [Ancho],
+    siti.sitiGPSLat     AS [Latitud],
+    siti.sitiGPSLon     AS [Longitud]
+FROM olVallas.dbo.Caras AS car WITH (NOLOCK)
+INNER JOIN olVallas.dbo.Sitios AS siti WITH (NOLOCK)
+    ON car.sitiId = siti.sitiId
+LEFT JOIN olComun.dbo.DeptosEstados AS dpto WITH (NOLOCK)
+    ON siti.dptoId = dpto.dptoId
+LEFT JOIN olComun.dbo.MuniCondados AS muni WITH (NOLOCK)
+    ON siti.muniId = muni.muniId
+WHERE car.caraId = @CaraId;
+`;
+
 const BILLBOARD_IMAGES_BY_BILLBOARD_SQL = `
 SELECT
     i.imagId            AS [ImagenId],
@@ -634,6 +670,8 @@ export class BillboardsService {
   private readonly billboardImagesCache = new TtlCache<BillboardImageItem[]>(
     CACHE_TTL_MS,
   );
+  private readonly billboardLocationCache =
+    new TtlCache<BillboardLocation | null>(CACHE_TTL_MS);
   private readonly imageCache = new TtlCache<{
     buffer: Buffer;
     mime: string;
@@ -763,6 +801,43 @@ export class BillboardsService {
     return this.billboardImagesCache.getOrFetch(String(billboardId), () =>
       this.fetchBillboardImages(billboardId),
     );
+  }
+
+  /**
+   * Resolves the GPS position and physical size of a single billboard face.
+   * Returns `null` when Brilo has no matching `caraId` so callers can fall
+   * back to the address text they already have.
+   */
+  async getBillboardLocation(
+    billboardId: number,
+  ): Promise<BillboardLocation | null> {
+    return this.billboardLocationCache.getOrFetch(String(billboardId), () =>
+      this.fetchBillboardLocation(billboardId),
+    );
+  }
+
+  private async fetchBillboardLocation(
+    billboardId: number,
+  ): Promise<BillboardLocation | null> {
+    const rows = await this.brilo.query<BriloBillboardLocationRow>(
+      BILLBOARD_LOCATION_SQL,
+      { CaraId: billboardId },
+    );
+    const row = rows[0];
+    if (!row) return null;
+
+    return {
+      billboardId: Number(row.caraId),
+      billboardCode: row.caraCodigo ?? null,
+      address: row['Dirección'] ?? null,
+      reference: row.Referencia ?? null,
+      departmentName: row.Departamento ?? null,
+      cityName: row.Municipio ?? null,
+      height: row.Alto ?? null,
+      width: row.Ancho ?? null,
+      latitude: row.Latitud ?? null,
+      longitude: row.Longitud ?? null,
+    };
   }
 
   private async fetchBillboardImages(

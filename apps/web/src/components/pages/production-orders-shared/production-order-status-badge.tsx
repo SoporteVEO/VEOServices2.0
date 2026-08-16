@@ -11,7 +11,7 @@ export const PRODUCTION_STATUS_LABELS: Record<ProductionOrderStatus, string> = {
   CANCELLED: "Cancelada",
 };
 
-const STATUS_STYLES: Record<ProductionOrderStatus, string> = {
+export const PRODUCTION_STATUS_STYLES: Record<ProductionOrderStatus, string> = {
   RECEIVED:
     "border-slate-500/40 bg-slate-500/10 text-slate-700 dark:text-slate-300",
   IN_PRODUCTION:
@@ -33,7 +33,7 @@ export function ProductionOrderStatusBadge({ status, className }: Props) {
       variant="outline"
       className={cn(
         "whitespace-nowrap font-medium",
-        STATUS_STYLES[status],
+        PRODUCTION_STATUS_STYLES[status],
         className,
       )}
     >

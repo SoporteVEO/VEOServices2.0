@@ -17,6 +17,13 @@ import {
 
 const LIMITED_ROLE = 'LIMITED';
 
+/**
+ * Field roles live outside the dashboard: they may only reach endpoints that
+ * name them explicitly through `@RequiredRoles`. Everything else is denied,
+ * so adding a new controller never widens their access by accident.
+ */
+const FIELD_ROLES = new Set(['INSTALLER', 'WORKER']);
+
 export const AUTH_INSTANCE = 'BETTER_AUTH';
 
 let _fromNodeHeaders: typeof import('better-auth/node').fromNodeHeaders;
@@ -72,6 +79,10 @@ export class AuthGuard implements CanActivate {
 
     const userRole = session.user.role as string | undefined;
 
+    const requiredRoles = this.reflector.getAllAndOverride<
+      string[] | undefined
+    >(REQUIRED_ROLES_KEY, [context.getHandler(), context.getClass()]);
+
     if (userRole === LIMITED_ROLE) {
       const allowLimited = this.reflector.getAllAndOverride<boolean>(
         ALLOW_LIMITED_KEY,
@@ -82,9 +93,12 @@ export class AuthGuard implements CanActivate {
       }
     }
 
-    const requiredRoles = this.reflector.getAllAndOverride<
-      string[] | undefined
-    >(REQUIRED_ROLES_KEY, [context.getHandler(), context.getClass()]);
+    if (userRole && FIELD_ROLES.has(userRole)) {
+      if (!requiredRoles?.includes(userRole)) {
+        throw new ForbiddenException('No tienes permisos para este recurso');
+      }
+    }
+
     if (requiredRoles?.length) {
       if (!userRole || !requiredRoles.includes(userRole)) {
         throw new ForbiddenException('No tienes permisos para este recurso');

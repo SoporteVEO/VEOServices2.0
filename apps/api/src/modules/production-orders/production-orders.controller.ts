@@ -11,6 +11,7 @@ import {
 import { ProductionOrderStatus } from '@prisma/client';
 import { CurrentUser, RequiredSubRoles } from '../auth/decorators.js';
 import { resolveTargetUserId } from '../auth/view-as.helper.js';
+import { UpdateProductionOrderItemAssignmentDto } from './dto/update-production-order-item-assignment.dto.js';
 import { UpdateProductionOrderItemStatusDto } from './dto/update-production-order-item-status.dto.js';
 import { UploadProductionOrderDocumentDto } from './dto/upload-production-order-document.dto.js';
 import {
@@ -70,6 +71,13 @@ export class ProductionOrdersController {
       pageSize,
       status: parseStatusOrThrow(statusStr),
     });
+  }
+
+  @Get('installers')
+  @RequiredSubRoles('PRODUCTION')
+  async listInstallers() {
+    const data = await this.service.listAssignableInstallers();
+    return { data };
   }
 
   @Get()
@@ -190,6 +198,16 @@ export class ProductionOrdersController {
     @Body() dto: UpdateProductionOrderItemStatusDto,
   ) {
     const data = await this.service.updateItemStatus(itemId, dto.status);
+    return { data };
+  }
+
+  @Patch('items/:itemId/assignment')
+  @RequiredSubRoles('PRODUCTION')
+  async updateItemAssignment(
+    @Param('itemId') itemId: string,
+    @Body() dto: UpdateProductionOrderItemAssignmentDto,
+  ) {
+    const data = await this.service.updateItemAssignment(itemId, dto);
     return { data };
   }
 

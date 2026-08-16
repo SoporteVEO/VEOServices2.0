@@ -164,9 +164,15 @@ export class S3ImagesService {
     });
   }
 
+  /**
+   * `links.productionOrderItemId` is set when the upload originates from the
+   * installer portal, so the resulting image can be traced back to the
+   * installation task that produced it.
+   */
   async create(
     dto: CreateS3ImageDto,
     uploadedUserId: string,
+    links: { productionOrderItemId?: string } = {},
   ): Promise<S3ImageListItem> {
     if (!uploadedUserId) {
       throw new BadRequestException('Usuario no autenticado');
@@ -201,6 +207,7 @@ export class S3ImagesService {
           tags: dto.tags ?? [],
           type: dto.type,
           staticBillboardCodeId: dto.staticBillboardCodeId ?? null,
+          productionOrderItemId: links.productionOrderItemId ?? null,
         },
         include: {
           uploadedUser: {

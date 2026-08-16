@@ -24,6 +24,7 @@ import {
 import { formatBriloShortDate, formatDimensions } from "@/lib/format";
 import { ProductionOrderDocumentSlot } from "@/components/pages/production-orders-shared/production-order-document-slot";
 import { ProductionOrderStatusBadge } from "@/components/pages/production-orders-shared/production-order-status-badge";
+import { sortProductionOrderItems } from "@/components/pages/production-orders-shared/production-order-utils";
 
 type Props = {
   orderId: string | null;
@@ -167,7 +168,7 @@ function DrawerContentInner({
             </header>
 
             <div className="flex flex-col gap-3">
-              {order.items.map((item) => (
+              {sortProductionOrderItems(order.items).map((item) => (
                 <ItemCard key={item.id} item={item} readOnly={readOnly} />
               ))}
             </div>

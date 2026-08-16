@@ -15,6 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { ROLE_OPTIONS } from "./const";
 import { SubRolesField } from "./sub-roles-field";
 
 export type UserFormValues = {
@@ -76,11 +77,16 @@ export function UserFormFields({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="USER">Usuario</SelectItem>
-                <SelectItem value="ADMIN">Administrador</SelectItem>
-                <SelectItem value="LIMITED">
-                  Limitado (solo imágenes)
-                </SelectItem>
+                {ROLE_OPTIONS.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    <span className="flex flex-col items-start">
+                      <span>{option.label}</span>
+                      <span className="text-xs text-muted-foreground">
+                        {option.description}
+                      </span>
+                    </span>
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>

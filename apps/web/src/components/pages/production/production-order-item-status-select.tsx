@@ -4,13 +4,17 @@ import { toast } from "sonner";
 import { useUpdateProductionOrderItemStatus } from "@/api/production-orders/production-orders.patch";
 import type { ProductionOrderStatus } from "@/api/production-orders/production-orders.types";
 import {
+  PRODUCTION_STATUS_LABELS,
+  PRODUCTION_STATUS_STYLES,
+} from "@/components/pages/production-orders-shared/production-order-status-badge";
+import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { PRODUCTION_STATUS_LABELS } from "@/components/pages/production-orders-shared/production-order-status-badge";
+import { cn } from "@/lib/utils";
 
 const STATUS_OPTIONS: ProductionOrderStatus[] = [
   "RECEIVED",
@@ -24,6 +28,18 @@ type Props = {
   status: ProductionOrderStatus;
   disabled?: boolean;
 };
+
+function StatusDot({ status }: { status: ProductionOrderStatus }) {
+  return (
+    <span
+      className={cn(
+        "size-2 shrink-0 rounded-full border",
+        PRODUCTION_STATUS_STYLES[status],
+      )}
+      aria-hidden
+    />
+  );
+}
 
 export function ProductionOrderItemStatusSelect({
   itemId,
@@ -52,13 +68,24 @@ export function ProductionOrderItemStatusSelect({
       onValueChange={handleChange}
       disabled={disabled || mutation.isPending}
     >
-      <SelectTrigger className="w-full min-w-[160px]">
-        <SelectValue />
+      <SelectTrigger
+        className={cn(
+            "w-full min-w-45 border font-medium",
+          PRODUCTION_STATUS_STYLES[status],
+        )}
+      >
+        <span className="flex min-w-0 items-center gap-2">
+          <StatusDot status={status} />
+          <SelectValue />
+        </span>
       </SelectTrigger>
       <SelectContent>
         {STATUS_OPTIONS.map((value) => (
           <SelectItem key={value} value={value}>
-            {PRODUCTION_STATUS_LABELS[value]}
+            <span className="flex items-center gap-2">
+              <StatusDot status={value} />
+              {PRODUCTION_STATUS_LABELS[value]}
+            </span>
           </SelectItem>
         ))}
       </SelectContent>

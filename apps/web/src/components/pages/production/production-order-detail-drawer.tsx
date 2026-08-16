@@ -22,7 +22,10 @@ import {
 import { formatBriloShortDate, formatDimensions } from "@/lib/format";
 import { ProductionOrderDocumentPreviewButton } from "@/components/pages/production-orders-shared/production-order-document-preview";
 import { ProductionOrderStatusBadge } from "@/components/pages/production-orders-shared/production-order-status-badge";
+import { sortProductionOrderItems } from "@/components/pages/production-orders-shared/production-order-utils";
+import { ProductionOrderInstallerAssignment } from "./production-order-installer-assignment";
 import { ProductionOrderItemStatusSelect } from "./production-order-item-status-select";
+import { ProductionOrderQrButton } from "./production-order-qr-button";
 
 type Props = {
   orderId: string | null;
@@ -95,6 +98,8 @@ function DrawerContentInner({
   order: ProductionOrder;
   onClose: () => void;
 }) {
+  const campaignLabel = `${order.offerNumber} · ${order.customerCompany ?? order.customerName}`;
+
   return (
     <>
       <DrawerHeader className="border-b">
@@ -155,8 +160,12 @@ function DrawerContentInner({
             </header>
 
             <div className="flex flex-col gap-3">
-              {order.items.map((item) => (
-                <ItemCard key={item.id} item={item} />
+              {sortProductionOrderItems(order.items).map((item) => (
+                <ItemCard
+                  key={item.id}
+                  item={item}
+                  campaignLabel={campaignLabel}
+                />
               ))}
             </div>
           </section>
@@ -174,7 +183,13 @@ function DrawerContentInner({
   );
 }
 
-function ItemCard({ item }: { item: ProductionOrderItem }) {
+function ItemCard({
+  item,
+  campaignLabel,
+}: {
+  item: ProductionOrderItem;
+  campaignLabel: string;
+}) {
   const location =
     [item.address, item.cityName, item.departmentName]
       .filter(Boolean)
@@ -194,7 +209,7 @@ function ItemCard({ item }: { item: ProductionOrderItem }) {
           </div>
           <p className="line-clamp-2 text-xs text-foreground/90">{location}</p>
         </div>
-        <div className="min-w-[180px]">
+        <div className="min-w-45">
           <ProductionOrderItemStatusSelect
             itemId={item.id}
             status={item.status}
@@ -215,6 +230,46 @@ function ItemCard({ item }: { item: ProductionOrderItem }) {
           itemId={item.id}
           kind="DESIGN"
         />
+      </div>
+
+      <Separator />
+
+      <div className="space-y-2">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <p className="text-xs font-medium text-muted-foreground">
+            Instalación en sitio
+          </p>
+          <ProductionOrderQrButton item={item} campaignLabel={campaignLabel} />
+        </div>
+
+        <ProductionOrderInstallerAssignment item={item} />
+
+        <div className="flex flex-wrap items-center gap-1.5 text-[11px] text-muted-foreground">
+          <Badge
+            variant="outline"
+            className={
+              item.hasVulcanizadoImage
+                ? "border-emerald-500/50 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400"
+                : undefined
+            }
+          >
+            Vulcanizado {item.hasVulcanizadoImage ? "cargado" : "pendiente"}
+          </Badge>
+          <Badge
+            variant="outline"
+            className={
+              item.installationImageCount > 0
+                ? "border-emerald-500/50 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400"
+                : undefined
+            }
+          >
+            {item.installationImageCount} imagen
+            {item.installationImageCount === 1 ? "" : "es"} de instalación
+          </Badge>
+          {item.installedAt ? (
+            <span>Instalada el {formatBriloShortDate(item.installedAt)}</span>
+          ) : null}
+        </div>
       </div>
     </div>
   );
