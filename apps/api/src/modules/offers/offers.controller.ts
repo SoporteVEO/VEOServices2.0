@@ -13,6 +13,7 @@ import { resolveTargetUserId } from '../auth/view-as.helper.js';
 import { AcceptOfferDto } from './dto/accept-offer.dto.js';
 import { AttachOfferPdfDto } from './dto/attach-offer-pdf.dto.js';
 import { CreateOfferDto } from './dto/create-offer.dto.js';
+import { EditOfferDto } from './dto/edit-offer.dto.js';
 import { UpdateOfferDto } from './dto/update-offer.dto.js';
 import { OffersService } from './offers.service.js';
 
@@ -170,12 +171,24 @@ export class OffersController {
     return { data };
   }
 
+  /** Replaces the editable content of a PENDING offer. */
+  @Patch(':id/content')
+  async editContent(
+    @Param('id') id: string,
+    @Body() dto: EditOfferDto,
+    @CurrentUser() user: AuthUser,
+  ) {
+    const data = await this.service.editOffer(id, user.id, dto);
+    return { data };
+  }
+
   @Patch(':id/pdf')
   async attachPdf(
     @Param('id') id: string,
     @Body() dto: AttachOfferPdfDto,
+    @CurrentUser() user: AuthUser,
   ) {
-    const updated = await this.service.attachPdf(id, dto.pdfBase64);
+    const updated = await this.service.attachPdf(id, dto.pdfBase64, user.id);
     return { data: updated };
   }
 
@@ -191,7 +204,11 @@ export class OffersController {
     @Body() dto: AcceptOfferDto,
     @CurrentUser() user: AuthUser,
   ) {
-    const updated = await this.service.acceptOffer(id, user.id, dto.briloMconId);
+    const updated = await this.service.acceptOffer(
+      id,
+      user.id,
+      dto.briloMconId,
+    );
     return { data: updated };
   }
 }

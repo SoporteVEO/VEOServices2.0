@@ -23,6 +23,7 @@
   },
   "registries": {
     "@uitripled": "https://ui.tripled.work/r/{name}.json",
-    "@diceui": "https://diceui.com/r/{name}.json"
+    "@diceui": "https://diceui.com/r/{name}.json",
+    "@reui": "https://reui.io/r/{style}/{name}.json"
   }
 }

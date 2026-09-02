@@ -13,6 +13,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/primitives/ui/table";
+import { formatMonthLabel } from "./report-period";
 import { REPORT_TYPE_CONFIG, type ReportType } from "./report-types";
 
 function formatSenderName(row: {
@@ -60,7 +61,8 @@ export function ContractReportsSendedSection({
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Fecha</TableHead>
+              <TableHead>Periodo</TableHead>
+              <TableHead>Enviado</TableHead>
               <TableHead>Correo destino</TableHead>
               <TableHead>Enviado por</TableHead>
             </TableRow>
@@ -68,6 +70,9 @@ export function ContractReportsSendedSection({
           <TableBody>
             {data.map((row) => (
               <TableRow key={row.id}>
+                <TableCell className="whitespace-nowrap">
+                  {formatMonthLabel(new Date(row.periodStart))}
+                </TableCell>
                 <TableCell className="whitespace-nowrap tabular-nums">
                   {format(new Date(row.createdAt), "d MMM yyyy HH:mm", {
                     locale: es,

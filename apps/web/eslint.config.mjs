@@ -12,6 +12,10 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Vendored ReUI registry source (copy-and-own, upstream-maintained). It
+    // relies on render-phase ref writes and clock reads on purpose, which the
+    // React rules flag as errors; linting it would only fight the upstream.
+    "src/components/reui/**",
   ]),
 ]);
 

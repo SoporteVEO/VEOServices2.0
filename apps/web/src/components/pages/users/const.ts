@@ -32,6 +32,12 @@ export const roleBadge: Record<UserRole, BadgeStyle> = {
     className:
       "border-slate-500/50 bg-slate-500/10 text-slate-700 dark:text-slate-300",
   },
+  MANTENIMIENTO: {
+    label: "Mantenimiento",
+    variant: "outline",
+    className:
+      "border-amber-500/50 bg-amber-500/10 text-amber-700 dark:text-amber-400",
+  },
 };
 
 export const ROLE_OPTIONS: {
@@ -66,6 +72,12 @@ export const ROLE_OPTIONS: {
     description:
       "Solo accede al portal móvil de instalaciones asignadas mediante QR",
   },
+  {
+    value: "MANTENIMIENTO",
+    label: "Mantenimiento",
+    description:
+      "Solo accede al portal móvil con sus órdenes de mantenimiento asignadas",
+  },
 ];
 
 export const subRoleBadge: Record<SubRole, BadgeStyle> = {
@@ -87,6 +99,12 @@ export const subRoleBadge: Record<SubRole, BadgeStyle> = {
     className:
       "border-orange-500/50 bg-orange-500/10 text-orange-700 dark:text-orange-400",
   },
+  MANTENIMIENTO: {
+    label: "Mantenimiento",
+    variant: "outline",
+    className:
+      "border-amber-500/50 bg-amber-500/10 text-amber-700 dark:text-amber-400",
+  },
 };
 
 export const SUB_ROLE_OPTIONS: { value: SubRole; label: string; description: string }[] = [
@@ -105,5 +123,11 @@ export const SUB_ROLE_OPTIONS: { value: SubRole; label: string; description: str
     label: "Producción",
     description:
       "Acceso al módulo de producción para gestionar órdenes por valla estática",
+  },
+  {
+    value: "MANTENIMIENTO",
+    label: "Mantenimiento",
+    description:
+      "Acceso al módulo de mantenimiento para asignar y dar seguimiento a órdenes",
   },
 ];

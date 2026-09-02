@@ -537,6 +537,7 @@ export class ContractsService {
     const countByContract = await this.countReportsSendedByContracts(
       data.map((g) => g.contractNumber),
       reportDbType,
+      { from: args.from, to: args.to },
     );
 
     const dataWithCounts = data.map((g) => ({
@@ -744,6 +745,7 @@ export class ContractsService {
     return rows.map((r) => ({
       id: r.id,
       createdAt: r.createdAt.toISOString(),
+      periodStart: r.periodStart.toISOString(),
       sentToEmail: r.sentToEmail,
       reportType: REPORT_TYPE_TO_API[r.reportType],
       sentBy: {
@@ -754,22 +756,24 @@ export class ContractsService {
     }));
   }
 
+  /**
+   * Counts sends by the month each report covers, not by when it was emailed,
+   * so a past-month report sent today is attributed to that past month.
+   */
   private async countReportsSendedByContracts(
     contractNumbers: string[],
     reportType: ReportType,
+    period: { from: Date; to: Date },
   ): Promise<Map<string, number>> {
     const result = new Map<string, number>();
     if (contractNumbers.length === 0) return result;
-
-    const monthStart = startOfCurrentMonth();
-    const monthEnd = startOfNextMonth();
 
     const grouped = await this.prisma.reportSended.groupBy({
       by: ['contractNumber'],
       where: {
         contractNumber: { in: contractNumbers },
         reportType,
-        createdAt: { gte: monthStart, lt: monthEnd },
+        periodStart: { gte: period.from, lt: period.to },
       },
       _count: { _all: true },
     });
@@ -991,6 +995,9 @@ export class ContractsService {
         contractNumber: dto.contractNumber,
         email: dto.email,
         reportType,
+        periodStart: dto.periodStart
+          ? new Date(dto.periodStart)
+          : startOfCurrentMonth(),
       });
 
       return { success: true };
@@ -1009,6 +1016,7 @@ export class ContractsService {
     contractNumber: string;
     email: string;
     reportType: ContractReportType;
+    periodStart: Date;
   }) {
     try {
       const teamMember = await this.prisma.teamMember.findUnique({
@@ -1023,6 +1031,7 @@ export class ContractsService {
             contractNumber: input.contractNumber,
             sentToEmail: input.email,
             reportType: REPORT_TYPE_DB_MAP[input.reportType],
+            periodStart: input.periodStart,
           },
         });
       } else {

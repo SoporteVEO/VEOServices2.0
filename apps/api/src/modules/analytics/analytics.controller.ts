@@ -6,10 +6,12 @@ import {
   OffersOverviewListQueryDto,
   OffersOverviewQueryDto,
 } from './dto/offers-overview-query.dto.js';
+import { PrintingOverviewQueryDto } from './dto/printing-overview-query.dto.js';
 import { ReportsOverviewQueryDto } from './dto/reports-overview-query.dto.js';
 import { SalesByCostCenterQueryDto } from './dto/sales-by-cost-center-query.dto.js';
 import { UserAppUsageQueryDto } from './dto/user-app-usage-query.dto.js';
 import { OffersAnalyticsService } from './services/offers-analytics.service.js';
+import { PrintingAnalyticsService } from './services/printing-analytics.service.js';
 import { ReportsAnalyticsService } from './services/reports-analytics.service.js';
 import { SalesByCostCenterService } from './services/sales-by-cost-center.service.js';
 
@@ -25,6 +27,7 @@ export class AnalyticsController {
     private readonly salesByCostCenterService: SalesByCostCenterService,
     private readonly offersAnalyticsService: OffersAnalyticsService,
     private readonly reportsAnalyticsService: ReportsAnalyticsService,
+    private readonly printingAnalyticsService: PrintingAnalyticsService,
   ) {}
 
   @RequiredRoles('ADMIN')
@@ -108,6 +111,21 @@ export class AnalyticsController {
     });
     return { data };
   }
+
+  @RequiredRoles('ADMIN')
+  @Get('printing-overview')
+  async printingOverview(@Query() query: PrintingOverviewQueryDto) {
+    const tzOffsetMinutes = clampTzOffset(query.tzOffsetMinutes);
+    const utcRange = parseExclusiveRange(query);
+    const shiftMs = tzOffsetMinutes * 60 * 1000;
+    const data = await this.printingAnalyticsService.getOverview({
+      from: new Date(utcRange.from.getTime() + shiftMs),
+      to: new Date(utcRange.to.getTime() + shiftMs),
+      machineId: query.machineId?.trim() || null,
+      tzOffsetMinutes,
+    });
+    return { data };
+  }
 }
 
 function parseDateRange(query: SalesByCostCenterQueryDto): {
@@ -144,6 +162,14 @@ function parseExclusiveRange(query: { from: string; to: string }): {
   const exclusiveTo = new Date(to.getTime());
   exclusiveTo.setUTCDate(exclusiveTo.getUTCDate() + 1);
   return { from, to: exclusiveTo };
+}
+
+/** Guards against nonsense offsets; real zones live within ±14 hours of UTC. */
+function clampTzOffset(raw: string | undefined): number {
+  if (!raw) return 0;
+  const parsed = Number(raw);
+  if (!Number.isFinite(parsed)) return 0;
+  return Math.max(Math.min(Math.trunc(parsed), 14 * 60), -14 * 60);
 }
 
 function parsePositiveInt(

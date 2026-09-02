@@ -7,7 +7,9 @@ export function proxy(request: NextRequest) {
 
   const isSignIn = pathname === "/";
   const isProtected =
-    pathname.startsWith("/dashboard") || pathname.startsWith("/portal");
+    pathname.startsWith("/dashboard") ||
+    pathname.startsWith("/portal") ||
+    pathname.startsWith("/mantenimiento");
 
   // A QR code opened on a phone usually lands here unauthenticated, so we
   // remember the target and hand the user back to it after signing in.
@@ -26,5 +28,10 @@ export function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/", "/dashboard/:path*", "/portal/:path*"],
+  matcher: [
+    "/",
+    "/dashboard/:path*",
+    "/portal/:path*",
+    "/mantenimiento/:path*",
+  ],
 };

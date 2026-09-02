@@ -64,6 +64,8 @@ export interface ActiveContractGroup {
 export interface ContractReportSendedRow {
   id: string;
   createdAt: string;
+  /** First day of the month the report covered. */
+  periodStart: string;
   sentToEmail: string | null;
   reportType: "monthly" | "installation" | "maintenance";
   sentBy: {

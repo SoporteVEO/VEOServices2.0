@@ -3,6 +3,7 @@ import { apiFetch } from "@/lib/api";
 import type {
   OffersAnalyticsList,
   OffersAnalyticsOverview,
+  PrintingAnalyticsOverview,
   ReportsAnalyticsOverview,
   SalesByCostCenterReport,
   UserAppUsageReport,
@@ -234,6 +235,47 @@ export function useReportsAnalyticsOverview(
   return useQuery({
     queryKey: reportsAnalyticsOverviewQueryKey(from, to, userId),
     queryFn: () => getReportsAnalyticsOverview(from, to, { userId }),
+    enabled: Boolean(from && to && from <= to),
+    staleTime: ANALYTICS_STALE_TIME,
+    gcTime: ANALYTICS_GC_TIME,
+    placeholderData: keepPreviousData,
+  });
+}
+
+export const printingAnalyticsOverviewQueryKey = (
+  from: string,
+  to: string,
+  machineId: string | null,
+) => ["analytics", "printing-overview", from, to, machineId] as const;
+
+export async function getPrintingAnalyticsOverview(
+  from: string,
+  to: string,
+  options: { machineId?: string | null } = {},
+) {
+  const query: Record<string, string> = {
+    from,
+    to,
+    // Machine hours only make sense on shop-floor local time.
+    tzOffsetMinutes: String(new Date().getTimezoneOffset()),
+  };
+  if (options.machineId) query.machineId = options.machineId;
+  const response = await apiFetch<{ data: PrintingAnalyticsOverview }>(
+    "/analytics/printing-overview",
+    { query },
+  );
+  return response.data;
+}
+
+export function usePrintingAnalyticsOverview(
+  from: string,
+  to: string,
+  options: { machineId?: string | null } = {},
+) {
+  const machineId = options.machineId ?? null;
+  return useQuery({
+    queryKey: printingAnalyticsOverviewQueryKey(from, to, machineId),
+    queryFn: () => getPrintingAnalyticsOverview(from, to, { machineId }),
     enabled: Boolean(from && to && from <= to),
     staleTime: ANALYTICS_STALE_TIME,
     gcTime: ANALYTICS_GC_TIME,

@@ -23,6 +23,7 @@ import { INSTALLER_PORTAL_BASE } from "@/lib/installer-portal";
 import { InstallationLocationCard } from "./installation-location-card";
 import { InstallationPhotoUploader } from "./installation-photo-uploader";
 import { InstallerPortalShell } from "./installer-portal-shell";
+import { usePortalSession } from "./use-portal-session";
 
 export function InstallationTaskDetail({ itemId }: { itemId: string }) {
   const { data: task, isLoading, isError } = useInstallationTask(itemId);
@@ -55,6 +56,7 @@ export function InstallationTaskDetail({ itemId }: { itemId: string }) {
 }
 
 function TaskView({ task }: { task: InstallationTask }) {
+  const { capabilities } = usePortalSession();
   const uploadVulcanizado = useUploadVulcanizadoImage();
   const deleteVulcanizado = useDeleteVulcanizadoImage();
   const uploadInstallation = useUploadInstallationImage();
@@ -88,63 +90,74 @@ function TaskView({ task }: { task: InstallationTask }) {
               label="Medidas"
               value={`${formatDimensions(task.width, task.height)} m`}
             />
-            <DetailRow
-              icon={HardHat}
-              label="Instalador asignado"
-              value={installer ?? "Sin asignar"}
-            />
-            <DetailRow
-              icon={CalendarClock}
-              label="Fecha programada"
-              value={formatBriloShortDate(task.scheduledInstallationAt)}
-            />
-            <DetailRow
-              icon={CalendarCheck}
-              label="Fecha de instalación"
-              value={
-                task.installedAt
-                  ? formatBriloShortDate(task.installedAt)
-                  : "Pendiente"
-              }
-            />
+            {capabilities.canSeeInstallationDetails ? (
+              <>
+                <DetailRow
+                  icon={HardHat}
+                  label="Instalador asignado"
+                  value={installer ?? "Sin asignar"}
+                />
+                <DetailRow
+                  icon={CalendarClock}
+                  label="Fecha programada"
+                  value={formatBriloShortDate(task.scheduledInstallationAt)}
+                />
+                <DetailRow
+                  icon={CalendarCheck}
+                  label="Fecha de instalación"
+                  value={
+                    task.installedAt
+                      ? formatBriloShortDate(task.installedAt)
+                      : "Pendiente"
+                  }
+                />
+              </>
+            ) : null}
           </dl>
 
-          {task.advisorFullName ? (
+          {capabilities.canSeeInstallationDetails && task.advisorFullName ? (
             <p className="pt-3 text-xs text-muted-foreground">
               Asesor responsable: {task.advisorFullName}
             </p>
           ) : null}
         </section>
 
-        <InstallationLocationCard task={task} />
+        {capabilities.canSeeLocation ? (
+          <InstallationLocationCard task={task} />
+        ) : null}
 
-        <InstallationPhotoUploader
-          title="Imagen de vulcanizado"
-          description="Foto del material vulcanizado antes de montarlo en la valla."
-          buttonLabel={
-            task.vulcanizadoImageUrl
-              ? "Reemplazar imagen de vulcanizado"
-              : "Subir imagen de Vulcanizado"
-          }
-          previewUrl={task.vulcanizadoImageUrl}
-          isBusy={uploadVulcanizado.isPending || deleteVulcanizado.isPending}
-          onUpload={(imageBase64) =>
-            uploadVulcanizado.mutateAsync({ itemId: task.id, imageBase64 })
-          }
-          onDelete={() => deleteVulcanizado.mutateAsync({ itemId: task.id })}
-        />
+        {capabilities.canUploadVulcanizado ? (
+          <InstallationPhotoUploader
+            title="Imagen de vulcanizado"
+            description="Foto del material vulcanizado antes de montarlo en la valla."
+            buttonLabel={
+              task.vulcanizadoImageUrl
+                ? "Reemplazar imagen de vulcanizado"
+                : "Subir imagen de Vulcanizado"
+            }
+            previewUrl={task.vulcanizadoImageUrl}
+            isBusy={uploadVulcanizado.isPending || deleteVulcanizado.isPending}
+            onUpload={(imageBase64) =>
+              uploadVulcanizado.mutateAsync({ itemId: task.id, imageBase64 })
+            }
+            onDelete={() => deleteVulcanizado.mutateAsync({ itemId: task.id })}
+          />
+        ) : null}
 
-        <InstallationPhotoUploader
-          title="Imagen de instalación"
-          description="Foto de la valla ya instalada. Se registra junto al código de valla."
-          buttonLabel="Subir imagen de instalación"
-          isBusy={uploadInstallation.isPending}
-          onUpload={(imageBase64) =>
-            uploadInstallation.mutateAsync({ itemId: task.id, imageBase64 })
-          }
-        />
+        {capabilities.canUploadInstallation ? (
+          <InstallationPhotoUploader
+            title="Imagen de instalación"
+            description="Foto de la valla ya instalada. Se registra junto al código de valla."
+            buttonLabel="Subir imagen de instalación"
+            isBusy={uploadInstallation.isPending}
+            onUpload={(imageBase64) =>
+              uploadInstallation.mutateAsync({ itemId: task.id, imageBase64 })
+            }
+          />
+        ) : null}
 
-        {task.installationImages.length > 0 ? (
+        {capabilities.canUploadInstallation &&
+        task.installationImages.length > 0 ? (
           <section className="rounded-xl border bg-card p-4">
             <h2 className="text-sm font-semibold leading-tight">
               Imágenes de instalación cargadas

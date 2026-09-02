@@ -1,19 +1,20 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { Document, Image, Page, View } from "@react-pdf/renderer";
+import { Document, Font, Image, Page, View } from "@react-pdf/renderer";
 import type { Style } from "@react-pdf/types";
 import { Heading } from "@/components/pdfx/heading/pdfx-heading";
 import {
   Table,
   TableBody,
   TableCell,
+  TableFooter,
   TableHeader,
   TableRow,
 } from "@/components/pdfx/table/pdfx-table";
 import { Text } from "@/components/pdfx/text/pdfx-text";
 import { PdfxThemeProvider } from "@/lib/pdfx-theme-context";
-import { formatDate, formatHumanDate } from "@/lib/format";
+import { formatHumanDateRange, formatHumanDayDate } from "@/lib/format";
 import {
   computeOfferTotals,
   type DigitalOfferItem,
@@ -23,11 +24,18 @@ import {
   type StaticOfferItem,
 } from "./offer-types";
 
+// react-pdf hyphenates by default, which chops street names mid-word inside
+// the narrow description column. Wrapping on whole words reads far better.
+Font.registerHyphenationCallback((word) => [word]);
+
 const PAGE_STYLE: Style = {
   paddingTop: 28,
   paddingBottom: 32,
   paddingHorizontal: 32,
 };
+
+/** Below this many rows a table is kept on one page instead of splitting. */
+const NO_WRAP_ROW_LIMIT = 8;
 
 const PAGE_STYLE_FLEX: Style = {
   ...PAGE_STYLE,
@@ -44,30 +52,36 @@ const LABEL_COLOR = "#6b7280";
 const TOTALS_LABEL_W = "44%";
 const TOTALS_VAL_W = "28%";
 
+const ROW_DETAIL_COLOR = "#6b7280";
+
+/**
+ * Every items table reads left to right as código → descripción → montos →
+ * total. Secondary facts (size, dates, address) live inside the description
+ * cell so the numeric columns stay narrow and scannable.
+ */
 const STATIC_COL_W = {
-  rental: "14%",
-  size: "11%",
-  print: "12%",
-  code: "11%",
+  code: "10%",
+  desc: "38%",
   qty: "8%",
-  duration: "18%",
-  desc: "26%",
+  rental: "15%",
+  print: "14%",
+  total: "15%",
 } as const;
 
 const DIGITAL_COL_W = {
-  rental: "16%",
-  spots: "10%",
-  code: "11%",
+  code: "10%",
+  desc: "41%",
+  spots: "9%",
   qty: "8%",
-  duration: "20%",
-  desc: "35%",
+  rental: "16%",
+  total: "16%",
 } as const;
 
 const MISC_COL_W = {
-  desc: "44%",
-  qty: "10%",
-  unit: "16%",
-  tax: "12%",
+  code: "10%",
+  desc: "47%",
+  qty: "8%",
+  unit: "17%",
   total: "18%",
 } as const;
 
@@ -80,19 +94,26 @@ function formatCurrency(value: number): string {
   })}`;
 }
 
-function formatSize(width: number | null, height: number | null): string {
-  if (width == null && height == null) return "—";
+function formatSize(width: number | null, height: number | null): string | null {
+  if (width == null && height == null) return null;
   const w = width != null ? width.toFixed(2) : "—";
   const h = height != null ? height.toFixed(2) : "—";
-  return `${w} X ${h}`;
+  return `${w} × ${h} m`;
 }
 
-function formatItemDuration(
+function durationDetail(
   startDate: Date | null,
   endDate: Date | null,
-): string {
-  if (!startDate && !endDate) return "—";
-  return `${formatDate(startDate)} – ${formatDate(endDate)}`;
+): string | null {
+  if (!startDate && !endDate) return null;
+  return formatHumanDateRange(startDate, endDate);
+}
+
+function joinDetails(parts: (string | null | undefined)[]): string | null {
+  const kept = parts.filter(
+    (part): part is string => Boolean(part && part.trim()),
+  );
+  return kept.length > 0 ? kept.join(" · ") : null;
 }
 
 function MetaTopRow({
@@ -118,7 +139,7 @@ function MetaTopRow({
       </View>
       <View style={{ alignItems: "flex-end" }}>
         <Text variant="sm" color={FOOTER_TEXT} noMargin>
-          {formatHumanDate(generatedAt)}
+          {formatHumanDayDate(generatedAt)}
         </Text>
         <Text variant="sm" weight="bold" color={BRAND_PINK} noMargin>
           {offerNumber}
@@ -226,17 +247,101 @@ function ContactBlock({ data }: { data: OfferPdfData }) {
   );
 }
 
-function HeaderCellLabel({ children }: { children: ReactNode }) {
+function HeaderCellLabel({
+  children,
+  align = "center",
+}: {
+  children: ReactNode;
+  align?: "left" | "center" | "right";
+}) {
   return (
     <Text
       variant="xs"
       weight="bold"
       color="#ffffff"
       noMargin
-      style={{ textAlign: "center" }}
+      // Smaller than the body so long labels like ARRENDAMIENTO fit on one
+      // line inside a narrow money column instead of hyphenating.
+      style={{ textAlign: align, fontSize: 7, letterSpacing: 0.4 }}
     >
       {children}
     </Text>
+  );
+}
+
+/**
+ * Keeps a section heading glued to its table: react-pdf will push the whole
+ * block to the next page rather than stranding the title at the bottom.
+ */
+function ItemsSection({
+  title,
+  children,
+}: {
+  title: string;
+  children: ReactNode;
+}) {
+  return (
+    <View style={{ marginBottom: 4 }} minPresenceAhead={90}>
+      <SectionTitle title={title} />
+      {children}
+    </View>
+  );
+}
+
+/**
+ * Two-line description cell: the headline the reader scans for, plus a muted
+ * detail line carrying the facts that used to need their own columns.
+ */
+function DescriptionCell({
+  title,
+  detail,
+}: {
+  title: string;
+  detail?: string | null;
+}) {
+  return (
+    <View>
+      <Text variant="xs" weight="medium" color={FOOTER_TEXT} noMargin>
+        {title}
+      </Text>
+      {detail ? (
+        <Text
+          variant="xs"
+          color={ROW_DETAIL_COLOR}
+          noMargin
+          style={{ marginTop: 1 }}
+        >
+          {detail}
+        </Text>
+      ) : null}
+    </View>
+  );
+}
+
+function TotalRowFooter({
+  label,
+  amount,
+  width,
+  spanBefore,
+}: {
+  label: string;
+  amount: number;
+  width: string;
+  spanBefore: string;
+}) {
+  return (
+    <TableRow footer variant="compact">
+      <TableCell width={spanBefore} align="right">
+        <Text variant="xs" weight="bold" color={FOOTER_TEXT} noMargin>
+          {label}
+        </Text>
+      </TableCell>
+      <TableCell width={width} align="right">
+        <Text variant="xs" weight="bold" color={BRAND_PRIMARY} noMargin>
+          {formatCurrency(amount)}
+        </Text>
+      </TableCell>
+    </TableRow>
   );
 }
 
@@ -257,32 +362,38 @@ function SectionTitle({ title }: { title: string }) {
 
 function StaticItemsTable({ items }: { items: StaticOfferItem[] }) {
   if (items.length === 0) return null;
+
+  const total = items.reduce(
+    (sum, item) => sum + (item.rentalPrice + item.impressionPrice) * item.quantity,
+    0,
+  );
+
   return (
-    <View style={{ marginBottom: 4 }}>
-      <SectionTitle title="VALLAS ESTÁTICAS" />
-      <Table variant="compact" zebraStripe>
+    <ItemsSection title="VALLAS ESTÁTICAS">
+      <Table
+        variant="compact"
+        zebraStripe
+        noWrap={items.length <= NO_WRAP_ROW_LIMIT}
+      >
         <TableHeader>
           <TableRow header variant="compact" style={{ backgroundColor: BRAND_PRIMARY }}>
             <TableCell header width={STATIC_COL_W.code} align="center">
-              <HeaderCellLabel>CODIGO</HeaderCellLabel>
+              <HeaderCellLabel>CÓDIGO</HeaderCellLabel>
             </TableCell>
-            <TableCell header width={STATIC_COL_W.size} align="center">
-              <HeaderCellLabel>MEDIDA</HeaderCellLabel>
+            <TableCell header width={STATIC_COL_W.desc} align="left">
+              <HeaderCellLabel align="left">DESCRIPCIÓN</HeaderCellLabel>
             </TableCell>
             <TableCell header width={STATIC_COL_W.qty} align="center">
               <HeaderCellLabel>CANT.</HeaderCellLabel>
             </TableCell>
-            <TableCell header width={STATIC_COL_W.duration} align="center">
-              <HeaderCellLabel>DURACIÓN</HeaderCellLabel>
+            <TableCell header width={STATIC_COL_W.rental} align="right">
+              <HeaderCellLabel align="right">ARRENDAMIENTO</HeaderCellLabel>
             </TableCell>
-            <TableCell header width={STATIC_COL_W.rental} align="center">
-              <HeaderCellLabel>PRECIO DE{"\n"}ARRENDAMIENTO</HeaderCellLabel>
+            <TableCell header width={STATIC_COL_W.print} align="right">
+              <HeaderCellLabel align="right">IMPRESIÓN</HeaderCellLabel>
             </TableCell>
-            <TableCell header width={STATIC_COL_W.print} align="center">
-              <HeaderCellLabel>IMPRESIÓN</HeaderCellLabel>
-            </TableCell>
-            <TableCell header width={STATIC_COL_W.desc} align="center">
-              <HeaderCellLabel>DESCRIPCIÓN</HeaderCellLabel>
+            <TableCell header width={STATIC_COL_W.total} align="right">
+              <HeaderCellLabel align="right">TOTAL</HeaderCellLabel>
             </TableCell>
           </TableRow>
         </TableHeader>
@@ -292,14 +403,17 @@ function StaticItemsTable({ items }: { items: StaticOfferItem[] }) {
               <TableCell width={STATIC_COL_W.code} align="center">
                 {item.billboardCode || "—"}
               </TableCell>
-              <TableCell width={STATIC_COL_W.size} align="center">
-                {formatSize(item.width, item.height)}
+              <TableCell width={STATIC_COL_W.desc}>
+                <DescriptionCell
+                  title={item.description || "Valla estática"}
+                  detail={joinDetails([
+                    formatSize(item.width, item.height),
+                    durationDetail(item.startDate, item.endDate),
+                  ])}
+                />
               </TableCell>
               <TableCell width={STATIC_COL_W.qty} align="center">
                 {String(item.quantity)}
-              </TableCell>
-              <TableCell width={STATIC_COL_W.duration} align="center">
-                {formatItemDuration(item.startDate, item.endDate)}
               </TableCell>
               <TableCell width={STATIC_COL_W.rental} align="right">
                 {formatCurrency(item.rentalPrice)}
@@ -307,128 +421,175 @@ function StaticItemsTable({ items }: { items: StaticOfferItem[] }) {
               <TableCell width={STATIC_COL_W.print} align="right">
                 {formatCurrency(item.impressionPrice)}
               </TableCell>
-              <TableCell width={STATIC_COL_W.desc}>
-                {item.description || "—"}
+              <TableCell width={STATIC_COL_W.total} align="right">
+                {formatCurrency(
+                  (item.rentalPrice + item.impressionPrice) * item.quantity,
+                )}
               </TableCell>
             </TableRow>
           ))}
         </TableBody>
+        <TableFooter>
+          <TotalRowFooter
+            label="Subtotal vallas estáticas"
+            amount={total}
+            spanBefore="85%"
+            width={STATIC_COL_W.total}
+          />
+        </TableFooter>
       </Table>
-    </View>
+    </ItemsSection>
   );
 }
 
 function DigitalItemsTable({ items }: { items: DigitalOfferItem[] }) {
   if (items.length === 0) return null;
+
+  const total = items.reduce(
+    (sum, item) => sum + item.rentalPrice * item.quantity,
+    0,
+  );
+
   return (
-    <View style={{ marginBottom: 4 }}>
-      <SectionTitle title="VALLAS DIGITALES" />
-      <Table variant="compact" zebraStripe>
+    <ItemsSection title="VALLAS DIGITALES">
+      <Table
+        variant="compact"
+        zebraStripe
+        noWrap={items.length <= NO_WRAP_ROW_LIMIT}
+      >
         <TableHeader>
           <TableRow header variant="compact" style={{ backgroundColor: BRAND_PRIMARY }}>
-            <TableCell header width={DIGITAL_COL_W.rental} align="center">
-              <HeaderCellLabel>PRECIO DE{"\n"}ARRENDAMIENTO</HeaderCellLabel>
+            <TableCell header width={DIGITAL_COL_W.code} align="center">
+              <HeaderCellLabel>CÓDIGO</HeaderCellLabel>
+            </TableCell>
+            <TableCell header width={DIGITAL_COL_W.desc} align="left">
+              <HeaderCellLabel align="left">DESCRIPCIÓN</HeaderCellLabel>
             </TableCell>
             <TableCell header width={DIGITAL_COL_W.spots} align="center">
-              <HeaderCellLabel>SPOTS/{"\n"}DÍA</HeaderCellLabel>
-            </TableCell>
-            <TableCell header width={DIGITAL_COL_W.code} align="center">
-              <HeaderCellLabel>CODIGO</HeaderCellLabel>
+              <HeaderCellLabel>SPOTS/DÍA</HeaderCellLabel>
             </TableCell>
             <TableCell header width={DIGITAL_COL_W.qty} align="center">
               <HeaderCellLabel>CANT.</HeaderCellLabel>
             </TableCell>
-            <TableCell header width={DIGITAL_COL_W.duration} align="center">
-              <HeaderCellLabel>DURACIÓN</HeaderCellLabel>
+            <TableCell header width={DIGITAL_COL_W.rental} align="right">
+              <HeaderCellLabel align="right">ARRENDAMIENTO</HeaderCellLabel>
             </TableCell>
-            <TableCell header width={DIGITAL_COL_W.desc} align="center">
-              <HeaderCellLabel>DESCRIPCIÓN</HeaderCellLabel>
+            <TableCell header width={DIGITAL_COL_W.total} align="right">
+              <HeaderCellLabel align="right">TOTAL</HeaderCellLabel>
             </TableCell>
           </TableRow>
         </TableHeader>
         <TableBody>
           {items.map((item) => (
             <TableRow key={item.id} variant="compact">
-              <TableCell width={DIGITAL_COL_W.rental} align="right">
-                {formatCurrency(item.rentalPrice)}
+              <TableCell width={DIGITAL_COL_W.code} align="center">
+                {item.billboardCode || "—"}
+              </TableCell>
+              <TableCell width={DIGITAL_COL_W.desc}>
+                <DescriptionCell
+                  title={item.name}
+                  detail={joinDetails([
+                    item.address,
+                    durationDetail(item.startDate, item.endDate),
+                  ])}
+                />
               </TableCell>
               <TableCell width={DIGITAL_COL_W.spots} align="center">
                 {String(item.spotCount)}
               </TableCell>
-              <TableCell width={DIGITAL_COL_W.code} align="center">
-                {item.billboardCode || "—"}
-              </TableCell>
               <TableCell width={DIGITAL_COL_W.qty} align="center">
                 {String(item.quantity)}
               </TableCell>
-              <TableCell width={DIGITAL_COL_W.duration} align="center">
-                {formatItemDuration(item.startDate, item.endDate)}
+              <TableCell width={DIGITAL_COL_W.rental} align="right">
+                {formatCurrency(item.rentalPrice)}
               </TableCell>
-              <TableCell width={DIGITAL_COL_W.desc}>
-                {item.name}
-                {item.address ? `\n${item.address}` : ""}
+              <TableCell width={DIGITAL_COL_W.total} align="right">
+                {formatCurrency(item.rentalPrice * item.quantity)}
               </TableCell>
             </TableRow>
           ))}
         </TableBody>
+        <TableFooter>
+          <TotalRowFooter
+            label="Subtotal vallas digitales"
+            amount={total}
+            spanBefore="84%"
+            width={DIGITAL_COL_W.total}
+          />
+        </TableFooter>
       </Table>
-    </View>
+    </ItemsSection>
   );
 }
 
 function MiscItemsTable({ items }: { items: MiscOfferItem[] }) {
   if (items.length === 0) return null;
+
+  const total = items.reduce(
+    (sum, item) => sum + item.rentalPrice * item.quantity,
+    0,
+  );
+
   return (
-    <View style={{ marginBottom: 4 }}>
-      <SectionTitle title="OTROS CONCEPTOS" />
-      <Table variant="compact" zebraStripe>
+    <ItemsSection title="OTROS CONCEPTOS">
+      <Table
+        variant="compact"
+        zebraStripe
+        noWrap={items.length <= NO_WRAP_ROW_LIMIT}
+      >
         <TableHeader>
           <TableRow header variant="compact" style={{ backgroundColor: BRAND_PRIMARY }}>
-            <TableCell header width={MISC_COL_W.desc} align="center">
-              <HeaderCellLabel>DESCRIPCIÓN</HeaderCellLabel>
+            <TableCell header width={MISC_COL_W.code} align="center">
+              <HeaderCellLabel>CÓDIGO</HeaderCellLabel>
+            </TableCell>
+            <TableCell header width={MISC_COL_W.desc} align="left">
+              <HeaderCellLabel align="left">DESCRIPCIÓN</HeaderCellLabel>
             </TableCell>
             <TableCell header width={MISC_COL_W.qty} align="center">
               <HeaderCellLabel>CANT.</HeaderCellLabel>
             </TableCell>
-            <TableCell header width={MISC_COL_W.unit} align="center">
-              <HeaderCellLabel>PRECIO</HeaderCellLabel>
+            <TableCell header width={MISC_COL_W.unit} align="right">
+              <HeaderCellLabel align="right">PRECIO</HeaderCellLabel>
             </TableCell>
-            <TableCell header width={MISC_COL_W.tax} align="center">
-              <HeaderCellLabel>IMPUESTO</HeaderCellLabel>
-            </TableCell>
-            <TableCell header width={MISC_COL_W.total} align="center">
-              <HeaderCellLabel>TOTAL</HeaderCellLabel>
+            <TableCell header width={MISC_COL_W.total} align="right">
+              <HeaderCellLabel align="right">TOTAL</HeaderCellLabel>
             </TableCell>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {items.map((item) => {
-            const subtotal = item.rentalPrice * item.quantity;
-            const tax = subtotal * item.taxRate;
-            const total = subtotal + tax;
-            return (
-              <TableRow key={item.id} variant="compact">
-                <TableCell width={MISC_COL_W.desc}>
-                  {item.description || "—"}
-                </TableCell>
-                <TableCell width={MISC_COL_W.qty} align="center">
-                  {String(item.quantity)}
-                </TableCell>
-                <TableCell width={MISC_COL_W.unit} align="right">
-                  {formatCurrency(item.unitPrice)}
-                </TableCell>
-                <TableCell width={MISC_COL_W.tax} align="right">
-                  {formatCurrency(tax)}
-                </TableCell>
-                <TableCell width={MISC_COL_W.total} align="right">
-                  {formatCurrency(total)}
-                </TableCell>
-              </TableRow>
-            );
-          })}
+          {items.map((item, index) => (
+            <TableRow key={item.id} variant="compact">
+              <TableCell width={MISC_COL_W.code} align="center">
+                {`C-${String(index + 1).padStart(2, "0")}`}
+              </TableCell>
+              <TableCell width={MISC_COL_W.desc}>
+                <DescriptionCell
+                  title={item.description || "Concepto adicional"}
+                  detail={durationDetail(item.startDate, item.endDate)}
+                />
+              </TableCell>
+              <TableCell width={MISC_COL_W.qty} align="center">
+                {String(item.quantity)}
+              </TableCell>
+              <TableCell width={MISC_COL_W.unit} align="right">
+                {formatCurrency(item.unitPrice)}
+              </TableCell>
+              <TableCell width={MISC_COL_W.total} align="right">
+                {formatCurrency(item.rentalPrice * item.quantity)}
+              </TableCell>
+            </TableRow>
+          ))}
         </TableBody>
+        <TableFooter>
+          <TotalRowFooter
+            label="Subtotal otros conceptos"
+            amount={total}
+            spanBefore="82%"
+            width={MISC_COL_W.total}
+          />
+        </TableFooter>
       </Table>
-    </View>
+    </ItemsSection>
   );
 }
 
@@ -545,7 +706,7 @@ function ConditionsBlock({ data }: { data: OfferPdfData }) {
             VIGENCIA OFERTA:
           </Text>
           <Text variant="sm" color={FOOTER_TEXT} noMargin>
-            {formatHumanDate(data.validUntil)}
+            {formatHumanDayDate(data.validUntil)}
           </Text>
         </View>
         <View style={{ flex: 2 }}>
@@ -663,6 +824,11 @@ export interface OfferPdfData {
   specialConditions: string;
   advisorFullName: string | null;
   items: OfferItem[];
+  /**
+   * Date printed on the document. Regenerating an existing offer passes its
+   * issue date so the PDF does not appear to change every time it is opened.
+   */
+  generatedAt?: Date;
 }
 
 export interface OfferPdfDocumentProps {
@@ -672,7 +838,7 @@ export interface OfferPdfDocumentProps {
 
 export function OfferPdfDocument({ data, logoSrc }: OfferPdfDocumentProps) {
   const totals = computeOfferTotals(data.items);
-  const generatedAt = new Date();
+  const generatedAt = data.generatedAt ?? new Date();
 
   const staticItems = data.items.filter(
     (item): item is StaticOfferItem => item.type === "STATIC_BILLBOARD",

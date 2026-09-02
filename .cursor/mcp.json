@@ -2,15 +2,30 @@
   "mcpServers": {
     "shadcn": {
       "command": "npx",
-      "args": ["shadcn@latest", "mcp"]
+      "args": [
+        "shadcn@latest",
+        "mcp"
+      ]
     },
     "pdfx": {
       "command": "npx",
-      "args": ["-y", "pdfx-cli@latest", "mcp"]
+      "args": [
+        "-y",
+        "pdfx-cli@latest",
+        "mcp"
+      ]
+    },
+    "reui": {
+      "url": "https://mcp.reui.io/api/mcp",
+      "headers": {
+        "Authorization": "Bearer ${env:REUI_LICENSE_KEY}"
+      }
     },
     "brilo-sqlserver": {
       "command": "node",
-      "args": ["D:/veo/brilo_mcp/dist/index.js"],
+      "args": [
+        "D:/veo/brilo_mcp/dist/index.js"
+      ],
       "cwd": "D:/veo/brilo_mcp",
       "env": {
         "SQLSERVER_HOST": "45.164.207.238",

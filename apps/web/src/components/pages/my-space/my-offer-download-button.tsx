@@ -3,36 +3,48 @@
 import { useState } from "react";
 import { Download, Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import { getOfferDownloadUrl } from "@/api/offers/offers.get";
+import { pdf } from "@react-pdf/renderer";
+import { getOffer } from "@/api/offers/offers.get";
 import type { OfferListItem } from "@/api/offers/offers.types";
 import { Button } from "@/components/ui/button";
+import { offerDetailToPdfData } from "./quotation/offer-detail-to-pdf-data";
+import { OfferPdfDocument } from "./quotation/offer-pdf-document";
 import { useMySpaceViewAs } from "./my-space-view-as-context";
+
+const VEO_LOGO_SRC = "/VEO_LOGO_COT.png";
 
 type MyOfferDownloadButtonProps = {
   offer: OfferListItem;
 };
 
+/**
+ * Renders the PDF on demand from the stored offer rather than serving the copy
+ * archived in S3, so older quotations download with the current design.
+ */
 export function MyOfferDownloadButton({ offer }: MyOfferDownloadButtonProps) {
   const { viewAsUserId } = useMySpaceViewAs();
   const [isDownloading, setIsDownloading] = useState(false);
 
   async function handleDownload() {
-    if (!offer.hasPdf) {
-      toast.error("Esta cotización no tiene PDF disponible.");
-      return;
-    }
-
     setIsDownloading(true);
     try {
-      const url = await getOfferDownloadUrl(offer.id, { viewAsUserId });
+      const detail = await getOffer(offer.id, { viewAsUserId });
+      const blob = await pdf(
+        <OfferPdfDocument
+          data={offerDetailToPdfData(detail)}
+          logoSrc={VEO_LOGO_SRC}
+        />,
+      ).toBlob();
+
+      const url = URL.createObjectURL(blob);
       const anchor = document.createElement("a");
       anchor.href = url;
-      anchor.target = "_blank";
-      anchor.rel = "noopener noreferrer";
-      anchor.download = `${offer.offerNumber}.pdf`;
+      anchor.download = `${offer.offerNumber.replace(/[\\/:*?"<>|]/g, "-")}.pdf`;
+      anchor.rel = "noopener";
       document.body.appendChild(anchor);
       anchor.click();
       anchor.remove();
+      URL.revokeObjectURL(url);
     } catch {
       toast.error("No se pudo descargar la cotización.");
     } finally {
@@ -46,7 +58,7 @@ export function MyOfferDownloadButton({ offer }: MyOfferDownloadButtonProps) {
       variant="outline"
       size="sm"
       className="gap-1.5"
-      disabled={!offer.hasPdf || isDownloading}
+      disabled={isDownloading}
       onClick={(event) => {
         event.stopPropagation();
         void handleDownload();

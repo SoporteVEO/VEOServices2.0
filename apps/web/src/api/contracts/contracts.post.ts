@@ -20,6 +20,8 @@ export interface SendMaintenanceReportInput {
   customerName: string;
   description?: string;
   period: string;
+  /** ISO date of the first day of the month the report covers. */
+  periodStart?: string;
   fileName: string;
   fileKey: string;
   reportType?: ContractReportType;

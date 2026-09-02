@@ -21,6 +21,8 @@ export interface SendReportDialogProps {
   onOpenChange: (open: boolean) => void;
   defaultEmail: string | null;
   contractNumber: string;
+  /** Month the report covers, e.g. "Agosto 2026". */
+  periodLabel: string;
   totalBillboardsCount: number;
   selectedImagesCount: number;
   isSubmitting: boolean;
@@ -47,6 +49,7 @@ export function SendReportDialog(props: SendReportDialogProps) {
 function SendReportDialogContent({
   defaultEmail,
   contractNumber,
+  periodLabel,
   totalBillboardsCount,
   selectedImagesCount,
   isSubmitting,
@@ -76,7 +79,9 @@ function SendReportDialogContent({
           Enviar reporte por email
         </DialogTitle>
         <DialogDescription>
-          Se enviará el reporte del contrato{" "}
+          Se enviará el reporte de{" "}
+          <span className="font-medium text-foreground">{periodLabel}</span> del
+          contrato{" "}
           <span className="font-medium text-foreground">
             {contractNumber}
           </span>{" "}

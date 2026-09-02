@@ -4,8 +4,10 @@ import { useMemo, useState, type ReactNode } from "react";
 import {
   Activity,
   CalendarClock,
+  History,
   Mail,
   Monitor,
+  Pencil,
   ScrollText,
   User as UserIcon,
   UserCheck,
@@ -44,9 +46,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { formatBriloShortDate, formatMoney } from "@/lib/format";
+import { GenerateOfferModal } from "./quotation/generate-offer-modal";
 import { BriloContractCombobox } from "./brilo-contract-combobox";
 import { MyOfferDetailSkeleton } from "./my-offer-detail-skeleton";
 import { MyOfferDownloadButton } from "./my-offer-download-button";
+import { MyOfferHistory } from "./my-offer-history";
 import { MY_OFFER_ITEMS_COLUMNS } from "./my-offer-items-columns";
 import { MyOfferStatusBadge } from "./my-offer-status-badge";
 import { MyOfferTotalsSummary } from "./my-offer-totals-summary";
@@ -138,9 +142,12 @@ function MyOfferDetailContent({
 }) {
   const updateMutation = useUpdateOffer();
   const [status, setStatus] = useState<OfferStatus>(offer.status);
+  const [editOpen, setEditOpen] = useState(false);
   const [linkedContract, setLinkedContract] = useState<BriloContractOption | null>(
     offer.linkedBriloContract,
   );
+
+  const canEdit = offer.canEdit && !readOnly;
 
   const isDirty = useMemo(() => {
     if (status !== offer.status) return true;
@@ -201,6 +208,17 @@ function MyOfferDetailContent({
               <MyOfferStatusBadge status={offer.status} />
             </div>
           </div>
+          {canEdit ? (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              icon={Pencil}
+              onClick={() => setEditOpen(true)}
+            >
+              Editar
+            </Button>
+          ) : null}
           <PrimitiveButton
             variant="ghost"
             size="icon-sm"
@@ -334,6 +352,16 @@ function MyOfferDetailContent({
               )}
             </div>
           </Section>
+
+          <Separator />
+
+          <Section
+            icon={History}
+            title="Historial"
+            description="Registro de cada cambio, quién lo hizo y cuándo."
+          >
+            <MyOfferHistory offer={offer} />
+          </Section>
         </div>
       </ScrollArea>
 
@@ -356,6 +384,14 @@ function MyOfferDetailContent({
           </div>
         </div>
       </DrawerFooter>
+
+      {editOpen ? (
+        <GenerateOfferModal
+          open={editOpen}
+          onOpenChange={setEditOpen}
+          offer={offer}
+        />
+      ) : null}
     </>
   );
 }

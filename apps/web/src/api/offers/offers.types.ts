@@ -85,9 +85,54 @@ export interface OfferDetailItem {
   endDate: string | null;
 }
 
+export type OfferEventType =
+  | "CREATED"
+  | "UPDATED"
+  | "ITEMS_UPDATED"
+  | "PDF_ATTACHED"
+  | "ACCEPTED"
+  | "DECLINED"
+  | "REOPENED";
+
+export interface OfferChange {
+  from: unknown;
+  to: unknown;
+}
+
+export interface OfferEventEntry {
+  id: string;
+  type: OfferEventType;
+  message: string;
+  changes: Record<string, OfferChange> | null;
+  actor: {
+    id: string;
+    firstName: string;
+    lastName: string | null;
+    email: string;
+  } | null;
+  createdAt: string;
+}
+
 export interface OfferDetail extends OfferListItem {
   items: OfferDetailItem[];
   linkedBriloContract: BriloContractOption | null;
+  /** Audit trail, newest first. */
+  events: OfferEventEntry[];
+  /** False once the offer leaves PENDING: content becomes read-only. */
+  canEdit: boolean;
+}
+
+/** Full replacement of a PENDING offer's editable content. */
+export interface EditOfferInput {
+  customerName: string;
+  customerCompany?: string | null;
+  customerEmail?: string | null;
+  customerBillingEmail?: string | null;
+  customerContact?: string | null;
+  clientId?: string | null;
+  validUntil: string;
+  specialConditions?: string | null;
+  items: OfferItemInput[];
 }
 
 export interface UpdateOfferInput {

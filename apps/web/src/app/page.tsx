@@ -3,9 +3,9 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
-import { isFieldRole, type UserRole } from "@/api/users/users.types";
+import { isPortalOnlyRole, type UserRole } from "@/api/users/users.types";
 import { authClient } from "@/lib/auth-client";
-import { INSTALLER_PORTAL_BASE } from "@/lib/installer-portal";
+import { portalHomeFor } from "@/lib/routes";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -17,13 +17,13 @@ import {
 
 /**
  * Honours the `redirect` set by the proxy (typically a QR deep link), and
- * otherwise sends field roles straight to the installer portal since they
- * have no dashboard.
+ * otherwise sends portal-only roles straight to their portal since they have
+ * no dashboard.
  */
 function resolveLandingPath(role: UserRole | undefined): string {
   const redirect = new URLSearchParams(window.location.search).get("redirect");
   if (redirect?.startsWith("/")) return redirect;
-  return isFieldRole(role) ? INSTALLER_PORTAL_BASE : "/dashboard";
+  return isPortalOnlyRole(role) ? portalHomeFor(role) : "/dashboard";
 }
 
 export default function SignInPage() {

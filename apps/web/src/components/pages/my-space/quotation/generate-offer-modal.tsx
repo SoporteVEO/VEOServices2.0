@@ -7,8 +7,9 @@ import { toast } from "sonner";
 import { pdf } from "@react-pdf/renderer";
 import type { Client } from "@/api/clients/clients.get";
 import { useMyProfile, useMyTeamMember } from "@/api/me/me.get";
+import { useEditOffer } from "@/api/offers/offers.patch";
 import { useAttachOfferPdf, useCreateOffer } from "@/api/offers/offers.post";
-import type { OfferItemInput } from "@/api/offers/offers.types";
+import type { OfferDetail, OfferItemInput } from "@/api/offers/offers.types";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -26,6 +27,7 @@ import {
 import { Separator } from "@/components/primitives/ui/separator";
 import { DigitalItemsSection } from "./digital-items-section";
 import { MiscItemsSection } from "./misc-items-section";
+import { offerDetailItemsToOfferItems } from "./offer-detail-to-items";
 import { OfferPdfDocument } from "./offer-pdf-document";
 import {
   computeOfferTotals,
@@ -63,6 +65,21 @@ function emptyFormValues(): QuotationCustomerFormValues {
     customerContact: "",
     validUntil: defaultValidUntil(),
     specialConditions: "",
+  };
+}
+
+function formValuesFromOffer(
+  offer: OfferDetail,
+): QuotationCustomerFormValues {
+  return {
+    clientId: offer.clientId,
+    customerName: offer.customerName,
+    customerCompany: offer.customerCompany ?? "",
+    customerEmail: offer.customerEmail ?? "",
+    customerBillingEmail: offer.customerBillingEmail ?? "",
+    customerContact: offer.customerContact ?? "",
+    validUntil: new Date(offer.validUntil),
+    specialConditions: offer.specialConditions ?? "",
   };
 }
 
@@ -149,24 +166,50 @@ export interface GenerateOfferModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSuccess?: () => void;
+  /**
+   * When provided, the modal edits that offer instead of creating one. Mount
+   * it fresh (conditionally or with a `key`) so the form seeds from the offer.
+   */
+  offer?: OfferDetail;
 }
 
 export function GenerateOfferModal({
   open,
   onOpenChange,
   onSuccess,
+  offer,
 }: GenerateOfferModalProps) {
+  const isEditing = Boolean(offer);
   const profileQuery = useMyProfile();
   const teamMemberQuery = useMyTeamMember();
   const createMutation = useCreateOffer();
+  const editMutation = useEditOffer();
   const attachPdfMutation = useAttachOfferPdf();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
-  const [staticItems, setStaticItems] = useState<StaticOfferItem[]>([]);
-  const [digitalItems, setDigitalItems] = useState<DigitalOfferItem[]>([]);
-  const [miscItems, setMiscItems] = useState<MiscOfferItem[]>([]);
+
+  const [seededItems] = useState(() =>
+    offer ? offerDetailItemsToOfferItems(offer.items) : [],
+  );
+  const [staticItems, setStaticItems] = useState<StaticOfferItem[]>(
+    () =>
+      seededItems.filter(
+        (item): item is StaticOfferItem => item.type === "STATIC_BILLBOARD",
+      ),
+  );
+  const [digitalItems, setDigitalItems] = useState<DigitalOfferItem[]>(
+    () =>
+      seededItems.filter(
+        (item): item is DigitalOfferItem => item.type === "DIGITAL_BILLBOARD",
+      ),
+  );
+  const [miscItems, setMiscItems] = useState<MiscOfferItem[]>(
+    () => seededItems.filter((item): item is MiscOfferItem => item.type === "MISC"),
+  );
 
   const advisorFullName = useMemo<string | null>(() => {
+    // An edited offer keeps the advisor it was issued under.
+    if (offer?.advisorFullName) return offer.advisorFullName;
     const fromTeamMember = teamMemberQuery.data?.fullName?.trim();
     if (fromTeamMember) return fromTeamMember;
     const profile = profileQuery.data;
@@ -176,7 +219,7 @@ export function GenerateOfferModal({
       .join(" ")
       .trim();
     return composed || null;
-  }, [teamMemberQuery.data, profileQuery.data]);
+  }, [offer?.advisorFullName, teamMemberQuery.data, profileQuery.data]);
 
   const allItems = useMemo<OfferItem[]>(
     () => [...staticItems, ...digitalItems, ...miscItems],
@@ -186,7 +229,7 @@ export function GenerateOfferModal({
   const totals = useMemo(() => computeOfferTotals(allItems), [allItems]);
 
   const form = useForm<QuotationCustomerFormValues>({
-    defaultValues: emptyFormValues(),
+    defaultValues: offer ? formValuesFromOffer(offer) : emptyFormValues(),
   });
 
   function handleSelectClient(client: Client | null) {
@@ -214,7 +257,8 @@ export function GenerateOfferModal({
   function handleClose(nextOpen: boolean) {
     if (isSubmitting) return;
     onOpenChange(nextOpen);
-    if (!nextOpen) resetState();
+    // Editing mounts a fresh modal per offer, so there is nothing to clear.
+    if (!nextOpen && !isEditing) resetState();
   }
 
   function validateBeforeSubmit(values: QuotationCustomerFormValues): string | null {
@@ -254,7 +298,7 @@ export function GenerateOfferModal({
 
     setIsSubmitting(true);
     try {
-      const created = await createMutation.mutateAsync({
+      const payload = {
         clientId: values.clientId,
         customerName: values.customerName.trim(),
         customerCompany: values.customerCompany.trim() || null,
@@ -264,12 +308,16 @@ export function GenerateOfferModal({
         validUntil: values.validUntil!.toISOString(),
         specialConditions: values.specialConditions.trim() || null,
         items: allItems.map(offerItemToInput),
-      });
+      };
+
+      const saved = offer
+        ? await editMutation.mutateAsync({ id: offer.id, input: payload })
+        : await createMutation.mutateAsync(payload);
 
       const blob = await pdf(
         <OfferPdfDocument
           data={{
-            offerNumber: created.offerNumber,
+            offerNumber: saved.offerNumber,
             customerName: values.customerName,
             customerCompany: values.customerCompany,
             customerEmail: values.customerEmail,
@@ -285,24 +333,28 @@ export function GenerateOfferModal({
       ).toBlob();
 
       const pdfBase64 = await blobToBase64(blob);
-      await attachPdfMutation.mutateAsync({ id: created.id, pdfBase64 });
+      await attachPdfMutation.mutateAsync({ id: saved.id, pdfBase64 });
 
-      const fileName = `${created.offerNumber.replace(
+      const fileName = `${saved.offerNumber.replace(
         /[\\/:*?"<>|]/g,
         "-",
       )}_${fileTimestamp(new Date())}.pdf`;
       downloadBlob(blob, fileName);
 
-      toast.success(`Cotización ${created.offerNumber} generada.`);
+      toast.success(
+        isEditing
+          ? `Cotización ${saved.offerNumber} actualizada.`
+          : `Cotización ${saved.offerNumber} generada.`,
+      );
       onOpenChange(false);
-      resetState();
+      if (!isEditing) resetState();
       onSuccess?.();
     } catch (err) {
-      console.error("Error generating offer:", err);
+      console.error("Error saving offer:", err);
       const message =
         err instanceof Error
           ? err.message
-          : "No se pudo generar la cotización.";
+          : "No se pudo guardar la cotización.";
       toast.error(message);
     } finally {
       setIsSubmitting(false);
@@ -313,10 +365,15 @@ export function GenerateOfferModal({
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent size="xl" className="sm:max-w-4xl lg:max-w-5xl">
         <DialogHeader>
-          <DialogTitle>Generar Cotización</DialogTitle>
+          <DialogTitle>
+            {isEditing
+              ? `Editar cotización ${offer!.offerNumber}`
+              : "Generar Cotización"}
+          </DialogTitle>
           <DialogDescription>
-            Agrega vallas estáticas, digitales o conceptos adicionales y descarga
-            la cotización en PDF.
+            {isEditing
+              ? "Ajusta los datos del cliente o los ítems. Se regenerará el PDF y se guardará el historial del cambio."
+              : "Agrega vallas estáticas, digitales o conceptos adicionales y descarga la cotización en PDF."}
           </DialogDescription>
         </DialogHeader>
 
@@ -368,7 +425,11 @@ export function GenerateOfferModal({
               icon={isSubmitting ? Loader2 : Download}
               iconClassName={isSubmitting ? "animate-spin" : undefined}
             >
-              {isSubmitting ? "Generando..." : "Descargar"}
+              {isSubmitting
+                ? "Guardando..."
+                : isEditing
+                  ? "Guardar cambios"
+                  : "Descargar"}
             </Button>
           </DialogFooter>
         </form>

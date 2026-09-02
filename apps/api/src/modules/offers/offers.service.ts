@@ -5,7 +5,12 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { OfferItemType, OfferStatus, type Prisma } from '@prisma/client';
+import {
+  OfferEventType,
+  OfferItemType,
+  OfferStatus,
+  type Prisma,
+} from '@prisma/client';
 import { BriloDatabaseService } from '../brilo-database/brilo-database.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import {
@@ -15,8 +20,17 @@ import {
 import { S3StorageService } from '../s3-images/s3-storage.service.js';
 import { ClientsService } from '../clients/clients.service.js';
 import { CreateOfferDto, CreateOfferItemDto } from './dto/create-offer.dto.js';
+import { EditOfferDto } from './dto/edit-offer.dto.js';
 import type { ListBriloContractsFilters } from './dto/list-brilo-contracts-query.dto.js';
 import { UpdateOfferDto } from './dto/update-offer.dto.js';
+import {
+  buildEditMessage,
+  diffHeader,
+  diffItems,
+  diffTotals,
+  type OfferChangeSet,
+  type OfferItemSnapshot,
+} from './offer-audit.js';
 
 const DEFAULT_TAX_RATE = 0.13;
 const OFFER_PDF_FOLDER = 'offers';
@@ -133,9 +147,27 @@ export interface OfferDetailItem {
   endDate: string | null;
 }
 
+export interface OfferEventEntry {
+  id: string;
+  type: OfferEventType;
+  message: string;
+  changes: OfferChangeSet | null;
+  actor: {
+    id: string;
+    firstName: string;
+    lastName: string | null;
+    email: string;
+  } | null;
+  createdAt: string;
+}
+
 export interface OfferDetail extends OfferListItem {
   items: OfferDetailItem[];
   linkedBriloContract: BriloContractOption | null;
+  /** Audit trail, newest first. Powers the "Historial" tab. */
+  events: OfferEventEntry[];
+  /** Content edits are frozen once the offer leaves PENDING. */
+  canEdit: boolean;
 }
 
 export interface ListOffersFilters {
@@ -323,6 +355,13 @@ export class OffersService {
                 endDate: item.endDate ? new Date(item.endDate) : null,
               })),
             },
+            events: {
+              create: {
+                type: OfferEventType.CREATED,
+                message: `Cotización ${offerNumber} creada`,
+                actorUserId: createdByUserId,
+              },
+            },
           },
           include: {
             createdBy: {
@@ -374,7 +413,11 @@ export class OffersService {
    * by the client after it generates the document with the real offer
    * number returned by `create`.
    */
-  async attachPdf(id: string, pdfBase64: string): Promise<OfferListItem> {
+  async attachPdf(
+    id: string,
+    pdfBase64: string,
+    actorUserId: string | null = null,
+  ): Promise<OfferListItem> {
     const offer = await this.prisma.offerCreated.findUnique({
       where: { id },
       select: { id: true, pdfS3Key: true },
@@ -406,6 +449,17 @@ export class OffersService {
       // Best-effort: delete the previous PDF in the background.
       if (offer.pdfS3Key && offer.pdfS3Key !== upload.key) {
         void this.storage.deleteByKey(offer.pdfS3Key);
+
+        // Only a replacement is worth recording: the first attach is part of
+        // the create flow and is already covered by the CREATED event.
+        await this.prisma.offerEvent.create({
+          data: {
+            offerId: id,
+            type: OfferEventType.PDF_ATTACHED,
+            message: 'PDF de la cotización regenerado',
+            actorUserId,
+          },
+        });
       }
 
       return this.mapToListItem(updated);
@@ -446,7 +500,17 @@ export class OffersService {
    * 2. Idempotent upsert by `customerEmail` when present.
    * 3. Otherwise `null` (anonymous customer).
    */
-  private async resolveClientId(dto: CreateOfferDto): Promise<string | null> {
+  private async resolveClientId(
+    dto: Pick<
+      CreateOfferDto,
+      | 'clientId'
+      | 'customerName'
+      | 'customerCompany'
+      | 'customerEmail'
+      | 'customerBillingEmail'
+      | 'customerContact'
+    >,
+  ): Promise<string | null> {
     if (dto.clientId) {
       const existing = await this.prisma.client.findUnique({
         where: { id: dto.clientId },
@@ -746,10 +810,7 @@ export class OffersService {
 
     const row = await this.prisma.offerCreated.findUnique({
       where: { id },
-      include: {
-        ...this.offerListInclude(),
-        items: { orderBy: { createdAt: 'asc' } },
-      },
+      include: this.offerDetailInclude(),
     });
     if (!row) {
       throw new NotFoundException('Cotización no encontrada');
@@ -781,17 +842,13 @@ export class OffersService {
     const wasAccepted = existing.status === OfferStatus.ACCEPTED;
     const willBeAccepted = dto.status === OfferStatus.ACCEPTED;
 
-    const { row: updated, productionOrderMeta } = await this.prisma.$transaction(
-      async (tx) => {
-        const row = await tx.offerCreated.update({
+    const { row: updated, productionOrderMeta } =
+      await this.prisma.$transaction(async (tx) => {
+        await tx.offerCreated.update({
           where: { id },
           data: {
             status: dto.status,
             briloMconId: willBeAccepted ? dto.briloMconId! : null,
-          },
-          include: {
-            ...this.offerListInclude(),
-            items: { orderBy: { createdAt: 'asc' } },
           },
         });
 
@@ -808,15 +865,150 @@ export class OffersService {
           if (result.created) productionOrderMeta = result.meta;
         }
 
+        await this.recordEvent(tx, {
+          offerId: id,
+          type: statusEventType(dto.status),
+          message: statusEventMessage(existing.status, dto.status),
+          changes: { status: { from: existing.status, to: dto.status } },
+          actorUserId: userId,
+        });
+
+        const row = await tx.offerCreated.findUniqueOrThrow({
+          where: { id },
+          include: this.offerDetailInclude(),
+        });
+
         return { row, productionOrderMeta };
-      },
-    );
+      });
 
     if (productionOrderMeta) {
       void this.productionOrders.notifyProductionUsersOfNewOrder(
         productionOrderMeta,
       );
     }
+
+    const linkedBriloContract = updated.briloMconId
+      ? await this.fetchBriloContractById(updated.briloMconId)
+      : null;
+
+    return this.mapToDetail(updated, linkedBriloContract);
+  }
+
+  /**
+   * Replaces the editable content of a PENDING offer and records what
+   * changed. Accepted offers are frozen because their items already drive
+   * production orders and digital usage rows.
+   */
+  async editOffer(
+    id: string,
+    userId: string,
+    dto: EditOfferDto,
+  ): Promise<OfferDetail> {
+    await this.findOwnedOffer(id, userId);
+
+    const existing = await this.prisma.offerCreated.findUnique({
+      where: { id },
+      include: { items: { orderBy: { createdAt: 'asc' } } },
+    });
+    if (!existing) {
+      throw new NotFoundException('Cotización no encontrada');
+    }
+    if (existing.status !== OfferStatus.PENDING) {
+      throw new BadRequestException(
+        'Solo se pueden editar cotizaciones pendientes',
+      );
+    }
+
+    const validUntil = new Date(dto.validUntil);
+    if (Number.isNaN(validUntil.getTime())) {
+      throw new BadRequestException('Vigencia de oferta inválida');
+    }
+
+    this.validateItems(dto.items);
+
+    const totals = computeOfferTotals(dto.items);
+    const clientId = await this.resolveClientId(dto);
+
+    const nextHeader = {
+      customerName: dto.customerName.trim(),
+      customerCompany: dto.customerCompany?.trim() || null,
+      customerEmail: dto.customerEmail?.trim().toLowerCase() || null,
+      billingEmail: dto.customerBillingEmail?.trim().toLowerCase() || null,
+      customerContact: dto.customerContact?.trim() || null,
+      clientId,
+      validUntil,
+      specialConditions: dto.specialConditions?.trim() || null,
+    };
+
+    const headerDiff = diffHeader(existing, nextHeader);
+    const itemsDiff = diffItems(existing.items, dto.items.map(toItemSnapshot));
+    const totalsDiff = diffTotals(existing, totals);
+
+    const hasChanges =
+      headerDiff.summary.length > 0 ||
+      itemsDiff.hasChanges ||
+      Object.keys(totalsDiff).length > 0;
+
+    const updated = await this.prisma.$transaction(async (tx) => {
+      // Full replacement keeps the write simple and is safe while PENDING:
+      // no production order or digital usage rows reference these items yet.
+      await tx.offerCreatedItem.deleteMany({ where: { offerId: id } });
+
+      await tx.offerCreated.update({
+        where: { id },
+        data: {
+          ...nextHeader,
+          subtotalImpression: totals.subtotalImpression,
+          ivaImpression: totals.ivaImpression,
+          totalImpression: totals.totalImpression,
+          subtotalRental: totals.subtotalRental,
+          ivaRental: totals.ivaRental,
+          totalRental: totals.totalRental,
+          items: {
+            create: dto.items.map((item) => ({
+              itemType: item.itemType ?? OfferItemType.STATIC_BILLBOARD,
+              billboardId: item.billboardId ?? null,
+              billboardCode: item.billboardCode ?? null,
+              address: item.address ?? null,
+              cityName: item.cityName ?? null,
+              departmentName: item.departmentName ?? null,
+              width: item.width ?? null,
+              height: item.height ?? null,
+              quantity: item.quantity,
+              impressionPrice: item.impressionPrice,
+              rentalPrice: item.rentalPrice,
+              taxRate: item.taxRate ?? DEFAULT_TAX_RATE,
+              description: item.description?.trim() || null,
+              digitalBillboardId: item.digitalBillboardId ?? null,
+              spotCount: item.spotCount ?? null,
+              startDate: item.startDate ? new Date(item.startDate) : null,
+              endDate: item.endDate ? new Date(item.endDate) : null,
+            })),
+          },
+        },
+      });
+
+      if (hasChanges) {
+        await this.recordEvent(tx, {
+          offerId: id,
+          type: itemsDiff.hasChanges
+            ? OfferEventType.ITEMS_UPDATED
+            : OfferEventType.UPDATED,
+          message: buildEditMessage(headerDiff.summary, itemsDiff.summary),
+          changes: {
+            ...headerDiff.changes,
+            ...itemsDiff.changes,
+            ...totalsDiff,
+          },
+          actorUserId: userId,
+        });
+      }
+
+      return tx.offerCreated.findUniqueOrThrow({
+        where: { id },
+        include: this.offerDetailInclude(),
+      });
+    });
 
     const linkedBriloContract = updated.briloMconId
       ? await this.fetchBriloContractById(updated.briloMconId)
@@ -848,6 +1040,14 @@ export class OffersService {
         await this.productionOrders.removeForOffer(tx, id);
       }
 
+      await this.recordEvent(tx, {
+        offerId: id,
+        type: OfferEventType.DECLINED,
+        message: 'Cotización rechazada',
+        changes: { status: { from: offer.status, to: OfferStatus.DECLINED } },
+        actorUserId: userId,
+      });
+
       return row;
     });
 
@@ -868,8 +1068,8 @@ export class OffersService {
 
     await this.assertBriloContractExists(briloMconId);
 
-    const { row: updated, productionOrderMeta } = await this.prisma.$transaction(
-      async (tx) => {
+    const { row: updated, productionOrderMeta } =
+      await this.prisma.$transaction(async (tx) => {
         const row = await tx.offerCreated.update({
           where: { id },
           data: {
@@ -885,12 +1085,22 @@ export class OffersService {
           id,
         );
 
+        await this.recordEvent(tx, {
+          offerId: id,
+          type: OfferEventType.ACCEPTED,
+          message: `Cotización aceptada y vinculada al contrato Brilo #${briloMconId}`,
+          changes: {
+            status: { from: offer.status, to: OfferStatus.ACCEPTED },
+            briloMconId: { from: null, to: briloMconId },
+          },
+          actorUserId: userId,
+        });
+
         return {
           row,
           productionOrderMeta: result.created ? result.meta : null,
         };
-      },
-    );
+      });
 
     if (productionOrderMeta) {
       void this.productionOrders.notifyProductionUsersOfNewOrder(
@@ -959,6 +1169,50 @@ export class OffersService {
       },
       _count: { select: { items: true } },
     } as const;
+  }
+
+  /** Everything `mapToDetail` needs: items in entry order, history newest first. */
+  private offerDetailInclude() {
+    return {
+      ...this.offerListInclude(),
+      items: { orderBy: { createdAt: 'asc' } },
+      events: {
+        orderBy: { createdAt: 'desc' },
+        include: {
+          actor: {
+            select: { id: true, firstName: true, lastName: true, email: true },
+          },
+        },
+      },
+    } satisfies Prisma.OfferCreatedInclude;
+  }
+
+  /**
+   * Appends an audit row. Takes a transaction client so the trail is written
+   * atomically with the change it describes.
+   */
+  private recordEvent(
+    tx: Prisma.TransactionClient,
+    input: {
+      offerId: string;
+      type: OfferEventType;
+      message: string;
+      changes?: OfferChangeSet | null;
+      actorUserId: string | null;
+    },
+  ) {
+    return tx.offerEvent.create({
+      data: {
+        offerId: input.offerId,
+        type: input.type,
+        message: input.message,
+        changes:
+          input.changes && Object.keys(input.changes).length > 0
+            ? (input.changes as unknown as Prisma.InputJsonValue)
+            : undefined,
+        actorUserId: input.actorUserId,
+      },
+    });
   }
 
   private async findOwnedOffer(id: string, userId: string) {
@@ -1167,6 +1421,7 @@ export class OffersService {
         startDate: Date | null;
         endDate: Date | null;
       }>;
+      events?: OfferEventRow[];
     },
     linkedBriloContract: BriloContractOption | null,
   ): OfferDetail {
@@ -1193,6 +1448,8 @@ export class OffersService {
         endDate: item.endDate?.toISOString() ?? null,
       })),
       linkedBriloContract,
+      events: (row.events ?? []).map(mapOfferEvent),
+      canEdit: row.status === OfferStatus.PENDING,
     };
   }
 
@@ -1252,6 +1509,77 @@ export class OffersService {
       createdBy: row.createdBy,
     };
   }
+}
+
+function toItemSnapshot(item: CreateOfferItemDto): OfferItemSnapshot {
+  return {
+    itemType: item.itemType ?? OfferItemType.STATIC_BILLBOARD,
+    billboardId: item.billboardId ?? null,
+    billboardCode: item.billboardCode ?? null,
+    digitalBillboardId: item.digitalBillboardId ?? null,
+    quantity: item.quantity,
+    impressionPrice: item.impressionPrice,
+    rentalPrice: item.rentalPrice,
+    taxRate: item.taxRate ?? DEFAULT_TAX_RATE,
+    description: item.description ?? null,
+    spotCount: item.spotCount ?? null,
+    startDate: item.startDate ? new Date(item.startDate) : null,
+    endDate: item.endDate ? new Date(item.endDate) : null,
+  };
+}
+
+function statusEventType(status: OfferStatus): OfferEventType {
+  switch (status) {
+    case OfferStatus.ACCEPTED:
+      return OfferEventType.ACCEPTED;
+    case OfferStatus.DECLINED:
+      return OfferEventType.DECLINED;
+    case OfferStatus.PENDING:
+      return OfferEventType.REOPENED;
+  }
+}
+
+function statusEventMessage(from: OfferStatus, to: OfferStatus): string {
+  switch (to) {
+    case OfferStatus.ACCEPTED:
+      return 'Cotización aceptada';
+    case OfferStatus.DECLINED:
+      return 'Cotización rechazada';
+    case OfferStatus.PENDING:
+      return from === OfferStatus.ACCEPTED
+        ? 'Cotización reabierta: se revirtió la aceptación'
+        : 'Cotización reabierta como pendiente';
+  }
+}
+
+interface OfferEventRow {
+  id: string;
+  type: OfferEventType;
+  message: string;
+  changes: Prisma.JsonValue;
+  actor: {
+    id: string;
+    firstName: string;
+    lastName: string | null;
+    email: string;
+  } | null;
+  createdAt: Date;
+}
+
+function mapOfferEvent(row: OfferEventRow): OfferEventEntry {
+  return {
+    id: row.id,
+    type: row.type,
+    message: row.message,
+    changes:
+      row.changes &&
+      typeof row.changes === 'object' &&
+      !Array.isArray(row.changes)
+        ? (row.changes as unknown as OfferChangeSet)
+        : null,
+    actor: row.actor,
+    createdAt: row.createdAt.toISOString(),
+  };
 }
 
 function escapeLikePattern(value: string): string {

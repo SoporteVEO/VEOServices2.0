@@ -242,3 +242,120 @@ export type ReportsAnalyticsOverview = {
   byUser: ReportsAnalyticsByUserRow[];
   currentMonthCompliance: ReportsAnalyticsCurrentMonthCompliance;
 };
+
+export type PrintingAnalyticsTotals = {
+  jobs: number;
+  scheduled: number;
+  running: number;
+  completed: number;
+  cancelled: number;
+  plannedHours: number;
+  actualHours: number;
+  plannedPrintHours: number;
+  actualPrintHours: number;
+  actualSetupHours: number;
+  actualCooldownHours: number;
+  avgSetupMinutes: number;
+  avgPrintMinutes: number;
+  avgCooldownMinutes: number;
+  avgJobMinutes: number;
+  avgStartDelayMinutes: number;
+  onTimeStartRate: number;
+  planAccuracy: number;
+  utilization: number;
+  squareMeters: number;
+  minutesPerSquareMeter: number;
+  activeMachines: number;
+  availableHours: number;
+};
+
+export type PrintingAnalyticsMachineRow = {
+  machineId: string;
+  machineName: string;
+  isActive: boolean;
+  jobs: number;
+  completed: number;
+  cancelled: number;
+  plannedHours: number;
+  actualHours: number;
+  actualSetupHours: number;
+  actualPrintHours: number;
+  actualCooldownHours: number;
+  utilization: number;
+  avgSetupMinutes: number;
+  avgPrintMinutes: number;
+  avgCooldownMinutes: number;
+  avgStartDelayMinutes: number;
+  onTimeStartRate: number;
+  planAccuracy: number;
+  squareMeters: number;
+};
+
+export type PrintingAnalyticsDailyPoint = {
+  dateKey: string;
+  jobs: number;
+  completed: number;
+  plannedHours: number;
+  actualHours: number;
+  setupHours: number;
+  printHours: number;
+  cooldownHours: number;
+  squareMeters: number;
+};
+
+export type PrintingAnalyticsSizeRow = {
+  sizeKey: string;
+  width: number | null;
+  height: number | null;
+  jobs: number;
+  completed: number;
+  avgPlannedPrintMinutes: number;
+  avgActualPrintMinutes: number;
+  totalPrintHours: number;
+  squareMeters: number;
+};
+
+export type PrintingAnalyticsHourPoint = {
+  hour: number;
+  jobsStarted: number;
+  printHours: number;
+};
+
+export type PrintingAnalyticsOrderRow = {
+  productionOrderId: string;
+  offerNumber: string;
+  customerName: string;
+  customerCompany: string | null;
+  jobs: number;
+  completed: number;
+  plannedHours: number;
+  actualHours: number;
+  squareMeters: number;
+};
+
+export type PrintingAnalyticsCustomerRow = {
+  customerName: string;
+  customerCompany: string | null;
+  jobs: number;
+  actualHours: number;
+  squareMeters: number;
+};
+
+export type PrintingAnalyticsMachineOption = {
+  id: string;
+  name: string;
+  isActive: boolean;
+};
+
+export type PrintingAnalyticsOverview = {
+  range: { from: string; to: string };
+  machines: PrintingAnalyticsMachineOption[];
+  totals: PrintingAnalyticsTotals;
+  phaseSplit: { setupHours: number; printHours: number; cooldownHours: number };
+  byMachine: PrintingAnalyticsMachineRow[];
+  daily: PrintingAnalyticsDailyPoint[];
+  bySize: PrintingAnalyticsSizeRow[];
+  byHour: PrintingAnalyticsHourPoint[];
+  topOrders: PrintingAnalyticsOrderRow[];
+  topCustomers: PrintingAnalyticsCustomerRow[];
+};

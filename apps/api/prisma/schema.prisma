@@ -32,6 +32,12 @@ model User {
   metricsDays           UserMetricsDay[]
   offersCreated         OfferCreated[]
   installationsAssigned ProductionOrderItem[] @relation("ProductionOrderInstaller")
+  printJobsCreated      PrintJob[]            @relation("PrintJobCreatedBy")
+  maintenanceAssigned   MaintenanceJob[]      @relation("MaintenanceAssignee")
+  maintenanceCreated    MaintenanceJob[]      @relation("MaintenanceCreatedBy")
+  maintenancePhotos     MaintenancePhoto[]    @relation("MaintenancePhotoUploader")
+  maintenanceEvents     MaintenanceEvent[]    @relation("MaintenanceEventActor")
+  offerEvents           OfferEvent[]          @relation("OfferEventActor")
 
   @@map("users")
 }
@@ -335,12 +341,14 @@ enum Role {
   LIMITED
   INSTALLER
   WORKER
+  MANTENIMIENTO
 }
 
 enum SubRole {
   HR
   USERS_MANAGEMENT
   PRODUCTION
+  MANTENIMIENTO
 }
 
 enum NotificationStatus {
@@ -393,6 +401,7 @@ model S3Image {
   type                  S3ImageType
   productionOrderItemId String?               @map("production_order_item_id")
   productionOrderItem   ProductionOrderItem?  @relation(fields: [productionOrderItemId], references: [id], onDelete: SetNull)
+  maintenancePhoto      MaintenancePhoto?
 
   @@index([productionOrderItemId])
   @@map("s3_images")
@@ -426,7 +435,11 @@ model ReportSended {
   staticBillboardCodeId String?
   staticBillboardCode   StaticBillboardCodes? @relation(fields: [staticBillboardCodeId], references: [id])
   sentToEmail           String?               @map("sent_to_email")
+  /// First day of the month the report covers. Distinct from `createdAt`,
+  /// since a report for a past month can be sent today.
+  periodStart           DateTime              @map("period_start")
 
+  @@index([contractNumber, reportType, periodStart])
   @@map("report_sended")
 }
 
@@ -486,12 +499,47 @@ model OfferCreated {
   updatedAt          DateTime           @updatedAt
   items              OfferCreatedItem[]
   productionOrder    ProductionOrder?
+  events             OfferEvent[]
 
   @@index([createdAt])
   @@index([createdByUserId])
   @@index([clientId])
   @@index([status])
   @@map("offers_created")
+}
+
+enum OfferEventType {
+  CREATED
+  UPDATED
+  ITEMS_UPDATED
+  PDF_ATTACHED
+  ACCEPTED
+  DECLINED
+  REOPENED
+}
+
+/// Append-only audit trail for offers. Powers the "Historial" tab and answers
+/// "who changed the price, and when" for both analytics and security reviews.
+model OfferEvent {
+  id      String       @id @default(uuid())
+  offerId String       @map("offer_id")
+  offer   OfferCreated @relation(fields: [offerId], references: [id], onDelete: Cascade)
+
+  type    OfferEventType
+  message String
+
+  /// Field-level diff, shaped as `{ field: { from, to } }`. Null for events
+  /// that carry no before/after value (creation, PDF replacement).
+  changes Json?
+
+  actorUserId String? @map("actor_user_id")
+  actor       User?   @relation("OfferEventActor", fields: [actorUserId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+
+  @@index([offerId, createdAt])
+  @@index([type, createdAt])
+  @@map("offer_events")
 }
 
 model OfferCreatedItem {
@@ -532,6 +580,75 @@ enum ProductionOrderStatus {
   CANCELLED
 }
 
+/// A press. `printSpeedM2PerHour` is its throughput, which is what turns a
+/// panel's area into a print duration, and `dailyCapacityM2` caps how much
+/// area may be scheduled on it within one calendar day.
+model PrintingMachine {
+  id                  String     @id @default(uuid())
+  name                String
+  position            Int        @default(0)
+  setupMinutes        Int        @default(15) @map("setup_minutes")
+  cooldownMinutes     Int        @default(10) @map("cooldown_minutes")
+  printSpeedM2PerHour Float      @default(85) @map("print_speed_m2_per_hour")
+  dailyCapacityM2     Float      @default(595) @map("daily_capacity_m2")
+  isActive            Boolean    @default(true) @map("is_active")
+  createdAt           DateTime   @default(now())
+  updatedAt           DateTime   @updatedAt
+  printJobs           PrintJob[]
+
+  @@map("printing_machines")
+}
+
+enum PrintJobStatus {
+  SCHEDULED
+  SETUP
+  PRINTING
+  COOLDOWN
+  COMPLETED
+  CANCELLED
+}
+
+/// One pass of a static billboard through a printing machine. Planned minutes
+/// and area are frozen at scheduling time; the `*StartedAt` columns are stamped
+/// as the operator advances the job so analytics can compare planned versus
+/// actual.
+model PrintJob {
+  id                    String              @id @default(uuid())
+  machineId             String              @map("machine_id")
+  machine               PrintingMachine     @relation(fields: [machineId], references: [id], onDelete: Cascade)
+  productionOrderItemId String              @map("production_order_item_id")
+  productionOrderItem   ProductionOrderItem @relation(fields: [productionOrderItemId], references: [id], onDelete: Cascade)
+  status                PrintJobStatus      @default(SCHEDULED)
+
+  scheduledStartAt DateTime @map("scheduled_start_at")
+  setupMinutes     Int      @map("setup_minutes")
+  printMinutes     Int      @map("print_minutes")
+  cooldownMinutes  Int      @map("cooldown_minutes")
+  /// Printed area for this pass, the unit the machine's daily capacity is
+  /// measured in. Frozen here so a later edit to the offer item cannot
+  /// retroactively change a day's consumed capacity.
+  areaM2           Float    @default(0) @map("area_m2")
+
+  setupStartedAt    DateTime? @map("setup_started_at")
+  printStartedAt    DateTime? @map("print_started_at")
+  cooldownStartedAt DateTime? @map("cooldown_started_at")
+  completedAt       DateTime? @map("completed_at")
+  cancelledAt       DateTime? @map("cancelled_at")
+
+  notes           String?
+  createdByUserId String? @map("created_by_user_id")
+  createdBy       User?   @relation("PrintJobCreatedBy", fields: [createdByUserId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([machineId, scheduledStartAt])
+  @@index([productionOrderItemId])
+  @@index([status])
+  @@index([scheduledStartAt])
+  @@map("print_jobs")
+}
+
 model ProductionOrder {
   id        String                @id @default(uuid())
   offerId   String                @unique @map("offer_id")
@@ -558,6 +675,7 @@ model ProductionOrderItem {
   installedAt             DateTime?             @map("installed_at")
   vulcanizadoImageS3Key   String?               @map("vulcanizado_image_s3_key")
   installationImages      S3Image[]
+  printJobs               PrintJob[]
   createdAt               DateTime              @default(now())
   updatedAt               DateTime              @updatedAt
 
@@ -565,4 +683,129 @@ model ProductionOrderItem {
   @@index([status])
   @@index([assignedInstallerId])
   @@map("production_order_items")
+}
+
+enum MaintenanceJobStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum MaintenanceEventType {
+  CREATED
+  UPDATED
+  REASSIGNED
+  RESCHEDULED
+  STARTED
+  PHOTO_UPLOADED
+  PHOTO_DELETED
+  COMPLETED
+  REOPENED
+  CANCELLED
+}
+
+/// User-managed tags for maintenance work, e.g. "Estructura", "Iluminación".
+model MaintenanceCategory {
+  id        String   @id @default(uuid())
+  name      String   @unique
+  color     String?
+  archived  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  jobs MaintenanceJob[]
+
+  @@index([archived])
+  @@map("maintenance_categories")
+}
+
+model MaintenanceJob {
+  id   String @id @default(uuid())
+  code String @unique
+
+  /// Brilo static billboard. The descriptive columns are copied on create so
+  /// the job keeps reading correctly even if the catalog entry changes later.
+  billboardId    Int?    @map("billboard_id")
+  billboardCode  String? @map("billboard_code")
+  address        String?
+  cityName       String? @map("city_name")
+  departmentName String? @map("department_name")
+  width          Float?
+  height         Float?
+
+  categoryId String?              @map("category_id")
+  category   MaintenanceCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+
+  assignedUserId String @map("assigned_user_id")
+  assignedUser   User   @relation("MaintenanceAssignee", fields: [assignedUserId], references: [id], onDelete: Cascade)
+
+  description String
+  scheduledAt DateTime             @map("scheduled_at")
+  status      MaintenanceJobStatus @default(PENDING)
+
+  startedAt       DateTime? @map("started_at")
+  completedAt     DateTime? @map("completed_at")
+  cancelledAt     DateTime? @map("cancelled_at")
+  completionNotes String?   @map("completion_notes")
+
+  createdByUserId String? @map("created_by_user_id")
+  createdBy       User?   @relation("MaintenanceCreatedBy", fields: [createdByUserId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  photos MaintenancePhoto[]
+  events MaintenanceEvent[]
+
+  @@index([assignedUserId, status])
+  @@index([status])
+  @@index([scheduledAt])
+  @@index([categoryId])
+  @@index([billboardId])
+  @@map("maintenance_jobs")
+}
+
+/// Proof-of-work photos. Deliberately kept out of `s3_images` so they never
+/// surface in the Imágenes module on their own; a supervisor may publish an
+/// individual photo there, which is what `s3Image` records.
+model MaintenancePhoto {
+  id    String         @id @default(uuid())
+  jobId String         @map("job_id")
+  job   MaintenanceJob @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  s3Key String  @map("s3_key")
+  note  String?
+
+  uploadedByUserId String? @map("uploaded_by_user_id")
+  uploadedBy       User?   @relation("MaintenancePhotoUploader", fields: [uploadedByUserId], references: [id], onDelete: SetNull)
+
+  /// Copy published to the Imágenes module, if any. Cleared when that copy is
+  /// deleted there, so the photo can be published again.
+  s3ImageId String?  @unique @map("s3_image_id")
+  s3Image   S3Image? @relation(fields: [s3ImageId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+
+  @@index([jobId, createdAt])
+  @@map("maintenance_photos")
+}
+
+/// Append-only trail powering the "Historial" tab and maintenance analytics.
+model MaintenanceEvent {
+  id    String         @id @default(uuid())
+  jobId String         @map("job_id")
+  job   MaintenanceJob @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  type    MaintenanceEventType
+  message String?
+
+  actorUserId String? @map("actor_user_id")
+  actor       User?   @relation("MaintenanceEventActor", fields: [actorUserId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+
+  @@index([jobId, createdAt])
+  @@index([type, createdAt])
+  @@map("maintenance_events")
 }

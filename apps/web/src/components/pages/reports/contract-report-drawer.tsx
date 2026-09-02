@@ -35,6 +35,7 @@ import { uploadBlobToPresignedUrl } from "@/lib/upload-blob-to-presigned-url";
 import { cn } from "@/lib/utils";
 import { SendReportDialog } from "./send-report-dialog";
 import { ContractReportsSendedSection } from "./contract-reports-sended-section";
+import { endOfMonth, formatMonthLabel, startOfMonth } from "./report-period";
 import { REPORT_TYPE_CONFIG, type ReportType } from "./report-types";
 
 const REPORT_FILE_MIME_TYPE =
@@ -61,11 +62,14 @@ function toS3ImagePreview(
 export function ContractReportDrawer({
   group,
   reportType,
+  month,
   onOpenChange,
   readOnly = false,
 }: {
   group: ActiveContractGroup | null;
   reportType: ReportType;
+  /** Period the report covers; defaults to the current month. */
+  month?: Date;
   onOpenChange: (open: boolean) => void;
   readOnly?: boolean;
 }) {
@@ -83,6 +87,7 @@ export function ContractReportDrawer({
             key={`${reportType}-${group.contractNumber}`}
             group={group}
             reportType={reportType}
+            month={month ?? startOfMonth(new Date())}
             readOnly={readOnly}
           />
         ) : null}
@@ -94,10 +99,12 @@ export function ContractReportDrawer({
 function ContractReportDrawerContent({
   group,
   reportType,
+  month,
   readOnly,
 }: {
   group: ActiveContractGroup;
   reportType: ReportType;
+  month: Date;
   readOnly: boolean;
 }) {
   const config = REPORT_TYPE_CONFIG[reportType];
@@ -155,8 +162,8 @@ function ContractReportDrawerContent({
         customerName: group.customerName ?? "",
         customerEmail: group.customerEmail ?? "",
         description: group.description ?? "",
-        dateFrom: new Date(group.startDate),
-        dateTo: new Date(group.endDate),
+        dateFrom: month,
+        dateTo: endOfMonth(month),
         billboards: reportBillboards,
         coverTitle: config.coverTitle,
         fileNamePrefix: config.fileNamePrefix,
@@ -178,6 +185,7 @@ function ContractReportDrawerContent({
         customerName: group.customerName ?? "",
         description: group.description ?? undefined,
         period,
+        periodStart: month.toISOString(),
         fileName,
         fileKey: key,
         reportType,
@@ -212,7 +220,7 @@ function ContractReportDrawerContent({
       </DrawerHeader>
 
       <div className="min-h-0 flex-1 space-y-4 overflow-y-auto px-4 pb-4">
-        <ContractSummary group={group} />
+        <ContractSummary group={group} month={month} />
 
         <div className="space-y-3">
           <div className="flex items-center justify-between gap-2">
@@ -281,6 +289,7 @@ function ContractReportDrawerContent({
         onOpenChange={setIsSendOpen}
         defaultEmail={group.customerEmail}
         contractNumber={group.contractNumber}
+        periodLabel={formatMonthLabel(month)}
         totalBillboardsCount={group.totalBillboards}
         selectedImagesCount={stats.billboardsSelected}
         isSubmitting={isSending}
@@ -309,13 +318,17 @@ function buildInitialSelection(
   return initial;
 }
 
-function ContractSummary({ group }: { group: ActiveContractGroup }) {
+function ContractSummary({
+  group,
+  month,
+}: {
+  group: ActiveContractGroup;
+  month: Date;
+}) {
   return (
     <div className="grid grid-cols-2 gap-3 rounded-lg border bg-muted/30 p-3 text-sm sm:grid-cols-4">
+      <SummaryItem label="Periodo">{formatMonthLabel(month)}</SummaryItem>
       <SummaryItem label="Atención">{group.description || "—"}</SummaryItem>
-      <SummaryItem label="Inicio">
-        {formatShortDate(new Date(group.startDate))}
-      </SummaryItem>
       <SummaryItem label="Vencimiento">
         {formatShortDate(new Date(group.endDate))}
       </SummaryItem>

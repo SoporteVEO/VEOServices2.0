@@ -127,7 +127,9 @@ export const theme: PdfxTheme = {
       lineHeight: 1.6,
     },
     heading: {
-      fontFamily: "Times-Roman",
+      // Single family across headings and body: mixing a serif heading with a
+      // sans body made the customer-facing documents look stitched together.
+      fontFamily: "Helvetica",
       fontWeight: 700,
       lineHeight: 1.25,
       fontSize: {

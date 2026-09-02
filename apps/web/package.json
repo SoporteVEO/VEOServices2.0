@@ -9,6 +9,7 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@date-fns/tz": "^1.5.0",
     "@paypal/react-paypal-js": "^9.1.0",
     "@radix-ui/react-dialog": "^1.1.15",
     "@react-pdf/renderer": "^4.5.1",

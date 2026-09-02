@@ -1,4 +1,5 @@
 import {
+  IsDateString,
   IsEmail,
   IsIn,
   IsOptional,
@@ -37,6 +38,14 @@ export class SendMaintenanceReportDto {
 
   @IsString()
   period: string;
+
+  /**
+   * First day of the month the report covers. Defaults to the current month
+   * so older clients keep working.
+   */
+  @IsDateString()
+  @IsOptional()
+  periodStart?: string;
 
   @IsString()
   @MaxLength(255)

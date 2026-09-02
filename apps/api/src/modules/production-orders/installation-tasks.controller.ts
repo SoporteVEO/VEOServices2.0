@@ -22,6 +22,11 @@ const FIELD_ROLES = ['INSTALLER', 'WORKER'] as const;
 /**
  * Endpoints behind the per-billboard QR code. Field roles reach nothing else
  * in the API, so every route here names them explicitly.
+ *
+ * The two field roles own different halves of the job: INSTALLER mounts the
+ * panel and files the installation photo, WORKER vulcanises the material and
+ * files that photo. Uploads are scoped accordingly so the split cannot be
+ * bypassed by calling the API directly.
  */
 @Controller('installations')
 export class InstallationTasksController {
@@ -43,7 +48,7 @@ export class InstallationTasksController {
   }
 
   @Post(':itemId/vulcanizado-image')
-  @RequiredRoles(...FIELD_ROLES, 'ADMIN')
+  @RequiredRoles('WORKER', 'ADMIN')
   async uploadVulcanizadoImage(
     @Param('itemId') itemId: string,
     @Body() dto: UploadInstallationImageDto,
@@ -56,14 +61,14 @@ export class InstallationTasksController {
   }
 
   @Delete(':itemId/vulcanizado-image')
-  @RequiredRoles(...FIELD_ROLES, 'ADMIN')
+  @RequiredRoles('WORKER', 'ADMIN')
   async deleteVulcanizadoImage(@Param('itemId') itemId: string) {
     const data = await this.service.deleteVulcanizadoImage(itemId);
     return { data };
   }
 
   @Post(':itemId/installation-image')
-  @RequiredRoles(...FIELD_ROLES, 'ADMIN')
+  @RequiredRoles('INSTALLER', 'ADMIN')
   async uploadInstallationImage(
     @Param('itemId') itemId: string,
     @Body() dto: UploadInstallationImageDto,

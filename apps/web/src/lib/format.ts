@@ -43,6 +43,58 @@ export function formatDateRange(from: Date | string, to: Date | string) {
   return `${format(new Date(from), "d MMM yyyy", { locale: es })} – ${format(new Date(to), "d MMM yyyy", { locale: es })}`;
 }
 
+function capitalize(value: string): string {
+  return value ? value[0]!.toUpperCase() + value.slice(1) : value;
+}
+
+/**
+ * Spanish weekday-first date, e.g. "Lunes 1 de septiembre de 2026". Used in
+ * customer-facing documents where a numeric date reads as bureaucratic.
+ */
+export function formatHumanDayDate(
+  value: Date | string | null | undefined,
+  options: { weekday?: boolean; year?: boolean; capitalized?: boolean } = {},
+): string {
+  if (value == null) return "—";
+  const d = typeof value === "string" ? new Date(value) : value;
+  if (isNaN(d.getTime())) return "—";
+
+  const { weekday = true, year = true, capitalized = true } = options;
+  const pattern = [
+    weekday ? "EEEE " : "",
+    "d 'de' MMMM",
+    year ? " 'de' yyyy" : "",
+  ].join("");
+
+  const formatted = format(d, pattern, { locale: es });
+  return capitalized ? capitalize(formatted) : formatted;
+}
+
+/**
+ * Human date range for a contract period. The year is only spelled out once,
+ * on the end date, unless the range spans two years.
+ */
+export function formatHumanDateRange(
+  from: Date | string | null | undefined,
+  to: Date | string | null | undefined,
+): string {
+  if (from == null && to == null) return "—";
+  if (from == null) return `Hasta el ${formatHumanDayDate(to)}`;
+  if (to == null) return `Desde el ${formatHumanDayDate(from)}`;
+
+  const start = typeof from === "string" ? new Date(from) : from;
+  const end = typeof to === "string" ? new Date(to) : to;
+  if (isNaN(start.getTime()) || isNaN(end.getTime())) return "—";
+
+  const sameYear = start.getFullYear() === end.getFullYear();
+  const from_ = formatHumanDayDate(start, {
+    year: !sameYear,
+    capitalized: false,
+  });
+  const to_ = formatHumanDayDate(end, { capitalized: false });
+  return `Del ${from_} al ${to_}`;
+}
+
 export function formatLongDate(
   value: Date | string | null | undefined,
 ): string {

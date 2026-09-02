@@ -3,7 +3,8 @@ export type UserRole =
   | "USER"
   | "LIMITED"
   | "INSTALLER"
-  | "WORKER";
+  | "WORKER"
+  | "MANTENIMIENTO";
 
 /** Roles whose users work in the field and only ever see the installer portal. */
 export const FIELD_ROLES = ["INSTALLER", "WORKER"] as const;
@@ -12,7 +13,19 @@ export function isFieldRole(role: UserRole | undefined | null): boolean {
   return role === "INSTALLER" || role === "WORKER";
 }
 
-export type SubRole = "HR" | "USERS_MANAGEMENT" | "PRODUCTION";
+/**
+ * Roles with no dashboard at all. Each one lands on its own mobile portal, so
+ * callers need `portalHomeFor` rather than a single shared base path.
+ */
+export function isPortalOnlyRole(role: UserRole | undefined | null): boolean {
+  return isFieldRole(role) || role === "MANTENIMIENTO";
+}
+
+export type SubRole =
+  | "HR"
+  | "USERS_MANAGEMENT"
+  | "PRODUCTION"
+  | "MANTENIMIENTO";
 
 export type User = {
   id: string;

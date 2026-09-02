@@ -22,7 +22,7 @@ const LIMITED_ROLE = 'LIMITED';
  * name them explicitly through `@RequiredRoles`. Everything else is denied,
  * so adding a new controller never widens their access by accident.
  */
-const FIELD_ROLES = new Set(['INSTALLER', 'WORKER']);
+const FIELD_ROLES = new Set(['INSTALLER', 'WORKER', 'MANTENIMIENTO']);
 
 export const AUTH_INSTANCE = 'BETTER_AUTH';
 

@@ -12,26 +12,42 @@ import {
   type ActiveContractGroup,
 } from "@/api/contracts/contracts.get";
 import { ContractReportDrawer } from "./contract-report-drawer";
+import { monthKey, startOfNextMonth } from "./report-period";
 import { REPORT_TYPE_CONFIG, type ReportType } from "./report-types";
 
 const DEFAULT_PAGE_SIZE = 25;
 
 interface ContractsReportTableProps {
   reportType: ReportType;
+  /** First day of the month being reported on. */
+  month: Date;
 }
 
 export function ContractsReportTable({
   reportType,
+  month,
 }: ContractsReportTableProps) {
   const [search, setSearch] = useState("");
   const [pageIndex, setPageIndex] = useState(0);
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
   const [selected, setSelected] = useState<ActiveContractGroup | null>(null);
 
+  // A page number from the previous month is meaningless once the month
+  // changes, so drop back to the first page while rendering.
+  const selectedMonthKey = monthKey(month);
+  const [renderedMonthKey, setRenderedMonthKey] = useState(selectedMonthKey);
+  if (renderedMonthKey !== selectedMonthKey) {
+    setRenderedMonthKey(selectedMonthKey);
+    setPageIndex(0);
+    setSelected(null);
+  }
+
   const debouncedSearch = useDebouncedValue(search.trim(), 300);
   const config = REPORT_TYPE_CONFIG[reportType];
 
   const { data, isLoading } = useActiveContracts({
+    from: month,
+    to: startOfNextMonth(month),
     page: pageIndex + 1,
     pageSize,
     search: debouncedSearch || undefined,
@@ -145,6 +161,7 @@ export function ContractsReportTable({
       <ContractReportDrawer
         group={selected}
         reportType={reportType}
+        month={month}
         onOpenChange={(open) => {
           if (!open) setSelected(null);
         }}

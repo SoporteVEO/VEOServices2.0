@@ -1,6 +1,11 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiFetch } from "@/lib/api";
-import type { OfferDetail, OfferListItem, UpdateOfferInput } from "./offers.types";
+import type {
+  EditOfferInput,
+  OfferDetail,
+  OfferListItem,
+  UpdateOfferInput,
+} from "./offers.types";
 
 export async function updateOffer(
   id: string,
@@ -27,6 +32,41 @@ export function useUpdateOffer(options?: {
         queryClient.invalidateQueries({ queryKey: ["offers"] }),
         queryClient.invalidateQueries({ queryKey: ["digital-billboards"] }),
       ]);
+      queryClient.setQueryData(["offers", updated.id], updated);
+      options?.onSuccess?.(updated);
+    },
+    onError: (err) => {
+      const error = err instanceof Error ? err : new Error(String(err));
+      options?.onError?.(error);
+    },
+  });
+}
+
+export async function editOffer(
+  id: string,
+  input: EditOfferInput,
+): Promise<OfferDetail> {
+  const response = await apiFetch<{ data: OfferDetail }>(
+    `/offers/${id}/content`,
+    {
+      method: "PATCH",
+      body: JSON.stringify(input),
+    },
+  );
+  return response.data;
+}
+
+export function useEditOffer(options?: {
+  onSuccess?: (updated: OfferDetail) => void;
+  onError?: (error: Error) => void;
+}) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, input }: { id: string; input: EditOfferInput }) =>
+      editOffer(id, input),
+    onSuccess: async (updated) => {
+      await queryClient.invalidateQueries({ queryKey: ["offers"] });
       queryClient.setQueryData(["offers", updated.id], updated);
       options?.onSuccess?.(updated);
     },

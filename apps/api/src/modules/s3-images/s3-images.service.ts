@@ -174,22 +174,40 @@ export class S3ImagesService {
     uploadedUserId: string,
     links: { productionOrderItemId?: string } = {},
   ): Promise<S3ImageListItem> {
+    const { imageBase64, ...rest } = dto;
+    return this.createFromBuffer(
+      decodeBase64Image(imageBase64),
+      rest,
+      uploadedUserId,
+      links,
+    );
+  }
+
+  /**
+   * Same pipeline as `create`, for callers that already hold the bytes — such
+   * as publishing a maintenance proof photo that lives in another S3 folder.
+   */
+  async createFromBuffer(
+    buffer: Buffer,
+    input: Omit<CreateS3ImageDto, 'imageBase64'>,
+    uploadedUserId: string,
+    links: { productionOrderItemId?: string } = {},
+  ): Promise<S3ImageListItem> {
     if (!uploadedUserId) {
       throw new BadRequestException('Usuario no autenticado');
     }
 
-    if (dto.staticBillboardCodeId) {
+    if (input.staticBillboardCodeId) {
       const code = await this.prisma.staticBillboardCodes.findUnique({
-        where: { id: dto.staticBillboardCodeId },
+        where: { id: input.staticBillboardCodeId },
         select: { id: true },
       });
       if (!code) throw new NotFoundException('Código de valla no encontrado');
     }
 
-    const folder = STATIC_BILLBOARD_FOLDERS[dto.type] ?? 'uploads';
+    const folder = STATIC_BILLBOARD_FOLDERS[input.type] ?? 'uploads';
 
-    const inputBuffer = decodeBase64Image(dto.imageBase64);
-    const processed = await this.processor.toWebp(inputBuffer);
+    const processed = await this.processor.toWebp(buffer);
 
     const upload = await this.storage.uploadBuffer({
       buffer: processed.buffer,
@@ -204,9 +222,9 @@ export class S3ImagesService {
           url: upload.key,
           deleteUrl: upload.key,
           uploadedUserId,
-          tags: dto.tags ?? [],
-          type: dto.type,
-          staticBillboardCodeId: dto.staticBillboardCodeId ?? null,
+          tags: input.tags ?? [],
+          type: input.type,
+          staticBillboardCodeId: input.staticBillboardCodeId ?? null,
           productionOrderItemId: links.productionOrderItemId ?? null,
         },
         include: {

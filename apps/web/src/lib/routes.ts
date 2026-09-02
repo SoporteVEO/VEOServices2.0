@@ -15,9 +15,17 @@ import {
   House,
   Banknote,
   Factory,
+  Wrench,
 } from "lucide-react";
-import { isFieldRole, SubRole, UserRole } from "@/api/users/users.types";
+import { isPortalOnlyRole, SubRole, UserRole } from "@/api/users/users.types";
 import { INSTALLER_PORTAL_BASE } from "@/lib/installer-portal";
+import { MAINTENANCE_PORTAL_BASE } from "@/lib/maintenance-portal";
+
+/** Where a role with no dashboard belongs. */
+export function portalHomeFor(role: UserRole | undefined | null): string {
+  if (role === "MANTENIMIENTO") return MAINTENANCE_PORTAL_BASE;
+  return INSTALLER_PORTAL_BASE;
+}
 
 export interface NavItem {
   title: string;
@@ -93,6 +101,13 @@ export const NAV_GROUPS: NavGroup[] = [
         icon: Factory,
         allowedRoles: [],
         requiredSubRoles: ["PRODUCTION"],
+      },
+      {
+        title: "Mantenimiento",
+        href: "/dashboard/mantenimiento",
+        icon: Wrench,
+        allowedRoles: [],
+        requiredSubRoles: ["MANTENIMIENTO"],
       }
     ],
   },
@@ -193,9 +208,9 @@ export function resolvePathAccess(
   role?: UserRole,
   subRoles?: SubRole[],
 ): AccessResult {
-  // Field roles have no dashboard at all; they always belong in the portal.
-  if (isFieldRole(role)) {
-    return { allowed: false, redirectTo: INSTALLER_PORTAL_BASE };
+  // Portal-only roles have no dashboard at all; each belongs in its own portal.
+  if (isPortalOnlyRole(role)) {
+    return { allowed: false, redirectTo: portalHomeFor(role) };
   }
 
   if (isSystemPath(pathname)) return { allowed: true };

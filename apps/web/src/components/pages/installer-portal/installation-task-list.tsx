@@ -9,13 +9,18 @@ import { ProductionOrderStatusBadge } from "@/components/pages/production-orders
 import { formatBriloShortDate } from "@/lib/format";
 import { installerPortalPath } from "@/lib/installer-portal";
 import { InstallerPortalShell } from "./installer-portal-shell";
+import { usePortalSession } from "./use-portal-session";
 
 export function InstallationTaskList() {
+  const { capabilities } = usePortalSession();
   const { data: tasks, isLoading, isError } = useMyInstallationTasks();
+
+  const isVulcanizadoOnly =
+    capabilities.canUploadVulcanizado && !capabilities.canUploadInstallation;
 
   return (
     <InstallerPortalShell
-      title="Mis instalaciones"
+      title={isVulcanizadoOnly ? "Mis vulcanizados" : "Mis instalaciones"}
       subtitle="Vallas asignadas a tu cuenta"
     >
       {isLoading ? (
@@ -28,16 +33,20 @@ export function InstallationTaskList() {
         </p>
       ) : !tasks || tasks.length === 0 ? (
         <div className="rounded-xl border bg-card p-6 text-center">
-          <p className="text-sm font-medium">No tienes instalaciones asignadas</p>
+          <p className="text-sm font-medium">
+            {isVulcanizadoOnly
+              ? "No tienes vallas asignadas"
+              : "No tienes instalaciones asignadas"}
+          </p>
           <p className="pt-1 text-xs text-muted-foreground">
-            Escanea el código QR de una valla para abrir su ficha de instalación.
+            Escanea el código QR de una valla para abrir su ficha.
           </p>
         </div>
       ) : (
         <ul className="flex flex-col gap-2">
           {tasks.map((task) => (
             <li key={task.id}>
-              <TaskCard task={task} />
+              <TaskCard task={task} showLocation={capabilities.canSeeLocation} />
             </li>
           ))}
         </ul>
@@ -46,7 +55,13 @@ export function InstallationTaskList() {
   );
 }
 
-function TaskCard({ task }: { task: InstallationTaskListItem }) {
+function TaskCard({
+  task,
+  showLocation,
+}: {
+  task: InstallationTaskListItem;
+  showLocation: boolean;
+}) {
   const location =
     [task.address, task.cityName, task.departmentName]
       .filter(Boolean)
@@ -69,10 +84,12 @@ function TaskCard({ task }: { task: InstallationTaskListItem }) {
           {task.customerCompany ?? task.customerName}
         </p>
 
-        <p className="flex items-start gap-1.5 text-xs text-muted-foreground">
-          <MapPin className="mt-0.5 size-3 shrink-0" aria-hidden />
-          <span className="line-clamp-2">{location}</span>
-        </p>
+        {showLocation ? (
+          <p className="flex items-start gap-1.5 text-xs text-muted-foreground">
+            <MapPin className="mt-0.5 size-3 shrink-0" aria-hidden />
+            <span className="line-clamp-2">{location}</span>
+          </p>
+        ) : null}
 
         {task.scheduledInstallationAt ? (
           <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
