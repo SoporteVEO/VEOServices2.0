@@ -5,6 +5,10 @@ import type { ColumnDef, RowSelectionState } from "@tanstack/react-table";
 import type { AvailableBillboardListing } from "@/api/billboards/billboards.get";
 import { DataTable } from "@/components/ui/data-table";
 import { Badge } from "@/components/primitives/ui/badge";
+import {
+  MultiSelectFilter,
+  type MultiSelectFilterOption,
+} from "@/components/ui/multi-select-filter";
 import { formatMoney } from "@/lib/format";
 import {
   Tooltip,
@@ -131,6 +135,30 @@ function getBillboardRowId(b: AvailableBillboardListing): string {
   return String(b.billboardId);
 }
 
+const UNKNOWN_DEPARTMENT = "__sin_departamento__";
+
+function departmentKey(b: AvailableBillboardListing): string {
+  return b.departmentName ?? UNKNOWN_DEPARTMENT;
+}
+
+/** Departments present in the current result set, with how many rows each holds. */
+function buildDepartmentOptions(
+  billboards: AvailableBillboardListing[],
+): MultiSelectFilterOption[] {
+  const counts = new Map<string, number>();
+  for (const b of billboards) {
+    const key = departmentKey(b);
+    counts.set(key, (counts.get(key) ?? 0) + 1);
+  }
+  return [...counts.entries()]
+    .map(([value, count]) => ({
+      value,
+      label: value === UNKNOWN_DEPARTMENT ? "Sin departamento" : value,
+      count,
+    }))
+    .sort((a, b) => a.label.localeCompare(b.label, "es", { sensitivity: "base" }));
+}
+
 export function StaticBillboardsTable({
   billboards,
   isLoading = false,
@@ -147,6 +175,7 @@ export function StaticBillboardsTable({
     | ((ctx: StaticBillboardsSideButtonsContext) => ReactNode);
 }) {
   const [search, setSearch] = useState("");
+  const [departments, setDepartments] = useState<string[]>([]);
   const [selected, setSelected] = useState<AvailableBillboardListing | null>(
     null,
   );
@@ -160,30 +189,53 @@ export function StaticBillboardsTable({
     [showAvailabilityColumn],
   );
 
-  const filtered = useMemo(() => {
-    if (!search.trim()) return billboards;
-    const q = search.toLowerCase();
-    return billboards.filter(
-      (b) =>
-        b.billboardCode?.toLowerCase().includes(q) ||
-        b.reference?.toLowerCase().includes(q) ||
-        b.address?.toLowerCase().includes(q) ||
-        b.cityName?.toLowerCase().includes(q) ||
-        b.departmentName?.toLowerCase().includes(q),
-    );
-  }, [billboards, search]);
+  const departmentOptions = useMemo(
+    () => buildDepartmentOptions(billboards),
+    [billboards],
+  );
 
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    const wanted = new Set(departments);
+
+    return billboards.filter((b) => {
+      if (wanted.size > 0 && !wanted.has(departmentKey(b))) return false;
+      if (!q) return true;
+      return Boolean(
+        b.billboardCode?.toLowerCase().includes(q) ||
+          b.reference?.toLowerCase().includes(q) ||
+          b.address?.toLowerCase().includes(q) ||
+          b.cityName?.toLowerCase().includes(q) ||
+          b.departmentName?.toLowerCase().includes(q),
+      );
+    });
+  }, [billboards, search, departments]);
+
+  // Ticking a row means "include this billboard", so the selection survives
+  // changing the filters. That is what lets a report cover, say, 3 vallas in
+  // Ahuachapán and 5 in San Salvador without holding both in view at once.
   const selectedRows = useMemo(() => {
     if (!enableRowSelection) return [];
-    return filtered.filter((b) => rowSelection[getBillboardRowId(b)]);
-  }, [filtered, rowSelection, enableRowSelection]);
+    return billboards.filter((b) => rowSelection[getBillboardRowId(b)]);
+  }, [billboards, rowSelection, enableRowSelection]);
 
   const clearSelection = () => setRowSelection({});
 
-  const resolvedSideButtons =
-    typeof sideButtons === "function"
-      ? sideButtons({ filtered, selectedRows, clearSelection })
-      : sideButtons;
+  const resolvedSideButtons = (
+    <>
+      <MultiSelectFilter
+        label="Departamento"
+        options={departmentOptions}
+        value={departments}
+        onChange={setDepartments}
+        disabled={isLoading}
+        emptyLabel="Sin departamentos."
+      />
+      {typeof sideButtons === "function"
+        ? sideButtons({ filtered, selectedRows, clearSelection })
+        : sideButtons}
+    </>
+  );
 
   return (
     <>

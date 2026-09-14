@@ -113,6 +113,45 @@ export interface OfferEventEntry {
   createdAt: string;
 }
 
+/** The client side of the lease contract, as named in its opening paragraph. */
+export interface OfferContractClient {
+  companyName: string;
+  legalRepName: string;
+  legalRepDui: string | null;
+  domicile: string | null;
+  address: string | null;
+  notificationEmail: string | null;
+}
+
+export interface OfferContractBillboard {
+  vallaType: string;
+  code: string;
+  location: string;
+  dimensions: string;
+  monthlyCost: number;
+  startDate: string | null;
+  endDate: string | null;
+}
+
+/**
+ * Everything the contract PDF prints. The server computes the amounts so the
+ * figures on a signed document come from one place.
+ */
+export interface OfferContractData {
+  offerId: string;
+  offerNumber: string;
+  contractNumber: string;
+  contractDate: string;
+  client: OfferContractClient;
+  billboardCount: number;
+  monthlyRentalTotal: number;
+  contractTotal: number;
+  startDate: string | null;
+  endDate: string | null;
+  billboards: OfferContractBillboard[];
+  hasArchivedPdf: boolean;
+}
+
 export interface OfferDetail extends OfferListItem {
   items: OfferDetailItem[];
   linkedBriloContract: BriloContractOption | null;

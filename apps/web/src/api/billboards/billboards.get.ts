@@ -141,13 +141,22 @@ export function useAvailableBillboardsInRange(params: {
   });
 }
 
+/**
+ * Pass `billboardIds` to build a report for a specific set of vallas instead of
+ * every billboard available in the range.
+ */
 export async function getAvailableBillboardsForReport(params: {
   from: string;
   to: string;
+  billboardIds?: number[];
 }) {
+  const query: Record<string, string> = { from: params.from, to: params.to };
+  if (params.billboardIds?.length) {
+    query.billboardIds = params.billboardIds.join(",");
+  }
   const response = await apiFetch<{ data: AvailableBillboardReport[] }>(
     "/billboards/available/report",
-    { query: { from: params.from, to: params.to } },
+    { query },
   );
   return response.data;
 }

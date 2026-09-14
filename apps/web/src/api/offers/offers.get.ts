@@ -8,6 +8,7 @@ import type {
   BriloContractsQuery,
   MyOffersQuery,
   MyOffersSummary,
+  OfferContractData,
   OfferDetail,
   OfferListItem,
   PaginatedBriloContracts,
@@ -139,6 +140,19 @@ export function useOffer(
       getOffer(id as string, { viewAsUserId: options.viewAsUserId ?? null }),
     enabled: !!id,
   });
+}
+
+export async function getOfferContractData(
+  id: string,
+  options: { viewAsUserId?: string | null } = {},
+): Promise<OfferContractData> {
+  const query: Record<string, string> = {};
+  if (options.viewAsUserId) query.viewAsUserId = options.viewAsUserId;
+  const response = await apiFetch<{ data: OfferContractData }>(
+    `/offers/${id}/contract`,
+    { query },
+  );
+  return response.data;
 }
 
 export async function getOfferDownloadUrl(

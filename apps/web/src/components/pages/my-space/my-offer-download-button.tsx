@@ -7,6 +7,7 @@ import { pdf } from "@react-pdf/renderer";
 import { getOffer } from "@/api/offers/offers.get";
 import type { OfferListItem } from "@/api/offers/offers.types";
 import { Button } from "@/components/ui/button";
+import { downloadBlob, safeFileName } from "@/lib/pdf-download";
 import { offerDetailToPdfData } from "./quotation/offer-detail-to-pdf-data";
 import { OfferPdfDocument } from "./quotation/offer-pdf-document";
 import { useMySpaceViewAs } from "./my-space-view-as-context";
@@ -36,15 +37,7 @@ export function MyOfferDownloadButton({ offer }: MyOfferDownloadButtonProps) {
         />,
       ).toBlob();
 
-      const url = URL.createObjectURL(blob);
-      const anchor = document.createElement("a");
-      anchor.href = url;
-      anchor.download = `${offer.offerNumber.replace(/[\\/:*?"<>|]/g, "-")}.pdf`;
-      anchor.rel = "noopener";
-      document.body.appendChild(anchor);
-      anchor.click();
-      anchor.remove();
-      URL.revokeObjectURL(url);
+      downloadBlob(blob, safeFileName(`${offer.offerNumber}.pdf`));
     } catch {
       toast.error("No se pudo descargar la cotización.");
     } finally {

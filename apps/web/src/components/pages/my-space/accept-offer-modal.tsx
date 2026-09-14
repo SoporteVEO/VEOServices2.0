@@ -17,6 +17,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { BriloContractCombobox } from "./brilo-contract-combobox";
+import { downloadOfferContract } from "./contract/download-offer-contract";
 
 type AcceptOfferModalProps = {
   offer: OfferListItem | null;
@@ -55,6 +56,14 @@ export function AcceptOfferModal({
         onSuccess: () => {
           toast.success("Cotización marcada como aceptada.");
           handleOpenChange(false);
+          // The acceptance is already committed, so a contract that fails to
+          // render is reported on its own and stays available from the
+          // "Contrato" button rather than reversing the acceptance.
+          void downloadOfferContract(offer.id).catch(() =>
+            toast.error(
+              "La cotización se aceptó, pero no se pudo generar el contrato. Descárgalo desde el botón «Contrato».",
+            ),
+          );
         },
         onError: (err) =>
           toast.error(err.message || "No se pudo aceptar la cotización."),

@@ -2,24 +2,23 @@
 
 import { useEffect, type ReactNode } from "react";
 import { usePathname, useRouter } from "next/navigation";
+import { isPortalOnlyRole } from "@/api/users/users.types";
+import { canAccessInstallerPortal, portalHomeFor } from "@/lib/portal-access";
 import { usePortalSession } from "./use-portal-session";
 
 /**
- * The portal is built for INSTALLER/WORKER, but admins and the production
- * team can open it too so they can verify what a printed QR resolves to.
- * Access follows the capability map: anyone with nothing to do here is sent
- * back to the dashboard.
+ * The portal is built for the installation field roles, but admins and the
+ * production team can open it too so they can verify what a printed QR resolves
+ * to. Anyone with nothing to do here is sent to whichever portal or dashboard
+ * they do belong to.
  */
 export function InstallerPortalGuard({ children }: { children: ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
-  const { capabilities, isPending, hasSession } = usePortalSession();
+  const { role, subRoles, isPending, hasSession } = usePortalSession();
 
-  const canUsePortal =
-    capabilities.canSeeLocation ||
-    capabilities.canUploadInstallation ||
-    capabilities.canUploadVulcanizado;
-  const isAllowed = !isPending && hasSession && canUsePortal;
+  const isAllowed =
+    !isPending && hasSession && canAccessInstallerPortal(role, subRoles);
 
   // Kept as a primitive so the effect only reruns when the destination
   // actually changes, not on every render of the derived values above.
@@ -27,7 +26,9 @@ export function InstallerPortalGuard({ children }: { children: ReactNode }) {
   if (!isPending && !hasSession) {
     redirectTo = `/?redirect=${encodeURIComponent(pathname)}`;
   } else if (!isPending && !isAllowed) {
-    redirectTo = "/dashboard";
+    redirectTo = isPortalOnlyRole(role)
+      ? portalHomeFor(role, subRoles)
+      : "/dashboard";
   }
 
   useEffect(() => {

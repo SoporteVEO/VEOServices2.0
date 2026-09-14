@@ -4,21 +4,40 @@ export type UserRole =
   | "LIMITED"
   | "INSTALLER"
   | "WORKER"
-  | "MANTENIMIENTO";
+  | "MANTENIMIENTO"
+  | "INSTALLER_MANTENIMIENTO";
 
-/** Roles whose users work in the field and only ever see the installer portal. */
-export const FIELD_ROLES = ["INSTALLER", "WORKER"] as const;
+/** Roles whose users work in the field and file installation or vulcanizado work. */
+export const FIELD_ROLES = [
+  "INSTALLER",
+  "WORKER",
+  "INSTALLER_MANTENIMIENTO",
+] as const satisfies readonly UserRole[];
+
+/** Roles whose users carry out maintenance work orders. */
+export const MAINTENANCE_FIELD_ROLES = [
+  "MANTENIMIENTO",
+  "INSTALLER_MANTENIMIENTO",
+] as const satisfies readonly UserRole[];
 
 export function isFieldRole(role: UserRole | undefined | null): boolean {
-  return role === "INSTALLER" || role === "WORKER";
+  return FIELD_ROLES.includes(role as (typeof FIELD_ROLES)[number]);
+}
+
+export function isMaintenanceFieldRole(
+  role: UserRole | undefined | null,
+): boolean {
+  return MAINTENANCE_FIELD_ROLES.includes(
+    role as (typeof MAINTENANCE_FIELD_ROLES)[number],
+  );
 }
 
 /**
- * Roles with no dashboard at all. Each one lands on its own mobile portal, so
+ * Roles with no dashboard at all. A role may grant more than one portal, so
  * callers need `portalHomeFor` rather than a single shared base path.
  */
 export function isPortalOnlyRole(role: UserRole | undefined | null): boolean {
-  return isFieldRole(role) || role === "MANTENIMIENTO";
+  return isFieldRole(role) || isMaintenanceFieldRole(role);
 }
 
 export type SubRole =

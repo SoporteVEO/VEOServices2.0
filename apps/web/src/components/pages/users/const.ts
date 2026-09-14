@@ -38,6 +38,12 @@ export const roleBadge: Record<UserRole, BadgeStyle> = {
     className:
       "border-amber-500/50 bg-amber-500/10 text-amber-700 dark:text-amber-400",
   },
+  INSTALLER_MANTENIMIENTO: {
+    label: "Instalador y mantenimiento",
+    variant: "outline",
+    className:
+      "border-indigo-500/50 bg-indigo-500/10 text-indigo-700 dark:text-indigo-400",
+  },
 };
 
 export const ROLE_OPTIONS: {
@@ -77,6 +83,12 @@ export const ROLE_OPTIONS: {
     label: "Mantenimiento",
     description:
       "Solo accede al portal móvil con sus órdenes de mantenimiento asignadas",
+  },
+  {
+    value: "INSTALLER_MANTENIMIENTO",
+    label: "Instalador y mantenimiento",
+    description:
+      "Hace ambos trabajos: accede al portal de instalaciones y al de mantenimiento, y puede recibir asignaciones de los dos",
   },
 ];
 

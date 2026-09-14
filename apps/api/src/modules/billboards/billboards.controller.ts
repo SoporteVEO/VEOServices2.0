@@ -17,10 +17,15 @@ import { Public } from '../auth/decorators.js';
 export class BillboardsController {
   constructor(private readonly service: BillboardsService) {}
 
+  /**
+   * `billboardIds` narrows the deck to a specific set of vallas, so a report can
+   * cover only the zones a client asked for instead of the whole inventory.
+   */
   @Get('available/report')
   async getAvailableBillboardsForReport(
     @Query('from') fromRaw?: string,
     @Query('to') toRaw?: string,
+    @Query('billboardIds') billboardIdsRaw?: string,
   ) {
     const from = fromRaw ? new Date(fromRaw) : new Date();
     const to = toRaw
@@ -34,6 +39,7 @@ export class BillboardsController {
     const billboards = await this.service.getAvailableBillboardsForReport(
       from,
       to,
+      { billboardIds: parseBillboardIds(billboardIdsRaw) },
     );
     return { data: billboards };
   }
@@ -187,4 +193,14 @@ export class BillboardsController {
     );
     return { data: billboards };
   }
+}
+
+/** Comma-separated Brilo `caraId` list; anything unparseable is ignored. */
+function parseBillboardIds(raw?: string): number[] | undefined {
+  if (!raw?.trim()) return undefined;
+  const ids = raw
+    .split(',')
+    .map((part) => Number(part.trim()))
+    .filter((id) => Number.isInteger(id) && id > 0);
+  return ids.length > 0 ? ids : undefined;
 }

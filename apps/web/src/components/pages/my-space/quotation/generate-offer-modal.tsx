@@ -25,6 +25,11 @@ import {
   type QuotationCustomerFormValues,
 } from "@/components/pages/static-billboards/quotation/quotation-customer-form";
 import { Separator } from "@/components/primitives/ui/separator";
+import {
+  blobToBase64,
+  downloadBlob,
+  safeFileName,
+} from "@/lib/pdf-download";
 import { DigitalItemsSection } from "./digital-items-section";
 import { MiscItemsSection } from "./misc-items-section";
 import { offerDetailItemsToOfferItems } from "./offer-detail-to-items";
@@ -81,33 +86,6 @@ function formValuesFromOffer(
     validUntil: new Date(offer.validUntil),
     specialConditions: offer.specialConditions ?? "",
   };
-}
-
-async function blobToBase64(blob: Blob): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      const result = reader.result;
-      if (typeof result !== "string") {
-        reject(new Error("No se pudo leer el PDF"));
-        return;
-      }
-      resolve(result);
-    };
-    reader.onerror = () =>
-      reject(reader.error ?? new Error("No se pudo leer el PDF"));
-    reader.readAsDataURL(blob);
-  });
-}
-
-function downloadBlob(blob: Blob, fileName: string) {
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = fileName;
-  a.rel = "noopener";
-  a.click();
-  URL.revokeObjectURL(url);
 }
 
 function offerItemToInput(item: OfferItem): OfferItemInput {
@@ -335,11 +313,12 @@ export function GenerateOfferModal({
       const pdfBase64 = await blobToBase64(blob);
       await attachPdfMutation.mutateAsync({ id: saved.id, pdfBase64 });
 
-      const fileName = `${saved.offerNumber.replace(
-        /[\\/:*?"<>|]/g,
-        "-",
-      )}_${fileTimestamp(new Date())}.pdf`;
-      downloadBlob(blob, fileName);
+      downloadBlob(
+        blob,
+        safeFileName(
+          `${saved.offerNumber}_${fileTimestamp(new Date())}.pdf`,
+        ),
+      );
 
       toast.success(
         isEditing

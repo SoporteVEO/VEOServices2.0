@@ -93,7 +93,12 @@ export default function StaticBillboardsPage() {
               disabled={billboardsQuery.isLoading}
               includeAvailabilityColumn={showAll}
             />
-            <GenerateReportButton from={fromStr} to={toStr} />
+            <GenerateReportButton
+              from={fromStr}
+              to={toStr}
+              selectedRows={selectedRows}
+              visibleRows={filtered}
+            />
           </>
         )}
       />

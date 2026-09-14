@@ -14,15 +14,9 @@ import {
   REQUIRED_ROLES_KEY,
   REQUIRED_SUB_ROLES_KEY,
 } from './decorators.js';
+import { FIELD_ROLES } from './field-roles.js';
 
 const LIMITED_ROLE = 'LIMITED';
-
-/**
- * Field roles live outside the dashboard: they may only reach endpoints that
- * name them explicitly through `@RequiredRoles`. Everything else is denied,
- * so adding a new controller never widens their access by accident.
- */
-const FIELD_ROLES = new Set(['INSTALLER', 'WORKER', 'MANTENIMIENTO']);
 
 export const AUTH_INSTANCE = 'BETTER_AUTH';
 
@@ -78,10 +72,14 @@ export class AuthGuard implements CanActivate {
     request.authSession = session.session;
 
     const userRole = session.user.role as string | undefined;
+    const userSubRoles = (session.user.subRoles as string[] | undefined) ?? [];
 
     const requiredRoles = this.reflector.getAllAndOverride<
       string[] | undefined
     >(REQUIRED_ROLES_KEY, [context.getHandler(), context.getClass()]);
+    const requiredSubRoles = this.reflector.getAllAndOverride<
+      string[] | undefined
+    >(REQUIRED_SUB_ROLES_KEY, [context.getHandler(), context.getClass()]);
 
     if (userRole === LIMITED_ROLE) {
       const allowLimited = this.reflector.getAllAndOverride<boolean>(
@@ -93,28 +91,25 @@ export class AuthGuard implements CanActivate {
       }
     }
 
-    if (userRole && FIELD_ROLES.has(userRole)) {
-      if (!requiredRoles?.includes(userRole)) {
-        throw new ForbiddenException('No tienes permisos para este recurso');
-      }
+    // `@RequiredRoles` and `@RequiredSubRoles` are alternatives, not both:
+    // satisfying either one grants access. That is what lets a portal endpoint
+    // serve the field role that owns the work and the supervisor who holds the
+    // matching sub-role, without duplicating the route.
+    const matchesRole = Boolean(userRole && requiredRoles?.includes(userRole));
+    const matchesSubRole = Boolean(
+      requiredSubRoles?.some((sr) => userSubRoles.includes(sr)),
+    );
+    const isGranted = matchesRole || matchesSubRole;
+
+    // Field roles are deny-by-default: they reach only the endpoints that name
+    // their role or a sub-role they hold, so a new controller never widens
+    // their access by accident.
+    if (userRole && FIELD_ROLES.has(userRole) && !isGranted) {
+      throw new ForbiddenException('No tienes permisos para este recurso');
     }
 
-    if (requiredRoles?.length) {
-      if (!userRole || !requiredRoles.includes(userRole)) {
-        throw new ForbiddenException('No tienes permisos para este recurso');
-      }
-    }
-
-    const requiredSubRoles = this.reflector.getAllAndOverride<
-      string[] | undefined
-    >(REQUIRED_SUB_ROLES_KEY, [context.getHandler(), context.getClass()]);
-    if (requiredSubRoles?.length) {
-      const userSubRoles =
-        (session.user.subRoles as string[] | undefined) ?? [];
-      const hasAny = requiredSubRoles.some((sr) => userSubRoles.includes(sr));
-      if (!hasAny) {
-        throw new ForbiddenException('No tienes permisos para este recurso');
-      }
+    if ((requiredRoles?.length || requiredSubRoles?.length) && !isGranted) {
+      throw new ForbiddenException('No tienes permisos para este recurso');
     }
 
     return true;

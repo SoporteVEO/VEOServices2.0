@@ -15,6 +15,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { AcceptOfferModal } from "./accept-offer-modal";
+import { ContractDownloadButton } from "./contract/contract-download-button";
 import { MyOfferDownloadButton } from "./my-offer-download-button";
 import { useMySpaceViewAs } from "./my-space-view-as-context";
 
@@ -81,6 +82,7 @@ export function MyOfferActions({ offer }: MyOfferActionsProps) {
           </Button>
         ) : null}
         <MyOfferDownloadButton offer={offer} />
+        {isAccepted ? <ContractDownloadButton offerId={offer.id} /> : null}
       </div>
 
       <AcceptOfferModal

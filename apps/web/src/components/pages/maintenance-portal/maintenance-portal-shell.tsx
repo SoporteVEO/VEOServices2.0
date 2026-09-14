@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { ReactNode } from "react";
 import { Button } from "@/components/primitives/ui/button";
+import { PortalSwitcher } from "@/components/pages/field-portal";
 import { authClient, clearAuthToken } from "@/lib/auth-client";
 import { MAINTENANCE_PORTAL_BASE } from "@/lib/maintenance-portal";
 
@@ -63,6 +64,8 @@ export function MaintenancePortalShell({
               </p>
             ) : null}
           </div>
+
+          <PortalSwitcher />
 
           <Button
             variant="ghost"

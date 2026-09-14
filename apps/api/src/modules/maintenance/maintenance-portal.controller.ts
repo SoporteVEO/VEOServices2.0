@@ -1,5 +1,10 @@
 import { Body, Controller, Get, Param, Patch, Post } from '@nestjs/common';
-import { CurrentUser, RequiredRoles } from '../auth/decorators.js';
+import {
+  CurrentUser,
+  RequiredRoles,
+  RequiredSubRoles,
+} from '../auth/decorators.js';
+import { MAINTENANCE_ROLES } from '../auth/field-roles.js';
 import {
   CompleteMaintenanceJobDto,
   UploadMaintenancePhotoDto,
@@ -11,37 +16,38 @@ interface AuthUser {
 }
 
 /**
- * The technician's mobile portal. Users with the MANTENIMIENTO role reach
- * nothing else in the API, so every route names the role explicitly and the
- * service re-checks that the job is actually assigned to the caller.
+ * The technician's mobile portal. Maintenance roles reach nothing else in the
+ * API, so the controller names them explicitly and the service re-checks that
+ * the job is actually assigned to the caller.
+ *
+ * Supervisors holding the MANTENIMIENTO sub-role are allowed in as well so they
+ * can see exactly what a technician sees; the two requirements are alternatives.
  */
 @Controller('maintenance-portal')
+@RequiredRoles(...MAINTENANCE_ROLES, 'ADMIN')
+@RequiredSubRoles('MANTENIMIENTO')
 export class MaintenancePortalController {
   constructor(private readonly jobs: MaintenanceJobsService) {}
 
   @Get('jobs')
-  @RequiredRoles('MANTENIMIENTO', 'ADMIN')
   async listMine(@CurrentUser() user: AuthUser) {
     const data = await this.jobs.listAssignedTo(user.id);
     return { data };
   }
 
   @Get('jobs/:id')
-  @RequiredRoles('MANTENIMIENTO', 'ADMIN')
   async getOne(@Param('id') id: string, @CurrentUser() user: AuthUser) {
     const data = await this.jobs.getJobForCaller(id, user.id);
     return { data };
   }
 
   @Patch('jobs/:id/start')
-  @RequiredRoles('MANTENIMIENTO', 'ADMIN')
   async start(@Param('id') id: string, @CurrentUser() user: AuthUser) {
     const data = await this.jobs.start(id, user.id);
     return { data };
   }
 
   @Patch('jobs/:id/complete')
-  @RequiredRoles('MANTENIMIENTO', 'ADMIN')
   async complete(
     @Param('id') id: string,
     @Body() dto: CompleteMaintenanceJobDto,
@@ -52,7 +58,6 @@ export class MaintenancePortalController {
   }
 
   @Post('jobs/:id/photos')
-  @RequiredRoles('MANTENIMIENTO', 'ADMIN')
   async uploadPhoto(
     @Param('id') id: string,
     @Body() dto: UploadMaintenancePhotoDto,

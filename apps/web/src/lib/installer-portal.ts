@@ -3,10 +3,10 @@ import type { SubRole, UserRole } from "@/api/users/users.types";
 export const INSTALLER_PORTAL_BASE = "/portal";
 
 /**
- * What a given role is allowed to do inside the portal. The two field roles
- * split the job in half: the installer mounts the panel on site and needs to
- * find it, while the operario only vulcanises the material in the shop and
- * has no reason to see where it is going.
+ * What a given role is allowed to do inside the portal. The field roles split
+ * the job in half: the installer mounts the panel on site and needs to find it,
+ * while the operario only vulcanises the material in the shop and has no reason
+ * to see where it is going.
  */
 export interface PortalCapabilities {
   canSeeLocation: boolean;
@@ -49,7 +49,11 @@ export function portalCapabilitiesFor(
   role: UserRole | undefined,
   subRoles: SubRole[] = [],
 ): PortalCapabilities {
-  if (role === "INSTALLER") return INSTALLER_CAPABILITIES;
+  // A technician who also mounts panels does the installer half of the job; the
+  // maintenance half lives in its own portal, not here.
+  if (role === "INSTALLER" || role === "INSTALLER_MANTENIMIENTO") {
+    return INSTALLER_CAPABILITIES;
+  }
   if (role === "WORKER") return WORKER_CAPABILITIES;
   if (role === "ADMIN") return SUPERVISOR_CAPABILITIES;
   if (role === "USER" && subRoles.includes("PRODUCTION")) {

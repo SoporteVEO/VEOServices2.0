@@ -144,6 +144,18 @@ export class OffersController {
     return this.service.getDownloadUrl(id, targetUserId);
   }
 
+  /** Figures and legal data for the lease contract of an accepted offer. */
+  @Get(':id/contract')
+  async getContract(
+    @Param('id') id: string,
+    @CurrentUser() user: AuthUser,
+    @Query('viewAsUserId') viewAsUserId?: string,
+  ) {
+    const targetUserId = resolveTargetUserId(user, viewAsUserId);
+    const data = await this.service.getContractData(id, targetUserId);
+    return { data };
+  }
+
   @Get(':id')
   async getOne(
     @Param('id') id: string,
@@ -190,6 +202,20 @@ export class OffersController {
   ) {
     const updated = await this.service.attachPdf(id, dto.pdfBase64, user.id);
     return { data: updated };
+  }
+
+  @Patch(':id/contract-pdf')
+  async attachContractPdf(
+    @Param('id') id: string,
+    @Body() dto: AttachOfferPdfDto,
+    @CurrentUser() user: AuthUser,
+  ) {
+    const data = await this.service.attachContractPdf(
+      id,
+      dto.pdfBase64,
+      user.id,
+    );
+    return { data };
   }
 
   @Patch(':id/decline')

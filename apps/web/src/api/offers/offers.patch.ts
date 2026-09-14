@@ -85,6 +85,21 @@ export async function declineOffer(id: string): Promise<OfferListItem> {
   return response.data;
 }
 
+/**
+ * Archives the contract PDF the browser just rendered. Best-effort by design:
+ * the client already has the file, so a failed upload must not look like a
+ * failed download.
+ */
+export async function attachOfferContractPdf(
+  id: string,
+  pdfBase64: string,
+): Promise<void> {
+  await apiFetch(`/offers/${id}/contract-pdf`, {
+    method: "PATCH",
+    body: JSON.stringify({ pdfBase64 }),
+  });
+}
+
 export async function acceptOffer(
   id: string,
   briloMconId: number,

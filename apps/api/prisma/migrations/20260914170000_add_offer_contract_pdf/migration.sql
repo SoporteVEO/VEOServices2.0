@@ -1,0 +1,2 @@
+-- AlterEnum
+ALTER TYPE "OfferEventType" ADD VALUE 'CONTRACT_GENERATED';

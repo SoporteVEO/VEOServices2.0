@@ -768,14 +768,26 @@ export class BillboardsService {
     );
   }
 
+  /**
+   * When `billboardIds` is given the result is narrowed to those billboards.
+   * The narrowing happens after the cache so building a report for a handful of
+   * zones costs no extra round trip to Brilo.
+   */
   async getAvailableBillboardsForReport(
     from: Date,
     to: Date,
+    options: { billboardIds?: number[] } = {},
   ): Promise<AvailableBillboardReport[]> {
     const key = `report|${from.toISOString()}|${to.toISOString()}`;
-    return this.billboardsReportCache.getOrFetch(key, () =>
+    const all = await this.billboardsReportCache.getOrFetch(key, () =>
       this.fetchBillboardsReport(from, to),
     );
+
+    const { billboardIds } = options;
+    if (!billboardIds?.length) return all;
+
+    const wanted = new Set(billboardIds);
+    return all.filter((b) => wanted.has(b.billboardId));
   }
 
   async getAvailableBillboardsByState(

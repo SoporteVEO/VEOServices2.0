@@ -342,6 +342,7 @@ enum Role {
   INSTALLER
   WORKER
   MANTENIMIENTO
+  INSTALLER_MANTENIMIENTO
 }
 
 enum SubRole {
@@ -493,6 +494,8 @@ model OfferCreated {
   ivaRental          Float              @map("iva_rental")
   totalRental        Float              @map("total_rental")
   pdfS3Key           String?            @map("pdf_s3_key")
+  /// Archived copy of the lease contract generated when the offer was accepted.
+  contractPdfS3Key   String?            @map("contract_pdf_s3_key")
   createdByUserId    String             @map("created_by_user_id")
   createdBy          User               @relation(fields: [createdByUserId], references: [id])
   createdAt          DateTime           @default(now())
@@ -513,6 +516,7 @@ enum OfferEventType {
   UPDATED
   ITEMS_UPDATED
   PDF_ATTACHED
+  CONTRACT_GENERATED
   ACCEPTED
   DECLINED
   REOPENED

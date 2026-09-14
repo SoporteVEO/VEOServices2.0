@@ -11,6 +11,10 @@ import {
   Prisma,
   S3ImageType,
 } from '@prisma/client';
+import {
+  MAINTENANCE_ROLES,
+  isMaintenanceRole,
+} from '../auth/field-roles.js';
 import { BillboardsService } from '../billboards/billboards.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { ImageProcessorService } from '../s3-images/image-processor.service.js';
@@ -197,10 +201,10 @@ export class MaintenanceJobsService {
     return { data: rows.map(mapListItem), total, page, pageSize };
   }
 
-  /** Users who can receive a work order, i.e. hold the MANTENIMIENTO role. */
+  /** Users who can receive a work order, i.e. hold a maintenance role. */
   async listTechnicians(): Promise<MaintenancePersonDto[]> {
     return this.prisma.user.findMany({
-      where: { disabled: false, role: 'MANTENIMIENTO' },
+      where: { disabled: false, role: { in: MAINTENANCE_ROLES } },
       select: PERSON_SELECT,
       orderBy: [{ firstName: 'asc' }, { lastName: 'asc' }],
     });
@@ -776,7 +780,7 @@ export class MaintenanceJobsService {
       select: { role: true },
     });
     // Supervisors can act on any job; technicians only on their own.
-    if (actor?.role === 'MANTENIMIENTO' && job.assignedUserId !== userId) {
+    if (isMaintenanceRole(actor?.role) && job.assignedUserId !== userId) {
       throw new ForbiddenException('Esta orden no está asignada a tu cuenta');
     }
 

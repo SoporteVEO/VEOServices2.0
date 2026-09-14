@@ -24,6 +24,14 @@ import { EditOfferDto } from './dto/edit-offer.dto.js';
 import type { ListBriloContractsFilters } from './dto/list-brilo-contracts-query.dto.js';
 import { UpdateOfferDto } from './dto/update-offer.dto.js';
 import {
+  billableMonths,
+  BRILO_CONTRACT_WITH_CLIENT_SQL,
+  formatDimensions,
+  vallaTypeFromCode,
+  type BriloContractWithClientRow,
+  type OfferContractData,
+} from './offer-contract.js';
+import {
   buildEditMessage,
   diffHeader,
   diffItems,
@@ -34,6 +42,7 @@ import {
 
 const DEFAULT_TAX_RATE = 0.13;
 const OFFER_PDF_FOLDER = 'offers';
+const CONTRACT_PDF_FOLDER = 'contracts';
 const DEFAULT_PAGE_SIZE = 25;
 const MAX_PAGE_SIZE = 100;
 const BRILO_CONTRACTS_PAGE_SIZE = 30;
@@ -1128,6 +1137,190 @@ export class OffersService {
     }
     const url = await this.storage.getSignedUrl(row.pdfS3Key);
     return { url };
+  }
+
+  /**
+   * Builds the figures and legal data that go on the lease contract for an
+   * accepted offer. The contract code and the client's legal identity come from
+   * Brilo, which is the system of record for both; the billboards and the money
+   * come from the offer the client actually accepted.
+   */
+  async getContractData(
+    id: string,
+    requestUserId: string,
+  ): Promise<OfferContractData> {
+    const offer = await this.prisma.offerCreated.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        offerNumber: true,
+        status: true,
+        briloMconId: true,
+        createdByUserId: true,
+        contractPdfS3Key: true,
+        items: {
+          orderBy: { createdAt: 'asc' },
+          select: {
+            itemType: true,
+            billboardCode: true,
+            address: true,
+            cityName: true,
+            departmentName: true,
+            width: true,
+            height: true,
+            quantity: true,
+            rentalPrice: true,
+            startDate: true,
+            endDate: true,
+          },
+        },
+      },
+    });
+
+    if (!offer || offer.createdByUserId !== requestUserId) {
+      throw new NotFoundException('Cotización no encontrada');
+    }
+    if (offer.status !== OfferStatus.ACCEPTED || !offer.briloMconId) {
+      throw new BadRequestException(
+        'El contrato solo está disponible para cotizaciones aceptadas y vinculadas a Brilo',
+      );
+    }
+
+    const rows = await this.brilo.query<BriloContractWithClientRow>(
+      BRILO_CONTRACT_WITH_CLIENT_SQL,
+      { MconId: offer.briloMconId },
+    );
+    const contract = rows[0];
+    if (!contract) {
+      throw new BadRequestException(
+        'El contrato de Brilo vinculado ya no está disponible',
+      );
+    }
+
+    // Misc lines are priced concepts, not leased structures, so they stay out of
+    // the billboard table and out of the "cantidad de vallas" count.
+    const leased = offer.items.filter(
+      (item) => item.itemType !== OfferItemType.MISC,
+    );
+
+    const billboards = leased.map((item) => ({
+      vallaType: vallaTypeFromCode(item.billboardCode),
+      code: item.billboardCode ?? '',
+      location:
+        item.address ??
+        [item.cityName, item.departmentName].filter(Boolean).join(', '),
+      dimensions: formatDimensions(item.height, item.width),
+      monthlyCost: item.rentalPrice * item.quantity,
+      startDate: item.startDate?.toISOString() ?? null,
+      endDate: item.endDate?.toISOString() ?? null,
+    }));
+
+    const startDates = leased
+      .map((item) => item.startDate)
+      .filter((d): d is Date => d != null);
+    const endDates = leased
+      .map((item) => item.endDate)
+      .filter((d): d is Date => d != null);
+    const startDate = startDates.length
+      ? new Date(Math.min(...startDates.map((d) => d.getTime())))
+      : null;
+    const endDate = endDates.length
+      ? new Date(Math.max(...endDates.map((d) => d.getTime())))
+      : null;
+
+    const monthlyRentalTotal = billboards.reduce(
+      (sum, b) => sum + b.monthlyCost,
+      0,
+    );
+    const months = startDate && endDate ? billableMonths(startDate, endDate) : 1;
+
+    const domicile =
+      contract.cliCiudadMuni?.trim() || contract.cliDeptoEstado?.trim() || null;
+
+    return {
+      offerId: offer.id,
+      offerNumber: offer.offerNumber,
+      contractNumber: contract.mconCodigo,
+      contractDate: contract.mconFecha.toISOString(),
+      client: {
+        companyName:
+          contract.cliNombres?.trim() ||
+          contract.cliNomComercial?.trim() ||
+          '',
+        legalRepName: contract.cliNomRepLegal?.trim() || '',
+        legalRepDui: contract.cliNumIdentifRepLegal?.trim() || null,
+        domicile,
+        address: contract.cliDireccion?.trim() || null,
+        notificationEmail:
+          contract.cliEmail?.trim() ||
+          contract.cliEmailFacturacion?.trim() ||
+          null,
+      },
+      billboardCount: leased.reduce((sum, item) => sum + item.quantity, 0),
+      monthlyRentalTotal,
+      contractTotal: monthlyRentalTotal * months,
+      startDate: startDate?.toISOString() ?? null,
+      endDate: endDate?.toISOString() ?? null,
+      billboards,
+      hasArchivedPdf: !!offer.contractPdfS3Key,
+    };
+  }
+
+  /**
+   * Archives the contract PDF the browser just generated, so the copy handed to
+   * the client can be retrieved later even if the template changes.
+   */
+  async attachContractPdf(
+    id: string,
+    pdfBase64: string,
+    actorUserId: string,
+  ): Promise<{ hasArchivedPdf: true }> {
+    const offer = await this.prisma.offerCreated.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        createdByUserId: true,
+        contractPdfS3Key: true,
+      },
+    });
+    if (!offer || offer.createdByUserId !== actorUserId) {
+      throw new NotFoundException('Cotización no encontrada');
+    }
+
+    const buffer = decodeBase64Pdf(pdfBase64);
+    const upload = await this.storage.uploadBuffer({
+      buffer,
+      mimeType: 'application/pdf',
+      extension: 'pdf',
+      folder: CONTRACT_PDF_FOLDER,
+    });
+
+    try {
+      await this.prisma.offerCreated.update({
+        where: { id },
+        data: { contractPdfS3Key: upload.key },
+      });
+
+      await this.prisma.offerEvent.create({
+        data: {
+          offerId: id,
+          type: OfferEventType.CONTRACT_GENERATED,
+          message: offer.contractPdfS3Key
+            ? 'Contrato de arrendamiento regenerado'
+            : 'Contrato de arrendamiento generado',
+          actorUserId,
+        },
+      });
+
+      if (offer.contractPdfS3Key && offer.contractPdfS3Key !== upload.key) {
+        void this.storage.deleteByKey(offer.contractPdfS3Key);
+      }
+
+      return { hasArchivedPdf: true };
+    } catch (e) {
+      await this.storage.deleteByKey(upload.key);
+      throw e;
+    }
   }
 
   private async generateOfferNumber(): Promise<string> {

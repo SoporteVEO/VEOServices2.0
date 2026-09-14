@@ -18,14 +18,7 @@ import {
   Wrench,
 } from "lucide-react";
 import { isPortalOnlyRole, SubRole, UserRole } from "@/api/users/users.types";
-import { INSTALLER_PORTAL_BASE } from "@/lib/installer-portal";
-import { MAINTENANCE_PORTAL_BASE } from "@/lib/maintenance-portal";
-
-/** Where a role with no dashboard belongs. */
-export function portalHomeFor(role: UserRole | undefined | null): string {
-  if (role === "MANTENIMIENTO") return MAINTENANCE_PORTAL_BASE;
-  return INSTALLER_PORTAL_BASE;
-}
+import { portalHomeFor } from "@/lib/portal-access";
 
 export interface NavItem {
   title: string;
@@ -208,9 +201,9 @@ export function resolvePathAccess(
   role?: UserRole,
   subRoles?: SubRole[],
 ): AccessResult {
-  // Portal-only roles have no dashboard at all; each belongs in its own portal.
+  // Portal-only roles have no dashboard at all; each belongs in their portal.
   if (isPortalOnlyRole(role)) {
-    return { allowed: false, redirectTo: portalHomeFor(role) };
+    return { allowed: false, redirectTo: portalHomeFor(role, subRoles) };
   }
 
   if (isSystemPath(pathname)) return { allowed: true };

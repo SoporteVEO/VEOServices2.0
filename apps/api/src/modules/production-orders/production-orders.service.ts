@@ -13,6 +13,7 @@ import {
   S3ImageType,
   type Prisma,
 } from '@prisma/client';
+import { INSTALLER_ROLES } from '../auth/field-roles.js';
 import { NotificationsService } from '../notifications/notifications.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { S3StorageService } from '../s3-images/s3-storage.service.js';
@@ -195,8 +196,6 @@ type ProductionOrderItemInclude = Prisma.ProductionOrderItemGetPayload<{
   include: typeof ITEM_INCLUDE;
 }>;
 
-/** Roles that may be put on the hook for a physical billboard installation. */
-const INSTALLER_ROLES: Role[] = [Role.INSTALLER, Role.WORKER];
 
 export interface ProductionOrderNotificationMeta {
   offerNumber: string;
