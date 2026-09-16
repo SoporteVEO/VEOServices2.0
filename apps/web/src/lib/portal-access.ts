@@ -1,3 +1,4 @@
+import { Hammer, Wrench, type LucideIcon } from "lucide-react";
 import {
   isFieldRole,
   isMaintenanceFieldRole,
@@ -22,6 +23,11 @@ export const PORTAL_BASE: Record<FieldPortal, string> = {
 export const PORTAL_LABEL: Record<FieldPortal, string> = {
   installer: "Instalaciones",
   maintenance: "Mantenimiento",
+};
+
+export const PORTAL_ICON: Record<FieldPortal, LucideIcon> = {
+  installer: Hammer,
+  maintenance: Wrench,
 };
 
 /**

@@ -39,6 +39,15 @@ export const FIELD_ROLES: ReadonlySet<string> = new Set<string>([
   ...MAINTENANCE_ROLES,
 ]);
 
+/**
+ * Field roles that also reach the Imágenes module, on the same reduced surface
+ * LIMITED gets. The operario never leaves the shop floor, so vulcanizado is
+ * deliberately left out.
+ */
+export const IMAGES_MODULE_ROLES: Role[] = [
+  ...new Set([...INSTALLATION_ROLES, ...MAINTENANCE_ROLES]),
+];
+
 export function isMaintenanceRole(role: string | null | undefined): boolean {
   return MAINTENANCE_ROLES.includes(role as Role);
 }

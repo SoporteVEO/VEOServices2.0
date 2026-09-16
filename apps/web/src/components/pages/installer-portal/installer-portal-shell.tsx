@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import type { ReactNode } from "react";
 import { authClient, clearAuthToken } from "@/lib/auth-client";
 import { Button } from "@/components/primitives/ui/button";
-import { PortalSwitcher } from "@/components/pages/field-portal";
+import { PortalNavSheet } from "@/components/pages/field-portal";
 import { INSTALLER_PORTAL_BASE } from "@/lib/installer-portal";
 
 type Props = {
@@ -64,7 +64,7 @@ export function InstallerPortalShell({
             ) : null}
           </div>
 
-          <PortalSwitcher />
+          <PortalNavSheet />
 
           <Button
             variant="ghost"

@@ -20,6 +20,17 @@ export const MAINTENANCE_FIELD_ROLES = [
   "INSTALLER_MANTENIMIENTO",
 ] as const satisfies readonly UserRole[];
 
+/**
+ * Field roles that also reach the Imágenes module, on the same reduced surface
+ * LIMITED gets. The operario never leaves the shop floor, so vulcanizado is
+ * deliberately left out.
+ */
+export const IMAGES_MODULE_FIELD_ROLES = [
+  "INSTALLER",
+  "MANTENIMIENTO",
+  "INSTALLER_MANTENIMIENTO",
+] as const satisfies readonly UserRole[];
+
 export function isFieldRole(role: UserRole | undefined | null): boolean {
   return FIELD_ROLES.includes(role as (typeof FIELD_ROLES)[number]);
 }

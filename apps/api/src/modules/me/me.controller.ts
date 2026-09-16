@@ -10,7 +10,12 @@ import {
 import { MeService } from './me.service.js';
 import { UpdateMeDto } from './dto/update-me.dto.js';
 import { UpdateMyTeamMemberDto } from './dto/update-my-team-member.dto.js';
-import { AllowLimited, CurrentUser } from '../auth/decorators.js';
+import {
+  AllowFieldRoles,
+  AllowLimited,
+  CurrentUser,
+} from '../auth/decorators.js';
+import { IMAGES_MODULE_ROLES } from '../auth/field-roles.js';
 import { AbsencesService } from '../absences/absences.service.js';
 import { CreateAbsenceDto } from '../absences/dto/create-absence.dto.js';
 import { UpdateAbsenceDto } from '../absences/dto/update-absence.dto.js';
@@ -21,6 +26,7 @@ interface AuthUser {
 }
 
 @AllowLimited()
+@AllowFieldRoles(...IMAGES_MODULE_ROLES)
 @Controller('me')
 export class MeController {
   constructor(

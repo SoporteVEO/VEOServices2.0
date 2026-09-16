@@ -8,7 +8,12 @@ import {
   Patch,
   Post,
 } from '@nestjs/common';
-import { AllowLimited, CurrentUser } from '../auth/decorators.js';
+import {
+  AllowFieldRoles,
+  AllowLimited,
+  CurrentUser,
+} from '../auth/decorators.js';
+import { IMAGES_MODULE_ROLES } from '../auth/field-roles.js';
 import { NotificationsService } from './notifications.service.js';
 import { UpdateNotificationStatusDto } from './dto/update-notification-status.dto.js';
 
@@ -17,6 +22,7 @@ interface AuthUser {
 }
 
 @AllowLimited()
+@AllowFieldRoles(...IMAGES_MODULE_ROLES)
 @Controller('notifications')
 export class NotificationsController {
   constructor(private readonly notificationsService: NotificationsService) {}

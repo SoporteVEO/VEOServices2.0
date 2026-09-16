@@ -10,6 +10,7 @@ import { Reflector } from '@nestjs/core';
 import type { Request } from 'express';
 import {
   ALLOW_LIMITED_KEY,
+  ALLOWED_FIELD_ROLES_KEY,
   IS_PUBLIC_KEY,
   REQUIRED_ROLES_KEY,
   REQUIRED_SUB_ROLES_KEY,
@@ -105,7 +106,12 @@ export class AuthGuard implements CanActivate {
     // their role or a sub-role they hold, so a new controller never widens
     // their access by accident.
     if (userRole && FIELD_ROLES.has(userRole) && !isGranted) {
-      throw new ForbiddenException('No tienes permisos para este recurso');
+      const allowedFieldRoles = this.reflector.getAllAndOverride<
+        string[] | undefined
+      >(ALLOWED_FIELD_ROLES_KEY, [context.getHandler(), context.getClass()]);
+      if (!allowedFieldRoles?.includes(userRole)) {
+        throw new ForbiddenException('No tienes permisos para este recurso');
+      }
     }
 
     if ((requiredRoles?.length || requiredSubRoles?.length) && !isGranted) {

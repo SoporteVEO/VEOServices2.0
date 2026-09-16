@@ -6,11 +6,13 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
-import { AllowLimited } from '../auth/decorators.js';
+import { AllowFieldRoles, AllowLimited } from '../auth/decorators.js';
+import { IMAGES_MODULE_ROLES } from '../auth/field-roles.js';
 import { StaticBillboardCodesService } from './static-billboard-codes.service.js';
 import { CreateStaticBillboardCodeDto } from './dto/create-static-billboard-code.dto.js';
 
 @AllowLimited()
+@AllowFieldRoles(...IMAGES_MODULE_ROLES)
 @Controller('static-billboard-codes')
 export class StaticBillboardCodesController {
   constructor(private readonly service: StaticBillboardCodesService) {}

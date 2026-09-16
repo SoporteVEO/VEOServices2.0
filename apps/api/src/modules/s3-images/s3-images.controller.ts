@@ -10,7 +10,12 @@ import {
   Query,
 } from '@nestjs/common';
 import { S3ImageType } from '@prisma/client';
-import { AllowLimited, CurrentUser } from '../auth/decorators.js';
+import {
+  AllowFieldRoles,
+  AllowLimited,
+  CurrentUser,
+} from '../auth/decorators.js';
+import { IMAGES_MODULE_ROLES } from '../auth/field-roles.js';
 import { CreateS3ImageDto } from './dto/create-s3-image.dto.js';
 import { UpdateS3ImageDto } from './dto/update-s3-image.dto.js';
 import { S3ImagesService } from './s3-images.service.js';
@@ -29,6 +34,7 @@ function parseDate(value: string | undefined, field: string): Date | undefined {
 }
 
 @AllowLimited()
+@AllowFieldRoles(...IMAGES_MODULE_ROLES)
 @Controller('s3-images')
 export class S3ImagesController {
   constructor(private readonly service: S3ImagesService) {}

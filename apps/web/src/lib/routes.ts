@@ -17,7 +17,12 @@ import {
   Factory,
   Wrench,
 } from "lucide-react";
-import { isPortalOnlyRole, SubRole, UserRole } from "@/api/users/users.types";
+import {
+  IMAGES_MODULE_FIELD_ROLES,
+  isPortalOnlyRole,
+  SubRole,
+  UserRole,
+} from "@/api/users/users.types";
 import { portalHomeFor } from "@/lib/portal-access";
 
 export interface NavItem {
@@ -34,6 +39,17 @@ export interface NavGroup {
 }
 
 const DEFAULT_ALLOWED_ROLES: UserRole[] = ["ADMIN", "USER"];
+
+/**
+ * Named apart from the group because the field portals link to it directly:
+ * it is the one dashboard module a portal-only role can open.
+ */
+export const IMAGES_NAV_ITEM: NavItem = {
+  title: "Imágenes",
+  href: "/dashboard/images",
+  icon: Image,
+  allowedRoles: ["ADMIN", "USER", "LIMITED", ...IMAGES_MODULE_FIELD_ROLES],
+};
 
 export const NAV_GROUPS: NavGroup[] = [
   {
@@ -69,12 +85,7 @@ export const NAV_GROUPS: NavGroup[] = [
         href: "/dashboard/static-billboards",
         icon: Monitor,
       },
-      {
-        title: "Imágenes",
-        href: "/dashboard/images",
-        icon: Image,
-        allowedRoles: ["ADMIN", "USER", "LIMITED"],
-      },
+      IMAGES_NAV_ITEM,
       {
         title: "Clientes",
         href: "/dashboard/clients",
@@ -201,17 +212,18 @@ export function resolvePathAccess(
   role?: UserRole,
   subRoles?: SubRole[],
 ): AccessResult {
-  // Portal-only roles have no dashboard at all; each belongs in their portal.
-  if (isPortalOnlyRole(role)) {
-    return { allowed: false, redirectTo: portalHomeFor(role, subRoles) };
-  }
-
   if (isSystemPath(pathname)) return { allowed: true };
 
   const item = findNavItemForPath(pathname);
 
   if (item && canAccessItem(item, role, subRoles)) {
     return { allowed: true };
+  }
+
+  // A portal-only role owns at most a module or two here, so anything it is not
+  // named on drops it back into the portal rather than onto another module.
+  if (isPortalOnlyRole(role)) {
+    return { allowed: false, redirectTo: portalHomeFor(role, subRoles) };
   }
 
   const fallback = findFirstAccessibleItem(role, subRoles);

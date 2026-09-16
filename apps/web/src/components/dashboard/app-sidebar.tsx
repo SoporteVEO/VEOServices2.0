@@ -16,9 +16,39 @@ import {
   SidebarRail,
 } from "@/components/primitives/ui/sidebar";
 import { UserCard } from "@/components/ui/user-card";
-import { NAV_GROUPS, filterNavGroupsByAccess } from "@/lib/routes";
-import type { SubRole, UserRole } from "@/api/users/users.types";
+import {
+  NAV_GROUPS,
+  filterNavGroupsByAccess,
+  type NavGroup,
+} from "@/lib/routes";
+import {
+  isPortalOnlyRole,
+  type SubRole,
+  type UserRole,
+} from "@/api/users/users.types";
 import { authClient, clearAuthToken } from "@/lib/auth-client";
+import {
+  fieldPortalsFor,
+  PORTAL_BASE,
+  PORTAL_ICON,
+  PORTAL_LABEL,
+} from "@/lib/portal-access";
+
+/**
+ * A portal-only role reaches the dashboard for a module or two and needs the
+ * way back; every other role has no portal to return to.
+ */
+function portalGroupsFor(role?: UserRole, subRoles?: SubRole[]): NavGroup[] {
+  if (!isPortalOnlyRole(role)) return [];
+
+  const items = fieldPortalsFor(role, subRoles).map((portal) => ({
+    title: PORTAL_LABEL[portal],
+    href: PORTAL_BASE[portal],
+    icon: PORTAL_ICON[portal],
+  }));
+
+  return items.length > 0 ? [{ label: "Portales", items }] : [];
+}
 
 export function AppSidebar() {
   const pathname = usePathname();
@@ -29,13 +59,11 @@ export function AppSidebar() {
   const userEmail = session?.user?.email ?? "VEO Services";
   const sessionUser = session?.user as Record<string, unknown> | undefined;
   const userRole = sessionUser?.role as UserRole | undefined;
-  const userSubRoles =
-    (sessionUser?.subRoles as SubRole[] | undefined) ?? [];
-  const visibleGroups = filterNavGroupsByAccess(
-    NAV_GROUPS,
-    userRole,
-    userSubRoles,
-  );
+  const userSubRoles = (sessionUser?.subRoles as SubRole[] | undefined) ?? [];
+  const visibleGroups = [
+    ...portalGroupsFor(userRole, userSubRoles),
+    ...filterNavGroupsByAccess(NAV_GROUPS, userRole, userSubRoles),
+  ];
 
   function handleSignOut() {
     authClient.signOut({

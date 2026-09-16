@@ -70,7 +70,7 @@ export const ROLE_OPTIONS: {
     value: "INSTALLER",
     label: "Instalador",
     description:
-      "Solo accede al portal móvil de instalaciones asignadas mediante QR",
+      "Accede al portal móvil de instalaciones asignadas mediante QR y al módulo de imágenes",
   },
   {
     value: "WORKER",
@@ -82,13 +82,13 @@ export const ROLE_OPTIONS: {
     value: "MANTENIMIENTO",
     label: "Mantenimiento",
     description:
-      "Solo accede al portal móvil con sus órdenes de mantenimiento asignadas",
+      "Accede al portal móvil con sus órdenes de mantenimiento asignadas y al módulo de imágenes",
   },
   {
     value: "INSTALLER_MANTENIMIENTO",
     label: "Instalador y mantenimiento",
     description:
-      "Hace ambos trabajos: accede al portal de instalaciones y al de mantenimiento, y puede recibir asignaciones de los dos",
+      "Hace ambos trabajos: accede al portal de instalaciones, al de mantenimiento y al módulo de imágenes, y puede recibir asignaciones de los dos",
   },
 ];
 
