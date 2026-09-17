@@ -253,9 +253,9 @@ export class MaintenanceJobsService {
     if (!assignee || assignee.disabled) {
       throw new BadRequestException('El usuario asignado no está disponible');
     }
-    if (assignee.role !== 'MANTENIMIENTO') {
+    if (!isMaintenanceRole(assignee.role)) {
       throw new BadRequestException(
-        'Solo puedes asignar órdenes a usuarios con rol Mantenimiento',
+        'Solo puedes asignar órdenes a usuarios con un rol de mantenimiento',
       );
     }
 
@@ -335,9 +335,9 @@ export class MaintenanceJobsService {
           lastName: true,
         },
       });
-      if (!assignee || assignee.disabled || assignee.role !== 'MANTENIMIENTO') {
+      if (!assignee || assignee.disabled || !isMaintenanceRole(assignee.role)) {
         throw new BadRequestException(
-          'Solo puedes asignar órdenes a usuarios con rol Mantenimiento',
+          'Solo puedes asignar órdenes a usuarios con un rol de mantenimiento',
         );
       }
       data.assignedUser = { connect: { id: dto.assignedUserId } };
