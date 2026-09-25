@@ -11,15 +11,13 @@ import {
   Prisma,
   S3ImageType,
 } from '@prisma/client';
-import {
-  MAINTENANCE_ROLES,
-  isMaintenanceRole,
-} from '../auth/field-roles.js';
+import { MAINTENANCE_ROLES, isMaintenanceRole } from '../auth/field-roles.js';
 import { BillboardsService } from '../billboards/billboards.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { ImageProcessorService } from '../s3-images/image-processor.service.js';
 import { S3ImagesService } from '../s3-images/s3-images.service.js';
 import { S3StorageService } from '../s3-images/s3-storage.service.js';
+import { PushService } from '../push/push.service.js';
 import type {
   CompleteMaintenanceJobDto,
   CreateMaintenanceJobDto,
@@ -168,6 +166,7 @@ export class MaintenanceJobsService {
     private readonly processor: ImageProcessorService,
     private readonly billboards: BillboardsService,
     private readonly s3Images: S3ImagesService,
+    private readonly push: PushService,
   ) {}
 
   async list(query: ListMaintenanceJobsQueryDto): Promise<{
@@ -294,6 +293,7 @@ export class MaintenanceJobsService {
       include: DETAIL_INCLUDE,
     });
 
+    this.notifyAssignee(created, created.assignedUserId);
     return this.mapDetail(created);
   }
 
@@ -307,6 +307,8 @@ export class MaintenanceJobsService {
       select: {
         id: true,
         code: true,
+        billboardCode: true,
+        address: true,
         status: true,
         assignedUserId: true,
         scheduledAt: true,
@@ -417,7 +419,28 @@ export class MaintenanceJobsService {
       },
     });
 
+    if (data.assignedUser && dto.assignedUserId) {
+      this.notifyAssignee(current, dto.assignedUserId);
+    }
     return this.getJob(id);
+  }
+
+  private notifyAssignee(
+    job: {
+      id: string;
+      code: string;
+      billboardCode: string | null;
+      address: string | null;
+    },
+    userId: string,
+  ) {
+    const place = job.billboardCode ?? job.address;
+    void this.push.sendToUser(userId, {
+      title: 'Nueva orden de mantenimiento',
+      body: place ? `${job.code} · ${place}` : job.code,
+      url: `/mantenimiento/${job.id}`,
+      tag: `maintenance-${job.id}`,
+    });
   }
 
   /** Technician taps "Iniciar" in the portal. */

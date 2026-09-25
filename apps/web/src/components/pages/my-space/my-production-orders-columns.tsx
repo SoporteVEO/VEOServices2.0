@@ -8,10 +8,10 @@ import { formatBriloShortDate } from "@/lib/format";
 
 export const MY_PRODUCTION_ORDERS_COLUMNS: ColumnDef<ProductionOrder>[] = [
   {
-    accessorKey: "offerNumber",
-    header: "Cotización",
+    accessorKey: "orderNumber",
+    header: "Orden",
     cell: ({ row }) => (
-      <span className="font-medium">{row.original.offerNumber}</span>
+      <span className="font-medium">{row.original.orderNumber}</span>
     ),
   },
   {

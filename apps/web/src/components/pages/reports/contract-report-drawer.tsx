@@ -14,7 +14,11 @@ import {
   createReportUploadUrl,
   sendMaintenanceReport,
 } from "@/api/contracts/contracts.post";
-import type { S3Image } from "@/api/s3-images/s3-images.get";
+import {
+  S3_IMAGE_TYPE_BADGE_CLASSES,
+  S3_IMAGE_TYPE_SHORT_LABELS,
+  type S3Image,
+} from "@/api/s3-images/s3-images.get";
 import { Badge } from "@/components/primitives/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -36,7 +40,7 @@ import { cn } from "@/lib/utils";
 import { SendReportDialog } from "./send-report-dialog";
 import { ContractReportsSendedSection } from "./contract-reports-sended-section";
 import { endOfMonth, formatMonthLabel, startOfMonth } from "./report-period";
-import { REPORT_TYPE_CONFIG, type ReportType } from "./report-types";
+import { BILLBOARD_REPORT_CONFIG } from "./report-types";
 
 const REPORT_FILE_MIME_TYPE =
   "application/vnd.openxmlformats-officedocument.presentationml.presentation";
@@ -61,13 +65,11 @@ function toS3ImagePreview(
 
 export function ContractReportDrawer({
   group,
-  reportType,
   month,
   onOpenChange,
   readOnly = false,
 }: {
   group: ActiveContractGroup | null;
-  reportType: ReportType;
   /** Period the report covers; defaults to the current month. */
   month?: Date;
   onOpenChange: (open: boolean) => void;
@@ -84,9 +86,8 @@ export function ContractReportDrawer({
       <DrawerContent size="xl" className="flex flex-col">
         {group ? (
           <ContractReportDrawerContent
-            key={`${reportType}-${group.contractNumber}`}
+            key={group.contractNumber}
             group={group}
-            reportType={reportType}
             month={month ?? startOfMonth(new Date())}
             readOnly={readOnly}
           />
@@ -98,16 +99,14 @@ export function ContractReportDrawer({
 
 function ContractReportDrawerContent({
   group,
-  reportType,
   month,
   readOnly,
 }: {
   group: ActiveContractGroup;
-  reportType: ReportType;
   month: Date;
   readOnly: boolean;
 }) {
-  const config = REPORT_TYPE_CONFIG[reportType];
+  const config = BILLBOARD_REPORT_CONFIG;
   const queryClient = useQueryClient();
 
   const [preview, setPreview] = useState<S3Image | null>(null);
@@ -188,7 +187,6 @@ function ContractReportDrawerContent({
         periodStart: month.toISOString(),
         fileName,
         fileKey: key,
-        reportType,
       });
 
       toast.success(`Reporte enviado a ${email}.`);
@@ -249,10 +247,7 @@ function ContractReportDrawerContent({
           ))}
         </div>
 
-        <ContractReportsSendedSection
-          contractNumber={group.contractNumber}
-          reportType={reportType}
-        />
+        <ContractReportsSendedSection contractNumber={group.contractNumber} />
       </div>
 
       <DrawerFooter className="border-t bg-muted/20">
@@ -493,8 +488,16 @@ function SelectableImage({
             !isSelected && "opacity-90",
           )}
         />
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-linear-to-t from-black/70 to-transparent px-2 py-1 text-[10px] text-white">
-          {formatShortDate(new Date(image.createdAt))}
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 flex items-end justify-between gap-1 bg-linear-to-t from-black/70 to-transparent px-2 py-1 text-[10px] text-white">
+          <span>{formatShortDate(new Date(image.createdAt))}</span>
+          <Badge
+            className={cn(
+              "border-transparent px-1.5 py-0 text-[10px] font-medium shadow-md",
+              S3_IMAGE_TYPE_BADGE_CLASSES[image.type],
+            )}
+          >
+            {S3_IMAGE_TYPE_SHORT_LABELS[image.type]}
+          </Badge>
         </div>
       </button>
 

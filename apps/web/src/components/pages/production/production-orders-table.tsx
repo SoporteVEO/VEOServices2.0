@@ -1,11 +1,13 @@
 "use client";
 
 import { useState } from "react";
+import { Plus } from "lucide-react";
 import { useProductionOrders } from "@/api/production-orders/production-orders.get";
 import type {
   ProductionOrder,
   ProductionOrderStatus,
 } from "@/api/production-orders/production-orders.types";
+import { Button } from "@/components/ui/button";
 import { DataTable } from "@/components/ui/data-table";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import {
@@ -18,6 +20,7 @@ import {
 import { PRODUCTION_STATUS_LABELS } from "@/components/pages/production-orders-shared/production-order-status-badge";
 import { PRODUCTION_ORDERS_COLUMNS } from "./production-orders-columns";
 import { ProductionOrderDetailDrawer } from "./production-order-detail-drawer";
+import { CreateProductionOrderDialog } from "./create-production-order";
 
 const DEFAULT_PAGE_SIZE = 25;
 
@@ -39,6 +42,7 @@ export function ProductionOrdersTable() {
   const [selectedOrder, setSelectedOrder] = useState<ProductionOrder | null>(
     null,
   );
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
 
   const debouncedSearch = useDebouncedValue(search.trim(), 300);
 
@@ -72,26 +76,31 @@ export function ProductionOrdersTable() {
         isLoading={isLoading}
         searchValue={search}
         onSearchChange={handleSearchChange}
-        searchPlaceholder="Buscar por cotización, cliente o empresa..."
+        searchPlaceholder="Buscar por orden, cliente, empresa o valla..."
         emptyMessage="No hay órdenes de producción con estos filtros."
         onRowClick={setSelectedOrder}
         sideButtons={
-          <div className="min-w-[180px]">
-            <Select
-              value={statusFilter}
-              onValueChange={handleStatusFilterChange}
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {STATUS_FILTER_OPTIONS.map((option) => (
-                  <SelectItem key={option.value} value={option.value}>
-                    {option.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+          <div className="flex items-center gap-2">
+            <div className="min-w-[180px]">
+              <Select
+                value={statusFilter}
+                onValueChange={handleStatusFilterChange}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {STATUS_FILTER_OPTIONS.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <Button icon={Plus} onClick={() => setIsCreateOpen(true)}>
+              Nueva orden
+            </Button>
           </div>
         }
         manualPagination={{
@@ -109,6 +118,12 @@ export function ProductionOrdersTable() {
         onOpenChange={(open) => {
           if (!open) setSelectedOrder(null);
         }}
+      />
+
+      <CreateProductionOrderDialog
+        open={isCreateOpen}
+        onOpenChange={setIsCreateOpen}
+        onCreated={setSelectedOrder}
       />
     </div>
   );

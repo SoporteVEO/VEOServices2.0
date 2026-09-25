@@ -13,20 +13,15 @@ import {
 } from "@/api/contracts/contracts.get";
 import { ContractReportDrawer } from "./contract-report-drawer";
 import { monthKey, startOfNextMonth } from "./report-period";
-import { REPORT_TYPE_CONFIG, type ReportType } from "./report-types";
 
 const DEFAULT_PAGE_SIZE = 25;
 
 interface ContractsReportTableProps {
-  reportType: ReportType;
   /** First day of the month being reported on. */
   month: Date;
 }
 
-export function ContractsReportTable({
-  reportType,
-  month,
-}: ContractsReportTableProps) {
+export function ContractsReportTable({ month }: ContractsReportTableProps) {
   const [search, setSearch] = useState("");
   const [pageIndex, setPageIndex] = useState(0);
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
@@ -43,15 +38,12 @@ export function ContractsReportTable({
   }
 
   const debouncedSearch = useDebouncedValue(search.trim(), 300);
-  const config = REPORT_TYPE_CONFIG[reportType];
-
   const { data, isLoading } = useActiveContracts({
     from: month,
     to: startOfNextMonth(month),
     page: pageIndex + 1,
     pageSize,
     search: debouncedSearch || undefined,
-    imageType: config.imageType,
   });
 
   const columns = useMemo<ColumnDef<ActiveContractGroup>[]>(
@@ -160,7 +152,6 @@ export function ContractsReportTable({
 
       <ContractReportDrawer
         group={selected}
-        reportType={reportType}
         month={month}
         onOpenChange={(open) => {
           if (!open) setSelected(null);

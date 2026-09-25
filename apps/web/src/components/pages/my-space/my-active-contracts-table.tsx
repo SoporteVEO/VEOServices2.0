@@ -10,7 +10,6 @@ import {
   type ActiveContractGroup,
 } from "@/api/contracts/contracts.get";
 import { ContractReportDrawer } from "@/components/pages/reports";
-import { REPORT_TYPE_CONFIG } from "@/components/pages/reports/report-types";
 import { MY_ACTIVE_CONTRACTS_COLUMNS } from "./my-active-contracts-columns";
 import {
   MY_ACTIVE_CONTRACTS_DEFAULT_PAGE_SIZE,
@@ -18,8 +17,6 @@ import {
   MY_ACTIVE_CONTRACTS_SEARCH_PLACEHOLDER,
 } from "./const";
 import { useMySpaceViewAs } from "./my-space-view-as-context";
-
-const MONTHLY_REPORT = REPORT_TYPE_CONFIG.monthly;
 
 export function MyActiveContractsTable() {
   const { viewAsUserId } = useMySpaceViewAs();
@@ -38,7 +35,6 @@ export function MyActiveContractsTable() {
     page: pageIndex + 1,
     pageSize,
     search: debouncedSearch || undefined,
-    imageType: MONTHLY_REPORT.imageType,
     excludeCreatedThisMonth,
     viewAsUserId,
   });
@@ -97,7 +93,6 @@ export function MyActiveContractsTable() {
 
       <ContractReportDrawer
         group={selected}
-        reportType="monthly"
         readOnly={Boolean(viewAsUserId)}
         onOpenChange={(open) => {
           if (!open) setSelected(null);

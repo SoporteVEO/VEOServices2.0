@@ -113,7 +113,7 @@ function DrawerContentInner({
         <div className="flex items-start justify-between gap-3">
           <div className="flex min-w-0 flex-1 flex-col gap-1">
             <DrawerTitle className="truncate text-base font-semibold">
-              Orden {order.offerNumber}
+              Orden {order.orderNumber}
             </DrawerTitle>
             <DrawerDescription className="flex items-center gap-1.5 text-xs">
               <CalendarClock className="size-3 shrink-0" />

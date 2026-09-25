@@ -38,6 +38,8 @@ model User {
   maintenancePhotos     MaintenancePhoto[]    @relation("MaintenancePhotoUploader")
   maintenanceEvents     MaintenanceEvent[]    @relation("MaintenanceEventActor")
   offerEvents           OfferEvent[]          @relation("OfferEventActor")
+  productionOrders      ProductionOrder[]     @relation("ProductionOrderCreatedBy")
+  pushSubscriptions     PushSubscription[]
 
   @@map("users")
 }
@@ -145,6 +147,24 @@ model Notification {
   @@index([userId, status])
   @@index([userId, createdAt])
   @@map("notifications")
+}
+
+/// Web Push endpoint of one installed browser/PWA. The endpoint is unique per
+/// device, so a phone shared between users follows whoever subscribed last.
+model PushSubscription {
+  id         String    @id @default(uuid())
+  userId     String    @map("user_id")
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  endpoint   String    @unique
+  p256dh     String
+  auth       String
+  userAgent  String?   @map("user_agent")
+  lastUsedAt DateTime? @map("last_used_at")
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  @@index([userId])
+  @@map("push_subscriptions")
 }
 
 model UserMetrics {
@@ -653,14 +673,26 @@ model PrintJob {
   @@map("print_jobs")
 }
 
+/// Either generated from an accepted offer (`offerId` set) or created by hand
+/// from the production module. Customer columns are copied on create in both
+/// cases, which is safe because an offer's content is frozen once accepted.
 model ProductionOrder {
-  id        String                @id @default(uuid())
-  offerId   String                @unique @map("offer_id")
-  offer     OfferCreated          @relation(fields: [offerId], references: [id], onDelete: Cascade)
-  createdAt DateTime              @default(now())
-  updatedAt DateTime              @updatedAt
-  items     ProductionOrderItem[]
+  id              String                @id @default(uuid())
+  offerId         String?               @unique @map("offer_id")
+  offer           OfferCreated?         @relation(fields: [offerId], references: [id], onDelete: Cascade)
+  /// The offer number for offer-based orders, `ODP0001/26` for manual ones.
+  orderNumber     String                @unique @map("order_number")
+  customerName    String                @map("customer_name")
+  customerCompany String?               @map("customer_company")
+  advisorFullName String?               @map("advisor_full_name")
+  notes           String?
+  createdByUserId String                @map("created_by_user_id")
+  createdBy       User                  @relation("ProductionOrderCreatedBy", fields: [createdByUserId], references: [id])
+  createdAt       DateTime              @default(now())
+  updatedAt       DateTime              @updatedAt
+  items           ProductionOrderItem[]
 
+  @@index([createdByUserId])
   @@map("production_orders")
 }
 
@@ -668,8 +700,17 @@ model ProductionOrderItem {
   id                      String                @id @default(uuid())
   productionOrderId       String                @map("production_order_id")
   productionOrder         ProductionOrder       @relation(fields: [productionOrderId], references: [id], onDelete: Cascade)
-  offerItemId             String                @unique @map("offer_item_id")
-  offerItem               OfferCreatedItem      @relation(fields: [offerItemId], references: [id], onDelete: Cascade)
+  offerItemId             String?               @unique @map("offer_item_id")
+  offerItem               OfferCreatedItem?     @relation(fields: [offerItemId], references: [id], onDelete: Cascade)
+  /// Brilo static billboard, copied on create like `MaintenanceJob`.
+  billboardId             Int?                  @map("billboard_id")
+  billboardCode           String?               @map("billboard_code")
+  address                 String?
+  cityName                String?               @map("city_name")
+  departmentName          String?               @map("department_name")
+  width                   Float?
+  height                  Float?
+  quantity                Int                   @default(1)
   status                  ProductionOrderStatus @default(RECEIVED)
   productionDocumentS3Key String?               @map("production_document_s3_key")
   designDocumentS3Key     String?               @map("design_document_s3_key")

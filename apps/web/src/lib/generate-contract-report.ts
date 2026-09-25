@@ -106,8 +106,8 @@ export async function generateContractReport(
     dateFrom,
     dateTo,
     billboards,
-    coverTitle = "REPORTE DE MANTENIMIENTO",
-    fileNamePrefix = "Mantenimiento",
+    coverTitle = "REPORTE DE VALLAS",
+    fileNamePrefix = "Reporte de Vallas",
     onProgress,
   } = options;
 

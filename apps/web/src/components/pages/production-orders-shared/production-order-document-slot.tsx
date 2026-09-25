@@ -10,25 +10,7 @@ import {
 import type { ProductionDocumentKind } from "@/api/production-orders/production-orders.types";
 import { Button } from "@/components/ui/button";
 import { ProductionOrderDocumentPreviewButton } from "./production-order-document-preview";
-
-const MAX_PDF_SIZE = 15 * 1024 * 1024;
-
-async function fileToBase64(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      const result = reader.result;
-      if (typeof result !== "string") {
-        reject(new Error("No se pudo leer el archivo"));
-        return;
-      }
-      resolve(result);
-    };
-    reader.onerror = () =>
-      reject(reader.error ?? new Error("No se pudo leer el archivo"));
-    reader.readAsDataURL(file);
-  });
-}
+import { fileToBase64, validateProductionPdf } from "./production-order-pdf";
 
 type Props = {
   itemId: string;
@@ -52,14 +34,9 @@ export function ProductionOrderDocumentSlot({
 
   async function handleFileSelected(file: File | null | undefined) {
     if (!file) return;
-    if (file.type !== "application/pdf") {
-      toast.error("Solo se permiten archivos PDF.");
-      return;
-    }
-    if (file.size > MAX_PDF_SIZE) {
-      toast.error(
-        `El archivo supera el tamaño máximo permitido (${MAX_PDF_SIZE / (1024 * 1024)}MB).`,
-      );
+    const validationError = validateProductionPdf(file);
+    if (validationError) {
+      toast.error(validationError);
       return;
     }
 

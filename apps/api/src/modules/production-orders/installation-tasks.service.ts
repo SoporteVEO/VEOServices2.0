@@ -67,27 +67,12 @@ const PERSON_SELECT = {
 
 const TASK_INCLUDE = {
   assignedInstaller: { select: PERSON_SELECT },
-  offerItem: {
-    select: {
-      billboardId: true,
-      billboardCode: true,
-      address: true,
-      cityName: true,
-      departmentName: true,
-      width: true,
-      height: true,
-    },
-  },
   productionOrder: {
     select: {
-      offer: {
-        select: {
-          offerNumber: true,
-          customerName: true,
-          customerCompany: true,
-          advisorFullName: true,
-        },
-      },
+      orderNumber: true,
+      customerName: true,
+      customerCompany: true,
+      advisorFullName: true,
     },
   },
   installationImages: {
@@ -147,8 +132,8 @@ export class InstallationTasksService {
     });
     if (!row) throw new NotFoundException('Instalación no encontrada');
 
-    const location = row.offerItem.billboardId
-      ? await this.resolveLocation(row.offerItem.billboardId)
+    const location = row.billboardId
+      ? await this.resolveLocation(row.billboardId)
       : null;
 
     const [vulcanizadoImageUrl, installationImages] = await Promise.all([
@@ -166,10 +151,10 @@ export class InstallationTasksService {
 
     return {
       ...this.mapListItem(row),
-      advisorFullName: row.productionOrder.offer.advisorFullName,
+      advisorFullName: row.productionOrder.advisorFullName,
       reference: location?.reference ?? null,
-      width: row.offerItem.width ?? location?.width ?? null,
-      height: row.offerItem.height ?? location?.height ?? null,
+      width: row.width ?? location?.width ?? null,
+      height: row.height ?? location?.height ?? null,
       latitude: location?.latitude ?? null,
       longitude: location?.longitude ?? null,
       assignedInstaller: row.assignedInstaller,
@@ -250,16 +235,12 @@ export class InstallationTasksService {
   ): Promise<InstallationTaskDto> {
     const item = await this.prisma.productionOrderItem.findUnique({
       where: { id: itemId },
-      select: {
-        id: true,
-        installedAt: true,
-        offerItem: { select: { billboardCode: true } },
-      },
+      select: { id: true, installedAt: true, billboardCode: true },
     });
     if (!item) throw new NotFoundException('Instalación no encontrada');
 
     const staticBillboardCodeId = await this.resolveStaticBillboardCodeId(
-      item.offerItem.billboardCode,
+      item.billboardCode,
     );
 
     await this.s3Images.create(
@@ -319,30 +300,26 @@ export class InstallationTasksService {
     installedAt: Date | null;
     vulcanizadoImageS3Key: string | null;
     installationImages: { id: string }[];
-    offerItem: {
-      billboardCode: string | null;
-      address: string | null;
-      cityName: string | null;
-      departmentName: string | null;
-    };
+    billboardCode: string | null;
+    address: string | null;
+    cityName: string | null;
+    departmentName: string | null;
     productionOrder: {
-      offer: {
-        offerNumber: string;
-        customerName: string;
-        customerCompany: string | null;
-      };
+      orderNumber: string;
+      customerName: string;
+      customerCompany: string | null;
     };
   }): InstallationTaskListItemDto {
     return {
       id: row.id,
       status: row.status,
-      offerNumber: row.productionOrder.offer.offerNumber,
-      customerName: row.productionOrder.offer.customerName,
-      customerCompany: row.productionOrder.offer.customerCompany,
-      billboardCode: row.offerItem.billboardCode,
-      address: row.offerItem.address,
-      cityName: row.offerItem.cityName,
-      departmentName: row.offerItem.departmentName,
+      offerNumber: row.productionOrder.orderNumber,
+      customerName: row.productionOrder.customerName,
+      customerCompany: row.productionOrder.customerCompany,
+      billboardCode: row.billboardCode,
+      address: row.address,
+      cityName: row.cityName,
+      departmentName: row.departmentName,
       scheduledInstallationAt:
         row.scheduledInstallationAt?.toISOString() ?? null,
       installedAt: row.installedAt?.toISOString() ?? null,

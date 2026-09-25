@@ -26,25 +26,14 @@ import {
   type SendMaintenanceReportDto,
 } from './dto/send-maintenance-report.dto.js';
 
-const REPORT_TYPE_EMAIL_LABELS: Record<
-  ContractReportType,
-  { subject: string; heading: string; body: string }
-> = {
-  monthly: {
-    subject: 'Reporte Mensual de Vallas',
-    heading: 'Reporte Mensual de Vallas',
-    body: 'el reporte mensual de vallas',
-  },
-  installation: {
-    subject: 'Reporte de Instalación de Vallas',
-    heading: 'Reporte de Instalación de Vallas',
-    body: 'el reporte de instalación de vallas',
-  },
-  maintenance: {
-    subject: 'Reporte de Mantenimiento de Vallas',
-    heading: 'Reporte de Mantenimiento de Vallas',
-    body: 'el reporte de mantenimiento de vallas',
-  },
+/**
+ * Clients receive a single report regardless of whether its photos were
+ * monthly, installation or maintenance shots, so the email never names a type.
+ */
+const REPORT_EMAIL_LABELS = {
+  subject: 'Reporte de Vallas',
+  heading: 'Reporte de Vallas',
+  body: 'el reporte de vallas',
 };
 
 const REPORT_TYPE_DB_MAP: Record<ContractReportType, ReportType> = {
@@ -431,9 +420,11 @@ export class ContractsService {
     const pageSize = clampPageSize(args.pageSize);
     const search = (args.search ?? '').trim();
     const searchLike = `%${escapeLikePattern(search)}%`;
-    const ejecutivoFilter = buildEjecutivoNameSqlParams(args.ejecutivoNameMatch);
+    const ejecutivoFilter = buildEjecutivoNameSqlParams(
+      args.ejecutivoNameMatch,
+    );
     const offset = (page - 1) * pageSize;
-    const imageType = args.imageType ?? S3ImageType.STATIC_BILLBOARD_MONTHLY;
+    const imageType = args.imageType;
 
     const requireStillActive = args.requireStillActive ?? false;
     const excludeCreatedThisMonth = args.excludeCreatedThisMonth ?? false;
@@ -533,7 +524,9 @@ export class ContractsService {
       };
     });
 
-    const reportDbType = IMAGE_TYPE_TO_REPORT_TYPE[imageType];
+    const reportDbType = imageType
+      ? IMAGE_TYPE_TO_REPORT_TYPE[imageType]
+      : undefined;
     const countByContract = await this.countReportsSendedByContracts(
       data.map((g) => g.contractNumber),
       reportDbType,
@@ -639,7 +632,12 @@ export class ContractsService {
       select: { id: true },
     });
 
-    const baseTotals = { monthly: 0, installation: 0, maintenance: 0, total: 0 };
+    const baseTotals = {
+      monthly: 0,
+      installation: 0,
+      maintenance: 0,
+      total: 0,
+    };
     const monthKeys = enumerateMonthKeysContracts(from, to);
     const baseTrend = monthKeys.map((monthKey) => ({
       monthKey,
@@ -716,14 +714,15 @@ export class ContractsService {
     };
   }
 
+  /** Omitting `reportType` lists every send, which is what the unified report shows. */
   async listReportsSended(
     contractNumber: string,
-    reportType: ContractReportType,
+    reportType?: ContractReportType,
   ) {
     const rows = await this.prisma.reportSended.findMany({
       where: {
         contractNumber,
-        reportType: REPORT_TYPE_DB_MAP[reportType],
+        ...(reportType ? { reportType: REPORT_TYPE_DB_MAP[reportType] } : {}),
       },
       orderBy: { createdAt: 'desc' },
       take: 200,
@@ -762,7 +761,7 @@ export class ContractsService {
    */
   private async countReportsSendedByContracts(
     contractNumbers: string[],
-    reportType: ReportType,
+    reportType: ReportType | undefined,
     period: { from: Date; to: Date },
   ): Promise<Map<string, number>> {
     const result = new Map<string, number>();
@@ -772,7 +771,7 @@ export class ContractsService {
       by: ['contractNumber'],
       where: {
         contractNumber: { in: contractNumbers },
-        reportType,
+        ...(reportType ? { reportType } : {}),
         periodStart: { gte: period.from, lt: period.to },
       },
       _count: { _all: true },
@@ -837,7 +836,7 @@ export class ContractsService {
     codes: string[],
     from: Date,
     to: Date,
-    imageType: S3ImageType,
+    imageType: S3ImageType | undefined,
   ): Promise<Map<string, ActiveContractImage[]>> {
     const result = new Map<string, ActiveContractImage[]>();
     if (codes.length === 0) return result;
@@ -847,7 +846,7 @@ export class ContractsService {
       include: {
         s3Images: {
           where: {
-            type: imageType,
+            ...(imageType ? { type: imageType } : {}),
             createdAt: { gte: from, lte: to },
           },
           include: {
@@ -962,7 +961,7 @@ export class ContractsService {
     }
 
     const reportType = dto.reportType ?? 'monthly';
-    const labels = REPORT_TYPE_EMAIL_LABELS[reportType];
+    const labels = REPORT_EMAIL_LABELS;
     const subject = `${labels.subject} - Contrato ${dto.contractNumber} (${dto.period})`;
     const htmlContent = buildMaintenanceReportEmailHtml({
       contractNumber: dto.contractNumber,
@@ -1179,16 +1178,10 @@ function buildEjecutivoNameSqlParams(match?: AdvisorNameMatch) {
   return {
     ApplyEjecutivoFilter: 1,
     TokenCount: tokens.length,
-    Token1Like: `%${escapeLikePattern(tokens[0]!)}%`,
-    Token2Like: tokens[1]
-      ? `%${escapeLikePattern(tokens[1])}%`
-      : '%',
-    Token3Like: tokens[2]
-      ? `%${escapeLikePattern(tokens[2])}%`
-      : '%',
-    Token4Like: tokens[3]
-      ? `%${escapeLikePattern(tokens[3])}%`
-      : '%',
+    Token1Like: `%${escapeLikePattern(tokens[0])}%`,
+    Token2Like: tokens[1] ? `%${escapeLikePattern(tokens[1])}%` : '%',
+    Token3Like: tokens[2] ? `%${escapeLikePattern(tokens[2])}%` : '%',
+    Token4Like: tokens[3] ? `%${escapeLikePattern(tokens[3])}%` : '%',
   };
 }
 

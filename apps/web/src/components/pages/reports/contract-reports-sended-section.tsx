@@ -14,7 +14,6 @@ import {
   TableRow,
 } from "@/components/primitives/ui/table";
 import { formatMonthLabel } from "./report-period";
-import { REPORT_TYPE_CONFIG, type ReportType } from "./report-types";
 
 function formatSenderName(row: {
   sentBy: { firstName: string; lastName: string | null };
@@ -24,23 +23,17 @@ function formatSenderName(row: {
 
 export function ContractReportsSendedSection({
   contractNumber,
-  reportType,
 }: {
   contractNumber: string;
-  reportType: ReportType;
 }) {
-  const { data, isLoading } = useContractReportsSended({
-    contractNumber,
-    reportType,
-  });
-  const typeLabel = REPORT_TYPE_CONFIG[reportType].shortLabel.toLowerCase();
+  const { data, isLoading } = useContractReportsSended({ contractNumber });
 
   return (
     <section className="space-y-2 border-t pt-4">
       <div className="flex items-center gap-2">
         <History className="size-4 text-muted-foreground" aria-hidden />
         <h3 className="text-sm font-medium text-foreground">
-          Reportes enviados ({typeLabel})
+          Reportes enviados
         </h3>
       </div>
       <p className="text-xs text-muted-foreground">

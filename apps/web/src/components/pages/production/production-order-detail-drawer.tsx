@@ -21,8 +21,12 @@ import {
 } from "@/components/ui/drawer";
 import { formatBriloShortDate, formatDimensions } from "@/lib/format";
 import { ProductionOrderDocumentPreviewButton } from "@/components/pages/production-orders-shared/production-order-document-preview";
+import { ProductionOrderDocumentSlot } from "@/components/pages/production-orders-shared/production-order-document-slot";
 import { ProductionOrderStatusBadge } from "@/components/pages/production-orders-shared/production-order-status-badge";
-import { sortProductionOrderItems } from "@/components/pages/production-orders-shared/production-order-utils";
+import {
+  formatCreatorName,
+  sortProductionOrderItems,
+} from "@/components/pages/production-orders-shared/production-order-utils";
 import { ProductionOrderInstallerAssignment } from "./production-order-installer-assignment";
 import { ProductionOrderItemStatusSelect } from "./production-order-item-status-select";
 import { ProductionOrderQrButton } from "./production-order-qr-button";
@@ -98,7 +102,7 @@ function DrawerContentInner({
   order: ProductionOrder;
   onClose: () => void;
 }) {
-  const campaignLabel = `${order.offerNumber} · ${order.customerCompany ?? order.customerName}`;
+  const campaignLabel = `${order.orderNumber} · ${order.customerCompany ?? order.customerName}`;
 
   return (
     <>
@@ -111,7 +115,7 @@ function DrawerContentInner({
             <DrawerDescription className="flex items-center gap-1.5 text-xs">
               <CalendarClock className="size-3 shrink-0" />
               <span className="truncate">
-                {order.offerNumber} · Creada el{" "}
+                {order.orderNumber} · Creada el{" "}
                 {formatBriloShortDate(order.createdAt)}
               </span>
             </DrawerDescription>
@@ -121,6 +125,7 @@ function DrawerContentInner({
                 <Monitor className="size-3" aria-hidden />
                 {order.itemCount}
               </Badge>
+              {order.isManual ? <Badge variant="outline">Manual</Badge> : null}
             </div>
           </div>
           <PrimitiveButton
@@ -139,12 +144,29 @@ function DrawerContentInner({
           <section className="grid grid-cols-1 gap-2 sm:grid-cols-3">
             <InfoCard label="Cliente" value={order.customerName} />
             <InfoCard label="Empresa" value={order.customerCompany} />
-            <InfoCard
-              icon={UserIcon}
-              label="Asesor"
-              value={order.advisorFullName}
-            />
+            {order.isManual ? (
+              <InfoCard
+                icon={UserIcon}
+                label="Creada por"
+                value={formatCreatorName(order)}
+              />
+            ) : (
+              <InfoCard
+                icon={UserIcon}
+                label="Asesor"
+                value={order.advisorFullName}
+              />
+            )}
           </section>
+
+          {order.notes ? (
+            <section className="rounded-md border bg-accent/10 p-3">
+              <p className="text-[11px] font-medium text-muted-foreground">
+                Notas
+              </p>
+              <p className="whitespace-pre-line pt-1 text-sm">{order.notes}</p>
+            </section>
+          ) : null}
 
           <Separator />
 
@@ -154,8 +176,9 @@ function DrawerContentInner({
                 Vallas estáticas
               </h3>
               <p className="pt-1 text-xs text-muted-foreground">
-                Actualiza el estado por valla y consulta los documentos
-                cargados por el vendedor.
+                {order.isManual
+                  ? "Actualiza el estado por valla y carga sus documentos."
+                  : "Actualiza el estado por valla y consulta los documentos cargados por el vendedor."}
               </p>
             </header>
 
@@ -165,6 +188,7 @@ function DrawerContentInner({
                   key={item.id}
                   item={item}
                   campaignLabel={campaignLabel}
+                  canEditDocuments={order.isManual}
                 />
               ))}
             </div>
@@ -186,9 +210,11 @@ function DrawerContentInner({
 function ItemCard({
   item,
   campaignLabel,
+  canEditDocuments,
 }: {
   item: ProductionOrderItem;
   campaignLabel: string;
+  canEditDocuments: boolean;
 }) {
   const location =
     [item.address, item.cityName, item.departmentName]
@@ -217,20 +243,37 @@ function ItemCard({
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
-        <DocumentCard
-          title="Orden de producción"
-          available={item.hasProductionDocument}
-          itemId={item.id}
-          kind="PRODUCTION"
-        />
-        <DocumentCard
-          title="Orden de diseño"
-          available={item.hasDesignDocument}
-          itemId={item.id}
-          kind="DESIGN"
-        />
-      </div>
+      {canEditDocuments ? (
+        <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
+          <ProductionOrderDocumentSlot
+            itemId={item.id}
+            kind="PRODUCTION"
+            title="Orden de producción"
+            hasDocument={item.hasProductionDocument}
+          />
+          <ProductionOrderDocumentSlot
+            itemId={item.id}
+            kind="DESIGN"
+            title="Orden de diseño"
+            hasDocument={item.hasDesignDocument}
+          />
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
+          <DocumentCard
+            title="Orden de producción"
+            available={item.hasProductionDocument}
+            itemId={item.id}
+            kind="PRODUCTION"
+          />
+          <DocumentCard
+            title="Orden de diseño"
+            available={item.hasDesignDocument}
+            itemId={item.id}
+            kind="DESIGN"
+          />
+        </div>
+      )}
 
       <Separator />
 

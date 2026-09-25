@@ -162,18 +162,14 @@ const JOB_SELECT = {
   productionOrderItem: {
     select: {
       productionOrderId: true,
-      offerItem: {
-        select: { width: true, height: true, quantity: true },
-      },
+      width: true,
+      height: true,
+      quantity: true,
       productionOrder: {
         select: {
-          offer: {
-            select: {
-              offerNumber: true,
-              customerName: true,
-              customerCompany: true,
-            },
-          },
+          orderNumber: true,
+          customerName: true,
+          customerCompany: true,
         },
       },
     },
@@ -451,7 +447,7 @@ export class PrintingAnalyticsService {
     >();
 
     for (const job of jobs) {
-      const { width, height } = job.row.productionOrderItem.offerItem;
+      const { width, height } = job.row.productionOrderItem;
       const sizeKey =
         width != null && height != null
           ? `${formatMeters(width)} x ${formatMeters(height)}`
@@ -527,15 +523,15 @@ export class PrintingAnalyticsService {
 
     return [...buckets.entries()]
       .map(([productionOrderId, own]) => {
-        const offer = own[0].row.productionOrderItem.productionOrder.offer;
+        const order = own[0].row.productionOrderItem.productionOrder;
         const completed = own.filter(
           (job) => job.row.status === PrintJobStatus.COMPLETED,
         );
         return {
           productionOrderId,
-          offerNumber: offer.offerNumber,
-          customerName: offer.customerName,
-          customerCompany: offer.customerCompany,
+          offerNumber: order.orderNumber,
+          customerName: order.customerName,
+          customerCompany: order.customerCompany,
           jobs: own.length,
           completed: completed.length,
           plannedHours: round2(sum(own, (job) => job.plannedMinutes) / 60),
@@ -552,8 +548,8 @@ export class PrintingAnalyticsService {
   private aggregateTopCustomers(jobs: JobMetrics[]): PrintingCustomerRow[] {
     const buckets = new Map<string, JobMetrics[]>();
     for (const job of jobs) {
-      const offer = job.row.productionOrderItem.productionOrder.offer;
-      const key = `${offer.customerCompany ?? ''}|${offer.customerName}`;
+      const order = job.row.productionOrderItem.productionOrder;
+      const key = `${order.customerCompany ?? ''}|${order.customerName}`;
       const bucket = buckets.get(key);
       if (bucket) bucket.push(job);
       else buckets.set(key, [job]);
@@ -561,13 +557,13 @@ export class PrintingAnalyticsService {
 
     return [...buckets.values()]
       .map((own) => {
-        const offer = own[0].row.productionOrderItem.productionOrder.offer;
+        const order = own[0].row.productionOrderItem.productionOrder;
         const completed = own.filter(
           (job) => job.row.status === PrintJobStatus.COMPLETED,
         );
         return {
-          customerName: offer.customerName,
-          customerCompany: offer.customerCompany,
+          customerName: order.customerName,
+          customerCompany: order.customerCompany,
           jobs: own.length,
           actualHours: round2(
             sum(own, (job) => job.actualTotalMinutes ?? 0) / 60,
@@ -598,9 +594,7 @@ function toJobMetrics(row: JobRow): JobMetrics {
     // press actually consumed. Jobs predating the column fall back to the
     // panel's current dimensions.
     squareMeters:
-      row.areaM2 > 0
-        ? row.areaM2
-        : computeAreaM2(row.productionOrderItem.offerItem),
+      row.areaM2 > 0 ? row.areaM2 : computeAreaM2(row.productionOrderItem),
   };
 }
 

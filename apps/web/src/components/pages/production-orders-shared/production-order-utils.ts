@@ -22,6 +22,11 @@ export function resolveAggregateStatus(
   return statuses[0] ?? "RECEIVED";
 }
 
+export function formatCreatorName(order: ProductionOrder): string {
+  const { firstName, lastName } = order.createdBy;
+  return [firstName, lastName].filter(Boolean).join(" ");
+}
+
 export function sortProductionOrderItems(
   items: ProductionOrderItem[],
 ): ProductionOrderItem[] {

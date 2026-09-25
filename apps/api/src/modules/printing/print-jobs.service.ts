@@ -136,26 +136,18 @@ const JOB_INCLUDE = {
       id: true,
       status: true,
       productionOrderId: true,
-      offerItem: {
-        select: {
-          billboardCode: true,
-          address: true,
-          cityName: true,
-          departmentName: true,
-          width: true,
-          height: true,
-          quantity: true,
-        },
-      },
+      billboardCode: true,
+      address: true,
+      cityName: true,
+      departmentName: true,
+      width: true,
+      height: true,
+      quantity: true,
       productionOrder: {
         select: {
-          offer: {
-            select: {
-              offerNumber: true,
-              customerName: true,
-              customerCompany: true,
-            },
-          },
+          orderNumber: true,
+          customerName: true,
+          customerCompany: true,
         },
       },
     },
@@ -212,35 +204,23 @@ export class PrintJobsService {
         ...(search
           ? {
               OR: [
-                {
-                  offerItem: {
-                    billboardCode: { contains: search, mode: 'insensitive' },
-                  },
-                },
+                { billboardCode: { contains: search, mode: 'insensitive' } },
                 {
                   productionOrder: {
-                    offer: {
-                      OR: [
-                        {
-                          offerNumber: {
-                            contains: search,
-                            mode: 'insensitive',
-                          },
+                    OR: [
+                      {
+                        orderNumber: { contains: search, mode: 'insensitive' },
+                      },
+                      {
+                        customerName: { contains: search, mode: 'insensitive' },
+                      },
+                      {
+                        customerCompany: {
+                          contains: search,
+                          mode: 'insensitive',
                         },
-                        {
-                          customerName: {
-                            contains: search,
-                            mode: 'insensitive',
-                          },
-                        },
-                        {
-                          customerCompany: {
-                            contains: search,
-                            mode: 'insensitive',
-                          },
-                        },
-                      ],
-                    },
+                      },
+                    ],
                   },
                 },
               ],
@@ -253,26 +233,18 @@ export class PrintJobsService {
         status: true,
         productionOrderId: true,
         createdAt: true,
-        offerItem: {
-          select: {
-            billboardCode: true,
-            address: true,
-            cityName: true,
-            departmentName: true,
-            width: true,
-            height: true,
-            quantity: true,
-          },
-        },
+        billboardCode: true,
+        address: true,
+        cityName: true,
+        departmentName: true,
+        width: true,
+        height: true,
+        quantity: true,
         productionOrder: {
           select: {
-            offer: {
-              select: {
-                offerNumber: true,
-                customerName: true,
-                customerCompany: true,
-              },
-            },
+            orderNumber: true,
+            customerName: true,
+            customerCompany: true,
           },
         },
       },
@@ -282,17 +254,17 @@ export class PrintJobsService {
       id: row.id,
       productionOrderId: row.productionOrderId,
       status: row.status,
-      billboardCode: row.offerItem.billboardCode,
-      address: row.offerItem.address,
-      cityName: row.offerItem.cityName,
-      departmentName: row.offerItem.departmentName,
-      width: row.offerItem.width,
-      height: row.offerItem.height,
-      quantity: row.offerItem.quantity,
-      offerNumber: row.productionOrder.offer.offerNumber,
-      customerName: row.productionOrder.offer.customerName,
-      customerCompany: row.productionOrder.offer.customerCompany,
-      areaM2: computeAreaM2(row.offerItem),
+      billboardCode: row.billboardCode,
+      address: row.address,
+      cityName: row.cityName,
+      departmentName: row.departmentName,
+      width: row.width,
+      height: row.height,
+      quantity: row.quantity,
+      offerNumber: row.productionOrder.orderNumber,
+      customerName: row.productionOrder.customerName,
+      customerCompany: row.productionOrder.customerCompany,
+      areaM2: computeAreaM2(row),
       createdAt: row.createdAt.toISOString(),
     }));
   }
@@ -306,9 +278,9 @@ export class PrintJobsService {
       select: {
         id: true,
         status: true,
-        offerItem: {
-          select: { width: true, height: true, quantity: true },
-        },
+        width: true,
+        height: true,
+        quantity: true,
       },
     });
     if (!item) {
@@ -337,7 +309,7 @@ export class PrintJobsService {
       'La fecha de inicio no es válida',
     );
 
-    const areaM2 = computeAreaM2(item.offerItem);
+    const areaM2 = computeAreaM2(item);
     const setupMinutes = input.setupMinutes ?? machine.setupMinutes;
     const cooldownMinutes = input.cooldownMinutes ?? machine.cooldownMinutes;
     const printMinutes =
@@ -792,20 +764,19 @@ export class PrintJobsService {
         id: row.productionOrderItem.id,
         productionOrderId: row.productionOrderItem.productionOrderId,
         status: row.productionOrderItem.status,
-        billboardCode: row.productionOrderItem.offerItem.billboardCode,
-        address: row.productionOrderItem.offerItem.address,
-        cityName: row.productionOrderItem.offerItem.cityName,
-        departmentName: row.productionOrderItem.offerItem.departmentName,
-        width: row.productionOrderItem.offerItem.width,
-        height: row.productionOrderItem.offerItem.height,
-        quantity: row.productionOrderItem.offerItem.quantity,
+        billboardCode: row.productionOrderItem.billboardCode,
+        address: row.productionOrderItem.address,
+        cityName: row.productionOrderItem.cityName,
+        departmentName: row.productionOrderItem.departmentName,
+        width: row.productionOrderItem.width,
+        height: row.productionOrderItem.height,
+        quantity: row.productionOrderItem.quantity,
       },
       order: {
-        offerNumber: row.productionOrderItem.productionOrder.offer.offerNumber,
-        customerName:
-          row.productionOrderItem.productionOrder.offer.customerName,
+        offerNumber: row.productionOrderItem.productionOrder.orderNumber,
+        customerName: row.productionOrderItem.productionOrder.customerName,
         customerCompany:
-          row.productionOrderItem.productionOrder.offer.customerCompany,
+          row.productionOrderItem.productionOrder.customerCompany,
       },
       createdBy: row.createdBy,
     };

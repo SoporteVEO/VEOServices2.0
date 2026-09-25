@@ -291,16 +291,12 @@ export function useMyActiveContracts(
 
 export async function getContractReportsSended(params: {
   contractNumber: string;
-  reportType: "monthly" | "installation" | "maintenance";
 }) {
   const response = await apiFetch<{ data: ContractReportSendedRow[] }>(
     "/contracts/reports-sended",
     {
       method: "GET",
-      query: {
-        contractNumber: params.contractNumber,
-        reportType: params.reportType,
-      },
+      query: { contractNumber: params.contractNumber },
     },
   );
   return response.data;
@@ -308,20 +304,11 @@ export async function getContractReportsSended(params: {
 
 export function useContractReportsSended(params: {
   contractNumber: string | null;
-  reportType: "monthly" | "installation" | "maintenance";
 }) {
   return useQuery({
-    queryKey: [
-      "contracts",
-      "reports-sended",
-      params.contractNumber ?? "",
-      params.reportType,
-    ],
+    queryKey: ["contracts", "reports-sended", params.contractNumber ?? ""],
     queryFn: () =>
-      getContractReportsSended({
-        contractNumber: params.contractNumber!,
-        reportType: params.reportType,
-      }),
+      getContractReportsSended({ contractNumber: params.contractNumber! }),
     enabled: !!params.contractNumber,
   });
 }

@@ -16,7 +16,8 @@ export interface InstallerSummary {
 
 export interface ProductionOrderItem {
   id: string;
-  offerItemId: string;
+  offerItemId: string | null;
+  billboardId: number | null;
   status: ProductionOrderStatus;
   billboardCode: string | null;
   address: string | null;
@@ -38,11 +39,14 @@ export interface ProductionOrderItem {
 
 export interface ProductionOrder {
   id: string;
-  offerId: string;
-  offerNumber: string;
+  offerId: string | null;
+  /** Offer number for offer-based orders, `ODP0001/26` for manual ones. */
+  orderNumber: string;
+  isManual: boolean;
   customerName: string;
   customerCompany: string | null;
   advisorFullName: string | null;
+  notes: string | null;
   createdBy: {
     id: string;
     firstName: string;
@@ -62,6 +66,23 @@ export interface PaginatedProductionOrders {
   total: number;
   page: number;
   pageSize: number;
+}
+
+export interface CreateProductionOrderItemInput {
+  billboardId: number;
+  billboardCode?: string | null;
+  address?: string | null;
+  cityName?: string | null;
+  departmentName?: string | null;
+  width?: number | null;
+  height?: number | null;
+}
+
+export interface CreateProductionOrderInput {
+  customerName: string;
+  customerCompany?: string;
+  notes?: string;
+  items: CreateProductionOrderItemInput[];
 }
 
 export interface ProductionOrdersQuery {

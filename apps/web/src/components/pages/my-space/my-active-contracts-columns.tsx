@@ -38,7 +38,7 @@ export const MY_ACTIVE_CONTRACTS_COLUMNS: ColumnDef<ActiveContractGroup>[] = [
   },
   {
     id: "monthlyReport",
-    header: "Reporte mensual",
+    header: "Reporte del mes",
     cell: ({ row }) => {
       const sent = row.original.reportsSendedCount > 0;
       return (

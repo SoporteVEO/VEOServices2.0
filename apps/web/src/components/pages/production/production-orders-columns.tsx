@@ -4,6 +4,7 @@ import type { ColumnDef } from "@tanstack/react-table";
 import type { ProductionOrder } from "@/api/production-orders/production-orders.types";
 import { Badge } from "@/components/primitives/ui/badge";
 import { ProductionOrderStatusBadge } from "@/components/pages/production-orders-shared/production-order-status-badge";
+import { formatCreatorName } from "@/components/pages/production-orders-shared/production-order-utils";
 import { formatBriloShortDate } from "@/lib/format";
 
 function summarizeCounts(order: ProductionOrder): string {
@@ -21,10 +22,17 @@ function summarizeCounts(order: ProductionOrder): string {
 
 export const PRODUCTION_ORDERS_COLUMNS: ColumnDef<ProductionOrder>[] = [
   {
-    accessorKey: "offerNumber",
-    header: "Cotización",
+    accessorKey: "orderNumber",
+    header: "Orden",
     cell: ({ row }) => (
-      <span className="font-medium">{row.original.offerNumber}</span>
+      <div className="flex items-center gap-1.5">
+        <span className="font-medium">{row.original.orderNumber}</span>
+        {row.original.isManual ? (
+          <Badge variant="outline" className="text-[10px]">
+            Manual
+          </Badge>
+        ) : null}
+      </div>
     ),
   },
   {
@@ -45,10 +53,12 @@ export const PRODUCTION_ORDERS_COLUMNS: ColumnDef<ProductionOrder>[] = [
   },
   {
     id: "advisor",
-    header: "Asesor",
+    header: "Asesor / creada por",
     cell: ({ row }) => (
       <span className="truncate text-xs">
-        {row.original.advisorFullName ?? "—"}
+        {row.original.isManual
+          ? formatCreatorName(row.original)
+          : (row.original.advisorFullName ?? "—")}
       </span>
     ),
   },

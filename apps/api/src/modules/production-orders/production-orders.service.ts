@@ -16,11 +16,17 @@ import {
 import { INSTALLER_ROLES } from '../auth/field-roles.js';
 import { NotificationsService } from '../notifications/notifications.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
+import { PushService } from '../push/push.service.js';
 import { S3StorageService } from '../s3-images/s3-storage.service.js';
 
 const PRODUCTION_DOCS_FOLDER = 'production-orders';
 
 export type ProductionDocumentKind = 'PRODUCTION' | 'DESIGN';
+
+export interface DocumentActor {
+  userId: string;
+  isProductionUser: boolean;
+}
 
 export interface InstallerSummaryDto {
   id: string;
@@ -32,7 +38,8 @@ export interface InstallerSummaryDto {
 
 export interface ProductionOrderItemDto {
   id: string;
-  offerItemId: string;
+  offerItemId: string | null;
+  billboardId: number | null;
   status: ProductionOrderStatus;
   billboardCode: string | null;
   address: string | null;
@@ -54,11 +61,13 @@ export interface ProductionOrderItemDto {
 
 export interface ProductionOrderDto {
   id: string;
-  offerId: string;
-  offerNumber: string;
+  offerId: string | null;
+  orderNumber: string;
+  isManual: boolean;
   customerName: string;
   customerCompany: string | null;
   advisorFullName: string | null;
+  notes: string | null;
   createdBy: {
     id: string;
     firstName: string;
@@ -71,6 +80,21 @@ export interface ProductionOrderDto {
   items: ProductionOrderItemDto[];
   createdAt: string;
   updatedAt: string;
+}
+
+export interface CreateManualProductionOrderInput {
+  customerName: string;
+  customerCompany?: string;
+  notes?: string;
+  items: {
+    billboardId: number;
+    billboardCode?: string;
+    address?: string;
+    cityName?: string;
+    departmentName?: string;
+    width?: number;
+    height?: number;
+  }[];
 }
 
 export interface ListProductionOrdersFilters {
@@ -136,18 +160,6 @@ function resolveAggregateStatus(
 }
 
 const ITEM_INCLUDE = {
-  offerItem: {
-    select: {
-      id: true,
-      billboardCode: true,
-      address: true,
-      cityName: true,
-      departmentName: true,
-      width: true,
-      height: true,
-      quantity: true,
-    },
-  },
   assignedInstaller: {
     select: {
       id: true,
@@ -164,22 +176,12 @@ const ITEM_INCLUDE = {
 } satisfies Prisma.ProductionOrderItemInclude;
 
 const ORDER_INCLUDE = {
-  offer: {
+  createdBy: {
     select: {
       id: true,
-      offerNumber: true,
-      customerName: true,
-      customerCompany: true,
-      advisorFullName: true,
-      createdByUserId: true,
-      createdBy: {
-        select: {
-          id: true,
-          firstName: true,
-          lastName: true,
-          email: true,
-        },
-      },
+      firstName: true,
+      lastName: true,
+      email: true,
     },
   },
   items: {
@@ -196,13 +198,16 @@ type ProductionOrderItemInclude = Prisma.ProductionOrderItemGetPayload<{
   include: typeof ITEM_INCLUDE;
 }>;
 
-
 export interface ProductionOrderNotificationMeta {
-  offerNumber: string;
+  orderNumber: string;
   customerName: string;
   customerCompany: string | null;
   itemCount: number;
+  /** Skipped when fanning out, e.g. the production user who created it. */
+  excludeUserId?: string;
 }
+
+const MANUAL_ORDER_PREFIX = 'ODP';
 
 export interface CreateProductionOrderResult {
   created: boolean;
@@ -217,6 +222,7 @@ export class ProductionOrdersService {
     private readonly prisma: PrismaService,
     private readonly storage: S3StorageService,
     private readonly notifications: NotificationsService,
+    private readonly push: PushService,
   ) {}
 
   /**
@@ -240,9 +246,21 @@ export class ProductionOrdersService {
         offerNumber: true,
         customerName: true,
         customerCompany: true,
+        advisorFullName: true,
+        createdByUserId: true,
         items: {
           where: { itemType: OfferItemType.STATIC_BILLBOARD },
-          select: { id: true },
+          select: {
+            id: true,
+            billboardId: true,
+            billboardCode: true,
+            address: true,
+            cityName: true,
+            departmentName: true,
+            width: true,
+            height: true,
+            quantity: true,
+          },
         },
         productionOrder: { select: { id: true } },
       },
@@ -256,9 +274,15 @@ export class ProductionOrdersService {
     await tx.productionOrder.create({
       data: {
         offerId: offer.id,
+        orderNumber: offer.offerNumber,
+        customerName: offer.customerName,
+        customerCompany: offer.customerCompany,
+        advisorFullName: offer.advisorFullName,
+        createdByUserId: offer.createdByUserId,
         items: {
-          create: offer.items.map((item) => ({
-            offerItemId: item.id,
+          create: offer.items.map(({ id, ...billboard }) => ({
+            offerItemId: id,
+            ...billboard,
           })),
         },
       },
@@ -267,7 +291,7 @@ export class ProductionOrdersService {
     return {
       created: true,
       meta: {
-        offerNumber: offer.offerNumber,
+        orderNumber: offer.offerNumber,
         customerName: offer.customerName,
         customerCompany: offer.customerCompany,
         itemCount: offer.items.length,
@@ -286,22 +310,108 @@ export class ProductionOrdersService {
     const label = meta.customerCompany?.trim()
       ? `${meta.customerCompany.trim()} (${meta.customerName})`
       : meta.customerName;
-    const description = `Nueva orden de producción ${meta.offerNumber} para ${label} · ${meta.itemCount} valla${meta.itemCount === 1 ? '' : 's'} estática${meta.itemCount === 1 ? '' : 's'}`;
+    const description = `Nueva orden de producción ${meta.orderNumber} para ${label} · ${meta.itemCount} valla${meta.itemCount === 1 ? '' : 's'} estática${meta.itemCount === 1 ? '' : 's'}`;
 
     try {
       const result = await this.notifications.createForSubRole(
         'PRODUCTION',
         description,
         'HIGH',
+        meta.excludeUserId,
       );
       this.logger.log(
-        `Created ${result.count} PRODUCTION notification(s) for offer ${meta.offerNumber}`,
+        `Created ${result.count} PRODUCTION notification(s) for order ${meta.orderNumber}`,
       );
     } catch (err) {
       this.logger.error(
-        `Failed to notify PRODUCTION users for offer ${meta.offerNumber}: ${(err as Error).message}`,
+        `Failed to notify PRODUCTION users for order ${meta.orderNumber}: ${(err as Error).message}`,
       );
     }
+  }
+
+  /**
+   * Production orders that do not come from an offer, e.g. a reprint or an
+   * internal campaign. Documents are uploaded afterwards through the regular
+   * per-item endpoints, since the creator owns the order.
+   */
+  async createManual(
+    userId: string,
+    input: CreateManualProductionOrderInput,
+  ): Promise<ProductionOrderDto> {
+    const billboardIds = input.items.map((item) => item.billboardId);
+    if (new Set(billboardIds).size !== billboardIds.length) {
+      throw new BadRequestException(
+        'Una valla no puede agregarse dos veces a la misma orden',
+      );
+    }
+
+    const orderNumber = await this.generateManualOrderNumber();
+    const customerName = input.customerName.trim();
+    const customerCompany = input.customerCompany?.trim() || null;
+
+    const created = await this.prisma.productionOrder.create({
+      data: {
+        orderNumber,
+        customerName,
+        customerCompany,
+        notes: input.notes?.trim() || null,
+        createdByUserId: userId,
+        items: {
+          create: input.items.map((item) => ({
+            billboardId: item.billboardId,
+            billboardCode: item.billboardCode?.trim() || null,
+            address: item.address?.trim() || null,
+            cityName: item.cityName?.trim() || null,
+            departmentName: item.departmentName?.trim() || null,
+            width: item.width ?? null,
+            height: item.height ?? null,
+          })),
+        },
+      },
+      include: this.orderInclude(),
+    });
+
+    void this.notifyProductionUsersOfNewOrder({
+      orderNumber,
+      customerName,
+      customerCompany,
+      itemCount: input.items.length,
+      excludeUserId: userId,
+    });
+
+    return this.mapToDto(created);
+  }
+
+  private async generateManualOrderNumber(): Promise<string> {
+    const now = new Date();
+    const yearStart = new Date(now.getFullYear(), 0, 1);
+    const yearEnd = new Date(now.getFullYear() + 1, 0, 1);
+    const yearSuffix = String(now.getFullYear()).slice(-2);
+    const numberPattern = `^${MANUAL_ORDER_PREFIX}[0-9]+/${yearSuffix}$`;
+
+    const rows = await this.prisma.$queryRaw<
+      Array<{ max_sequence: number | null }>
+    >`
+      SELECT MAX(
+        CASE
+          WHEN "order_number" ~ ${numberPattern}
+          THEN CAST(
+            SUBSTRING(
+              "order_number"
+              FROM 4
+              FOR POSITION('/' IN "order_number") - 4
+            ) AS INTEGER
+          )
+          ELSE NULL
+        END
+      ) AS max_sequence
+      FROM "production_orders"
+      WHERE "createdAt" >= ${yearStart}
+        AND "createdAt" < ${yearEnd}
+    `;
+
+    const maxSequence = Number(rows[0]?.max_sequence ?? 0);
+    return `${MANUAL_ORDER_PREFIX}${String(maxSequence + 1).padStart(4, '0')}/${yearSuffix}`;
   }
 
   /**
@@ -358,28 +468,31 @@ export class ProductionOrdersService {
 
   private async listWithFilters(
     filters: ListProductionOrdersFilters,
-    offerConstraint: Prisma.OfferCreatedWhereInput | undefined,
+    constraint: Prisma.ProductionOrderWhereInput | undefined,
   ): Promise<PaginatedProductionOrders> {
     const page = clampPage(filters.page);
     const pageSize = clampPageSize(filters.pageSize);
     const search = filters.search?.trim();
     const skip = (page - 1) * pageSize;
 
-    const offerWhere: Prisma.OfferCreatedWhereInput = {
-      ...(offerConstraint ?? {}),
+    const where: Prisma.ProductionOrderWhereInput = {
+      ...(constraint ?? {}),
       ...(search
         ? {
             OR: [
-              { offerNumber: { contains: search, mode: 'insensitive' } },
+              { orderNumber: { contains: search, mode: 'insensitive' } },
               { customerName: { contains: search, mode: 'insensitive' } },
               { customerCompany: { contains: search, mode: 'insensitive' } },
+              {
+                items: {
+                  some: {
+                    billboardCode: { contains: search, mode: 'insensitive' },
+                  },
+                },
+              },
             ],
           }
         : {}),
-    };
-
-    const where: Prisma.ProductionOrderWhereInput = {
-      offer: offerWhere,
       ...(filters.status
         ? { items: { some: { status: filters.status } } }
         : {}),
@@ -410,7 +523,7 @@ export class ProductionOrdersService {
       include: this.orderInclude(),
     });
     if (!row) throw new NotFoundException('Orden de producción no encontrada');
-    if (row.offer.createdByUserId !== userId) {
+    if (row.createdByUserId !== userId) {
       throw new NotFoundException('Orden de producción no encontrada');
     }
     return this.mapToDto(row);
@@ -426,16 +539,17 @@ export class ProductionOrdersService {
   }
 
   /**
-   * Only the user that originally created the offer can upload the
-   * corresponding production/design documents.
+   * The order's creator uploads the production/design documents. On manual
+   * orders the whole production team may do so too, since there is no
+   * salesperson behind them.
    */
   async uploadDocument(
-    userId: string,
+    actor: DocumentActor,
     itemId: string,
     kind: ProductionDocumentKind,
     pdfBase64: string,
   ): Promise<ProductionOrderItemDto> {
-    const item = await this.findItemOwnedByUser(itemId, userId);
+    const item = await this.findItemEditableBy(itemId, actor);
 
     const buffer = decodeBase64Pdf(pdfBase64);
     const upload = await this.storage.uploadBuffer({
@@ -466,11 +580,11 @@ export class ProductionOrdersService {
   }
 
   async deleteDocument(
-    userId: string,
+    actor: DocumentActor,
     itemId: string,
     kind: ProductionDocumentKind,
   ): Promise<ProductionOrderItemDto> {
-    const item = await this.findItemOwnedByUser(itemId, userId);
+    const item = await this.findItemEditableBy(itemId, actor);
     const key = pickDocumentKey(item, kind);
     if (!key) {
       throw new NotFoundException('El documento no existe');
@@ -497,17 +611,13 @@ export class ProductionOrdersService {
       select: {
         productionDocumentS3Key: true,
         designDocumentS3Key: true,
-        productionOrder: {
-          select: {
-            offer: { select: { createdByUserId: true } },
-          },
-        },
+        productionOrder: { select: { createdByUserId: true } },
       },
     });
     if (!item) throw new NotFoundException('Orden de producción no encontrada');
 
     if (options.requireOwnership && options.userId) {
-      if (item.productionOrder.offer.createdByUserId !== options.userId) {
+      if (item.productionOrder.createdByUserId !== options.userId) {
         throw new NotFoundException('Orden de producción no encontrada');
       }
     }
@@ -563,7 +673,7 @@ export class ProductionOrdersService {
   ): Promise<ProductionOrderItemDto> {
     const existing = await this.prisma.productionOrderItem.findUnique({
       where: { id: itemId },
-      select: { id: true },
+      select: { id: true, assignedInstallerId: true },
     });
     if (!existing) {
       throw new NotFoundException('Orden de producción no encontrada');
@@ -601,8 +711,37 @@ export class ProductionOrdersService {
     const updated = await this.prisma.productionOrderItem.update({
       where: { id: itemId },
       data,
-      include: ITEM_INCLUDE,
+      include: {
+        ...ITEM_INCLUDE,
+        productionOrder: {
+          select: {
+            orderNumber: true,
+            customerCompany: true,
+            customerName: true,
+          },
+        },
+      },
     });
+
+    if (
+      updated.assignedInstallerId &&
+      updated.assignedInstallerId !== existing.assignedInstallerId
+    ) {
+      const { productionOrder } = updated;
+      const place = updated.billboardCode ?? updated.address;
+      void this.push.sendToUser(updated.assignedInstallerId, {
+        title: 'Nueva instalación asignada',
+        body: [
+          productionOrder.customerCompany ?? productionOrder.customerName,
+          place,
+        ]
+          .filter(Boolean)
+          .join(' · '),
+        url: `/portal/${updated.id}`,
+        tag: `installation-${updated.id}`,
+      });
+    }
+
     return this.mapItemToDto(updated);
   }
 
@@ -621,20 +760,22 @@ export class ProductionOrdersService {
     });
   }
 
-  private async findItemOwnedByUser(itemId: string, userId: string) {
+  private async findItemEditableBy(itemId: string, actor: DocumentActor) {
     const item = await this.prisma.productionOrderItem.findUnique({
       where: { id: itemId },
       include: {
         ...ITEM_INCLUDE,
         productionOrder: {
-          select: {
-            offer: { select: { createdByUserId: true } },
-          },
+          select: { createdByUserId: true, offerId: true },
         },
       },
     });
     if (!item) throw new NotFoundException('Orden de producción no encontrada');
-    if (item.productionOrder.offer.createdByUserId !== userId) {
+
+    const isOwner = item.productionOrder.createdByUserId === actor.userId;
+    const isManualForProduction =
+      actor.isProductionUser && item.productionOrder.offerId === null;
+    if (!isOwner && !isManualForProduction) {
       throw new ForbiddenException(
         'No tienes permisos para modificar esta orden de producción',
       );
@@ -659,12 +800,14 @@ export class ProductionOrdersService {
 
     return {
       id: row.id,
-      offerId: row.offer.id,
-      offerNumber: row.offer.offerNumber,
-      customerName: row.offer.customerName,
-      customerCompany: row.offer.customerCompany,
-      advisorFullName: row.offer.advisorFullName,
-      createdBy: row.offer.createdBy,
+      offerId: row.offerId,
+      orderNumber: row.orderNumber,
+      isManual: row.offerId === null,
+      customerName: row.customerName,
+      customerCompany: row.customerCompany,
+      advisorFullName: row.advisorFullName,
+      notes: row.notes,
+      createdBy: row.createdBy,
       itemCount: items.length,
       aggregateStatus: resolveAggregateStatus(statuses),
       statusCounts: counts,
@@ -680,14 +823,15 @@ export class ProductionOrdersService {
     return {
       id: item.id,
       offerItemId: item.offerItemId,
+      billboardId: item.billboardId,
       status: item.status,
-      billboardCode: item.offerItem.billboardCode,
-      address: item.offerItem.address,
-      cityName: item.offerItem.cityName,
-      departmentName: item.offerItem.departmentName,
-      width: item.offerItem.width,
-      height: item.offerItem.height,
-      quantity: item.offerItem.quantity,
+      billboardCode: item.billboardCode,
+      address: item.address,
+      cityName: item.cityName,
+      departmentName: item.departmentName,
+      width: item.width,
+      height: item.height,
+      quantity: item.quantity,
       hasProductionDocument: !!item.productionDocumentS3Key,
       hasDesignDocument: !!item.designDocumentS3Key,
       assignedInstaller: item.assignedInstaller,

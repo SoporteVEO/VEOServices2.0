@@ -223,7 +223,7 @@ export class ContractsController {
       throw new BadRequestException('contractNumber es requerido');
     }
     if (
-      !reportTypeStr ||
+      reportTypeStr &&
       !CONTRACT_REPORT_TYPES.includes(reportTypeStr as ContractReportType)
     ) {
       throw new BadRequestException(
@@ -232,7 +232,7 @@ export class ContractsController {
     }
     const data = await this.contractsService.listReportsSended(
       trimmed,
-      reportTypeStr as ContractReportType,
+      reportTypeStr as ContractReportType | undefined,
     );
     return { data };
   }

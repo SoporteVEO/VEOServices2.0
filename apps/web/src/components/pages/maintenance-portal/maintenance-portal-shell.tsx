@@ -2,11 +2,13 @@
 
 import { ArrowLeft, LogOut } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import type { ReactNode } from "react";
 import { Button } from "@/components/primitives/ui/button";
-import { PortalNavSheet } from "@/components/pages/field-portal";
-import { authClient, clearAuthToken } from "@/lib/auth-client";
+import {
+  PortalAppSetupCard,
+  PortalNavSheet,
+  usePortalSignOut,
+} from "@/components/pages/field-portal";
 import { MAINTENANCE_PORTAL_BASE } from "@/lib/maintenance-portal";
 
 type Props = {
@@ -27,13 +29,7 @@ export function MaintenancePortalShell({
   backHref,
   children,
 }: Props) {
-  const router = useRouter();
-
-  async function handleSignOut() {
-    await authClient.signOut();
-    clearAuthToken();
-    router.replace("/");
-  }
+  const handleSignOut = usePortalSignOut();
 
   return (
     <div className="flex min-h-svh flex-col bg-muted/30">
@@ -79,6 +75,7 @@ export function MaintenancePortalShell({
       </header>
 
       <main className="mx-auto w-full max-w-2xl flex-1 px-4 py-4 pb-safe">
+        {backHref ? null : <PortalAppSetupCard />}
         {children}
       </main>
     </div>

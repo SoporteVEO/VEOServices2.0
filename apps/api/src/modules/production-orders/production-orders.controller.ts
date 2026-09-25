@@ -6,15 +6,18 @@ import {
   Get,
   Param,
   Patch,
+  Post,
   Query,
 } from '@nestjs/common';
 import { ProductionOrderStatus } from '@prisma/client';
 import { CurrentUser, RequiredSubRoles } from '../auth/decorators.js';
 import { resolveTargetUserId } from '../auth/view-as.helper.js';
+import { CreateProductionOrderDto } from './dto/create-production-order.dto.js';
 import { UpdateProductionOrderItemAssignmentDto } from './dto/update-production-order-item-assignment.dto.js';
 import { UpdateProductionOrderItemStatusDto } from './dto/update-production-order-item-status.dto.js';
 import { UploadProductionOrderDocumentDto } from './dto/upload-production-order-document.dto.js';
 import {
+  type DocumentActor,
   ProductionDocumentKind,
   ProductionOrdersService,
 } from './production-orders.service.js';
@@ -37,6 +40,10 @@ function parseStatusOrThrow(
 
 function hasProductionSubRole(user: AuthUser): boolean {
   return (user.subRoles ?? []).includes('PRODUCTION');
+}
+
+function toDocumentActor(user: AuthUser): DocumentActor {
+  return { userId: user.id, isProductionUser: hasProductionSubRole(user) };
 }
 
 @Controller('production-orders')
@@ -77,6 +84,16 @@ export class ProductionOrdersController {
   @RequiredSubRoles('PRODUCTION')
   async listInstallers() {
     const data = await this.service.listAssignableInstallers();
+    return { data };
+  }
+
+  @Post()
+  @RequiredSubRoles('PRODUCTION')
+  async create(
+    @Body() dto: CreateProductionOrderDto,
+    @CurrentUser() user: AuthUser,
+  ) {
+    const data = await this.service.createManual(user.id, dto);
     return { data };
   }
 
@@ -130,7 +147,7 @@ export class ProductionOrdersController {
     @CurrentUser() user: AuthUser,
   ) {
     const data = await this.service.uploadDocument(
-      user.id,
+      toDocumentActor(user),
       itemId,
       'PRODUCTION',
       dto.pdfBase64,
@@ -144,7 +161,7 @@ export class ProductionOrdersController {
     @CurrentUser() user: AuthUser,
   ) {
     const data = await this.service.deleteDocument(
-      user.id,
+      toDocumentActor(user),
       itemId,
       'PRODUCTION',
     );
@@ -158,7 +175,7 @@ export class ProductionOrdersController {
     @CurrentUser() user: AuthUser,
   ) {
     const data = await this.service.uploadDocument(
-      user.id,
+      toDocumentActor(user),
       itemId,
       'DESIGN',
       dto.pdfBase64,
@@ -171,7 +188,11 @@ export class ProductionOrdersController {
     @Param('itemId') itemId: string,
     @CurrentUser() user: AuthUser,
   ) {
-    const data = await this.service.deleteDocument(user.id, itemId, 'DESIGN');
+    const data = await this.service.deleteDocument(
+      toDocumentActor(user),
+      itemId,
+      'DESIGN',
+    );
     return { data };
   }
 
