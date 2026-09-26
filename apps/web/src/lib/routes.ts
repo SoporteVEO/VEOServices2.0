@@ -23,7 +23,7 @@ import {
   SubRole,
   UserRole,
 } from "@/api/users/users.types";
-import { portalHomeFor } from "@/lib/portal-access";
+import { portalHome } from "@/lib/portal-access";
 
 export interface NavItem {
   title: string;
@@ -223,7 +223,7 @@ export function resolvePathAccess(
   // A portal-only role owns at most a module or two here, so anything it is not
   // named on drops it back into the portal rather than onto another module.
   if (isPortalOnlyRole(role)) {
-    return { allowed: false, redirectTo: portalHomeFor(role, subRoles) };
+    return { allowed: false, redirectTo: portalHome() };
   }
 
   const fallback = findFirstAccessibleItem(role, subRoles);

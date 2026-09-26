@@ -1,4 +1,4 @@
-import { Hammer, Wrench, type LucideIcon } from "lucide-react";
+import { ClipboardList, type LucideIcon } from "lucide-react";
 import {
   isFieldRole,
   isMaintenanceFieldRole,
@@ -6,33 +6,19 @@ import {
   type UserRole,
 } from "@/api/users/users.types";
 import { INSTALLER_PORTAL_BASE } from "@/lib/installer-portal";
-import { MAINTENANCE_PORTAL_BASE } from "@/lib/maintenance-portal";
 
 /**
- * Which mobile portals a user may open. A role can grant both — a technician who
- * also mounts panels holds INSTALLER_MANTENIMIENTO — so access is a set rather
- * than a single destination, and every guard resolves it from here.
+ * Field staff get one portal, "Mis órdenes", listing installation and
+ * maintenance jobs side by side. Which kinds of job a user sees inside it is
+ * still decided per kind, since a role can hold either or both.
  */
-export type FieldPortal = "installer" | "maintenance";
-
-export const PORTAL_BASE: Record<FieldPortal, string> = {
-  installer: INSTALLER_PORTAL_BASE,
-  maintenance: MAINTENANCE_PORTAL_BASE,
-};
-
-export const PORTAL_LABEL: Record<FieldPortal, string> = {
-  installer: "Instalaciones",
-  maintenance: "Mantenimiento",
-};
-
-export const PORTAL_ICON: Record<FieldPortal, LucideIcon> = {
-  installer: Hammer,
-  maintenance: Wrench,
-};
+export const FIELD_PORTAL_BASE = INSTALLER_PORTAL_BASE;
+export const FIELD_PORTAL_LABEL = "Mis órdenes";
+export const FIELD_PORTAL_ICON: LucideIcon = ClipboardList;
 
 /**
- * Admins and the production team can open the installer portal to verify what a
- * printed QR resolves to; maintenance supervisors do the same for their portal.
+ * Admins and the production team can open installation jobs to verify what a
+ * printed QR resolves to.
  */
 export function canAccessInstallerPortal(
   role: UserRole | undefined | null,
@@ -44,6 +30,7 @@ export function canAccessInstallerPortal(
   return role === "USER" && subRoles.includes("PRODUCTION");
 }
 
+/** Maintenance supervisors can open maintenance jobs to see what a technician sees. */
 export function canAccessMaintenancePortal(
   role: UserRole | undefined | null,
   subRoles: SubRole[] = [],
@@ -54,25 +41,17 @@ export function canAccessMaintenancePortal(
   return subRoles.includes("MANTENIMIENTO");
 }
 
-export function fieldPortalsFor(
+export function canAccessFieldPortal(
   role: UserRole | undefined | null,
   subRoles: SubRole[] = [],
-): FieldPortal[] {
-  const portals: FieldPortal[] = [];
-  if (canAccessInstallerPortal(role, subRoles)) portals.push("installer");
-  if (canAccessMaintenancePortal(role, subRoles)) portals.push("maintenance");
-  return portals;
+): boolean {
+  return (
+    canAccessInstallerPortal(role, subRoles) ||
+    canAccessMaintenancePortal(role, subRoles)
+  );
 }
 
-/**
- * Where a user with no dashboard belongs. When a role grants both portals the
- * user lands on the installer portal and switches from the header, so there is
- * no extra screen between signing in and the day's work.
- */
-export function portalHomeFor(
-  role: UserRole | undefined | null,
-  subRoles: SubRole[] = [],
-): string {
-  const [first] = fieldPortalsFor(role, subRoles);
-  return first ? PORTAL_BASE[first] : PORTAL_BASE.installer;
+/** Where a user with no dashboard belongs. */
+export function portalHome(): string {
+  return FIELD_PORTAL_BASE;
 }

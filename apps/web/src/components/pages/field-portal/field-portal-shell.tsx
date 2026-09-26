@@ -4,12 +4,10 @@ import { ArrowLeft, LogOut } from "lucide-react";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { Button } from "@/components/primitives/ui/button";
-import {
-  PortalAppSetupCard,
-  PortalNavSheet,
-  usePortalSignOut,
-} from "@/components/pages/field-portal";
-import { MAINTENANCE_PORTAL_BASE } from "@/lib/maintenance-portal";
+import { FIELD_PORTAL_BASE } from "@/lib/portal-access";
+import { PortalAppSetupCard } from "./portal-app-setup-card";
+import { PortalNavSheet } from "./portal-nav-sheet";
+import { usePortalSignOut } from "./use-portal-sign-out";
 
 type Props = {
   title: string;
@@ -19,11 +17,10 @@ type Props = {
 };
 
 /**
- * Full-height mobile-first chrome for the maintenance portal: sticky header
- * with large tap targets and a single-column body sized for a phone held
- * one-handed.
+ * Full-height mobile-first chrome for "Mis órdenes": a sticky header with
+ * large tap targets and a single-column body sized for a phone held one-handed.
  */
-export function MaintenancePortalShell({
+export function FieldPortalShell({
   title,
   subtitle,
   backHref,
@@ -43,7 +40,7 @@ export function MaintenancePortalShell({
             </Button>
           ) : (
             <Link
-              href={MAINTENANCE_PORTAL_BASE}
+              href={FIELD_PORTAL_BASE}
               className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary text-sm font-bold text-primary-foreground"
             >
               V

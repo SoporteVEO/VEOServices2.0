@@ -1,4 +1,5 @@
 import type { SalesByCostCenterRow } from "@/api/analytics/analytics.types";
+import { BRAND_CHART_COLORS } from "@/lib/brand-colors";
 
 export type SalesAggregate = {
   key: string;
@@ -104,16 +105,7 @@ export function topChartSeries(
   return series;
 }
 
-export const EXECUTIVE_CHART_COLORS = [
-  "#10b981",
-  "#0ea5e9",
-  "#8b5cf6",
-  "#f59e0b",
-  "#f43f5e",
-  "#1e40af",
-  "#06b6d4",
-  "#f97316",
-] as const;
+export const EXECUTIVE_CHART_COLORS = BRAND_CHART_COLORS;
 
 export function daysInRange(from: string, to: string): number {
   const a = new Date(`${from}T00:00:00Z`).getTime();

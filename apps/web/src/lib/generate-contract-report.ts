@@ -1,10 +1,16 @@
+import { BRAND_COLORS, pptxColor } from "./brand-colors";
 import { getMapsUrl } from "./utils";
 
-const BRAND_DARK = "FE1C65";
-const BRAND_ACCENT = "89DA00";
-const LABEL_COLOR = "FE1C65";
-const VALUE_COLOR = "333333";
-const WHITE = "FAF9F6";
+const BRAND_DARK = pptxColor(BRAND_COLORS.dark);
+/** Lime only reads on the dark cover; on white slides links use VEO Gray. */
+const BRAND_ACCENT = pptxColor(BRAND_COLORS.lime);
+const LINK_COLOR = pptxColor(BRAND_COLORS.gray);
+const LABEL_COLOR = pptxColor(BRAND_COLORS.gray);
+const VALUE_COLOR = pptxColor(BRAND_COLORS.dark);
+const WHITE = pptxColor(BRAND_COLORS.white);
+const COVER_MUTED = pptxColor(BRAND_COLORS.mist);
+const COVER_FOOTNOTE = pptxColor(BRAND_COLORS.steel);
+const FOOTNOTE_COLOR = pptxColor(BRAND_COLORS.slate);
 
 const SLIDE_W = 13.33;
 const SLIDE_H = 7.5;
@@ -285,7 +291,7 @@ function addCoverSlide(pptx: any, data: CoverSlideData) {
       w: SLIDE_W - 1.2,
       h: 0.45,
       fontSize: 16,
-      color: "B3C7DD",
+      color: COVER_MUTED,
       fontFace: "Arial",
       italic: true,
     });
@@ -325,7 +331,7 @@ function addCoverSlide(pptx: any, data: CoverSlideData) {
     w: SLIDE_W - 1.2,
     h: 0.3,
     fontSize: 10,
-    color: "8AA4BF",
+    color: COVER_FOOTNOTE,
     fontFace: "Arial",
     charSpacing: 4,
   });
@@ -421,7 +427,7 @@ function addBillboardSlide(
           options: {
             hyperlink: { url: mapsUrl },
             fontSize: 12,
-            color: BRAND_ACCENT,
+            color: LINK_COLOR,
             bold: true,
           },
         },
@@ -442,7 +448,7 @@ function addBillboardSlide(
       w: panelW,
       h: 0.8,
       fontSize: 8,
-      color: "888888",
+      color: FOOTNOTE_COLOR,
       fontFace: "Arial",
       wrap: true,
     });

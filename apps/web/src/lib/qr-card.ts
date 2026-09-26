@@ -1,3 +1,5 @@
+import { BRAND_COLORS } from "./brand-colors";
+
 const CARD_WIDTH = 900;
 const PADDING = 56;
 const QR_SIZE = 640;
@@ -27,7 +29,7 @@ export async function downloadQrCard(options: QrCardOptions): Promise<void> {
     width: QR_SIZE,
     margin: 1,
     errorCorrectionLevel: "M",
-    color: { dark: "#000000", light: "#ffffff" },
+    color: { dark: BRAND_COLORS.dark, light: BRAND_COLORS.white },
   });
 
   const qrImage = await loadImage(qrDataUrl);
@@ -47,19 +49,19 @@ export async function downloadQrCard(options: QrCardOptions): Promise<void> {
   canvas.width = CARD_WIDTH;
   canvas.height = height;
 
-  ctx.fillStyle = "#ffffff";
+  ctx.fillStyle = BRAND_COLORS.white;
   ctx.fillRect(0, 0, canvas.width, canvas.height);
   ctx.textAlign = "center";
 
   let y = PADDING + 60;
 
-  ctx.fillStyle = "#0a0a0a";
+  ctx.fillStyle = BRAND_COLORS.dark;
   ctx.font = "bold 60px sans-serif";
   ctx.fillText(options.title, CARD_WIDTH / 2, y);
 
   if (options.subtitle) {
     y += 50;
-    ctx.fillStyle = "#525252";
+    ctx.fillStyle = BRAND_COLORS.slate;
     ctx.font = "30px sans-serif";
     ctx.fillText(truncate(options.subtitle, 46), CARD_WIDTH / 2, y);
   }
@@ -68,12 +70,12 @@ export async function downloadQrCard(options: QrCardOptions): Promise<void> {
   ctx.drawImage(qrImage, (CARD_WIDTH - QR_SIZE) / 2, y, QR_SIZE, QR_SIZE);
   y += QR_SIZE + 50;
 
-  ctx.fillStyle = "#0a0a0a";
+  ctx.fillStyle = BRAND_COLORS.dark;
   ctx.font = "26px sans-serif";
   ctx.fillText("Escanea para registrar la instalación", CARD_WIDTH / 2, y);
 
   if (footerLines.length) {
-    ctx.fillStyle = "#525252";
+    ctx.fillStyle = BRAND_COLORS.slate;
     ctx.font = "28px sans-serif";
     y += 42;
     for (const line of footerLines) {

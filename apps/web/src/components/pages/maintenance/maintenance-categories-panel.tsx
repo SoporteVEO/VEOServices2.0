@@ -14,18 +14,10 @@ import { Badge } from "@/components/primitives/ui/badge";
 import { Button as PrimitiveButton } from "@/components/primitives/ui/button";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { BRAND_CHART_COLORS } from "@/lib/brand-colors";
 import { MaintenanceCategoryBadge } from "./maintenance-category-badge";
 
-const PRESET_COLORS = [
-  "#0bbac8",
-  "#e3326b",
-  "#a8cf3a",
-  "#f59e0b",
-  "#8b5cf6",
-  "#ef4444",
-  "#10b981",
-  "#64748b",
-];
+const PRESET_COLORS: readonly string[] = BRAND_CHART_COLORS;
 
 export function MaintenanceCategoriesPanel() {
   const [name, setName] = useState("");

@@ -2,6 +2,8 @@
 
 import { useEffect } from "react";
 
+import { BRAND_COLORS } from "@/lib/brand-colors";
+
 interface GlobalErrorProps {
   error: Error & { digest?: string };
   unstable_retry: () => void;
@@ -23,8 +25,8 @@ export default function GlobalError({
           minHeight: "100dvh",
           fontFamily:
             "ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, sans-serif",
-          background: "#0a0a0a",
-          color: "#fafafa",
+          background: BRAND_COLORS.dark,
+          color: BRAND_COLORS.ice,
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
@@ -48,8 +50,8 @@ export default function GlobalError({
               width: "48px",
               height: "48px",
               borderRadius: "9999px",
-              background: "rgba(239, 68, 68, 0.15)",
-              color: "#f87171",
+              background: "rgba(155, 67, 67, 0.3)",
+              color: BRAND_COLORS.redSoft,
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -67,7 +69,7 @@ export default function GlobalError({
               margin: 0,
               fontSize: "14px",
               lineHeight: 1.5,
-              color: "#a3a3a3",
+              color: BRAND_COLORS.mist,
             }}
           >
             Ocurrió un error crítico. Intenta recargar la página. Si el problema
@@ -78,7 +80,7 @@ export default function GlobalError({
               style={{
                 margin: 0,
                 fontSize: "11px",
-                color: "#737373",
+                color: BRAND_COLORS.steel,
                 fontFamily: "ui-monospace, monospace",
               }}
             >
@@ -94,8 +96,8 @@ export default function GlobalError({
                 fontSize: "14px",
                 fontWeight: 500,
                 borderRadius: "8px",
-                background: "#fafafa",
-                color: "#0a0a0a",
+                background: BRAND_COLORS.ice,
+                color: BRAND_COLORS.dark,
                 border: "none",
                 cursor: "pointer",
               }}
@@ -113,8 +115,8 @@ export default function GlobalError({
                 fontWeight: 500,
                 borderRadius: "8px",
                 background: "transparent",
-                color: "#fafafa",
-                border: "1px solid rgba(255,255,255,0.2)",
+                color: BRAND_COLORS.ice,
+                border: "1px solid rgba(232, 246, 249, 0.2)",
                 cursor: "pointer",
               }}
             >

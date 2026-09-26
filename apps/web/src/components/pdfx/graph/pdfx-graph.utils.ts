@@ -1,3 +1,4 @@
+import { BRAND_CHART_COLORS } from '../../../lib/brand-colors';
 import { theme } from '../../../lib/pdfx-theme';
 import type { ChartLayout, GraphDataPoint, GraphSeries, GraphWidthOptions } from './pdfx-graph.types';
 
@@ -137,18 +138,9 @@ export function smoothPath(points: { x: number; y: number }[], tension = 0.4): s
   return parts.join(' ');
 }
 
-/** Get the default chart color palette from the theme. */
-export function getDefaultPalette(t: PdfxTheme): string[] {
-  return [
-    t.colors.primary,
-    t.colors.info ?? '#3B82F6',
-    t.colors.success ?? '#22C55E',
-    t.colors.warning ?? '#F59E0B',
-    t.colors.destructive ?? '#EF4444',
-    '#8B5CF6',
-    '#F97316',
-    '#14B8A6',
-  ];
+/** Default chart palette: the VEO brand series, independent of theme text colors. */
+export function getDefaultPalette(): string[] {
+  return [...BRAND_CHART_COLORS];
 }
 
 /** Derive ChartLayout from series data, SVG dimensions, and variant. */

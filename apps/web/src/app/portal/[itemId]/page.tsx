@@ -1,4 +1,7 @@
-import { InstallationTaskDetail } from "@/components/pages/installer-portal";
+import {
+  InstallationTaskDetail,
+  InstallerPortalGuard,
+} from "@/components/pages/installer-portal";
 
 export default async function PortalTaskPage({
   params,
@@ -6,5 +9,9 @@ export default async function PortalTaskPage({
   params: Promise<{ itemId: string }>;
 }) {
   const { itemId } = await params;
-  return <InstallationTaskDetail itemId={itemId} />;
+  return (
+    <InstallerPortalGuard>
+      <InstallationTaskDetail itemId={itemId} />
+    </InstallerPortalGuard>
+  );
 }

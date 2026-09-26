@@ -1,3 +1,5 @@
+import { EMAIL_COLORS } from '../email/brand-colors.js';
+
 export interface AbsenceEmailData {
   id: string;
   fromDate: Date;
@@ -59,10 +61,10 @@ function buildShell(params: {
     .map(
       (row) => `
         <tr>
-          <td style="padding:10px 16px;border-bottom:1px solid #e5e7eb;font-size:13px;color:#6b7280;width:38%;vertical-align:top;">
+          <td style="padding:10px 16px;border-bottom:1px solid ${EMAIL_COLORS.mist};font-size:13px;color:${EMAIL_COLORS.slate};width:38%;vertical-align:top;">
             ${escapeHtml(row.label)}
           </td>
-          <td style="padding:10px 16px;border-bottom:1px solid #e5e7eb;font-size:13px;color:#111827;font-weight:500;">
+          <td style="padding:10px 16px;border-bottom:1px solid ${EMAIL_COLORS.mist};font-size:13px;color:${EMAIL_COLORS.dark};font-weight:500;">
             ${escapeHtml(row.value)}
           </td>
         </tr>`,
@@ -75,36 +77,36 @@ function buildShell(params: {
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
   </head>
-  <body style="margin:0;padding:0;background:#f4f6f8;font-family:Arial,Helvetica,sans-serif;color:#1f2937;">
+  <body style="margin:0;padding:0;background:${EMAIL_COLORS.ice};font-family:Arial,Helvetica,sans-serif;color:${EMAIL_COLORS.dark};">
     <span style="display:none;visibility:hidden;opacity:0;color:transparent;height:0;width:0;font-size:1px;line-height:1px;">${escapeHtml(params.preheader)}</span>
-    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#f4f6f8;padding:32px 0;">
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:${EMAIL_COLORS.ice};padding:32px 0;">
       <tr>
         <td align="center">
-          <table role="presentation" width="600" cellspacing="0" cellpadding="0" style="background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 1px 3px rgba(15,23,42,0.08);">
+          <table role="presentation" width="600" cellspacing="0" cellpadding="0" style="background:${EMAIL_COLORS.white};border-radius:12px;overflow:hidden;box-shadow:0 1px 3px rgba(27,34,41,0.08);">
             <tr>
-              <td style="background:#003366;padding:24px 32px;color:#ffffff;">
-                <p style="margin:0;font-size:12px;letter-spacing:2px;color:#7aa3c8;">VEO SERVICES — RECURSOS HUMANOS</p>
+              <td style="background:${EMAIL_COLORS.dark};padding:24px 32px;color:${EMAIL_COLORS.white};">
+                <p style="margin:0;font-size:12px;letter-spacing:2px;color:${EMAIL_COLORS.mist};">VEO SERVICES — RECURSOS HUMANOS</p>
                 <h1 style="margin:6px 0 0;font-size:22px;">${escapeHtml(params.heading)}</h1>
               </td>
             </tr>
             <tr>
               <td style="padding:28px 32px 8px 32px;">
                 ${params.introHtml}
-                <h2 style="margin:24px 0 12px;font-size:14px;text-transform:uppercase;letter-spacing:1.5px;color:#003366;">
+                <h2 style="margin:24px 0 12px;font-size:14px;text-transform:uppercase;letter-spacing:1.5px;color:${EMAIL_COLORS.gray};">
                   Detalles de la solicitud
                 </h2>
-                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#f9fafb;border-radius:8px;overflow:hidden;border:1px solid #e5e7eb;">
+                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:${EMAIL_COLORS.snow};border-radius:8px;overflow:hidden;border:1px solid ${EMAIL_COLORS.mist};">
                   ${detailsTable}
                 </table>
-                <h2 style="margin:24px 0 12px;font-size:14px;text-transform:uppercase;letter-spacing:1.5px;color:#003366;">
+                <h2 style="margin:24px 0 12px;font-size:14px;text-transform:uppercase;letter-spacing:1.5px;color:${EMAIL_COLORS.gray};">
                   Motivo
                 </h2>
-                <div style="padding:14px 16px;background:#fef9c3;border-left:4px solid #eab308;border-radius:6px;font-size:14px;line-height:1.6;color:#1f2937;white-space:pre-wrap;">
+                <div style="padding:14px 16px;background:${EMAIL_COLORS.ice};border-left:4px solid ${EMAIL_COLORS.gray};border-radius:6px;font-size:14px;line-height:1.6;color:${EMAIL_COLORS.dark};white-space:pre-wrap;">
                   ${escapeHtml(params.reason)}
                 </div>
                 ${
                   params.footerNote
-                    ? `<p style="margin:18px 0 0;font-size:13px;color:#4b5563;line-height:1.5;">
+                    ? `<p style="margin:18px 0 0;font-size:13px;color:${EMAIL_COLORS.slate};line-height:1.5;">
                         ${escapeHtml(params.footerNote)}
                       </p>`
                     : ''
@@ -113,15 +115,15 @@ function buildShell(params: {
             </tr>
             <tr>
               <td style="padding:8px 32px 28px 32px;">
-                <p style="margin:24px 0 0;font-size:13px;color:#6b7280;line-height:1.6;">
+                <p style="margin:24px 0 0;font-size:13px;color:${EMAIL_COLORS.slate};line-height:1.6;">
                   Saludos,<br/>
                   <strong>VEO Services — Recursos Humanos</strong>
                 </p>
               </td>
             </tr>
             <tr>
-              <td style="background:#f9fafb;padding:14px 32px;border-top:1px solid #e5e7eb;">
-                <p style="margin:0;font-size:11px;color:#9ca3af;text-align:center;">
+              <td style="background:${EMAIL_COLORS.snow};padding:14px 32px;border-top:1px solid ${EMAIL_COLORS.mist};">
+                <p style="margin:0;font-size:11px;color:${EMAIL_COLORS.steel};text-align:center;">
                   Este es un correo automático del sistema. Por favor no respondas directamente.
                 </p>
               </td>

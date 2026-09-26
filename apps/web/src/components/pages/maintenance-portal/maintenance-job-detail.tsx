@@ -25,33 +25,34 @@ import { Button } from "@/components/primitives/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { formatBriloShortDate, formatDimensions } from "@/lib/format";
 import { googleMapsUrl, openStreetMapEmbedUrl } from "@/lib/installer-portal";
-import { MAINTENANCE_PORTAL_BASE } from "@/lib/maintenance-portal";
+import { FieldOrderKindBadge } from "@/components/pages/field-portal/field-order-kind-badge";
+import { FieldPortalShell } from "@/components/pages/field-portal/field-portal-shell";
+import { FIELD_PORTAL_BASE } from "@/lib/portal-access";
 import { MaintenancePhotoUploader } from "./maintenance-photo-uploader";
-import { MaintenancePortalShell } from "./maintenance-portal-shell";
 
 export function MaintenanceJobDetail({ jobId }: { jobId: string }) {
   const { data: job, isLoading, isError } = useMyMaintenanceJob(jobId);
 
   if (isLoading) {
     return (
-      <MaintenancePortalShell title="Cargando orden…">
+      <FieldPortalShell title="Cargando orden…">
         <div className="flex items-center justify-center py-20 text-muted-foreground">
           <Loader2 className="size-6 animate-spin" aria-hidden />
         </div>
-      </MaintenancePortalShell>
+      </FieldPortalShell>
     );
   }
 
   if (isError || !job) {
     return (
-      <MaintenancePortalShell
+      <FieldPortalShell
         title="Orden no encontrada"
-        backHref={MAINTENANCE_PORTAL_BASE}
+        backHref={FIELD_PORTAL_BASE}
       >
         <p className="rounded-xl border bg-card p-4 text-sm text-muted-foreground">
           No pudimos cargar esta orden. Verifica que siga asignada a tu cuenta.
         </p>
-      </MaintenancePortalShell>
+      </FieldPortalShell>
     );
   }
 
@@ -71,14 +72,15 @@ function JobView({ job }: { job: MaintenanceJob }) {
   const isClosed = job.status === "COMPLETED" || job.status === "CANCELLED";
 
   return (
-    <MaintenancePortalShell
+    <FieldPortalShell
       title={job.billboardCode ?? job.code}
       subtitle={`${job.code} · ${formatBriloShortDate(job.scheduledAt)}`}
-      backHref={MAINTENANCE_PORTAL_BASE}
+      backHref={FIELD_PORTAL_BASE}
     >
       <div className="flex flex-col gap-4">
         <section className="rounded-xl border bg-card p-4">
           <div className="flex flex-wrap items-center gap-2">
+            <FieldOrderKindBadge kind="maintenance" />
             <MaintenanceStatusBadge status={job.status} />
             <MaintenanceCategoryBadge category={job.category} />
             {job.isOverdue ? (
@@ -271,7 +273,7 @@ function JobView({ job }: { job: MaintenanceJob }) {
           </section>
         ) : null}
       </div>
-    </MaintenancePortalShell>
+    </FieldPortalShell>
   );
 }
 

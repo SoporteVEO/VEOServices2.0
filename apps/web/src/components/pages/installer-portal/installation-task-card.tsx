@@ -1,61 +1,13 @@
-"use client";
-
-import { CalendarClock, ChevronRight, Loader2, MapPin } from "lucide-react";
+import { CalendarClock, ChevronRight, MapPin } from "lucide-react";
 import Link from "next/link";
-import { useMyInstallationTasks } from "@/api/installations/installations.get";
 import type { InstallationTaskListItem } from "@/api/installations/installations.types";
 import { Badge } from "@/components/primitives/ui/badge";
+import { FieldOrderKindBadge } from "@/components/pages/field-portal/field-order-kind-badge";
 import { ProductionOrderStatusBadge } from "@/components/pages/production-orders-shared/production-order-status-badge";
 import { formatBriloShortDate } from "@/lib/format";
 import { installerPortalPath } from "@/lib/installer-portal";
-import { InstallerPortalShell } from "./installer-portal-shell";
-import { usePortalSession } from "./use-portal-session";
 
-export function InstallationTaskList() {
-  const { capabilities } = usePortalSession();
-  const { data: tasks, isLoading, isError } = useMyInstallationTasks();
-
-  const isVulcanizadoOnly =
-    capabilities.canUploadVulcanizado && !capabilities.canUploadInstallation;
-
-  return (
-    <InstallerPortalShell
-      title={isVulcanizadoOnly ? "Mis vulcanizados" : "Mis instalaciones"}
-      subtitle="Vallas asignadas a tu cuenta"
-    >
-      {isLoading ? (
-        <div className="flex items-center justify-center py-20 text-muted-foreground">
-          <Loader2 className="size-6 animate-spin" aria-hidden />
-        </div>
-      ) : isError ? (
-        <p className="rounded-xl border bg-card p-4 text-sm text-muted-foreground">
-          No pudimos cargar tus instalaciones. Intenta de nuevo más tarde.
-        </p>
-      ) : !tasks || tasks.length === 0 ? (
-        <div className="rounded-xl border bg-card p-6 text-center">
-          <p className="text-sm font-medium">
-            {isVulcanizadoOnly
-              ? "No tienes vallas asignadas"
-              : "No tienes instalaciones asignadas"}
-          </p>
-          <p className="pt-1 text-xs text-muted-foreground">
-            Escanea el código QR de una valla para abrir su ficha.
-          </p>
-        </div>
-      ) : (
-        <ul className="flex flex-col gap-2">
-          {tasks.map((task) => (
-            <li key={task.id}>
-              <TaskCard task={task} showLocation={capabilities.canSeeLocation} />
-            </li>
-          ))}
-        </ul>
-      )}
-    </InstallerPortalShell>
-  );
-}
-
-function TaskCard({
+export function InstallationTaskCard({
   task,
   showLocation,
 }: {
@@ -74,6 +26,7 @@ function TaskCard({
     >
       <div className="min-w-0 flex-1 space-y-1.5">
         <div className="flex flex-wrap items-center gap-1.5">
+          <FieldOrderKindBadge kind="installation" />
           <Badge variant="secondary" className="font-mono">
             {task.billboardCode ?? "—"}
           </Badge>

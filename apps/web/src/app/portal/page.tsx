@@ -1,5 +1,5 @@
-import { InstallationTaskList } from "@/components/pages/installer-portal";
+import { FieldOrderList } from "@/components/pages/field-portal";
 
 export default function PortalPage() {
-  return <InstallationTaskList />;
+  return <FieldOrderList />;
 }

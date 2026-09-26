@@ -28,26 +28,29 @@ import {
 } from "@/api/users/users.types";
 import { authClient, clearAuthToken } from "@/lib/auth-client";
 import {
-  fieldPortalsFor,
-  PORTAL_BASE,
-  PORTAL_ICON,
-  PORTAL_LABEL,
+  FIELD_PORTAL_BASE,
+  FIELD_PORTAL_ICON,
+  FIELD_PORTAL_LABEL,
 } from "@/lib/portal-access";
 
 /**
  * A portal-only role reaches the dashboard for a module or two and needs the
  * way back; every other role has no portal to return to.
  */
-function portalGroupsFor(role?: UserRole, subRoles?: SubRole[]): NavGroup[] {
+function portalGroupsFor(role?: UserRole): NavGroup[] {
   if (!isPortalOnlyRole(role)) return [];
-
-  const items = fieldPortalsFor(role, subRoles).map((portal) => ({
-    title: PORTAL_LABEL[portal],
-    href: PORTAL_BASE[portal],
-    icon: PORTAL_ICON[portal],
-  }));
-
-  return items.length > 0 ? [{ label: "Portales", items }] : [];
+  return [
+    {
+      label: "Portal",
+      items: [
+        {
+          title: FIELD_PORTAL_LABEL,
+          href: FIELD_PORTAL_BASE,
+          icon: FIELD_PORTAL_ICON,
+        },
+      ],
+    },
+  ];
 }
 
 export function AppSidebar() {
@@ -61,7 +64,7 @@ export function AppSidebar() {
   const userRole = sessionUser?.role as UserRole | undefined;
   const userSubRoles = (sessionUser?.subRoles as SubRole[] | undefined) ?? [];
   const visibleGroups = [
-    ...portalGroupsFor(userRole, userSubRoles),
+    ...portalGroupsFor(userRole),
     ...filterNavGroupsByAccess(NAV_GROUPS, userRole, userSubRoles),
   ];
 

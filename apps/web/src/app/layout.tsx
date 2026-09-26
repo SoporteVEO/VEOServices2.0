@@ -5,6 +5,7 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { TooltipProvider } from "@/components/primitives/ui/tooltip";
 import { Toaster } from "@/components/ui/sonner";
+import { BRAND_COLORS } from "@/lib/brand-colors";
 import { QueryProvider } from "@/lib/query-provider";
 import { cn } from "@/lib/utils";
 
@@ -39,7 +40,10 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#ffffff",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: BRAND_COLORS.snow },
+    { media: "(prefers-color-scheme: dark)", color: BRAND_COLORS.dark },
+  ],
 };
 
 export default function RootLayout({

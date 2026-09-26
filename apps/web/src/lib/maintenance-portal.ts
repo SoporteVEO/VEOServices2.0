@@ -1,5 +1,5 @@
-export const MAINTENANCE_PORTAL_BASE = "/mantenimiento";
+import { FIELD_PORTAL_BASE } from "@/lib/portal-access";
 
 export function maintenancePortalPath(jobId: string): string {
-  return `${MAINTENANCE_PORTAL_BASE}/${jobId}`;
+  return `${FIELD_PORTAL_BASE}/mantenimiento/${jobId}`;
 }

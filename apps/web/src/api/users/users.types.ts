@@ -43,10 +43,7 @@ export function isMaintenanceFieldRole(
   );
 }
 
-/**
- * Roles with no dashboard at all. A role may grant more than one portal, so
- * callers need `portalHomeFor` rather than a single shared base path.
- */
+/** Roles with no dashboard at all; they live in "Mis órdenes". */
 export function isPortalOnlyRole(role: UserRole | undefined | null): boolean {
   return isFieldRole(role) || isMaintenanceFieldRole(role);
 }

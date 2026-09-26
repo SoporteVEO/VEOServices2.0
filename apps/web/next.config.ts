@@ -17,6 +17,16 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  async redirects() {
+    return [
+      { source: "/mantenimiento", destination: "/portal", permanent: false },
+      {
+        source: "/mantenimiento/:jobId",
+        destination: "/portal/mantenimiento/:jobId",
+        permanent: false,
+      },
+    ];
+  },
   async headers() {
     return [
       {

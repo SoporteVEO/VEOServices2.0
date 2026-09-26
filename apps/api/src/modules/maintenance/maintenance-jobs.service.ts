@@ -438,7 +438,7 @@ export class MaintenanceJobsService {
     void this.push.sendToUser(userId, {
       title: 'Nueva orden de mantenimiento',
       body: place ? `${job.code} · ${place}` : job.code,
-      url: `/mantenimiento/${job.id}`,
+      url: `/portal/mantenimiento/${job.id}`,
       tag: `maintenance-${job.id}`,
     });
   }
@@ -734,7 +734,7 @@ export class MaintenanceJobsService {
   ): Prisma.MaintenanceJobWhereInput {
     const where: Prisma.MaintenanceJobWhereInput = {};
 
-    if (query.status) where.status = query.status;
+    where.status = query.status ?? { not: MaintenanceJobStatus.CANCELLED };
     if (query.categoryId) where.categoryId = query.categoryId;
     if (query.assignedUserId) where.assignedUserId = query.assignedUserId;
 

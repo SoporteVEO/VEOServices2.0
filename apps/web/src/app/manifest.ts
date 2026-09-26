@@ -1,5 +1,7 @@
 import type { MetadataRoute } from "next";
 
+import { BRAND_COLORS } from "@/lib/brand-colors";
+
 export default function manifest(): MetadataRoute.Manifest {
   return {
     id: "/portal",
@@ -10,8 +12,8 @@ export default function manifest(): MetadataRoute.Manifest {
     scope: "/",
     display: "standalone",
     orientation: "portrait",
-    background_color: "#ffffff",
-    theme_color: "#ffffff",
+    background_color: BRAND_COLORS.snow,
+    theme_color: BRAND_COLORS.dark,
     lang: "es",
     icons: [
       { src: "/icons/icon-192.png", sizes: "192x192", type: "image/png" },

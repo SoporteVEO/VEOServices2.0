@@ -468,7 +468,7 @@ export function PdfGraph({
 }: GraphProps) {
   const theme = usePdfxTheme();
   const styles = useSafeMemo(() => createGraphStyles(theme), [theme]);
-  const palette = colors ?? getDefaultPalette(theme);
+  const palette = colors ?? getDefaultPalette();
   const series = normalizeData(data);
 
   const width = useSafeMemo(() => {

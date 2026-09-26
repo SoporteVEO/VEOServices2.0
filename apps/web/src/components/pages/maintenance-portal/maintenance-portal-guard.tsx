@@ -8,10 +8,10 @@ import {
   type UserRole,
 } from "@/api/users/users.types";
 import { authClient } from "@/lib/auth-client";
-import { canAccessMaintenancePortal, portalHomeFor } from "@/lib/portal-access";
+import { canAccessMaintenancePortal, portalHome } from "@/lib/portal-access";
 
 /**
- * The maintenance portal is for the maintenance field roles. Admins and users
+ * Guards a maintenance job, meant for the maintenance field roles. Admins and users
  * holding the MANTENIMIENTO sub-role can open it too so a supervisor can see
  * exactly what a technician sees.
  */
@@ -33,9 +33,7 @@ export function MaintenancePortalGuard({ children }: { children: ReactNode }) {
   if (!isPending && !session) {
     redirectTo = `/?redirect=${encodeURIComponent(pathname)}`;
   } else if (!isPending && !isAllowed) {
-    redirectTo = isPortalOnlyRole(role)
-      ? portalHomeFor(role, subRoles)
-      : "/dashboard";
+    redirectTo = isPortalOnlyRole(role) ? portalHome() : "/dashboard";
   }
 
   useEffect(() => {

@@ -20,11 +20,11 @@ export const MAINTENANCE_STATUS_STYLES: Record<MaintenanceJobStatus, string> = {
   CANCELLED: "border-red-500/50 bg-red-500/10 text-red-700 dark:text-red-400",
 };
 
+/** Cancelled jobs are hidden from the dashboard list, so they are not a filter option. */
 export const MAINTENANCE_STATUS_ORDER: MaintenanceJobStatus[] = [
   "PENDING",
   "IN_PROGRESS",
   "COMPLETED",
-  "CANCELLED",
 ];
 
 export const MAINTENANCE_EVENT_LABELS: Record<MaintenanceEventType, string> = {

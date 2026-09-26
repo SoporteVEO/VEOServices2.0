@@ -13,11 +13,12 @@ import {
   TableRow,
 } from "@/components/pdfx/table/pdfx-table";
 import { Text } from "@/components/pdfx/text/pdfx-text";
+import { BRAND_COLORS } from "@/lib/brand-colors";
 import { PdfxThemeProvider } from "@/lib/pdfx-theme-context";
 
 const pagePad: Style = { padding: 32 };
-const subtotalRowStyle: Style = { backgroundColor: "#f3f4f6" };
-const groupTotalRowStyle: Style = { backgroundColor: "#e5e7eb" };
+const subtotalRowStyle: Style = { backgroundColor: BRAND_COLORS.ice };
+const groupTotalRowStyle: Style = { backgroundColor: BRAND_COLORS.mist };
 
 const COL_WIDTHS = {
   customer: "44%",
@@ -159,7 +160,7 @@ function GroupBanner({
       wrap={false}
       style={{
         flexDirection: "row",
-        backgroundColor: "#dbeafe",
+        backgroundColor: BRAND_COLORS.ice,
         paddingVertical: 4,
         paddingHorizontal: 6,
         marginTop: 6,
@@ -208,14 +209,14 @@ export function SalesByCostCenterPdfDocument({
               <View
                 wrap={false}
                 style={{
-                  backgroundColor: "#1e3a8a",
+                  backgroundColor: BRAND_COLORS.dark,
                   paddingVertical: 5,
                   paddingHorizontal: 6,
                   marginTop: 8,
                   marginBottom: 4,
                 }}
               >
-                <Text variant="sm" weight="bold" color="#ffffff" noMargin>
+                <Text variant="sm" weight="bold" color={BRAND_COLORS.white} noMargin>
                   Centro de Costo: {cc.costCenterName}
                 </Text>
               </View>
@@ -247,7 +248,7 @@ export function SalesByCostCenterPdfDocument({
                               align="right"
                               style={
                                 row.total < 0
-                                  ? { color: "#b91c1c" }
+                                  ? { color: BRAND_COLORS.red }
                                   : undefined
                               }
                             >
@@ -312,7 +313,7 @@ export function SalesByCostCenterPdfDocument({
                 style={{
                   flexDirection: "row",
                   justifyContent: "space-between",
-                  backgroundColor: "#bfdbfe",
+                  backgroundColor: BRAND_COLORS.mist,
                   paddingVertical: 4,
                   paddingHorizontal: 6,
                   marginTop: 4,
@@ -333,16 +334,16 @@ export function SalesByCostCenterPdfDocument({
             style={{
               flexDirection: "row",
               justifyContent: "space-between",
-              backgroundColor: "#1e3a8a",
+              backgroundColor: BRAND_COLORS.dark,
               paddingVertical: 6,
               paddingHorizontal: 6,
               marginTop: 12,
             }}
           >
-            <Text variant="sm" weight="bold" color="#ffffff" noMargin>
+            <Text variant="sm" weight="bold" color={BRAND_COLORS.white} noMargin>
               Totales Generales:
             </Text>
-            <Text variant="sm" weight="bold" color="#ffffff" noMargin>
+            <Text variant="sm" weight="bold" color={BRAND_COLORS.white} noMargin>
               {formatCurrency(grandTotal)}
             </Text>
           </View>

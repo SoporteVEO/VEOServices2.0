@@ -22,11 +22,12 @@ export async function getMyInstallationTasks(): Promise<
   return response.data;
 }
 
-export function useMyInstallationTasks() {
+export function useMyInstallationTasks({ enabled = true } = {}) {
   return useQuery({
     queryKey: installationTaskKeys.mine,
     queryFn: getMyInstallationTasks,
     staleTime: STALE_TIME,
+    enabled,
   });
 }
 

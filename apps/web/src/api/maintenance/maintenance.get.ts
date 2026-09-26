@@ -145,11 +145,12 @@ export async function getMyMaintenanceJobs(): Promise<
   return response.data;
 }
 
-export function useMyMaintenanceJobs() {
+export function useMyMaintenanceJobs({ enabled = true } = {}) {
   return useQuery({
     queryKey: maintenanceKeys.portalJobs,
     queryFn: getMyMaintenanceJobs,
     staleTime: STALE_TIME,
+    enabled,
   });
 }
 

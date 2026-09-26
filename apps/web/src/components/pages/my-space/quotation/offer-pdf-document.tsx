@@ -13,6 +13,7 @@ import {
   TableRow,
 } from "@/components/pdfx/table/pdfx-table";
 import { Text } from "@/components/pdfx/text/pdfx-text";
+import { BRAND_COLORS } from "@/lib/brand-colors";
 import { PdfxThemeProvider } from "@/lib/pdfx-theme-context";
 import { formatHumanDateRange, formatHumanDayDate } from "@/lib/format";
 import {
@@ -42,17 +43,18 @@ const PAGE_STYLE_FLEX: Style = {
   flexDirection: "column",
 };
 
-const BRAND_PRIMARY = "#0bbac8";
-const BRAND_PINK = "#e3326b";
-const BRAND_GREEN = "#a8cf3a";
-const HEADER_BG = "#f3f4f6";
-const FOOTER_TEXT = "#374151";
-const LABEL_COLOR = "#6b7280";
+const BRAND_PRIMARY = BRAND_COLORS.dark;
+const BRAND_SECONDARY = BRAND_COLORS.gray;
+const BRAND_SIGNAL = BRAND_COLORS.lime;
+const HEADER_BG = BRAND_COLORS.ice;
+const FOOTER_TEXT = BRAND_COLORS.darkSurface;
+const LABEL_COLOR = BRAND_COLORS.slate;
+const RULE_COLOR = BRAND_COLORS.mist;
 
 const TOTALS_LABEL_W = "44%";
 const TOTALS_VAL_W = "28%";
 
-const ROW_DETAIL_COLOR = "#6b7280";
+const ROW_DETAIL_COLOR = BRAND_COLORS.slate;
 
 /**
  * Every items table reads left to right as código → descripción → montos →
@@ -141,7 +143,7 @@ function MetaTopRow({
         <Text variant="sm" color={FOOTER_TEXT} noMargin>
           {formatHumanDayDate(generatedAt)}
         </Text>
-        <Text variant="sm" weight="bold" color={BRAND_PINK} noMargin>
+        <Text variant="sm" weight="bold" color={BRAND_SECONDARY} noMargin>
           {offerNumber}
         </Text>
       </View>
@@ -160,7 +162,7 @@ function IntroSection() {
           height: 3,
           width: 90,
           marginHorizontal: "auto",
-          backgroundColor: BRAND_GREEN,
+          backgroundColor: BRAND_SIGNAL,
           marginTop: 4,
           marginBottom: 10,
           borderRadius: 2,
@@ -175,7 +177,7 @@ function IntroSection() {
         variant="sm"
         align="center"
         weight="semibold"
-        color={BRAND_PINK}
+        color={BRAND_SECONDARY}
         style={{ marginTop: 4 }}
       >
         ¡Queremos que tu marca Impacte en GRANDE!
@@ -192,7 +194,7 @@ function ContactField({ label, value }: { label: string; value: string }) {
         alignItems: "center",
         paddingVertical: 3,
         borderBottomWidth: 0.6,
-        borderBottomColor: "#d1d5db",
+        borderBottomColor: RULE_COLOR,
       }}
     >
       <View style={{ width: "28%" }}>
@@ -258,7 +260,7 @@ function HeaderCellLabel({
     <Text
       variant="xs"
       weight="bold"
-      color="#ffffff"
+      color={BRAND_COLORS.white}
       noMargin
       // Smaller than the body so long labels like ARRENDAMIENTO fit on one
       // line inside a narrow money column instead of hyphenating.
@@ -659,14 +661,14 @@ function TotalsRow({
         paddingHorizontal: 6,
         backgroundColor: highlight ? BRAND_PRIMARY : undefined,
         borderBottomWidth: highlight ? 0 : 0.5,
-        borderBottomColor: "#e5e7eb",
+        borderBottomColor: RULE_COLOR,
       }}
     >
       <View style={{ width: TOTALS_LABEL_W, justifyContent: "center" }}>
         <Text
           variant="xs"
           weight={highlight ? "bold" : "semibold"}
-          color={highlight ? "#ffffff" : FOOTER_TEXT}
+          color={highlight ? BRAND_COLORS.white : FOOTER_TEXT}
           align="right"
           noMargin
         >
@@ -677,7 +679,7 @@ function TotalsRow({
         <Text
           variant="xs"
           weight={highlight ? "bold" : "medium"}
-          color={highlight ? "#ffffff" : FOOTER_TEXT}
+          color={highlight ? BRAND_COLORS.white : FOOTER_TEXT}
           noMargin
         >
           {formatCurrency(left)}
@@ -687,7 +689,7 @@ function TotalsRow({
         <Text
           variant="xs"
           weight={highlight ? "bold" : "medium"}
-          color={highlight ? "#ffffff" : FOOTER_TEXT}
+          color={highlight ? BRAND_COLORS.white : FOOTER_TEXT}
           noMargin
         >
           {formatCurrency(right)}
@@ -802,7 +804,7 @@ function Footer() {
         alignItems: "center",
       }}
     >
-      <Text variant="xs" weight="bold" color={BRAND_PINK} noMargin>
+      <Text variant="xs" weight="bold" color={BRAND_SECONDARY} noMargin>
         ARHEDES S.A de C.V
       </Text>
       <Text variant="xs" color={LABEL_COLOR} noMargin>

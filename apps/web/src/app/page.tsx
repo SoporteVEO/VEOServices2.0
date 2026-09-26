@@ -3,13 +3,9 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
-import {
-  isPortalOnlyRole,
-  type SubRole,
-  type UserRole,
-} from "@/api/users/users.types";
+import { isPortalOnlyRole, type UserRole } from "@/api/users/users.types";
 import { authClient } from "@/lib/auth-client";
-import { portalHomeFor } from "@/lib/portal-access";
+import { portalHome } from "@/lib/portal-access";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -24,13 +20,10 @@ import {
  * otherwise sends portal-only roles straight to their portal since they have
  * no dashboard.
  */
-function resolveLandingPath(
-  role: UserRole | undefined,
-  subRoles: SubRole[],
-): string {
+function resolveLandingPath(role: UserRole | undefined): string {
   const redirect = new URLSearchParams(window.location.search).get("redirect");
   if (redirect?.startsWith("/")) return redirect;
-  return isPortalOnlyRole(role) ? portalHomeFor(role, subRoles) : "/dashboard";
+  return isPortalOnlyRole(role) ? portalHome() : "/dashboard";
 }
 
 export default function SignInPage() {
@@ -56,10 +49,8 @@ export default function SignInPage() {
       return;
     }
 
-    const user = data?.user as
-      | { role?: UserRole; subRoles?: SubRole[] }
-      | undefined;
-    router.push(resolveLandingPath(user?.role, user?.subRoles ?? []));
+    const user = data?.user as { role?: UserRole } | undefined;
+    router.push(resolveLandingPath(user?.role));
   }
 
   return (

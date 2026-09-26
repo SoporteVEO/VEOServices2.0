@@ -1,14 +1,17 @@
 import type { AvailableBillboardReport } from "@/api/billboards/billboards.types";
 import { getBillboardImageUrl } from "@/api/billboards/billboards.get";
 import { getMapsUrl } from "./utils";
+import { BRAND_COLORS, pptxColor } from "./brand-colors";
 import { formatPrice, formatDimensions } from "./format";
 
-const BRAND_DARK = "003366";
-const BRAND_ACCENT = "0066CC";
-const LABEL_COLOR = "003366";
-const VALUE_COLOR = "333333";
-const WHITE = "FFFFFF";
-const LIGHT_BG = "F0F4F8";
+const BRAND_DARK = pptxColor(BRAND_COLORS.dark);
+const BRAND_ACCENT = pptxColor(BRAND_COLORS.gray);
+const LABEL_COLOR = pptxColor(BRAND_COLORS.gray);
+const VALUE_COLOR = pptxColor(BRAND_COLORS.dark);
+const WHITE = pptxColor(BRAND_COLORS.white);
+const LIGHT_BG = pptxColor(BRAND_COLORS.ice);
+const PLACEHOLDER_TEXT = pptxColor(BRAND_COLORS.steel);
+const PLACEHOLDER_BORDER = pptxColor(BRAND_COLORS.mist);
 
 const SLIDE_W = 13.33;
 const SLIDE_H = 7.5;
@@ -187,11 +190,11 @@ function addBillboardSlide(pptx: any, bb: AvailableBillboardReport, imageBase64:
       h: imgH,
       fill: { color: LIGHT_BG },
       fontSize: 18,
-      color: "999999",
+      color: PLACEHOLDER_TEXT,
       align: "center",
       valign: "middle",
       fontFace: "Arial",
-      line: { color: "DDDDDD", width: 1 },
+      line: { color: PLACEHOLDER_BORDER, width: 1 },
     });
   }
 

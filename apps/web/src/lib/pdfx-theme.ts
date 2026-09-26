@@ -4,6 +4,8 @@
 // This module is the single source of truth for PDFX styling tokens.
 // Update the exported `theme` object to customize component styles.
 
+import { BRAND_COLORS } from "@/lib/brand-colors";
+
 interface PdfxTheme {
   name: string;
   primitives: {
@@ -105,18 +107,18 @@ export const theme: PdfxTheme = {
 
   // Semantic colors. Values must be valid for react-pdf.
   colors: {
-    foreground: "#18181b",
-    background: "#ffffff",
-    muted: "#f4f4f5",
-    mutedForeground: "#71717a",
-    primary: "#18181b",
-    primaryForeground: "#ffffff",
-    border: "#e4e4e7",
-    accent: "#3b82f6",
-    destructive: "#dc2626",
-    success: "#16a34a",
-    warning: "#d97706",
-    info: "#0ea5e9",
+    foreground: BRAND_COLORS.dark,
+    background: BRAND_COLORS.white,
+    muted: BRAND_COLORS.ice,
+    mutedForeground: BRAND_COLORS.slate,
+    primary: BRAND_COLORS.dark,
+    primaryForeground: BRAND_COLORS.white,
+    border: BRAND_COLORS.mist,
+    accent: BRAND_COLORS.gray,
+    destructive: BRAND_COLORS.red,
+    success: BRAND_COLORS.limeDeep,
+    warning: "#B7791F",
+    info: BRAND_COLORS.gray,
   },
 
   // Typography defaults.

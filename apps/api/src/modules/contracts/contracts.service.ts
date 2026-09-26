@@ -10,6 +10,7 @@ import {
   type PresignedPutResult,
 } from '../s3-images/s3-storage.service.js';
 import { EmailService, type EmailAttachment } from '../email/email.service.js';
+import { EMAIL_COLORS } from '../email/brand-colors.js';
 import { NotificationsService } from '../notifications/notifications.service.js';
 import { NotificationStatus, ReportType, S3ImageType } from '@prisma/client';
 import type { EndingSoonContract } from './entities/ending-soon-contract.js';
@@ -1212,14 +1213,14 @@ function buildMaintenanceReportEmailHtml(params: {
 
   return `<!doctype html>
 <html lang="es">
-  <body style="margin:0;padding:0;background:#f4f6f8;font-family:Arial,Helvetica,sans-serif;color:#1f2937;">
-    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#f4f6f8;padding:32px 0;">
+  <body style="margin:0;padding:0;background:${EMAIL_COLORS.ice};font-family:Arial,Helvetica,sans-serif;color:${EMAIL_COLORS.dark};">
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:${EMAIL_COLORS.ice};padding:32px 0;">
       <tr>
         <td align="center">
-          <table role="presentation" width="600" cellspacing="0" cellpadding="0" style="background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 1px 3px rgba(15,23,42,0.08);">
+          <table role="presentation" width="600" cellspacing="0" cellpadding="0" style="background:${EMAIL_COLORS.white};border-radius:12px;overflow:hidden;box-shadow:0 1px 3px rgba(27,34,41,0.08);">
             <tr>
-              <td style="background:#003366;padding:24px 32px;color:#ffffff;">
-                <p style="margin:0;font-size:12px;letter-spacing:2px;color:#7aa3c8;">VEO MEDIA</p>
+              <td style="background:${EMAIL_COLORS.dark};padding:24px 32px;color:${EMAIL_COLORS.white};">
+                <p style="margin:0;font-size:12px;letter-spacing:2px;color:${EMAIL_COLORS.mist};">VEO MEDIA</p>
                 <h1 style="margin:6px 0 0;font-size:22px;">${escapeHtml(params.heading)}</h1>
               </td>
             </tr>
@@ -1233,14 +1234,14 @@ function buildMaintenanceReportEmailHtml(params: {
                 </p>
                 ${
                   params.description
-                    ? `<p style="margin:0 0 16px;font-size:14px;line-height:1.6;color:#4b5563;">
+                    ? `<p style="margin:0 0 16px;font-size:14px;line-height:1.6;color:${EMAIL_COLORS.slate};">
                         <em>${escapeHtml(params.description)}</em>
                       </p>`
                     : ''
                 }
-                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin:16px 0;background:#f0f4f8;border-radius:8px;">
+                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin:16px 0;background:${EMAIL_COLORS.ice};border-radius:8px;">
                   <tr>
-                    <td style="padding:14px 16px;font-size:13px;color:#003366;">
+                    <td style="padding:14px 16px;font-size:13px;color:${EMAIL_COLORS.dark};">
                       <strong>Contrato:</strong> ${escapeHtml(params.contractNumber)}<br/>
                       <strong>Periodo:</strong> ${escapeHtml(params.period)}
                     </td>
@@ -1251,15 +1252,15 @@ function buildMaintenanceReportEmailHtml(params: {
             </tr>
             <tr>
               <td style="padding:8px 32px 28px 32px;">
-                <p style="margin:24px 0 0;font-size:13px;color:#6b7280;line-height:1.6;">
+                <p style="margin:24px 0 0;font-size:13px;color:${EMAIL_COLORS.slate};line-height:1.6;">
                   Saludos cordiales,<br/>
                   <strong>Equipo VEO Media</strong>
                 </p>
               </td>
             </tr>
             <tr>
-              <td style="background:#f9fafb;padding:14px 32px;border-top:1px solid #e5e7eb;">
-                <p style="margin:0;font-size:11px;color:#9ca3af;text-align:center;">
+              <td style="background:${EMAIL_COLORS.snow};padding:14px 32px;border-top:1px solid ${EMAIL_COLORS.mist};">
+                <p style="margin:0;font-size:11px;color:${EMAIL_COLORS.steel};text-align:center;">
                   Este es un correo automático. Por favor no responder a esta dirección.
                 </p>
               </td>
@@ -1288,14 +1289,14 @@ function buildDownloadLinkSection(params: {
                 </p>
                 <table role="presentation" cellspacing="0" cellpadding="0" style="margin:0 0 16px;">
                   <tr>
-                    <td style="background:#003366;border-radius:8px;">
-                      <a href="${escapeHtmlAttr(params.downloadUrl)}" style="display:inline-block;padding:12px 24px;font-size:14px;font-weight:bold;color:#ffffff;text-decoration:none;">
+                    <td style="background:${EMAIL_COLORS.lime};border-radius:8px;">
+                      <a href="${escapeHtmlAttr(params.downloadUrl)}" style="display:inline-block;padding:12px 24px;font-size:14px;font-weight:bold;color:${EMAIL_COLORS.dark};text-decoration:none;">
                         Descargar reporte (.pptx)
                       </a>
                     </td>
                   </tr>
                 </table>
-                <p style="margin:0 0 8px;font-size:12px;line-height:1.6;color:#6b7280;">
+                <p style="margin:0 0 8px;font-size:12px;line-height:1.6;color:${EMAIL_COLORS.slate};">
                   El enlace estará disponible por ${escapeHtml(expiresLabel)}.
                 </p>`;
 }

@@ -19,10 +19,11 @@ import type { InstallationTask } from "@/api/installations/installations.types";
 import { Badge } from "@/components/primitives/ui/badge";
 import { ProductionOrderStatusBadge } from "@/components/pages/production-orders-shared/production-order-status-badge";
 import { formatBriloShortDate, formatDimensions } from "@/lib/format";
-import { INSTALLER_PORTAL_BASE } from "@/lib/installer-portal";
+import { FieldOrderKindBadge } from "@/components/pages/field-portal/field-order-kind-badge";
+import { FieldPortalShell } from "@/components/pages/field-portal/field-portal-shell";
+import { FIELD_PORTAL_BASE } from "@/lib/portal-access";
 import { InstallationLocationCard } from "./installation-location-card";
 import { InstallationPhotoUploader } from "./installation-photo-uploader";
-import { InstallerPortalShell } from "./installer-portal-shell";
 import { usePortalSession } from "./use-portal-session";
 
 export function InstallationTaskDetail({ itemId }: { itemId: string }) {
@@ -30,25 +31,25 @@ export function InstallationTaskDetail({ itemId }: { itemId: string }) {
 
   if (isLoading) {
     return (
-      <InstallerPortalShell title="Cargando instalación…">
+      <FieldPortalShell title="Cargando instalación…">
         <div className="flex items-center justify-center py-20 text-muted-foreground">
           <Loader2 className="size-6 animate-spin" aria-hidden />
         </div>
-      </InstallerPortalShell>
+      </FieldPortalShell>
     );
   }
 
   if (isError || !task) {
     return (
-      <InstallerPortalShell
+      <FieldPortalShell
         title="Instalación no encontrada"
-        backHref={INSTALLER_PORTAL_BASE}
+        backHref={FIELD_PORTAL_BASE}
       >
         <p className="rounded-xl border bg-card p-4 text-sm text-muted-foreground">
           No pudimos cargar esta instalación. Verifica el código QR o comunícate
           con el equipo de producción.
         </p>
-      </InstallerPortalShell>
+      </FieldPortalShell>
     );
   }
 
@@ -69,14 +70,15 @@ function TaskView({ task }: { task: InstallationTask }) {
     : null;
 
   return (
-    <InstallerPortalShell
+    <FieldPortalShell
       title={task.billboardCode ?? "Valla sin código"}
       subtitle={`${task.offerNumber} · ${campaign}`}
-      backHref={INSTALLER_PORTAL_BASE}
+      backHref={FIELD_PORTAL_BASE}
     >
       <div className="flex flex-col gap-4">
         <section className="rounded-xl border bg-card p-4">
           <div className="flex flex-wrap items-center gap-2">
+            <FieldOrderKindBadge kind="installation" />
             <ProductionOrderStatusBadge status={task.status} />
             <Badge variant="secondary" className="gap-1 font-mono">
               <Tag className="size-3" aria-hidden />
@@ -184,7 +186,7 @@ function TaskView({ task }: { task: InstallationTask }) {
           </section>
         ) : null}
       </div>
-    </InstallerPortalShell>
+    </FieldPortalShell>
   );
 }
 

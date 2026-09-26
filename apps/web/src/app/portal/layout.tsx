@@ -1,9 +1,9 @@
 import type { Metadata, Viewport } from "next";
-import { InstallerPortalGuard } from "@/components/pages/installer-portal";
+import { FieldPortalGuard } from "@/components/pages/field-portal";
 
 export const metadata: Metadata = {
-  title: "Portal de instalación · Veo",
-  description: "Registro de instalaciones de vallas estáticas",
+  title: "Mis órdenes · Veo",
+  description: "Instalaciones y mantenimientos de vallas asignados",
 };
 
 export const viewport: Viewport = {
@@ -15,5 +15,5 @@ export const viewport: Viewport = {
 export default function PortalLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
-  return <InstallerPortalGuard>{children}</InstallerPortalGuard>;
+  return <FieldPortalGuard>{children}</FieldPortalGuard>;
 }

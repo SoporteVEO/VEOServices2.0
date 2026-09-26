@@ -16,10 +16,9 @@ import {
 } from "@/components/primitives/ui/sheet";
 import { authClient } from "@/lib/auth-client";
 import {
-  fieldPortalsFor,
-  PORTAL_BASE,
-  PORTAL_ICON,
-  PORTAL_LABEL,
+  FIELD_PORTAL_BASE,
+  FIELD_PORTAL_ICON,
+  FIELD_PORTAL_LABEL,
 } from "@/lib/portal-access";
 import { canAccessItem, IMAGES_NAV_ITEM } from "@/lib/routes";
 import { cn } from "@/lib/utils";
@@ -39,16 +38,18 @@ function sectionsFor(
   role: UserRole | undefined,
   subRoles: SubRole[],
 ): DestinationSection[] {
-  const sections: DestinationSection[] = [];
-
-  const portals = fieldPortalsFor(role, subRoles).map((portal) => ({
-    label: PORTAL_LABEL[portal],
-    href: PORTAL_BASE[portal],
-    icon: PORTAL_ICON[portal],
-  }));
-  if (portals.length > 0) {
-    sections.push({ label: "Portales", destinations: portals });
-  }
+  const sections: DestinationSection[] = [
+    {
+      label: "Portal",
+      destinations: [
+        {
+          label: FIELD_PORTAL_LABEL,
+          href: FIELD_PORTAL_BASE,
+          icon: FIELD_PORTAL_ICON,
+        },
+      ],
+    },
+  ];
 
   if (canAccessItem(IMAGES_NAV_ITEM, role, subRoles)) {
     sections.push({
@@ -67,8 +68,8 @@ function sectionsFor(
 }
 
 /**
- * Side panel listing everywhere a field user may go: the portals their role
- * grants plus the dashboard modules they can open. Renders nothing when there
+ * Side panel listing everywhere a field user may go: their portal plus the
+ * dashboard modules they can open. Renders nothing when there
  * is only one destination, so the header stays uncluttered for the roles that
  * never leave their portal.
  */

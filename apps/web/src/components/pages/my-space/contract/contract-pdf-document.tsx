@@ -1,5 +1,6 @@
 import { Document, Page, StyleSheet, Text, View } from "@react-pdf/renderer";
 import type { OfferContractData } from "@/api/offers/offers.types";
+import { BRAND_COLORS } from "@/lib/brand-colors";
 import {
   CONTRACT_FONT_FAMILY,
   registerContractFonts,
@@ -31,7 +32,8 @@ const TABLE_SIZE = 9;
 const TABLE_LINE = 1.4;
 const TABLE_WIDTH = 468.1;
 const BORDER = 0.5;
-const HEADER_FILL = "#E7E6E6";
+const HEADER_FILL = BRAND_COLORS.ice;
+const INK = BRAND_COLORS.dark;
 
 /** Widths of the four-column summary block, left to right. */
 const SUMMARY_COLS = [129.98, 104.07, 144.98, 89.07];
@@ -44,7 +46,7 @@ const styles = StyleSheet.create({
     fontFamily: CONTRACT_FONT_FAMILY,
     fontSize: BODY_SIZE,
     lineHeight: BODY_LINE,
-    color: "#000000",
+    color: INK,
     paddingTop: 35.4,
     paddingBottom: 54,
     paddingLeft: 54,
@@ -57,7 +59,7 @@ const styles = StyleSheet.create({
   },
   headerRule: {
     borderBottomWidth: 0.72,
-    borderBottomColor: "#000000",
+    borderBottomColor: INK,
     marginBottom: 13.1,
   },
   dateline: {
@@ -82,7 +84,7 @@ const styles = StyleSheet.create({
     width: TABLE_WIDTH,
     borderTopWidth: BORDER,
     borderLeftWidth: BORDER,
-    borderColor: "#000000",
+    borderColor: INK,
     borderStyle: "solid",
   },
   row: {
@@ -92,7 +94,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     borderRightWidth: BORDER,
     borderBottomWidth: BORDER,
-    borderColor: "#000000",
+    borderColor: INK,
     borderStyle: "solid",
     paddingLeft: 5.76,
     paddingRight: 5.76,
