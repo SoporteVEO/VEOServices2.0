@@ -86,24 +86,6 @@ const baseColumns: ColumnDef<AvailableBillboardListing>[] = [
   },
 ];
 
-const discountColumn: ColumnDef<AvailableBillboardListing> = {
-  accessorKey: "availableDiscount",
-  header: () => <span className="text-right block">Descuento</span>,
-  cell: ({ row }) => {
-    const discount = row.original.availableDiscount;
-    if (discount == null || discount === 0) {
-      return null;
-    }
-    return (
-      <div className="flex justify-end">
-        <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10 border-transparent tabular-nums">
-          -{discount}%
-        </Badge>
-      </div>
-    );
-  },
-};
-
 const availabilityColumn: ColumnDef<AvailableBillboardListing> = {
   accessorKey: "isAvailable",
   header: () => <span className="text-right block">Disponibilidad</span>,
@@ -185,7 +167,7 @@ export function StaticBillboardsTable({
     () =>
       showAvailabilityColumn
         ? [...baseColumns, availabilityColumn]
-        : [...baseColumns, discountColumn],
+        : baseColumns,
     [showAvailabilityColumn],
   );
 

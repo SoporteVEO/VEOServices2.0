@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { MapPin, Percent } from "lucide-react";
+import { MapPin } from "lucide-react";
 import ImageViewerMotion from "@/components/commerce-ui/image-viewer-motion";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/primitives/ui/skeleton";
@@ -71,13 +71,6 @@ export function VallasCard({ billboard: b }: { billboard: AvailableBillboard }) 
             Estática
           </Badge>
         </div>
-        {b.availableDiscount != null && b.availableDiscount > 0 && (
-          <div className="absolute right-3 top-2.5 z-20">
-            <Badge className="gap-1 border-transparent bg-red-500/90 text-white shadow-sm backdrop-blur-sm hover:bg-red-500/90">
-              <Percent className="size-3" />-{b.availableDiscount}%
-            </Badge>
-          </div>
-        )}
       </div>
 
       <div className="flex flex-1 flex-col p-5">
@@ -101,22 +94,9 @@ export function VallasCard({ billboard: b }: { billboard: AvailableBillboard }) 
             <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
               Inversión
             </span>
-            {b.availableDiscount != null &&
-            b.availableDiscount > 0 &&
-            b.price != null ? (
-              <div className="flex items-baseline gap-2 pr-1">
-                <span className="text-xl font-bold tabular-nums text-foreground">
-                  {formatMoney(b.totalPrice)}
-                </span>
-                <span className="text-sm tabular-nums text-red-500 line-through">
-                  {formatMoney(b.price)}
-                </span>
-              </div>
-            ) : (
-              <span className="text-xl font-bold tabular-nums text-foreground">
-                {formatMoney(b.totalPrice ?? b.price)}
-              </span>
-            )}
+            <span className="text-xl font-bold tabular-nums text-foreground">
+              {formatMoney(b.price)}
+            </span>
           </div>
 
           <Button

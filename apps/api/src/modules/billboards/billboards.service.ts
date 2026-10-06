@@ -566,27 +566,6 @@ interface BriloBillboardContractHistoryRow {
   ClienteEmail: string | null;
 }
 
-function applyDiscount(
-  price: number | null,
-  discount: number | null,
-): number | null {
-  if (price == null) return null;
-  if (discount != null && discount > 0) {
-    return Math.round(price * (1 - discount / 100) * 100) / 100;
-  }
-  return price;
-}
-
-function getDiscountForMonthsWithoutPurchase(
-  monthsWithoutPurchase: number | null,
-): number | null {
-  if (monthsWithoutPurchase == null) return null;
-  if (monthsWithoutPurchase >= 3) return 45;
-  if (monthsWithoutPurchase === 2) return 30;
-  if (monthsWithoutPurchase === 1) return 20;
-  return null;
-}
-
 function calendarMonthsBetween(from: Date, to: Date): number {
   return (
     (to.getFullYear() - from.getFullYear()) * 12 +
@@ -971,7 +950,6 @@ export class BillboardsService {
       const billboardId = Number(r.caraId);
 
       let monthsWithoutPurchase: number | null;
-      let availableDiscount: number | null;
 
       if (includeUnavailable) {
         const contracts = contractsByBillboard?.get(billboardId) ?? [];
@@ -980,7 +958,6 @@ export class BillboardsService {
           from,
           to,
         );
-        availableDiscount = null;
       } else {
         const lastDate = r.UltimaFechaContrato;
         monthsWithoutPurchase = lastDate
@@ -990,9 +967,6 @@ export class BillboardsService {
                 (now.getMonth() - lastDate.getMonth()),
             )
           : null;
-        availableDiscount = getDiscountForMonthsWithoutPurchase(
-          monthsWithoutPurchase,
-        );
       }
 
       const isOccupiedInBrilo = includeUnavailable
@@ -1016,8 +990,6 @@ export class BillboardsService {
         longitude: r.Longitud ?? null,
         price: r.Precio ?? null,
         monthsWithoutPurchase,
-        availableDiscount,
-        totalPrice: applyDiscount(r.Precio ?? null, availableDiscount),
         isAvailable,
       };
     });
@@ -1110,15 +1082,6 @@ export class BillboardsService {
             )
           : null;
 
-        let availableDiscount: number | null = null;
-        if (monthsWithoutPurchase != null && monthsWithoutPurchase >= 3) {
-          availableDiscount = 45;
-        } else if (monthsWithoutPurchase === 2) {
-          availableDiscount = 30;
-        } else if (monthsWithoutPurchase === 1) {
-          availableDiscount = 20;
-        }
-
         return {
           billboardId: Number(r.caraId),
           billboardCode: r.caraCodigo ?? null,
@@ -1139,8 +1102,6 @@ export class BillboardsService {
           s3ImageUrl: null,
           impressionPrice: r.PrecioImpresion ?? null,
           monthsWithoutPurchase,
-          availableDiscount,
-          totalPrice: applyDiscount(r.Precio ?? null, availableDiscount),
           isAvailable: true,
         };
       });
@@ -1210,15 +1171,6 @@ export class BillboardsService {
           )
         : null;
 
-      let availableDiscount: number | null = null;
-      if (monthsWithoutPurchase != null && monthsWithoutPurchase >= 3) {
-        availableDiscount = 45;
-      } else if (monthsWithoutPurchase === 2) {
-        availableDiscount = 30;
-      } else if (monthsWithoutPurchase === 1) {
-        availableDiscount = 20;
-      }
-
       return {
         billboardId: Number(r.caraId),
         billboardCode: r.caraCodigo ?? null,
@@ -1240,8 +1192,6 @@ export class BillboardsService {
           ? (s3ImageUrlsByCode.get(r.caraCodigo) ?? null)
           : null,
         monthsWithoutPurchase,
-        availableDiscount,
-        totalPrice: applyDiscount(r.Precio ?? null, availableDiscount),
         isAvailable: true,
       };
     });

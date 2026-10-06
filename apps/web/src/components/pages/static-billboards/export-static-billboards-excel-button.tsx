@@ -27,11 +27,6 @@ function rowsToSheetData(
     };
     if (includeAvailabilityColumn) {
       base.Disponibilidad = b.isAvailable ? "Disponible" : "Ocupada";
-    } else {
-      base.Descuento =
-        b.availableDiscount != null && b.availableDiscount !== 0
-          ? `-${b.availableDiscount}%`
-          : "";
     }
     return base;
   });

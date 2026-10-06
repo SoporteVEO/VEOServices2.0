@@ -106,12 +106,6 @@ function BillboardDetailDrawerContent({
                 {billboard.billboardCode ?? "Sin código"}
               </DrawerTitle>
               <BillboardStatusBadge isAvailable={billboard.isAvailable} />
-              {billboard.availableDiscount != null &&
-                billboard.availableDiscount > 0 && (
-                  <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-transparent">
-                    -{billboard.availableDiscount}%
-                  </Badge>
-                )}
             </div>
             <DrawerDescription className="flex items-center gap-1.5 text-xs">
               <MapPin className="size-3 shrink-0" />
@@ -226,10 +220,7 @@ function KeyMetricsRow({
       icon: Wallet,
       label: "Precio",
       value: formatMoney(billboard.price),
-      detail:
-        billboard.totalPrice != null && billboard.totalPrice !== billboard.price
-          ? `Con descuento: ${formatMoney(billboard.totalPrice)}`
-          : undefined,
+      detail: undefined,
     },
     {
       icon: Ruler,

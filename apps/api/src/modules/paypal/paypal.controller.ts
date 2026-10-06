@@ -9,7 +9,7 @@ export class PaypalController {
 
   @Post('orders')
   async createOrder(
-    @Body() body: { cart: Array<{ price: number; totalPrice?: number }> },
+    @Body() body: { cart: Array<{ price: number }> },
   ): Promise<unknown> {
     const result = await this.paypalService.createOrder(body.cart);
     if (result.error) {

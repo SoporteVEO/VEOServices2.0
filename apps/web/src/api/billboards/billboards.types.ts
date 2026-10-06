@@ -23,8 +23,6 @@ export interface AvailableBillboard {
   imageNotes: string | null;
   s3ImageUrl: string | null;
   monthsWithoutPurchase: number | null;
-  availableDiscount: number | null;
-  totalPrice: number | null;
   isAvailable: boolean;
 }
 
