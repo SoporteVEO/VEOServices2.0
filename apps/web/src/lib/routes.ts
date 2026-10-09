@@ -16,6 +16,7 @@ import {
   Banknote,
   Factory,
   Wrench,
+  Car,
 } from "lucide-react";
 import {
   IMAGES_MODULE_FIELD_ROLES,
@@ -31,6 +32,8 @@ export interface NavItem {
   icon: LucideIcon;
   allowedRoles?: UserRole[];
   requiredSubRoles?: SubRole[];
+  /** Renders the item as a collapsible submenu; access is decided per child. */
+  children?: NavItem[];
 }
 
 export interface NavGroup {
@@ -110,9 +113,23 @@ export const NAV_GROUPS: NavGroup[] = [
         title: "Mantenimiento",
         href: "/dashboard/mantenimiento",
         icon: Wrench,
-        allowedRoles: [],
-        requiredSubRoles: ["MANTENIMIENTO"],
-      }
+        children: [
+          {
+            title: "Mantenimiento Vallas",
+            href: "/dashboard/mantenimiento",
+            icon: Monitor,
+            allowedRoles: [],
+            requiredSubRoles: ["MANTENIMIENTO"],
+          },
+          {
+            title: "Mantenimiento Flota",
+            href: "/dashboard/mantenimiento/flota",
+            icon: Car,
+            allowedRoles: [],
+            requiredSubRoles: ["MANTENIMIENTO"],
+          },
+        ],
+      },
     ],
   },
   {
@@ -147,7 +164,9 @@ export const NAV_GROUPS: NavGroup[] = [
   },
 ];
 
-export const NAV_ITEMS: NavItem[] = NAV_GROUPS.flatMap((group) => group.items);
+export const NAV_ITEMS: NavItem[] = NAV_GROUPS.flatMap((group) =>
+  group.items.flatMap((item) => item.children ?? [item]),
+);
 
 const SYSTEM_PATHS = ["/dashboard/me"];
 
@@ -177,12 +196,20 @@ export function filterNavGroupsByAccess(
   return groups
     .map((g) => ({
       ...g,
-      items: g.items.filter((i) => canAccessItem(i, role, subRoles)),
+      items: g.items.flatMap((item): NavItem[] => {
+        if (!item.children) {
+          return canAccessItem(item, role, subRoles) ? [item] : [];
+        }
+        const children = item.children.filter((child) =>
+          canAccessItem(child, role, subRoles),
+        );
+        return children.length > 0 ? [{ ...item, children }] : [];
+      }),
     }))
     .filter((g) => g.items.length > 0);
 }
 
-function isUnderPath(pathname: string, base: string): boolean {
+export function isUnderPath(pathname: string, base: string): boolean {
   return pathname === base || pathname.startsWith(`${base}/`);
 }
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { Camera, ImagePlus, Loader2, Trash2 } from "lucide-react";
+import { Camera, ImagePlus, Images, Loader2, Trash2 } from "lucide-react";
 import Image from "next/image";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
@@ -13,6 +13,7 @@ type Props = {
   title: string;
   description: string;
   buttonLabel: string;
+  galleryButtonLabel?: string;
   /** Receives the compressed, raw base64 payload (no data URL prefix). */
   onUpload: (imageBase64: string) => Promise<unknown>;
   onDelete?: () => Promise<unknown>;
@@ -21,20 +22,23 @@ type Props = {
 };
 
 /**
- * Big-target camera capture tuned for phones: `capture="environment"` opens
- * the rear camera directly, and the photo is downscaled in the browser so the
- * JSON payload stays small on a mobile connection.
+ * Big-target photo picker tuned for phones: the camera button uses
+ * `capture="environment"` to open the rear camera directly, while the gallery
+ * button omits `capture` so the OS photo picker is shown. Photos are downscaled
+ * in the browser so the JSON payload stays small on a mobile connection.
  */
 export function InstallationPhotoUploader({
   title,
   description,
   buttonLabel,
+  galleryButtonLabel = "Elegir de galería",
   onUpload,
   onDelete,
   previewUrl,
   isBusy = false,
 }: Props) {
   const inputRef = useRef<HTMLInputElement>(null);
+  const galleryInputRef = useRef<HTMLInputElement>(null);
   const [isProcessing, setIsProcessing] = useState(false);
 
   async function handleFileSelected(file: File | null | undefined) {
@@ -61,6 +65,7 @@ export function InstallationPhotoUploader({
     } finally {
       setIsProcessing(false);
       if (inputRef.current) inputRef.current.value = "";
+      if (galleryInputRef.current) galleryInputRef.current.value = "";
     }
   }
 
@@ -114,6 +119,15 @@ export function InstallationPhotoUploader({
           void handleFileSelected(event.target.files?.[0]);
         }}
       />
+      <input
+        ref={galleryInputRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={(event) => {
+          void handleFileSelected(event.target.files?.[0]);
+        }}
+      />
 
       <div className="mt-3 flex flex-col gap-2 sm:flex-row">
         <Button
@@ -128,6 +142,17 @@ export function InstallationPhotoUploader({
             <Camera aria-hidden />
           )}
           {buttonLabel}
+        </Button>
+
+        <Button
+          type="button"
+          variant="outline"
+          className="h-11 flex-1"
+          disabled={busy}
+          onClick={() => galleryInputRef.current?.click()}
+        >
+          <Images aria-hidden />
+          {galleryButtonLabel}
         </Button>
 
         {previewUrl && onDelete ? (

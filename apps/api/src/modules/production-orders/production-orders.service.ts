@@ -13,7 +13,11 @@ import {
   S3ImageType,
   type Prisma,
 } from '@prisma/client';
-import { INSTALLER_ROLES } from '../auth/field-roles.js';
+import {
+  INSTALLATION_ROLES,
+  INSTALLER_ROLES,
+  VULCANIZADO_ROLES,
+} from '../auth/field-roles.js';
 import { NotificationsService } from '../notifications/notifications.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { PushService } from '../push/push.service.js';
@@ -51,6 +55,7 @@ export interface ProductionOrderItemDto {
   hasProductionDocument: boolean;
   hasDesignDocument: boolean;
   assignedInstaller: InstallerSummaryDto | null;
+  assignedVulcanizador: InstallerSummaryDto | null;
   scheduledInstallationAt: string | null;
   installedAt: string | null;
   hasVulcanizadoImage: boolean;
@@ -159,16 +164,17 @@ function resolveAggregateStatus(
   return statuses[0];
 }
 
+const ASSIGNEE_SELECT = {
+  id: true,
+  firstName: true,
+  lastName: true,
+  email: true,
+  role: true,
+} satisfies Prisma.UserSelect;
+
 const ITEM_INCLUDE = {
-  assignedInstaller: {
-    select: {
-      id: true,
-      firstName: true,
-      lastName: true,
-      email: true,
-      role: true,
-    },
-  },
+  assignedInstaller: { select: ASSIGNEE_SELECT },
+  assignedVulcanizador: { select: ASSIGNEE_SELECT },
   installationImages: {
     where: { type: S3ImageType.STATIC_BILLBOARD_INSTALLATION },
     select: { id: true },
@@ -660,20 +666,25 @@ export class ProductionOrdersService {
   }
 
   /**
-   * Assigns (or clears) the field user responsible for physically installing
-   * a static billboard, along with the planned installation date. Both fields
-   * feed the QR portal the installer opens on site.
+   * Assigns (or clears) the field users responsible for a static billboard:
+   * the installer who mounts it, the vulcanizador who prepares the material,
+   * and the planned installation date. All of them feed the QR portal.
    */
   async updateItemAssignment(
     itemId: string,
     input: {
       assignedInstallerId?: string | null;
+      assignedVulcanizadorId?: string | null;
       scheduledInstallationAt?: string | null;
     },
   ): Promise<ProductionOrderItemDto> {
     const existing = await this.prisma.productionOrderItem.findUnique({
       where: { id: itemId },
-      select: { id: true, assignedInstallerId: true },
+      select: {
+        id: true,
+        assignedInstallerId: true,
+        assignedVulcanizadorId: true,
+      },
     });
     if (!existing) {
       throw new NotFoundException('Orden de producción no encontrada');
@@ -682,24 +693,19 @@ export class ProductionOrdersService {
     const data: Prisma.ProductionOrderItemUpdateInput = {};
 
     if (input.assignedInstallerId !== undefined) {
-      if (input.assignedInstallerId === null) {
-        data.assignedInstaller = { disconnect: true };
-      } else {
-        const installer = await this.prisma.user.findFirst({
-          where: {
-            id: input.assignedInstallerId,
-            disabled: false,
-            role: { in: INSTALLER_ROLES },
-          },
-          select: { id: true },
-        });
-        if (!installer) {
-          throw new BadRequestException(
-            'El usuario seleccionado no es un instalador activo',
-          );
-        }
-        data.assignedInstaller = { connect: { id: installer.id } };
-      }
+      data.assignedInstaller = await this.resolveAssignee(
+        input.assignedInstallerId,
+        INSTALLATION_ROLES,
+        'El usuario seleccionado no es un instalador activo',
+      );
+    }
+
+    if (input.assignedVulcanizadorId !== undefined) {
+      data.assignedVulcanizador = await this.resolveAssignee(
+        input.assignedVulcanizadorId,
+        VULCANIZADO_ROLES,
+        'El usuario seleccionado no es un vulcanizador activo',
+      );
     }
 
     if (input.scheduledInstallationAt !== undefined) {
@@ -723,26 +729,54 @@ export class ProductionOrdersService {
       },
     });
 
+    const { productionOrder } = updated;
+    const notification = {
+      body: [
+        productionOrder.customerCompany ?? productionOrder.customerName,
+        updated.billboardCode ?? updated.address,
+      ]
+        .filter(Boolean)
+        .join(' · '),
+      url: `/portal/${updated.id}`,
+    };
+
     if (
       updated.assignedInstallerId &&
       updated.assignedInstallerId !== existing.assignedInstallerId
     ) {
-      const { productionOrder } = updated;
-      const place = updated.billboardCode ?? updated.address;
       void this.push.sendToUser(updated.assignedInstallerId, {
+        ...notification,
         title: 'Nueva instalación asignada',
-        body: [
-          productionOrder.customerCompany ?? productionOrder.customerName,
-          place,
-        ]
-          .filter(Boolean)
-          .join(' · '),
-        url: `/portal/${updated.id}`,
         tag: `installation-${updated.id}`,
       });
     }
 
+    if (
+      updated.assignedVulcanizadorId &&
+      updated.assignedVulcanizadorId !== existing.assignedVulcanizadorId
+    ) {
+      void this.push.sendToUser(updated.assignedVulcanizadorId, {
+        ...notification,
+        title: 'Nuevo vulcanizado asignado',
+        tag: `vulcanizado-${updated.id}`,
+      });
+    }
+
     return this.mapItemToDto(updated);
+  }
+
+  private async resolveAssignee(
+    userId: string | null,
+    roles: Role[],
+    invalidMessage: string,
+  ): Promise<{ disconnect: true } | { connect: { id: string } }> {
+    if (userId === null) return { disconnect: true };
+    const user = await this.prisma.user.findFirst({
+      where: { id: userId, disabled: false, role: { in: roles } },
+      select: { id: true },
+    });
+    if (!user) throw new BadRequestException(invalidMessage);
+    return { connect: { id: user.id } };
   }
 
   /** Active users that can be picked as the installer for a billboard. */
@@ -835,6 +869,7 @@ export class ProductionOrdersService {
       hasProductionDocument: !!item.productionDocumentS3Key,
       hasDesignDocument: !!item.designDocumentS3Key,
       assignedInstaller: item.assignedInstaller,
+      assignedVulcanizador: item.assignedVulcanizador,
       scheduledInstallationAt:
         item.scheduledInstallationAt?.toISOString() ?? null,
       installedAt: item.installedAt?.toISOString() ?? null,

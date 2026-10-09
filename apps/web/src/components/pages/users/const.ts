@@ -27,7 +27,7 @@ export const roleBadge: Record<UserRole, BadgeStyle> = {
       "border-teal-500/50 bg-teal-500/10 text-teal-700 dark:text-teal-400",
   },
   WORKER: {
-    label: "Operario",
+    label: "Vulcanizador",
     variant: "outline",
     className:
       "border-slate-500/50 bg-slate-500/10 text-slate-700 dark:text-slate-300",
@@ -74,9 +74,9 @@ export const ROLE_OPTIONS: {
   },
   {
     value: "WORKER",
-    label: "Operario",
+    label: "Vulcanizador",
     description:
-      "Solo accede al portal móvil de instalaciones asignadas mediante QR",
+      "Solo accede al portal móvil para subir la imagen de vulcanizado de sus instalaciones asignadas",
   },
   {
     value: "MANTENIMIENTO",

@@ -17,6 +17,7 @@ import { OffersModule } from './modules/offers/offers.module.js';
 import { ProductionOrdersModule } from './modules/production-orders/production-orders.module.js';
 import { PrintingModule } from './modules/printing/printing.module.js';
 import { MaintenanceModule } from './modules/maintenance/maintenance.module.js';
+import { FleetModule } from './modules/fleet/fleet.module.js';
 import { StaticBillboardCodesModule } from './modules/static-billboard-codes/static-billboard-codes.module.js';
 import { TeamMembersModule } from './modules/team-members/team-members.module.js';
 import { MeModule } from './modules/me/me.module.js';
@@ -49,6 +50,7 @@ import { BriloWebapiModule } from './modules/brilo-webapi/brilo-webapi.module.js
     ProductionOrdersModule,
     PrintingModule,
     MaintenanceModule,
+    FleetModule,
     StaticBillboardCodesModule,
     TeamMembersModule,
     MeModule,

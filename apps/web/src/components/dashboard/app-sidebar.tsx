@@ -16,6 +16,7 @@ import {
   SidebarRail,
 } from "@/components/primitives/ui/sidebar";
 import { UserCard } from "@/components/ui/user-card";
+import { AppSidebarSubmenu } from "./app-sidebar-submenu";
 import {
   NAV_GROUPS,
   filterNavGroupsByAccess,
@@ -109,27 +110,35 @@ export function AppSidebar() {
             ) : null}
             <SidebarGroupContent>
               <SidebarMenu className="flex flex-col gap-2">
-                {group.items.map((item) => (
-                  <SidebarMenuItem key={item.href}>
-                    <SidebarMenuButton
-                      asChild
-                      isActive={pathname === item.href}
-                      className="data-[active=true]:bg-accent data-[active=true]:text-accent-foreground data-[active=false]:text-muted-foreground data-[active=false]:hover:bg-accent data-[active=false]:hover:text-accent-foreground"
-                      tooltip={{
-                        children: item.title,
-                        side: "right",
-                        align: "center",
-                      }}
-                    >
-                      <Link href={item.href}>
-                        <item.icon className="size-4" />
-                        <span className="text-sm font-medium">
-                          {item.title}
-                        </span>
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                ))}
+                {group.items.map((item) =>
+                  item.children ? (
+                    <AppSidebarSubmenu
+                      key={item.href}
+                      item={{ ...item, children: item.children }}
+                      pathname={pathname}
+                    />
+                  ) : (
+                    <SidebarMenuItem key={item.href}>
+                      <SidebarMenuButton
+                        asChild
+                        isActive={pathname === item.href}
+                        className="data-[active=true]:bg-accent data-[active=true]:text-accent-foreground data-[active=false]:text-muted-foreground data-[active=false]:hover:bg-accent data-[active=false]:hover:text-accent-foreground"
+                        tooltip={{
+                          children: item.title,
+                          side: "right",
+                          align: "center",
+                        }}
+                      >
+                        <Link href={item.href}>
+                          <item.icon className="size-4" />
+                          <span className="text-sm font-medium">
+                            {item.title}
+                          </span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  ),
+                )}
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>

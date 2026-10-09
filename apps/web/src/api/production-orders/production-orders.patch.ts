@@ -64,6 +64,7 @@ export function useDeleteProductionOrderDocument() {
 export interface UpdateProductionOrderItemAssignmentInput {
   itemId: string;
   assignedInstallerId?: string | null;
+  assignedVulcanizadorId?: string | null;
   scheduledInstallationAt?: string | null;
 }
 

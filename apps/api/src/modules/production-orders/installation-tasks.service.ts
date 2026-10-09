@@ -54,6 +54,7 @@ export interface InstallationTaskDto extends InstallationTaskListItemDto {
   latitude: number | null;
   longitude: number | null;
   assignedInstaller: InstallationTaskPersonDto | null;
+  assignedVulcanizador: InstallationTaskPersonDto | null;
   vulcanizadoImageUrl: string | null;
   installationImages: InstallationTaskImageDto[];
 }
@@ -67,6 +68,7 @@ const PERSON_SELECT = {
 
 const TASK_INCLUDE = {
   assignedInstaller: { select: PERSON_SELECT },
+  assignedVulcanizador: { select: PERSON_SELECT },
   productionOrder: {
     select: {
       orderNumber: true,
@@ -107,11 +109,14 @@ export class InstallationTasksService {
     private readonly billboards: BillboardsService,
   ) {}
 
-  /** Installations assigned to the signed-in installer, soonest first. */
+  /** Installations the signed-in field user is on, soonest first. */
   async listAssignedTo(userId: string): Promise<InstallationTaskListItemDto[]> {
     const rows = await this.prisma.productionOrderItem.findMany({
       where: {
-        assignedInstallerId: userId,
+        OR: [
+          { assignedInstallerId: userId },
+          { assignedVulcanizadorId: userId },
+        ],
         status: { not: ProductionOrderStatus.CANCELLED },
       },
       include: TASK_INCLUDE,
@@ -158,6 +163,7 @@ export class InstallationTasksService {
       latitude: location?.latitude ?? null,
       longitude: location?.longitude ?? null,
       assignedInstaller: row.assignedInstaller,
+      assignedVulcanizador: row.assignedVulcanizador,
       vulcanizadoImageUrl,
       installationImages,
     };

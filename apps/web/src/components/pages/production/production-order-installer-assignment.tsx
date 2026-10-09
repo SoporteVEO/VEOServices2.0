@@ -1,9 +1,12 @@
 "use client";
 
-import { HardHat } from "lucide-react";
+import { Flame, HardHat } from "lucide-react";
 import { toast } from "sonner";
 import { useAssignableInstallers } from "@/api/production-orders/production-orders.get";
-import { useUpdateProductionOrderItemAssignment } from "@/api/production-orders/production-orders.patch";
+import {
+  type UpdateProductionOrderItemAssignmentInput,
+  useUpdateProductionOrderItemAssignment,
+} from "@/api/production-orders/production-orders.patch";
 import type {
   InstallerSummary,
   ProductionOrderItem,
@@ -15,7 +18,8 @@ const UNASSIGNED = "__unassigned__";
 
 const ROLE_LABELS: Record<InstallerSummary["role"], string> = {
   INSTALLER: "Instalador",
-  WORKER: "Operario",
+  INSTALLER_MANTENIMIENTO: "Instalador y mantenimiento",
+  WORKER: "Vulcanizador",
 };
 
 function fullName(person: {
@@ -25,32 +29,42 @@ function fullName(person: {
   return [person.firstName, person.lastName].filter(Boolean).join(" ");
 }
 
+function toOptions(people: InstallerSummary[]) {
+  return [
+    { value: UNASSIGNED, label: "Sin asignar" },
+    ...people.map((person) => ({
+      value: person.id,
+      label: `${fullName(person)} · ${ROLE_LABELS[person.role]}`,
+      filterValue: `${fullName(person)} ${person.email}`,
+    })),
+  ];
+}
+
+function toAssigneeId(value: string | number | null | undefined) {
+  return !value || value === UNASSIGNED ? null : String(value);
+}
+
 type Props = {
   item: ProductionOrderItem;
 };
 
 /**
- * Lets the production team pick who installs a billboard and when. Both
- * values are surfaced to the installer through the QR portal.
+ * Lets the production team pick who installs a billboard, who vulcanises its
+ * material, and when it goes up. All of it is surfaced through the QR portal.
  */
 export function ProductionOrderInstallerAssignment({ item }: Props) {
-  const { data: installers = [], isLoading } = useAssignableInstallers();
+  const { data: assignable = [], isLoading } = useAssignableInstallers();
   const mutation = useUpdateProductionOrderItemAssignment();
 
-  const options = [
-    { value: UNASSIGNED, label: "Sin asignar" },
-    ...installers.map((installer) => ({
-      value: installer.id,
-      label: `${fullName(installer)} · ${ROLE_LABELS[installer.role]}`,
-      filterValue: `${fullName(installer)} ${installer.email}`,
-    })),
-  ];
+  const installerOptions = toOptions(
+    assignable.filter((person) => person.role !== "WORKER"),
+  );
+  const vulcanizadorOptions = toOptions(
+    assignable.filter((person) => person.role === "WORKER"),
+  );
 
   function save(
-    input: Partial<{
-      assignedInstallerId: string | null;
-      scheduledInstallationAt: string | null;
-    }>,
+    input: Omit<UpdateProductionOrderItemAssignmentInput, "itemId">,
     successMessage: string,
   ) {
     mutation.mutate(
@@ -71,7 +85,7 @@ export function ProductionOrderInstallerAssignment({ item }: Props) {
     <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
       <Combobox
         label="Instalador asignado"
-        options={options}
+        options={installerOptions}
         value={item.assignedInstaller?.id ?? UNASSIGNED}
         isLoading={isLoading}
         disabled={mutation.isPending}
@@ -79,11 +93,24 @@ export function ProductionOrderInstallerAssignment({ item }: Props) {
         emptyLabel="No hay instaladores registrados"
         onChange={(value) =>
           save(
-            {
-              assignedInstallerId:
-                !value || value === UNASSIGNED ? null : String(value),
-            },
+            { assignedInstallerId: toAssigneeId(value) },
             "Instalador actualizado.",
+          )
+        }
+      />
+
+      <Combobox
+        label="Vulcanizador asignado"
+        options={vulcanizadorOptions}
+        value={item.assignedVulcanizador?.id ?? UNASSIGNED}
+        isLoading={isLoading}
+        disabled={mutation.isPending}
+        leadingIcon={<Flame className="size-3.5" aria-hidden />}
+        emptyLabel="No hay vulcanizadores registrados"
+        onChange={(value) =>
+          save(
+            { assignedVulcanizadorId: toAssigneeId(value) },
+            "Vulcanizador actualizado.",
           )
         }
       />

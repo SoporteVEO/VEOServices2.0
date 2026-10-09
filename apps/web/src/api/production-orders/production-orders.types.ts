@@ -11,7 +11,7 @@ export interface InstallerSummary {
   firstName: string;
   lastName: string | null;
   email: string;
-  role: "INSTALLER" | "WORKER";
+  role: "INSTALLER" | "INSTALLER_MANTENIMIENTO" | "WORKER";
 }
 
 export interface ProductionOrderItem {
@@ -29,6 +29,7 @@ export interface ProductionOrderItem {
   hasProductionDocument: boolean;
   hasDesignDocument: boolean;
   assignedInstaller: InstallerSummary | null;
+  assignedVulcanizador: InstallerSummary | null;
   scheduledInstallationAt: string | null;
   installedAt: string | null;
   hasVulcanizadoImage: boolean;

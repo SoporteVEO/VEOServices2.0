@@ -37,6 +37,7 @@ export interface InstallationTask extends InstallationTaskListItem {
   latitude: number | null;
   longitude: number | null;
   assignedInstaller: InstallationTaskPerson | null;
+  assignedVulcanizador: InstallationTaskPerson | null;
   vulcanizadoImageUrl: string | null;
   installationImages: InstallationTaskImage[];
 }

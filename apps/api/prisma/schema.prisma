@@ -32,6 +32,9 @@ model User {
   metricsDays           UserMetricsDay[]
   offersCreated         OfferCreated[]
   installationsAssigned ProductionOrderItem[] @relation("ProductionOrderInstaller")
+  vulcanizadosAssigned  ProductionOrderItem[] @relation("ProductionOrderVulcanizador")
+  fleetVehiclesCreated  FleetVehicle[]        @relation("FleetVehicleCreatedBy")
+  fleetServicesCreated  FleetMaintenance[]    @relation("FleetMaintenanceCreatedBy")
   printJobsCreated      PrintJob[]            @relation("PrintJobCreatedBy")
   maintenanceAssigned   MaintenanceJob[]      @relation("MaintenanceAssignee")
   maintenanceCreated    MaintenanceJob[]      @relation("MaintenanceCreatedBy")
@@ -716,6 +719,8 @@ model ProductionOrderItem {
   designDocumentS3Key     String?               @map("design_document_s3_key")
   assignedInstallerId     String?               @map("assigned_installer_id")
   assignedInstaller       User?                 @relation("ProductionOrderInstaller", fields: [assignedInstallerId], references: [id], onDelete: SetNull)
+  assignedVulcanizadorId  String?               @map("assigned_vulcanizador_id")
+  assignedVulcanizador    User?                 @relation("ProductionOrderVulcanizador", fields: [assignedVulcanizadorId], references: [id], onDelete: SetNull)
   scheduledInstallationAt DateTime?             @map("scheduled_installation_at")
   installedAt             DateTime?             @map("installed_at")
   vulcanizadoImageS3Key   String?               @map("vulcanizado_image_s3_key")
@@ -727,6 +732,7 @@ model ProductionOrderItem {
   @@index([productionOrderId])
   @@index([status])
   @@index([assignedInstallerId])
+  @@index([assignedVulcanizadorId])
   @@map("production_order_items")
 }
 
@@ -853,4 +859,68 @@ model MaintenanceEvent {
   @@index([jobId, createdAt])
   @@index([type, createdAt])
   @@map("maintenance_events")
+}
+
+enum FleetServiceType {
+  PREVENTIVE
+  CORRECTIVE
+  INSPECTION
+  OTHER
+}
+
+/// Company cars tracked by the Mantenimiento flota module.
+model FleetVehicle {
+  id     String  @id @default(uuid())
+  plate  String  @unique
+  brand  String
+  model  String
+  year   Int?
+  color  String?
+  notes  String?
+
+  photoS3Key String? @map("photo_s3_key")
+
+  /// Odometer reading at the last service before the car was registered here.
+  /// Once services are logged, the latest one takes over.
+  initialMileageKm Int? @map("initial_mileage_km")
+
+  archived Boolean @default(false)
+
+  createdByUserId String? @map("created_by_user_id")
+  createdBy       User?   @relation("FleetVehicleCreatedBy", fields: [createdByUserId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  services FleetMaintenance[]
+
+  @@index([archived])
+  @@map("fleet_vehicles")
+}
+
+model FleetMaintenance {
+  id        String       @id @default(uuid())
+  vehicleId String       @map("vehicle_id")
+  vehicle   FleetVehicle @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+
+  type          FleetServiceType
+  performedAt   DateTime         @map("performed_at")
+  mileageKm     Int              @map("mileage_km")
+  cost          Float
+  workshop      String?
+  invoiceNumber String?          @map("invoice_number")
+  description   String
+
+  nextServiceKm Int?      @map("next_service_km")
+  nextServiceAt DateTime? @map("next_service_at")
+
+  createdByUserId String? @map("created_by_user_id")
+  createdBy       User?   @relation("FleetMaintenanceCreatedBy", fields: [createdByUserId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([vehicleId, performedAt])
+  @@index([performedAt])
+  @@map("fleet_maintenances")
 }

@@ -8,6 +8,11 @@ export class UpdateProductionOrderItemAssignmentDto {
 
   @IsOptional()
   @ValidateIf((_, value) => value !== null)
+  @IsString()
+  assignedVulcanizadorId?: string | null;
+
+  @IsOptional()
+  @ValidateIf((_, value) => value !== null)
   @IsISO8601()
   scheduledInstallationAt?: string | null;
 }

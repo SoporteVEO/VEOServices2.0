@@ -3,6 +3,7 @@
 import {
   CalendarCheck,
   CalendarClock,
+  Flame,
   HardHat,
   Loader2,
   Ruler,
@@ -63,11 +64,8 @@ function TaskView({ task }: { task: InstallationTask }) {
   const uploadInstallation = useUploadInstallationImage();
 
   const campaign = task.customerCompany ?? task.customerName;
-  const installer = task.assignedInstaller
-    ? [task.assignedInstaller.firstName, task.assignedInstaller.lastName]
-        .filter(Boolean)
-        .join(" ")
-    : null;
+  const installer = personName(task.assignedInstaller);
+  const vulcanizador = personName(task.assignedVulcanizador);
 
   return (
     <FieldPortalShell
@@ -98,6 +96,11 @@ function TaskView({ task }: { task: InstallationTask }) {
                   icon={HardHat}
                   label="Instalador asignado"
                   value={installer ?? "Sin asignar"}
+                />
+                <DetailRow
+                  icon={Flame}
+                  label="Vulcanizador asignado"
+                  value={vulcanizador ?? "Sin asignar"}
                 />
                 <DetailRow
                   icon={CalendarClock}
@@ -188,6 +191,12 @@ function TaskView({ task }: { task: InstallationTask }) {
       </div>
     </FieldPortalShell>
   );
+}
+
+function personName(person: InstallationTask["assignedInstaller"]) {
+  return person
+    ? [person.firstName, person.lastName].filter(Boolean).join(" ")
+    : null;
 }
 
 function DetailRow({
