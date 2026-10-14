@@ -43,7 +43,7 @@ export function PrintingAnalyticsReport() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end sm:justify-between">
+      <div className="flex flex-col gap-3 @xl/main:flex-row @xl/main:flex-wrap @xl/main:items-end @xl/main:justify-between">
         <div className="flex flex-col gap-1">
           <h2 className="text-lg font-semibold tracking-tight">
             Máquinas de impresión
@@ -53,8 +53,8 @@ export function PrintingAnalyticsReport() {
             de impresión.
           </p>
         </div>
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-          <div className="w-full sm:w-52">
+        <div className="flex flex-col gap-2 @xl/main:flex-row @xl/main:items-center">
+          <div className="w-full @xl/main:w-52">
             <Select value={machineId} onValueChange={setMachineId}>
               <SelectTrigger>
                 <SelectValue />

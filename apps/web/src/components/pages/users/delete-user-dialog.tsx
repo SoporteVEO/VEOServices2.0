@@ -1,7 +1,6 @@
 "use client";
 
 import { toast } from "sonner";
-import { Loader2 } from "lucide-react";
 import type { User } from "@/api/users/users.types";
 import { useDeleteUser } from "@/api/users/users.mutations";
 import { Button } from "@/components/ui/button";
@@ -74,10 +73,7 @@ export function DeleteUserDialog({
             variant="destructive"
             onClick={handleDelete}
             disabled={deleteMutation.isPending}
-            icon={deleteMutation.isPending ? Loader2 : undefined}
-            iconClassName={
-              deleteMutation.isPending ? "animate-spin" : undefined
-            }
+            loading={deleteMutation.isPending}
           >
             {deleteMutation.isPending ? "Eliminando..." : "Eliminar"}
           </Button>

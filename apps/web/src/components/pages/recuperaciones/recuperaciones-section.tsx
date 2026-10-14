@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Loader2, Send } from "lucide-react";
+import { Send } from "lucide-react";
 import { toast } from "sonner";
 import { useBriloCatalogos } from "@/api/brilo-webapi/brilo-webapi.get";
 import { processRecuperaciones } from "@/api/brilo-webapi/brilo-webapi.post";
@@ -13,6 +13,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/primitives/ui/card";
+import { Skeleton } from "@/components/primitives/ui/skeleton";
 import {
   Select,
   SelectContent,
@@ -279,11 +280,22 @@ export function RecuperacionesSection() {
 
   if (catalogosQuery.isLoading) {
     return (
-      <section className="flex flex-1 items-center justify-center">
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <Loader2 className="size-4 animate-spin" />
-          Cargando catálogos de Brilo...
-        </div>
+      <section
+        role="status"
+        aria-label="Cargando catálogos de Brilo..."
+        className="flex h-[calc(100vh-6rem)] min-h-0 flex-col gap-4"
+      >
+        <Card>
+          <CardHeader className="gap-2">
+            <Skeleton className="h-5 w-56" />
+            <Skeleton className="h-3.5 w-full max-w-xl" />
+            <Skeleton className="h-3.5 w-2/3 max-w-md" />
+          </CardHeader>
+          <CardContent className="flex flex-wrap items-end justify-between gap-3">
+            <Skeleton className="h-9 w-64" />
+          </CardContent>
+        </Card>
+        <Skeleton className="min-h-0 flex-1 rounded-md" />
       </section>
     );
   }
@@ -342,8 +354,8 @@ export function RecuperacionesSection() {
               <Button
                 onClick={() => void handleSubmit()}
                 disabled={isSubmitting || summary.included === 0}
-                icon={isSubmitting ? Loader2 : Send}
-                iconClassName={isSubmitting ? "animate-spin" : undefined}
+                icon={Send}
+                loading={isSubmitting}
               >
                 Subir {summary.included} a Brilo
               </Button>

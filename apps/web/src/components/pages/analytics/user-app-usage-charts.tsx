@@ -88,7 +88,7 @@ export function UserAppUsageCharts({
 
   if (isLoading) {
     return (
-      <div className="grid gap-4 lg:grid-cols-2">
+      <div className="grid gap-4 @5xl/main:grid-cols-2">
         <Skeleton className="h-[320px] w-full rounded-xl" />
         <Skeleton className="h-[320px] w-full rounded-xl" />
       </div>
@@ -96,7 +96,7 @@ export function UserAppUsageCharts({
   }
 
   return (
-    <div className="grid gap-4 lg:grid-cols-2">
+    <div className="grid gap-4 @5xl/main:grid-cols-2">
       <Card>
         <CardHeader>
           <CardTitle className="text-base">Actividad por día</CardTitle>

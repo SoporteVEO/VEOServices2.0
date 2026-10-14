@@ -33,7 +33,7 @@ function StatusDot({ status }: { status: ProductionOrderStatus }) {
   return (
     <span
       className={cn(
-        "size-2 shrink-0 rounded-full border",
+        "size-2 shrink-0 border",
         PRODUCTION_STATUS_STYLES[status],
       )}
       aria-hidden

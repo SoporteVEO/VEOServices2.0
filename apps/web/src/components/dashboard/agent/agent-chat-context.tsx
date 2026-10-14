@@ -1,9 +1,12 @@
 "use client";
 
 import { createContext, use } from "react";
+import type { AgentDataSource } from "@/api/agent/agent.types";
 
 interface AgentChatActions {
+  threadId: string;
   respondToApproval: (id: string, approved: boolean) => void;
+  chooseDataSource: (toolCallId: string, source: AgentDataSource) => void;
   isBusy: boolean;
 }
 

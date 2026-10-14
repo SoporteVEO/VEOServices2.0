@@ -29,25 +29,25 @@ function Input({
         <Label
           htmlFor={inputId}
           className={cn(
-            "text-xs font-medium text-muted-foreground",
+            "text-xs font-semibold text-foreground/85",
             labelClassName,
           )}
         >
           {label}
-          {required ? <span className="text-red-500 -ml-1">*</span> : null}
+          {required ? <span className="text-destructive -ml-1">*</span> : null}
         </Label>
       ) : null}
       <div className="relative w-full">
         {isSearch ? (
           <Search
             aria-hidden="true"
-            className="pointer-events-none absolute inset-s-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground/50"
+            className="pointer-events-none absolute inset-s-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
           />
         ) : null}
         <PrimitiveInput
           id={inputId}
           className={cn(
-            "px-3 py-1.5 bg-input border border-border shadow-sm",
+            "px-3 py-1.5",
             isSearch && "ps-9",
             className,
           )}

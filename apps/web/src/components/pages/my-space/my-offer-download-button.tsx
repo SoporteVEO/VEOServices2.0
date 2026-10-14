@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Download, Loader2 } from "lucide-react";
+import { Download } from "lucide-react";
 import { toast } from "sonner";
 import { pdf } from "@react-pdf/renderer";
 import { getOffer } from "@/api/offers/offers.get";
@@ -52,16 +52,13 @@ export function MyOfferDownloadButton({ offer }: MyOfferDownloadButtonProps) {
       size="sm"
       className="gap-1.5"
       disabled={isDownloading}
+      loading={isDownloading}
       onClick={(event) => {
         event.stopPropagation();
         void handleDownload();
       }}
     >
-      {isDownloading ? (
-        <Loader2 className="size-3.5 animate-spin" aria-hidden />
-      ) : (
-        <Download className="size-3.5" aria-hidden />
-      )}
+      <Download className="size-3.5" aria-hidden />
       Descargar
     </Button>
   );

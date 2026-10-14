@@ -1,7 +1,6 @@
 "use client";
 
 import { useForm } from "react-hook-form";
-import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DialogBody, DialogFooter } from "@/components/ui/dialog";
@@ -58,8 +57,7 @@ export function CreateStaticBillboardCodeForm({
         <Button
           type="submit"
           disabled={isPending}
-          icon={isPending ? Loader2 : undefined}
-          iconClassName={isPending ? "animate-spin" : undefined}
+          loading={isPending}
         >
           {isPending ? "Creando..." : "Crear código"}
         </Button>

@@ -27,6 +27,7 @@ import {
   ISSUE_STATUS_ORDER,
   ISSUE_STATUS_TAB_LABELS,
 } from "./const";
+import { TabCount } from "./tab-count";
 
 const ALL = "ALL";
 
@@ -134,14 +135,5 @@ export function AgentIssuesTable() {
         }}
       />
     </div>
-  );
-}
-
-function TabCount({ value }: { value: number | undefined }) {
-  if (value === undefined) return null;
-  return (
-    <span className="ml-1.5 rounded-full bg-muted px-1.5 text-[11px] tabular-nums text-muted-foreground">
-      {value}
-    </span>
   );
 }

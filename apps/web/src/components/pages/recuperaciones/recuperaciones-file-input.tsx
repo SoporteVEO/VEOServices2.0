@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { FileSpreadsheet, Loader2, Upload } from "lucide-react";
+import { FileSpreadsheet, Upload } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
@@ -87,8 +87,8 @@ export function RecuperacionesFileInput({
         type="button"
         onClick={handleClickUpload}
         disabled={isParsing}
-        icon={isParsing ? Loader2 : Upload}
-        iconClassName={isParsing ? "animate-spin" : undefined}
+        icon={Upload}
+        loading={isParsing}
       >
         {fileName ? "Cargar otro archivo" : "Subir archivo de Excel"}
       </Button>

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DialogBody, DialogFooter } from "@/components/ui/dialog";
 import { StaticBillboardCodeCombobox } from "./static-billboard-code-combobox";
@@ -59,8 +58,7 @@ export function EditImageCodeForm({
         <Button
           type="submit"
           disabled={isPending || isUnchanged}
-          icon={isPending ? Loader2 : undefined}
-          iconClassName={isPending ? "animate-spin" : undefined}
+          loading={isPending}
         >
           {isPending ? "Guardando..." : "Guardar cambios"}
         </Button>

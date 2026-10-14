@@ -15,7 +15,7 @@ export function StatusLegend() {
     <div className="flex flex-wrap items-center gap-x-4 gap-y-1 pt-2 text-xs text-muted-foreground">
       {ITEMS.map((item) => (
         <span key={item.tone} className="inline-flex items-center gap-1.5">
-          <span className={cn("size-2 rounded-full", TONE_DOT_CLASS[item.tone])} />
+          <span className={cn("size-2", TONE_DOT_CLASS[item.tone])} />
           {item.label}
         </span>
       ))}

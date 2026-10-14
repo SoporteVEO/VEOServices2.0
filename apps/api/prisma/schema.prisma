@@ -46,6 +46,10 @@ model User {
   agentThreads          AgentThread[]
   agentIssuesReported   AgentIssue[]          @relation("AgentIssueReporter")
   agentIssuesResolved   AgentIssue[]          @relation("AgentIssueResolver")
+  agentFeedback         AgentFeedback[]       @relation("AgentFeedbackAuthor")
+  agentFeedbackReviewed AgentFeedback[]       @relation("AgentFeedbackReviewer")
+  learningsProposed     AgentLearning[]       @relation("AgentLearningProposer")
+  learningsReviewed     AgentLearning[]       @relation("AgentLearningReviewer")
 
   @@map("users")
 }
@@ -106,6 +110,61 @@ model AgentMessage {
 
   @@unique([threadId, position])
   @@map("agent_messages")
+}
+
+/// A user's rating of one Nexo answer. Messages are rewritten on every turn,
+/// so the question, answer and tool calls are snapshotted here instead of
+/// referencing `agent_messages`. `review` is a developer's verdict on whether
+/// the user's rating was right.
+model AgentFeedback {
+  id           String               @id @default(uuid())
+  userId       String               @map("user_id")
+  user         User                 @relation("AgentFeedbackAuthor", fields: [userId], references: [id], onDelete: Cascade)
+  threadId     String               @map("thread_id")
+  messageId    String               @map("message_id")
+  rating       AgentFeedbackRating
+  reason       AgentFeedbackReason?
+  comment      String?
+  question     String
+  answer       String
+  toolCalls    Json                 @map("tool_calls")
+  model        String?
+  review       AgentFeedbackReview  @default(PENDING)
+  reviewedById String?              @map("reviewed_by_id")
+  reviewedBy   User?                @relation("AgentFeedbackReviewer", fields: [reviewedById], references: [id], onDelete: SetNull)
+  reviewedAt   DateTime?            @map("reviewed_at")
+  learnings    AgentLearning[]
+  createdAt    DateTime             @default(now()) @map("created_at")
+  updatedAt    DateTime             @updatedAt @map("updated_at")
+
+  @@unique([userId, messageId])
+  @@index([review, createdAt])
+  @@index([threadId])
+  @@map("agent_feedback")
+}
+
+/// A durable lesson injected into Nexo's prompt. PENDING lessons only apply to
+/// the user who taught them; ACTIVE ones apply to everyone.
+model AgentLearning {
+  id           String              @id @default(uuid())
+  content      String
+  example      String?
+  status       AgentLearningStatus @default(PENDING)
+  source       AgentLearningSource
+  feedbackId   String?             @map("feedback_id")
+  feedback     AgentFeedback?      @relation(fields: [feedbackId], references: [id], onDelete: SetNull)
+  threadId     String?             @map("thread_id")
+  proposedById String?             @map("proposed_by_id")
+  proposedBy   User?               @relation("AgentLearningProposer", fields: [proposedById], references: [id], onDelete: SetNull)
+  reviewedById String?             @map("reviewed_by_id")
+  reviewedBy   User?               @relation("AgentLearningReviewer", fields: [reviewedById], references: [id], onDelete: SetNull)
+  reviewedAt   DateTime?           @map("reviewed_at")
+  createdAt    DateTime            @default(now()) @map("created_at")
+  updatedAt    DateTime            @updatedAt @map("updated_at")
+
+  @@index([status, updatedAt])
+  @@index([proposedById, status])
+  @@map("agent_learnings")
 }
 
 enum ContractType {
@@ -575,6 +634,36 @@ enum AgentIssueSeverity {
   MEDIUM
   HIGH
   CRITICAL
+}
+
+enum AgentFeedbackRating {
+  LIKE
+  DISLIKE
+}
+
+enum AgentFeedbackReason {
+  WRONG_DATA
+  MISUNDERSTOOD
+  INCOMPLETE
+  OTHER
+}
+
+enum AgentFeedbackReview {
+  PENDING
+  CONFIRMED
+  DISMISSED
+}
+
+enum AgentLearningStatus {
+  PENDING
+  ACTIVE
+  REJECTED
+}
+
+enum AgentLearningSource {
+  FEEDBACK
+  CONVERSATION
+  MANUAL
 }
 
 enum NotificationStatus {

@@ -25,9 +25,9 @@ export const S3_IMAGE_TYPE_SHORT_LABELS: Record<S3ImageType, string> = {
 };
 
 export const S3_IMAGE_TYPE_BADGE_CLASSES: Record<S3ImageType, string> = {
-  STATIC_BILLBOARD_MONTHLY: "bg-sky-500/85 text-white",
-  STATIC_BILLBOARD_INSTALLATION: "bg-emerald-500/85 text-white",
-  STATIC_BILLBOARD_MAINTENANCE: "bg-amber-500/90 text-white",
+  STATIC_BILLBOARD_MONTHLY: "bg-veo-dark text-white",
+  STATIC_BILLBOARD_INSTALLATION: "bg-veo-lime text-veo-dark",
+  STATIC_BILLBOARD_MAINTENANCE: "bg-amber-400 text-veo-dark",
 };
 export type SortOrder = "asc" | "desc";
 

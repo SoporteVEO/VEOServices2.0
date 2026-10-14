@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Loader2, Plus } from "lucide-react";
+import { Plus } from "lucide-react";
 import { toast } from "sonner";
 import {
   useCreateProductionOrder,
@@ -254,8 +254,8 @@ function CreateProductionOrderForm({
           <Button
             type="submit"
             disabled={isBusy}
-            icon={isBusy ? Loader2 : Plus}
-            iconClassName={isBusy ? "animate-spin" : undefined}
+            icon={Plus}
+            loading={isBusy}
           >
             Crear orden
           </Button>

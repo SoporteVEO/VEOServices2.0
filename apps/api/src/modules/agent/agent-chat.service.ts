@@ -7,11 +7,14 @@ import {
 import type { Request, Response } from 'express';
 import type { UIMessage } from 'ai' with { 'resolution-mode': 'import' };
 import { AgentIssuesService } from '../development/agent-issues.service.js';
+import { AgentLearningsService } from '../development/agent-learnings.service.js';
 import { EmailService } from '../email/email.service.js';
 import { AgentApiClient } from './agent-api-client.js';
 import { AgentDiagnostics, describeError } from './agent-diagnostics.js';
 import { createIssueReporter } from './agent-issue-reporter.js';
 import { AgentEndpointsService } from './agent-endpoints.service.js';
+import { AgentMemoryService } from './agent-memory.service.js';
+import { clipText, lastUserText } from './agent-message-text.js';
 import {
   cachedSystemMessage,
   getMissingAgentApiKey,
@@ -27,6 +30,7 @@ import { buildAgentTools, loadBriloMcpTools } from './tools/index.js';
 
 const MAX_STEPS = Number(process.env.AGENT_MAX_STEPS) || 12;
 const MAX_OUTPUT_TOKENS = Number(process.env.AGENT_MAX_OUTPUT_TOKENS) || 8000;
+const MAX_LEARNINGS_PER_REQUEST = 3;
 
 export interface AgentMessageMetadata {
   createdAt?: number;
@@ -47,6 +51,8 @@ export class AgentChatService {
     private readonly endpoints: AgentEndpointsService,
     private readonly email: EmailService,
     private readonly issues: AgentIssuesService,
+    private readonly learnings: AgentLearningsService,
+    private readonly memory: AgentMemoryService,
   ) {}
 
   async stream(
@@ -69,10 +75,17 @@ export class AgentChatService {
     ]);
     const incoming = body.message as unknown as UIMessage;
     const stored = await this.threads.open(user.id, body.id, incoming);
-    const history = mergeIncoming(stored, incoming);
+    const history = dropUnansweredSourceQuestions(
+      mergeIncoming(stored, incoming),
+    );
+    const question = lastUserText(history);
 
     const diagnostics = new AgentDiagnostics();
-    const mcp = await loadBriloMcpTools(sdk, user);
+    const [mcp, memory] = await Promise.all([
+      loadBriloMcpTools(sdk, user),
+      this.memory.buildContext(user.id, body.id, question),
+    ]);
+    let learningsSaved = 0;
     const tools = {
       ...buildAgentTools({
         user,
@@ -89,6 +102,20 @@ export class AgentChatService {
           model: `${provider}/${modelId}`,
           conversation: history,
         }),
+        rememberLearning: async (content) => {
+          if (learningsSaved >= MAX_LEARNINGS_PER_REQUEST) {
+            return { saved: false };
+          }
+          learningsSaved++;
+          await this.learnings.propose({
+            content,
+            example: clipText(question, 500) || undefined,
+            source: 'CONVERSATION',
+            threadId: body.id,
+            proposedById: user.id,
+          });
+          return { saved: true };
+        },
       }),
       ...mcp.tools,
     };
@@ -112,6 +139,7 @@ export class AgentChatService {
       instructions: [
         cachedSystemMessage(provider, AGENT_SYSTEM_PROMPT),
         { role: 'system', content: buildUserContext(user) },
+        ...(memory ? [{ role: 'system' as const, content: memory }] : []),
       ],
       messages: await sdk.ai.convertToModelMessages(messages, { tools }),
       tools,
@@ -200,6 +228,26 @@ function mergeIncoming(stored: UIMessage[], incoming: UIMessage): UIMessage[] {
     throw new BadRequestException('Mensaje fuera de la conversación');
   }
   return [...stored, incoming];
+}
+
+/**
+ * A source question the user skipped by typing instead has no tool result,
+ * which providers reject, so it is removed from earlier turns.
+ */
+function dropUnansweredSourceQuestions(messages: UIMessage[]): UIMessage[] {
+  return messages.map((message, index) => {
+    if (message.role !== 'assistant' || index === messages.length - 1) {
+      return message;
+    }
+    const parts = message.parts.filter(
+      (part) =>
+        part.type !== 'tool-ask_data_source' ||
+        (part as { state?: string }).state === 'output-available',
+    );
+    return parts.length === message.parts.length
+      ? message
+      : { ...message, parts };
+  });
 }
 
 function approvalSecret(): string | undefined {

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { FileText, Loader2 } from "lucide-react";
+import { FileText } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import type { AvailableBillboardListing } from "@/api/billboards/billboards.get";
@@ -92,13 +92,14 @@ export function GenerateReportButton({
       size="default"
       onClick={handleGenerate}
       disabled={isGenerating}
+      loading={isGenerating}
       title={
         selectedRows.length > 0
           ? `Reporte de las ${selectedRows.length} vallas seleccionadas`
           : "Reporte de las vallas que muestra la tabla"
       }
     >
-      {isGenerating ? <Loader2 className="animate-spin" /> : <FileText />}
+      <FileText />
       {label}
     </Button>
   );

@@ -11,8 +11,8 @@ import { OccupancyBar } from "./occupancy-bar";
 
 function Chip({ tone, children }: { tone?: StatusTone; children: React.ReactNode }) {
   return (
-    <span className="inline-flex items-center gap-1.5 rounded-full border bg-background px-2 py-0.5 text-[11px] text-muted-foreground">
-      {tone ? <span className={cn("size-1.5 rounded-full", TONE_DOT_CLASS[tone])} /> : null}
+    <span className="inline-flex items-center gap-1.5 border bg-background px-2 py-0.5 text-[11px] text-muted-foreground">
+      {tone ? <span className={cn("size-1.5", TONE_DOT_CLASS[tone])} /> : null}
       {children}
     </span>
   );

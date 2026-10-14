@@ -62,7 +62,7 @@ export function CheckoutSection() {
   if (items.length === 0) {
     return (
       <div className="mx-auto flex min-h-[70vh] w-full max-w-2xl flex-col items-center justify-center p-6 text-center">
-        <div className="flex size-24 items-center justify-center rounded-full bg-muted/50 mb-6 border border-border/50 shadow-sm">
+        <div className="flex size-24 items-center justify-center bg-muted/50 mb-6 border border-border/50 shadow-sm">
           <ShoppingBag className="size-10 text-muted-foreground/70" />
         </div>
         <h2 className="text-3xl font-bold tracking-tight mb-3">
@@ -75,7 +75,7 @@ export function CheckoutSection() {
         <Button
           asChild
           size="lg"
-          className="h-12 px-8 rounded-full shadow-sm text-base"
+          className="h-12 px-8 shadow-sm text-base"
         >
           <Link href="/shop">
             <Store className="mr-2 size-5" />
@@ -259,7 +259,7 @@ export function CheckoutSection() {
           </Card>
 
           <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/5 p-4 flex items-start gap-4">
-            <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400">
+            <div className="flex size-10 shrink-0 items-center justify-center bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400">
               <ShieldCheck className="size-5" />
             </div>
             <div>
@@ -363,7 +363,7 @@ function CartItemCard({
               </span>
             </div>
 
-            <div className="hidden sm:block size-1 rounded-full bg-border" />
+            <div className="hidden sm:block size-1 bg-border" />
 
             <div className="flex items-center gap-1.5">
               <Calendar className="size-3.5 shrink-0" />
@@ -372,7 +372,7 @@ function CartItemCard({
 
             {isDigital && "spotCount" in item && (
               <>
-                <div className="hidden sm:block size-1 rounded-full bg-border" />
+                <div className="hidden sm:block size-1 bg-border" />
                 <div className="flex items-center gap-1.5">
                   <MonitorPlay className="size-3.5 shrink-0" />
                   <span>{item.spotCount} spots/hora</span>

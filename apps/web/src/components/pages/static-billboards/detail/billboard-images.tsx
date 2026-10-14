@@ -6,7 +6,6 @@ import {
   ChevronUp,
   Download,
   ImageIcon,
-  Loader2,
 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -18,6 +17,7 @@ import {
 } from "@/components/primitives/ui/card";
 import { Button } from "@/components/primitives/ui/button";
 import { Skeleton } from "@/components/primitives/ui/skeleton";
+import { PendingBar } from "@/components/ui/button";
 import ImageViewerMotion from "@/components/commerce-ui/image-viewer-motion";
 import { formatHumanDate, toYYYYMMDD } from "@/lib/format";
 import {
@@ -167,14 +167,12 @@ function BillboardImageCard({
           type="button"
           onClick={handleDownload}
           disabled={downloading}
+          aria-busy={downloading || undefined}
           aria-label="Descargar imagen"
-          className="absolute top-1.5 right-1.5 z-20 inline-flex size-7 items-center justify-center rounded-full bg-black/55 text-white opacity-0 shadow-sm backdrop-blur-sm transition-opacity hover:bg-black/75 focus-visible:opacity-100 focus-visible:outline-none disabled:cursor-wait disabled:opacity-70 group-hover:opacity-100"
+          className="absolute top-1.5 right-1.5 z-20 inline-flex size-7 items-center justify-center overflow-hidden bg-black/55 text-white opacity-0 shadow-sm backdrop-blur-sm transition-opacity hover:bg-black/75 focus-visible:opacity-100 focus-visible:outline-none disabled:cursor-wait disabled:opacity-70 group-hover:opacity-100"
         >
-          {downloading ? (
-            <Loader2 className="size-3.5 animate-spin" />
-          ) : (
-            <Download className="size-3.5" />
-          )}
+          <Download className="size-3.5" />
+          {downloading ? <PendingBar /> : null}
         </button>
       </div>
       <figcaption className="flex flex-col gap-0.5">
@@ -260,7 +258,7 @@ function BillboardImagesSkeleton() {
 function BillboardImagesEmpty() {
   return (
     <div className="flex flex-col items-center justify-center gap-2 rounded-md border border-dashed bg-accent/10 py-8 text-center">
-      <div className="flex size-10 items-center justify-center rounded-full bg-muted">
+      <div className="flex size-10 items-center justify-center bg-muted">
         <ImageIcon className="size-5 text-muted-foreground" />
       </div>
       <p className="text-xs text-muted-foreground">

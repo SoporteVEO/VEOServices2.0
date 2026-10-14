@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { ImagePlus, Loader2, Trash2 } from "lucide-react";
+import { ImagePlus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import {
   useCreateFleetVehicle,
@@ -243,8 +243,8 @@ export function FleetVehicleFormDialog({
               <Button
                 variant="outline"
                 sizeVariant="sm"
-                icon={isProcessingPhoto ? Loader2 : ImagePlus}
-                iconClassName={isProcessingPhoto ? "animate-spin" : undefined}
+                icon={ImagePlus}
+                loading={isProcessingPhoto}
                 disabled={isBusy}
                 onClick={() => fileInputRef.current?.click()}
               >

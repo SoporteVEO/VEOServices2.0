@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Monitor, Moon, Sun } from "lucide-react";
+import { Check, Monitor, Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
 
 import { Button } from "@/components/ui/button";
@@ -11,6 +11,12 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+
+const THEMES = [
+  { value: "light", label: "Claro", icon: Sun },
+  { value: "dark", label: "Oscuro", icon: Moon },
+  { value: "system", label: "Sistema", icon: Monitor },
+] as const;
 
 export function ModeToggle() {
   const { setTheme, theme } = useTheme();
@@ -34,35 +40,21 @@ export function ModeToggle() {
         <Button
           variant="ghost"
           size="icon"
-          className="relative size-9 shrink-0"
-          aria-label="Theme"
+          className="relative size-9 shrink-0 text-muted-foreground hover:text-foreground"
+          aria-label="Tema"
         >
-          <Sun className="size-4 scale-100 rotate-0 transition-all dark:scale-0 dark:-rotate-90" />
-          <Moon className="absolute size-4 scale-0 rotate-90 transition-all dark:scale-100 dark:rotate-0" />
+          <Sun className="size-4 dark:hidden" />
+          <Moon className="hidden size-4 dark:block" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="min-w-36">
-        <DropdownMenuItem onClick={() => setTheme("light")}>
-          <Sun className="me-2 size-4" />
-          Light
-          {theme === "light" ? (
-            <span className="ms-auto text-xs text-muted-foreground">✓</span>
-          ) : null}
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme("dark")}>
-          <Moon className="me-2 size-4" />
-          Dark
-          {theme === "dark" ? (
-            <span className="ms-auto text-xs text-muted-foreground">✓</span>
-          ) : null}
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme("system")}>
-          <Monitor className="me-2 size-4" />
-          System
-          {theme === "system" ? (
-            <span className="ms-auto text-xs text-muted-foreground">✓</span>
-          ) : null}
-        </DropdownMenuItem>
+      <DropdownMenuContent align="end" className="min-w-40">
+        {THEMES.map(({ value, label, icon: Icon }) => (
+          <DropdownMenuItem key={value} onClick={() => setTheme(value)}>
+            <Icon className="size-4" />
+            {label}
+            {theme === value ? <Check className="ms-auto size-4" /> : null}
+          </DropdownMenuItem>
+        ))}
       </DropdownMenuContent>
     </DropdownMenu>
   );

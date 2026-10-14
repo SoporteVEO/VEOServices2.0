@@ -34,6 +34,13 @@ Nexo supports both Google Gemini and Anthropic Claude. Choose per environment wi
 
 No code changes are needed to swap; only the active provider's key is required. Prompt caching is enabled automatically for the active provider (explicit `cacheControl` for Claude, implicit for Gemini).
 
+## How Nexo learns from feedback
+
+- Users rate answers with 👍/👎 (`agent_feedback`). Each rating snapshots the question, the answer and the tools used.
+- A rating can produce a lesson (`agent_learnings`): on 👎, or on 👍 after the user had to clarify, a model call distills at most one generalizable lesson. Nexo also saves one with `remember_learning` when the user corrects it in the chat.
+- Lessons start as `PENDING` and only apply to the user who taught them. Developers (`DESARROLLADOR`) approve them in **Desarrollo → Aprendizaje de Nexo** so they apply to everyone, and can mark a rating as "the user was wrong", which removes it from Nexo's context and rejects its pending lessons.
+- On every message Nexo receives the active lessons plus the ratings of the most similar past questions (`agent-memory.service.ts`).
+
 ## Project setup
 
 ```bash

@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
-import { Download, Loader2 } from "lucide-react";
+import { Download } from "lucide-react";
 import { toast } from "sonner";
 import { pdf } from "@react-pdf/renderer";
 import type { Client } from "@/api/clients/clients.get";
@@ -401,8 +401,8 @@ export function GenerateOfferModal({
             <Button
               type="submit"
               disabled={isSubmitting || allItems.length === 0}
-              icon={isSubmitting ? Loader2 : Download}
-              iconClassName={isSubmitting ? "animate-spin" : undefined}
+              icon={Download}
+              loading={isSubmitting}
             >
               {isSubmitting
                 ? "Guardando..."

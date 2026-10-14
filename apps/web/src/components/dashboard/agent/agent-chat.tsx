@@ -5,7 +5,10 @@ import { useQueryClient } from "@tanstack/react-query";
 import { CircleAlert, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
 import { AGENT_QUERY_KEYS } from "@/api/agent/agent.get";
-import type { AgentUIMessage } from "@/api/agent/agent.types";
+import type {
+  AgentDataSource,
+  AgentUIMessage,
+} from "@/api/agent/agent.types";
 import { Button } from "@/components/ui/button";
 import { getAgentChat, getAgentErrorMessage } from "@/lib/agent-chat";
 import { AgentChatActionsContext } from "./agent-chat-context";
@@ -41,6 +44,7 @@ export function AgentChat({ threadId, initialMessages }: AgentChatProps) {
     error,
     regenerate,
     addToolApprovalResponse,
+    addToolOutput,
   } = useChat<AgentUIMessage>({ chat });
 
   const isBusy = status === "submitted" || status === "streaming";
@@ -53,10 +57,21 @@ export function AgentChat({ threadId, initialMessages }: AgentChatProps) {
     void sendMessage({ text });
   }
 
+  const streamingId =
+    isBusy && last?.role === "assistant" ? last.id : undefined;
+
   const actions = {
+    threadId,
     isBusy,
     respondToApproval: (id: string, approved: boolean) => {
       void addToolApprovalResponse({ id, approved });
+    },
+    chooseDataSource: (toolCallId: string, source: AgentDataSource) => {
+      void addToolOutput({
+        tool: "ask_data_source",
+        toolCallId,
+        output: { source },
+      });
     },
   };
 
@@ -71,7 +86,11 @@ export function AgentChat({ threadId, initialMessages }: AgentChatProps) {
           <div className="flex min-h-0 flex-1 flex-col-reverse overflow-y-auto">
             <div className="flex flex-col gap-5 px-4 py-4">
               {messages.map((message) => (
-                <AgentMessage key={message.id} message={message} />
+                <AgentMessage
+                  key={message.id}
+                  message={message}
+                  showFeedback={message.id !== streamingId}
+                />
               ))}
               {showThinking ? <AgentThinking /> : null}
               {status === "error" ? (

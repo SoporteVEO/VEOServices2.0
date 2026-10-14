@@ -7,6 +7,7 @@ import { useDeleteSublist } from "@/api/pantallas/pantallas.mutations";
 import type { Sublist } from "@/api/pantallas/pantallas.types";
 import { Card, CardContent } from "@/components/primitives/ui/card";
 import { Button } from "@/components/ui/button";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { cn } from "@/lib/utils";
 import { CAMPAIGN_STATUS_ORDER } from "./pantallas-const";
 import { usePantallas } from "./pantallas-context";
@@ -33,6 +34,7 @@ export function SublistCard({
   const { refDate, canEdit, openDialog } = usePantallas();
   const deleteSublist = useDeleteSublist();
   const [dropHover, setDropHover] = useState(false);
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
   const stats = sublistStats(sublist, refDate);
 
   const visible = sublist.campaigns
@@ -46,16 +48,16 @@ export function SublistCard({
   const isDropTarget = dragging !== null && dragging.sublistId !== sublist.id;
   const fits = dragging ? dragging.spotsPerDay <= stats.free : true;
 
+  const campaignCount = sublist.campaigns.length;
+
   function handleDelete() {
-    const count = sublist.campaigns.length;
-    const message = count
-      ? `“${sublist.name}” tiene ${count} campaña(s). ¿Eliminar la sublista completa?`
-      : `¿Eliminar la sublista “${sublist.name}”?`;
-    if (!confirm(message)) return;
     deleteSublist.mutate(
       { id: sublist.id },
       {
-        onSuccess: () => toast.success("Sublista eliminada"),
+        onSuccess: () => {
+          toast.success("Sublista eliminada");
+          setConfirmDeleteOpen(false);
+        },
         onError: (err) => toast.error(err.message),
       },
     );
@@ -104,7 +106,7 @@ export function SublistCard({
                 icon={X}
                 title="Eliminar sublista"
                 disabled={deleteSublist.isPending}
-                onClick={handleDelete}
+                onClick={() => setConfirmDeleteOpen(true)}
               />
             </>
           ) : null}
@@ -168,6 +170,19 @@ export function SublistCard({
           </span>
         </div>
       </CardContent>
+
+      <ConfirmDialog
+        open={confirmDeleteOpen}
+        onOpenChange={setConfirmDeleteOpen}
+        title={`¿Eliminar la sublista “${sublist.name}”?`}
+        description={
+          campaignCount
+            ? `Tiene ${campaignCount} campaña(s). Se eliminará la sublista completa.`
+            : undefined
+        }
+        pending={deleteSublist.isPending}
+        onConfirm={handleDelete}
+      />
     </Card>
   );
 }

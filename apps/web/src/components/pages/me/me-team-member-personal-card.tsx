@@ -1,7 +1,6 @@
 "use client";
 
 import { useForm, Controller } from "react-hook-form";
-import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import type { MeTeamMember } from "@/api/me/me.types";
 import { useUpdateMyTeamMember } from "@/api/me/me.mutations";
@@ -82,7 +81,7 @@ export function MeTeamMemberPersonalCard({
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <div className="grid grid-cols-1 gap-4 @xl/main:grid-cols-3">
             <Input
               label="Nombre"
               required
@@ -91,7 +90,7 @@ export function MeTeamMemberPersonalCard({
             <Input label="Apellido" {...register("lastName")} />
             <Input label="Segundo apellido" {...register("secondLastName")} />
           </div>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <div className="grid grid-cols-1 gap-4 @xl/main:grid-cols-3">
             <Controller
               control={control}
               name="bornDate"
@@ -112,8 +111,7 @@ export function MeTeamMemberPersonalCard({
             <Button
               type="submit"
               disabled={mutation.isPending || !formState.isDirty}
-              icon={mutation.isPending ? Loader2 : undefined}
-              iconClassName={mutation.isPending ? "animate-spin" : undefined}
+              loading={mutation.isPending}
             >
               {mutation.isPending ? "Guardando..." : "Guardar"}
             </Button>

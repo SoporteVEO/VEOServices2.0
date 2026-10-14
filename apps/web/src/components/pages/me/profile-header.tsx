@@ -44,8 +44,8 @@ export function ProfileHeader({
   return (
     <Card>
       <CardContent>
-        <div className="flex flex-col gap-6 lg:flex-row lg:items-stretch lg:justify-between">
-          <div className="flex min-w-0 flex-1 flex-col items-start gap-4 sm:flex-row sm:items-center">
+        <div className="flex flex-col gap-6 @5xl/main:flex-row @5xl/main:items-stretch @5xl/main:justify-between">
+          <div className="flex min-w-0 flex-1 flex-col items-start gap-4 @xl/main:flex-row @xl/main:items-center">
             <Avatar size="lg" className="size-16 shrink-0">
               {profile.image ? (
                 <AvatarImage alt={fullName} src={profile.image} />
@@ -89,7 +89,7 @@ export function ProfileHeader({
           </div>
 
           {teamMember ? (
-            <div className="flex shrink-0 flex-col justify-center border-t border-border pt-6 lg:w-72 lg:border-t-0 lg:border-l lg:pl-6 lg:pt-0">
+            <div className="flex shrink-0 flex-col justify-center border-t border-border pt-6 @5xl/main:w-72 @5xl/main:border-t-0 @5xl/main:border-l @5xl/main:pl-6 @5xl/main:pt-0">
               <p className="text-xs font-medium text-muted-foreground">
                 Jefe directo
               </p>

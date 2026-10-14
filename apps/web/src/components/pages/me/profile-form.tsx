@@ -1,7 +1,6 @@
 "use client";
 
 import { useForm } from "react-hook-form";
-import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import type { MeProfile } from "@/api/me/me.types";
 import { useUpdateMe } from "@/api/me/me.mutations";
@@ -71,7 +70,7 @@ export function ProfileForm({ profile }: { profile: MeProfile }) {
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-4 @xl/main:grid-cols-2">
             <Input
               label="Nombre"
               {...register("firstName", { required: true })}
@@ -112,8 +111,7 @@ export function ProfileForm({ profile }: { profile: MeProfile }) {
             <Button
               type="submit"
               disabled={isPending || !isDirty}
-              icon={isPending ? Loader2 : undefined}
-              iconClassName={isPending ? "animate-spin" : undefined}
+              loading={isPending}
             >
               {isPending ? "Guardando..." : "Guardar cambios"}
             </Button>

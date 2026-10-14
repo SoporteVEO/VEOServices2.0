@@ -60,7 +60,7 @@ export function SummaryKpis() {
   const { EXPIRING, PAUSED, FINISHED, SCHEDULED } = totals.byStatus;
 
   return (
-    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 2xl:grid-cols-7">
+    <div className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,13.5rem),1fr))] gap-3">
       <KpiCard
         label="Última OP ingresada"
         value={order ? order.client : <span className="text-muted-foreground">—</span>}

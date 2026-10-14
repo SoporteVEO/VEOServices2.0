@@ -9,7 +9,7 @@ export function MyOfferDetailSkeleton() {
           <div className="flex min-w-0 flex-1 flex-col gap-2">
             <Skeleton className="h-5 w-40" />
             <Skeleton className="h-3.5 w-56" />
-            <Skeleton className="h-5 w-20 rounded-full" />
+            <Skeleton className="h-5 w-20" />
           </div>
           <Skeleton className="size-8 shrink-0 rounded-md" />
         </div>

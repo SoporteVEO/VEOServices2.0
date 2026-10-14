@@ -84,7 +84,7 @@ export function DatePicker({
             icon={CalendarIcon}
             className={cn(
               "w-full justify-start",
-              !value && "text-muted-foreground hover:text-muted-foreground!",
+              !value && "text-muted-foreground",
               buttonClassName,
             )}
           >

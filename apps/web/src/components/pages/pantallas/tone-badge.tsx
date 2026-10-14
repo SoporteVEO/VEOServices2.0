@@ -26,7 +26,7 @@ export function ToneBadge({
       variant="outline"
       className={cn("gap-1.5 whitespace-nowrap font-medium", TONE_BADGE_CLASS[tone], className)}
     >
-      <span className={cn("size-1.5 rounded-full", TONE_DOT_CLASS[tone])} />
+      <span className={cn("size-1.5", TONE_DOT_CLASS[tone])} />
       {children}
     </Badge>
   );

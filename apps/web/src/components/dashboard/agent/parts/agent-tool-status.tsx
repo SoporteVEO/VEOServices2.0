@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronRight, CircleAlert, CircleCheck, Loader2 } from "lucide-react";
+import { ChevronRight, CircleAlert, CircleCheck } from "lucide-react";
 import {
   Collapsible,
   CollapsibleContent,
@@ -43,21 +43,25 @@ export function AgentToolStatus({
       output !== null &&
       (output as { ok?: unknown }).ok === false);
 
-  const Icon = isRunning ? Loader2 : failed ? CircleAlert : CircleCheck;
+  const Icon = failed ? CircleAlert : CircleCheck;
   const inputText = stringify(input);
   const outputText = stringify(errorText ?? output);
 
   return (
     <Collapsible className="w-full rounded-md border bg-muted/30 text-xs">
       <CollapsibleTrigger className="group flex w-full items-center gap-2 px-2.5 py-1.5 text-left">
-        <Icon
-          className={cn(
-            "size-3.5 shrink-0",
-            isRunning && "animate-spin text-muted-foreground",
-            failed && "text-amber-600",
-            !isRunning && !failed && "text-emerald-600",
-          )}
-        />
+        {isRunning ? (
+          <span className="flex size-3.5 shrink-0 items-center justify-center">
+            <span className="size-2 shrink-0 bg-veo-gray animate-square-blink" aria-hidden />
+          </span>
+        ) : (
+          <Icon
+            className={cn(
+              "size-3.5 shrink-0",
+              failed ? "text-amber-600" : "text-emerald-600",
+            )}
+          />
+        )}
         <span className="font-medium">{label}</span>
         {detail ? (
           <span className="min-w-0 truncate font-mono text-muted-foreground">

@@ -17,7 +17,7 @@ export function PantallasSummary() {
       <div className="flex flex-col gap-3">
         <SectionHeading title="Pantallas" />
         {board.screens.length ? (
-          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+          <div className="grid gap-3 @xl/main:grid-cols-2 @7xl/main:grid-cols-3 @[96rem]/main:grid-cols-4">
             {board.screens.map((screen) => (
               <ScreenSummaryCard key={screen.id} screen={screen} />
             ))}

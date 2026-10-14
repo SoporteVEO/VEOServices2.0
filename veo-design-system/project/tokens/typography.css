@@ -1,0 +1,40 @@
+:root{
+--font-display:"Funnel Display","Funnel Sans",system-ui,sans-serif;
+--font-sans:"Funnel Sans",system-ui,sans-serif;
+
+/* Weights — SemiBold for headlines, Light for body, Regular for small/screen/sunlit */
+--weight-light:300;
+--weight-regular:400;
+--weight-semibold:600;
+
+/* Fixed scale (manual §4.8): 144 · 96 · 72 · 48 · 36 · 24 · 18 · 12 — all multiples of 6 */
+--size-144:144px;
+--size-96:96px;
+--size-72:72px;
+--size-48:48px;
+--size-36:36px;
+--size-24:24px;
+--size-18:18px;
+--size-12:12px;
+/* UI additions for dense screens (not in manual) */
+--size-16:16px;
+--size-14:14px;
+
+--leading-tight:0.95;
+--leading-snug:1.1;
+--leading-body:1.4;
+--tracking-display:-0.02em;
+--tracking-eyebrow:0.08em;
+
+/* Semantic roles */
+--type-campaign:var(--weight-semibold) var(--size-96)/var(--leading-tight) var(--font-display);
+--type-h1:var(--weight-semibold) var(--size-72)/var(--leading-tight) var(--font-display);
+--type-h2:var(--weight-semibold) var(--size-48)/var(--leading-snug) var(--font-display);
+--type-h3:var(--weight-semibold) var(--size-36)/var(--leading-snug) var(--font-display);
+--type-h4:var(--weight-semibold) var(--size-24)/var(--leading-snug) var(--font-display);
+--type-lead:var(--weight-light) var(--size-24)/var(--leading-body) var(--font-sans);
+--type-body:var(--weight-light) var(--size-18)/var(--leading-body) var(--font-sans);
+--type-ui:var(--weight-regular) var(--size-14)/var(--leading-body) var(--font-sans);
+--type-small:var(--weight-regular) var(--size-12)/var(--leading-body) var(--font-sans);
+--type-eyebrow:var(--weight-semibold) var(--size-12)/1 var(--font-sans);
+}

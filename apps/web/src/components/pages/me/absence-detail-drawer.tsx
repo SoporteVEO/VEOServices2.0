@@ -6,7 +6,6 @@ import {
   Clock,
   FileText,
   ImagePlus,
-  Loader2,
   Pencil,
   Trash2,
   X,
@@ -22,7 +21,7 @@ import {
   useUpdateMyAbsence,
 } from "@/api/absences/absences.mutations";
 import { Button as PrimitiveButton } from "@/components/primitives/ui/button";
-import { Button } from "@/components/ui/button";
+import { Button, PendingBar } from "@/components/ui/button";
 import {
   Drawer,
   DrawerContent,
@@ -405,8 +404,7 @@ function FieldToolbar({ isPending }: { isPending: boolean }) {
           type="button"
           sizeVariant="sm"
           disabled={isPending}
-          icon={isPending ? Loader2 : undefined}
-          iconClassName={isPending ? "animate-spin" : undefined}
+          loading={isPending}
         >
           Guardar
         </Button>
@@ -487,14 +485,12 @@ function DocumentsEditor({
                 aria-label="Eliminar documento"
                 onClick={() => handleRemove(image.id)}
                 disabled={isBusy}
-                className="absolute right-1 top-1 inline-flex size-5 items-center justify-center rounded-full bg-background/90 text-foreground opacity-0 ring-1 ring-border transition-opacity hover:bg-destructive hover:text-destructive-foreground group-hover:opacity-100 focus-visible:opacity-100 disabled:cursor-not-allowed"
+                aria-busy={isRemoving || undefined}
+                className="absolute right-1 top-1 inline-flex size-5 items-center justify-center bg-background/90 text-foreground opacity-0 ring-1 ring-border transition-opacity hover:bg-destructive hover:text-destructive-foreground group-hover:opacity-100 focus-visible:opacity-100 disabled:cursor-not-allowed"
               >
-                {isRemoving ? (
-                  <Loader2 className="size-3 animate-spin" />
-                ) : (
-                  <Trash2 className="size-3" />
-                )}
+                <Trash2 className="size-3" />
               </button>
+              {isRemoving ? <PendingBar /> : null}
             </div>
           );
         })}
@@ -504,14 +500,12 @@ function DocumentsEditor({
           onClick={() => inputRef.current?.click()}
           aria-label="Agregar documento"
           disabled={isBusy}
-          className="inline-flex size-20 flex-col items-center justify-center gap-1 rounded-md border border-dashed text-muted-foreground transition-colors hover:bg-accent hover:text-foreground disabled:cursor-not-allowed disabled:opacity-50"
+          aria-busy={isAdding || undefined}
+          className="relative inline-flex size-20 flex-col items-center justify-center gap-1 overflow-hidden rounded-md border border-dashed text-muted-foreground transition-colors hover:bg-accent hover:text-foreground disabled:cursor-not-allowed disabled:opacity-50"
         >
-          {isAdding ? (
-            <Loader2 className="size-5 animate-spin" />
-          ) : (
-            <ImagePlus className="size-5" />
-          )}
+          <ImagePlus className="size-5" />
           <span className="text-[10px]">Agregar</span>
+          {isAdding ? <PendingBar /> : null}
         </button>
       </div>
 

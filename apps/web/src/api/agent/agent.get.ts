@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { apiFetch } from "@/lib/api";
 import type {
   AgentCapabilities,
+  AgentMessageFeedback,
   AgentThreadDetail,
   AgentThreadSummary,
 } from "./agent.types";
@@ -9,6 +10,7 @@ import type {
 export const AGENT_QUERY_KEYS = {
   threads: ["agent", "threads"] as const,
   thread: (id: string) => ["agent", "threads", id] as const,
+  feedback: (id: string) => ["agent", "feedback", id] as const,
   capabilities: ["agent", "capabilities"] as const,
 };
 
@@ -40,6 +42,21 @@ export function useAgentThread(id: string | null) {
     queryKey: AGENT_QUERY_KEYS.thread(id ?? "new"),
     queryFn: () => getAgentThread(id!),
     enabled: id != null,
+    staleTime: Infinity,
+  });
+}
+
+export async function getAgentThreadFeedback(id: string) {
+  const response = await apiFetch<{ data: AgentMessageFeedback[] }>(
+    `/agent/threads/${id}/feedback`,
+  );
+  return response.data;
+}
+
+export function useAgentThreadFeedback(id: string) {
+  return useQuery({
+    queryKey: AGENT_QUERY_KEYS.feedback(id),
+    queryFn: () => getAgentThreadFeedback(id),
     staleTime: Infinity,
   });
 }

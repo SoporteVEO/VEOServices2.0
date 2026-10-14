@@ -74,12 +74,12 @@ export function NotificationItem({
       {isPending ? (
         <span
           aria-hidden
-          className="absolute left-1.5 top-1/2 size-1.5 -translate-y-1/2 rounded-full bg-primary"
+          className="absolute left-1.5 top-1/2 size-1.5 -translate-y-1/2 bg-primary"
         />
       ) : null}
       <div
         className={cn(
-          "ms-2 flex size-9 shrink-0 items-center justify-center rounded-full",
+          "ms-2 flex size-9 shrink-0 items-center justify-center",
           visual.ringClass,
         )}
       >

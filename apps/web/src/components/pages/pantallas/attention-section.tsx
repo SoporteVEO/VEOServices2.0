@@ -98,11 +98,11 @@ function AttentionBlock({
   return (
     <div className="flex flex-col gap-2">
       <p className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
-        <span className={cn("size-2 rounded-full", dotClass)} />
+        <span className={cn("size-2", dotClass)} />
         {title}
-        <span className="rounded-full bg-muted px-1.5 tabular-nums">{groups.length}</span>
+        <span className="bg-muted px-1.5 tabular-nums">{groups.length}</span>
       </p>
-      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+      <div className="grid gap-3 @xl/main:grid-cols-2 @7xl/main:grid-cols-3">
         {groups.map((group) => (
           <AttentionCard key={group.key} group={group} />
         ))}

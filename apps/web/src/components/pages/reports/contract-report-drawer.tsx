@@ -451,7 +451,7 @@ function SelectableImage({
 
       <div
         className={cn(
-          "pointer-events-none absolute left-1.5 top-1.5 flex size-6 items-center justify-center rounded-full border-2 transition-all",
+          "pointer-events-none absolute left-1.5 top-1.5 flex size-6 items-center justify-center border-2 transition-all",
           isSelected
             ? "border-primary bg-primary text-primary-foreground"
             : "border-white/80 bg-black/30 text-transparent backdrop-blur-sm group-hover:bg-black/40",
@@ -468,7 +468,7 @@ function SelectableImage({
           onPreview();
         }}
         aria-label="Vista previa de imagen"
-        className="absolute right-1.5 top-1.5 flex size-6 cursor-pointer items-center justify-center rounded-full bg-black/40 text-white opacity-0 backdrop-blur-sm transition-opacity hover:bg-black/60 focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 group-hover:opacity-100"
+        className="absolute right-1.5 top-1.5 flex size-6 cursor-pointer items-center justify-center bg-black/40 text-white opacity-0 backdrop-blur-sm transition-opacity hover:bg-black/60 focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 group-hover:opacity-100"
       >
         <Eye className="size-3.5" />
       </button>

@@ -1,7 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { Check, CircleCheck, CircleX, Loader2, X } from "lucide-react";
+import { Check, CircleCheck, CircleX, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAgentChatActions } from "../agent-chat-context";
 import { AgentPartFrame } from "./agent-part-frame";
@@ -56,7 +56,7 @@ export function AgentApprovalCard({
     if (state === "approval-responded" || state === "input-available") {
       return (
         <p className="flex items-center gap-2 border-t px-3 py-2 text-xs text-muted-foreground">
-          <Loader2 className="size-3.5 animate-spin" /> Ejecutando…
+          <span className="size-2 shrink-0 bg-veo-gray animate-square-blink" aria-hidden /> Ejecutando…
         </p>
       );
     }

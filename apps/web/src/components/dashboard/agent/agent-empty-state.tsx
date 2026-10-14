@@ -1,6 +1,6 @@
 "use client";
 
-import { Loader2, RotateCcw } from "lucide-react";
+import { RotateCcw } from "lucide-react";
 import { useAgentCapabilities } from "@/api/agent/agent.get";
 import { Badge } from "@/components/primitives/ui/badge";
 import { Skeleton } from "@/components/primitives/ui/skeleton";
@@ -65,16 +65,11 @@ export function AgentEmptyState({
 
   return (
     <div className="flex flex-1 flex-col items-center justify-center gap-5 px-6 py-10 text-center">
-      <div className="relative">
-        <div className="absolute inset-x-4 bottom-0 h-4 rounded-full bg-primary/25 blur-md" />
-        <NexoAvatar
-          size={128}
-          priority
-          className="relative motion-safe:animate-nexo-float drop-shadow-[0_8px_18px_rgba(163,230,53,0.35)]"
-        />
+      <div className="relative border-b-2 border-veo-lime pb-2">
+        <NexoAvatar size={112} priority className="relative" />
       </div>
-      <div className="space-y-1">
-        <p className="font-medium">{AGENT_GREETING}</p>
+      <div className="flex flex-col gap-1">
+        <p className="font-heading text-lg font-semibold">{AGENT_GREETING}</p>
         <p className="text-sm text-muted-foreground">
           Puedo consultar datos del sistema y generar reportes, tablas,
           gráficos, Excel y PDF por ti.
@@ -92,7 +87,7 @@ export function AgentEmptyState({
           ))}
           <div className="mt-2 flex flex-wrap justify-center gap-1">
             {Array.from({ length: 5 }, (_, i) => (
-              <Skeleton key={i} className="h-5 w-16 rounded-full" />
+              <Skeleton key={i} className="h-5 w-16" />
             ))}
           </div>
         </div>
@@ -103,8 +98,8 @@ export function AgentEmptyState({
           <Button
             variant="outline"
             sizeVariant="sm"
-            icon={isRefetching ? Loader2 : RotateCcw}
-            iconClassName={isRefetching ? "animate-spin" : ""}
+            icon={RotateCcw}
+            loading={isRefetching}
             disabled={isRefetching}
             onClick={() => void refetch()}
           >
@@ -118,7 +113,7 @@ export function AgentEmptyState({
             <Button
               key={suggestion.prompt}
               variant="outline"
-              className="h-auto justify-start whitespace-normal py-2 text-left font-normal"
+              className="h-auto justify-start whitespace-normal border-l-2 border-l-veo-gray py-2.5 text-left font-normal dark:border-l-veo-lime"
               onClick={() => onPick(suggestion.prompt)}
             >
               {suggestion.prompt}

@@ -54,9 +54,9 @@ const SKELETON_CELL_WIDTHS = [
 type DataTableRowSize = "sm" | "md" | "lg";
 
 const ROW_SIZE_CELL_CLASS: Record<DataTableRowSize, string> = {
-  sm: "px-2 py-1.5",
-  md: "px-2 py-2.5",
-  lg: "px-2 py-3.5",
+  sm: "px-3 py-1.5",
+  md: "px-3 py-2.5",
+  lg: "px-3 py-3.5",
 };
 
 export type DataTableRowSelection<TData> = {
@@ -196,17 +196,14 @@ export function DataTable<TData, TValue>({
 
   return (
     <div
-      className={cn(
-        "flex min-h-0 flex-col overflow-hidden rounded-md",
-        className,
-      )}
+      className={cn("flex min-h-0 flex-col gap-3 overflow-hidden", className)}
       aria-busy={isLoading}
-      aria-label={isLoading ? "Loading table" : undefined}
+      aria-label={isLoading ? "Cargando tabla" : undefined}
     >
       {(onSearchChange || sideButtons) && (
-        <div className="flex min-w-0 shrink-0 items-center gap-2 py-2">
+        <div className="flex min-w-0 shrink-0 flex-wrap items-center gap-2">
           {onSearchChange && (
-            <div className="ml-1 w-full max-w-sm min-w-0 shrink-0">
+            <div className="w-full max-w-sm min-w-[12rem] flex-1">
               <Input
                 placeholder={searchPlaceholder}
                 value={searchValue ?? ""}
@@ -221,9 +218,9 @@ export function DataTable<TData, TValue>({
           )}
         </div>
       )}
-      <div className="min-h-0 flex-1 overflow-auto rounded-md border border-border">
-        <Table containerClassName="overflow-visible border-0">
-          <TableHeader className="sticky top-0 z-10 bg-muted [&_th]:bg-muted [&_th]:shadow-[inset_0_-1px_0_hsl(var(--border))]">
+      <div className="min-h-0 flex-1 overflow-auto border border-border bg-card">
+        <Table containerClassName="overflow-visible border-0 bg-transparent">
+          <TableHeader className="sticky top-0 z-10 [&_th]:bg-muted [&_th]:shadow-[inset_0_-1px_0_var(--color-border)]">
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id} className="hover:bg-transparent">
                 {headerGroup.headers.map((header) => {
@@ -246,17 +243,13 @@ export function DataTable<TData, TValue>({
               Array.from({ length: skeletonRowCount }, (_, rowIndex) => (
                 <TableRow
                   key={`skeleton-${rowIndex}`}
-                  className={cn(
-                    "hover:bg-transparent",
-                    rowIndex % 2 === 0 ? "bg-background" : "bg-muted/75",
-                  )}
+                  className="hover:bg-transparent"
                 >
                   {tableColumns.map((_, colIndex) => (
                     <TableCell key={colIndex} className={rowSizeCellClass}>
                       <Skeleton
                         className={cn(
-                          "h-4",
-                          rowIndex % 2 === 0 ? "bg-muted" : "bg-background",
+                          "h-3.5",
                           SKELETON_CELL_WIDTHS[
                             colIndex % SKELETON_CELL_WIDTHS.length
                           ],
@@ -272,10 +265,9 @@ export function DataTable<TData, TValue>({
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}
                   className={cn(
-                    onRowClick && "cursor-pointer",
-                    index % 2 === 0
-                      ? "bg-background hover:bg-muted"
-                      : "bg-muted/50 hover:bg-muted",
+                    onRowClick &&
+                      "cursor-pointer hover:[&>td:first-child]:shadow-[inset_3px_0_0_var(--color-veo-gray)]",
+                    index % 2 === 1 && "bg-muted/45",
                   )}
                   onClick={
                     onRowClick
@@ -300,7 +292,7 @@ export function DataTable<TData, TValue>({
                 <TableCell
                   colSpan={tableColumns.length}
                   className={cn(
-                    "h-24 text-center text-muted-foreground",
+                    "h-32 text-center text-sm text-muted-foreground whitespace-normal",
                     rowSizeCellClass,
                   )}
                 >

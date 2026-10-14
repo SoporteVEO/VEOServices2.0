@@ -25,6 +25,16 @@ const transport = new DefaultChatTransport<AgentUIMessage>({
   }),
 });
 
+/** Resumes the run once the user picks a source in an `ask_data_source` card. */
+function answeredDataSource({ messages }: { messages: AgentUIMessage[] }) {
+  const last = messages[messages.length - 1];
+  if (last?.role !== "assistant") return false;
+  const part = last.parts[last.parts.length - 1];
+  return (
+    part?.type === "tool-ask_data_source" && part.state === "output-available"
+  );
+}
+
 interface AgentChatCallbacks {
   onFinish: (chatId: string) => void;
   onError: (error: Error) => void;
@@ -46,7 +56,9 @@ export function getAgentChat(
     id,
     messages,
     transport,
-    sendAutomaticallyWhen: lastAssistantMessageIsCompleteWithApprovalResponses,
+    sendAutomaticallyWhen: (options) =>
+      lastAssistantMessageIsCompleteWithApprovalResponses(options) ||
+      answeredDataSource(options),
     onFinish: () => callbacks.onFinish(id),
     onError: callbacks.onError,
   });

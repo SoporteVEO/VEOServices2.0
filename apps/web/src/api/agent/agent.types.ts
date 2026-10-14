@@ -215,7 +215,17 @@ export type AgentUITools = {
     input: AgentIssueReportInput;
     output: AgentIssueReportOutput | AgentToolError;
   };
+  remember_learning: {
+    input: { content: string };
+    output: { ok: true; saved: boolean } | AgentToolError;
+  };
+  ask_data_source: {
+    input: { topic: string };
+    output: { source: AgentDataSource };
+  };
 };
+
+export type AgentDataSource = "VEO" | "BRILO";
 
 export interface AgentMessageMetadata {
   createdAt?: number;
@@ -244,6 +254,21 @@ export interface AgentThreadSummary {
 
 export interface AgentThreadDetail extends AgentThreadSummary {
   messages: AgentUIMessage[];
+}
+
+export type AgentFeedbackRating = "LIKE" | "DISLIKE";
+
+export type AgentFeedbackReason =
+  | "WRONG_DATA"
+  | "MISUNDERSTOOD"
+  | "INCOMPLETE"
+  | "OTHER";
+
+export interface AgentMessageFeedback {
+  messageId: string;
+  rating: AgentFeedbackRating;
+  reason: AgentFeedbackReason | null;
+  comment: string | null;
 }
 
 export interface AgentCapabilities {

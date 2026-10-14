@@ -34,21 +34,26 @@ export function DashboardShell({ children }: { children: ReactNode }) {
         <ActivityTracker />
         <AppSidebar />
         <SidebarInset className="min-w-0 overflow-hidden">
-          <header className="flex h-12 shrink-0 items-center gap-2 border-b border-border px-4 w-full">
-            <SidebarTrigger className="-ms-1" />
-            <Separator orientation="vertical" className="me-1 mt-3 h-6" />
-            <span className="text-sm font-medium text-muted-foreground capitalize">
-              {title}
-            </span>
-            <div className="flex flex-1 items-center justify-end gap-2">
+          <header className="sticky top-0 z-20 flex h-14 w-full shrink-0 items-center gap-3 border-b border-border bg-card px-3 md:px-4">
+            <SidebarTrigger className="-ms-1 text-muted-foreground hover:text-foreground" />
+            <div className="flex min-w-0 items-center gap-2">
+              <span aria-hidden className="size-1.5 shrink-0 bg-veo-lime" />
+              <span className="truncate font-heading text-[0.9375rem] font-semibold capitalize tracking-[-0.01em] text-foreground">
+                {title}
+              </span>
+            </div>
+            <div className="flex flex-1 items-center justify-end gap-1.5">
               <NotificationsButton />
               <ModeToggle />
+              <Separator orientation="vertical" className="mx-1 h-5" />
               <AgentPanelTrigger />
             </div>
           </header>
           <div className="relative flex min-w-0 flex-1 flex-col overflow-hidden">
-            <div className="flex h-full min-h-0 w-full min-w-0 flex-1 flex-col overflow-x-auto overflow-y-auto p-3 bg-background">
-              <DashboardAccessGuard>{children}</DashboardAccessGuard>
+            <div className="@container/main flex h-full min-h-0 w-full min-w-0 flex-1 flex-col overflow-x-auto overflow-y-auto bg-background">
+              <div className="mx-auto flex min-h-0 w-full max-w-[1800px] flex-1 flex-col p-3 @3xl/main:p-5 @7xl/main:p-6">
+                <DashboardAccessGuard>{children}</DashboardAccessGuard>
+              </div>
             </div>
           </div>
         </SidebarInset>

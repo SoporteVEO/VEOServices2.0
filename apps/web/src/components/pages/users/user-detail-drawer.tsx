@@ -8,7 +8,6 @@ import {
   Clock,
   Copy,
   type LucideIcon,
-  Loader2,
   LogOut,
   Mail,
   Trash2,
@@ -253,10 +252,7 @@ function UserDetailContent({
               <ActionButton
                 type="submit"
                 disabled={!isDirty || updateMutation.isPending}
-                icon={updateMutation.isPending ? Loader2 : undefined}
-                iconClassName={
-                  updateMutation.isPending ? "animate-spin" : undefined
-                }
+                loading={updateMutation.isPending}
               >
                 {updateMutation.isPending ? "Guardando..." : "Guardar cambios"}
               </ActionButton>
@@ -391,8 +387,7 @@ function DangerZone({
             variant={user.disabled ? "outline" : "destructive"}
             onClick={() => onToggleDisabled(!user.disabled)}
             disabled={isUpdating}
-            icon={isUpdating ? Loader2 : undefined}
-            iconClassName={isUpdating ? "animate-spin" : undefined}
+            loading={isUpdating}
           >
             {user.disabled ? "Habilitar" : "Deshabilitar"}
           </ActionButton>
@@ -409,8 +404,7 @@ function DangerZone({
             variant="outline"
             onClick={onForceLogout}
             disabled={isLoggingOut}
-            icon={isLoggingOut ? Loader2 : undefined}
-            iconClassName={isLoggingOut ? "animate-spin" : undefined}
+            loading={isLoggingOut}
           >
             Cerrar sesiones
           </ActionButton>

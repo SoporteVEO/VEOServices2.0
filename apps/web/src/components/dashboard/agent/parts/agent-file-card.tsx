@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Download, FileSpreadsheet, FileText, Loader2 } from "lucide-react";
+import { Download, FileSpreadsheet, FileText } from "lucide-react";
 import { toast } from "sonner";
 import type { AgentExcelInput, AgentPdfInput } from "@/api/agent/agent.types";
 import { Button } from "@/components/ui/button";
@@ -53,8 +53,8 @@ export function AgentFileCard(props: AgentFileCardProps) {
       actions={
         <Button
           sizeVariant="sm"
-          icon={downloading ? Loader2 : Download}
-          iconClassName={downloading ? "animate-spin" : ""}
+          icon={Download}
+          loading={downloading}
           disabled={downloading}
           onClick={handleDownload}
         >

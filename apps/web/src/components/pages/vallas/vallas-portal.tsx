@@ -2,7 +2,6 @@
 
 import { useMemo, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Loader2 } from "lucide-react";
 import {
   useAvailableBillboards,
   useBillboardStates,
@@ -120,7 +119,7 @@ export function VallasPortal() {
             <h2 className="text-xl font-semibold tracking-tight text-foreground">
               Vallas disponibles
             </h2>
-            <div className="flex items-center gap-2 rounded-full bg-muted px-3 py-1">
+            <div className="flex items-center gap-2 bg-muted px-3 py-1">
               <span className="text-sm font-medium text-foreground">
                 {billboards.length}
               </span>
@@ -129,8 +128,11 @@ export function VallasPortal() {
           </div>
 
           {isRefreshing && (
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Loader2 className="size-4 animate-spin" />
+            <div
+              role="status"
+              className="flex items-center gap-2 text-sm text-muted-foreground"
+            >
+              <Skeleton className="h-3 w-12" />
               <span>Actualizando...</span>
             </div>
           )}

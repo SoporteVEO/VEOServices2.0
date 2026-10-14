@@ -18,6 +18,7 @@ import {
   Wrench,
   Car,
   Bug,
+  GraduationCap,
 } from "lucide-react";
 import {
   IMAGES_MODULE_FIELD_ROLES,
@@ -160,6 +161,13 @@ export const NAV_GROUPS: NavGroup[] = [
         title: "Errores de Nexo",
         href: "/dashboard/desarrollo",
         icon: Bug,
+        allowedRoles: [],
+        requiredSubRoles: ["DESARROLLADOR"],
+      },
+      {
+        title: "Aprendizaje de Nexo",
+        href: "/dashboard/desarrollo/aprendizaje",
+        icon: GraduationCap,
         allowedRoles: [],
         requiredSubRoles: ["DESARROLLADOR"],
       },

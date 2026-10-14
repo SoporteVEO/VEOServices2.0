@@ -26,7 +26,7 @@ export function InventoryGrid({
   if (billboards.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border/60 bg-card/30 py-32 text-center mt-8">
-        <div className="flex size-20 items-center justify-center rounded-full bg-muted/50 mb-6">
+        <div className="flex size-20 items-center justify-center bg-muted/50 mb-6">
           <Frown className="size-10 text-muted-foreground" />
         </div>
         <h3 className="text-xl font-semibold text-foreground mb-2">

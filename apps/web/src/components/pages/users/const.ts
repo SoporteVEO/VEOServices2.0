@@ -176,6 +176,6 @@ export const SUB_ROLE_OPTIONS: { value: SubRole; label: string; description: str
     value: "DESARROLLADOR",
     label: "Desarrollador",
     description:
-      "Acceso al módulo de Desarrollo: tickets de errores reportados por Nexo",
+      "Acceso al módulo de Desarrollo: tickets de errores reportados por Nexo y revisión de sus aprendizajes",
   },
 ];

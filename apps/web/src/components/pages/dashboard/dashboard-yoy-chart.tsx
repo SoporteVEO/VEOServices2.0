@@ -154,7 +154,7 @@ function SummaryStat({
     <span className="flex items-center gap-1.5">
       {colorVar ? (
         <span
-          className="size-2 rounded-full"
+          className="size-2"
           style={{ backgroundColor: colorVar }}
         />
       ) : null}

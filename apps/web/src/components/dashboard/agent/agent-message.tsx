@@ -3,6 +3,7 @@
 import type { AgentUIMessage } from "@/api/agent/agent.types";
 import { cn } from "@/lib/utils";
 import { AgentMarkdown } from "./agent-markdown";
+import { AgentMessageFeedback } from "./agent-message-feedback";
 import { NexoAvatar } from "./nexo-avatar";
 import { AgentToolPart } from "./parts/agent-tool-part";
 
@@ -12,14 +13,20 @@ function UserMessage({ message }: { message: AgentUIMessage }) {
     .join("");
   return (
     <div className="flex justify-end">
-      <p className="max-w-[85%] whitespace-pre-wrap rounded-2xl rounded-br-sm bg-primary px-3.5 py-2 text-sm text-primary-foreground">
+      <p className="max-w-[85%] whitespace-pre-wrap border-r-2 border-veo-lime bg-primary px-3.5 py-2 text-sm leading-relaxed text-primary-foreground">
         {text}
       </p>
     </div>
   );
 }
 
-export function AgentMessage({ message }: { message: AgentUIMessage }) {
+export function AgentMessage({
+  message,
+  showFeedback = false,
+}: {
+  message: AgentUIMessage;
+  showFeedback?: boolean;
+}) {
   if (message.role === "user") return <UserMessage message={message} />;
 
   return (
@@ -38,6 +45,7 @@ export function AgentMessage({ message }: { message: AgentUIMessage }) {
           }
           return null;
         })}
+        {showFeedback ? <AgentMessageFeedback messageId={message.id} /> : null}
       </div>
     </div>
   );
@@ -47,7 +55,7 @@ function AssistantAvatar({ className }: { className?: string }) {
   return (
     <span
       className={cn(
-        "flex size-7 shrink-0 items-center justify-center rounded-full bg-zinc-950 ring-1 ring-primary/30",
+        "flex size-7 shrink-0 items-center justify-center bg-veo-dark ring-1 ring-veo-lime/40",
         className,
       )}
     >
@@ -62,12 +70,12 @@ export function AgentThinking({ className }: { className?: string }) {
       className={cn("flex items-center gap-2.5", className)}
       aria-label="Pensando"
     >
-      <AssistantAvatar className="motion-safe:animate-nexo-float" />
+      <AssistantAvatar />
       <div className="flex items-center gap-1">
-        {[0, 150, 300].map((delay) => (
+        {[0, 200, 400].map((delay) => (
           <span
             key={delay}
-            className="size-1.5 animate-bounce rounded-full bg-muted-foreground/60"
+            className="size-1.5 animate-square-blink bg-veo-gray dark:bg-veo-lime"
             style={{ animationDelay: `${delay}ms` }}
           />
         ))}

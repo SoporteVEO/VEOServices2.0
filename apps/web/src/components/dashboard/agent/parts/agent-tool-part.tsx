@@ -8,6 +8,7 @@ import {
 } from "@/api/agent/agent.types";
 import { AgentApiCallPart } from "./agent-api-call-part";
 import { AgentChart } from "./agent-chart";
+import { AgentDataSourceCard } from "./agent-data-source-card";
 import { AgentEmailPart } from "./agent-email-part";
 import { AgentFileCard } from "./agent-file-card";
 import { AgentImageGallery } from "./agent-image-gallery";
@@ -26,6 +27,7 @@ const TOOL_LABELS: Record<string, string> = {
   get_sales_summary: "Consultando ventas",
   run_query: "Consultando el ERP",
   report_issue: "Reportando el problema al equipo de desarrollo",
+  remember_learning: "Aprendiendo de tu corrección",
 };
 
 function BuildingPlaceholder({ label }: { label: string }) {
@@ -136,6 +138,29 @@ export function AgentToolPart({ part }: { part: AgentMessagePart }) {
         <AgentToolStatus
           label={TOOL_LABELS.report_issue}
           state={part.state}
+          output={part.state === "output-available" ? part.output : undefined}
+          errorText={part.state === "output-error" ? part.errorText : undefined}
+        />
+      );
+
+    case "tool-ask_data_source":
+      return (
+        <AgentDataSourceCard
+          toolCallId={part.toolCallId}
+          topic={part.input?.topic}
+          state={part.state}
+          chosen={
+            part.state === "output-available" ? part.output.source : undefined
+          }
+        />
+      );
+
+    case "tool-remember_learning":
+      return (
+        <AgentToolStatus
+          label={TOOL_LABELS.remember_learning}
+          state={part.state}
+          input={part.input?.content}
           output={part.state === "output-available" ? part.output : undefined}
           errorText={part.state === "output-error" ? part.errorText : undefined}
         />

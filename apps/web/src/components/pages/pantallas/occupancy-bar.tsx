@@ -19,7 +19,7 @@ export function OccupancyBar({
   const filled = Math.min(100, Math.max(0, pct));
   const paused = Math.min(100 - filled, Math.max(0, pausedPct));
   return (
-    <div className={cn("flex h-2 w-full overflow-hidden rounded-full bg-muted", className)}>
+    <div className={cn("flex h-2 w-full overflow-hidden bg-muted", className)}>
       <div className={cn("h-full transition-all", TONE_CLASS[barTone(pct)])} style={{ width: `${filled}%` }} />
       {paused > 0 ? (
         <div className="h-full bg-violet-400/70" style={{ width: `${paused}%` }} />

@@ -115,7 +115,7 @@ export function MyOfferHistory({ offer }: { offer: OfferDetail }) {
         <li key={event.id} className="relative">
           <span
             className={cn(
-              "absolute -left-[26px] top-1 size-2.5 rounded-full ring-2 ring-background",
+              "absolute -left-[26px] top-1 size-2.5 ring-2 ring-background",
               EVENT_DOT[event.type],
             )}
             aria-hidden

@@ -1,6 +1,5 @@
 "use client";
 
-import { Loader2 } from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
@@ -33,8 +32,9 @@ export function AgentIconButton({
           <Button
             variant="ghost"
             sizeVariant="sm"
-            icon={loading ? Loader2 : icon}
-            iconClassName={cn(loading && "animate-spin", iconClassName)}
+            icon={icon}
+            loading={loading}
+            iconClassName={iconClassName}
             className={cn("size-8 border-0 p-0 shadow-none", className)}
             disabled={disabled || loading}
             aria-label={label}

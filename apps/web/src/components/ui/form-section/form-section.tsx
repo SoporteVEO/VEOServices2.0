@@ -18,12 +18,12 @@ export function FormSection({
   return (
     <section
       className={cn(
-        "rounded-md border border-border/80 bg-muted/15 p-4",
+        "rounded-md border border-border bg-card p-5",
         className,
       )}
     >
-      <header className="mb-4 pb-3">
-        <h3 className="text-base font-medium tracking-tight text-muted-foreground">
+      <header className="mb-4 border-b border-border pb-3">
+        <h3 className="flex items-center gap-2 text-sm font-semibold text-foreground before:size-1.5 before:shrink-0 before:bg-veo-gray dark:before:bg-veo-lime">
           {title}
         </h3>
         {description ? (
@@ -32,7 +32,7 @@ export function FormSection({
           </p>
         ) : null}
       </header>
-      <div className="space-y-4">{children}</div>
+      <div className="flex flex-col gap-4">{children}</div>
     </section>
   );
 }

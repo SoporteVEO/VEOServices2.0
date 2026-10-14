@@ -3,7 +3,6 @@
 import { useMemo, useState } from "react";
 import {
   Briefcase,
-  Loader2,
   Mail,
   MessageSquarePlus,
   UserCircle2,
@@ -163,14 +162,14 @@ function DrawerSkeleton({ onClose }: { onClose: () => void }) {
       <DrawerHeader className="shrink-0 border-b">
         <div className="flex items-start justify-between gap-3">
           <div className="flex min-w-0 flex-1 items-center gap-3">
-            <Skeleton className="size-10 shrink-0 rounded-full" />
+            <Skeleton className="size-10 shrink-0" />
             <div className="min-w-0 flex-1 space-y-1.5">
               <Skeleton className="h-4 w-44" />
               <Skeleton className="h-3 w-56" />
               <div className="flex flex-wrap gap-1.5 pt-1">
-                <Skeleton className="h-4 w-14 rounded-full" />
-                <Skeleton className="h-4 w-20 rounded-full" />
-                <Skeleton className="h-4 w-16 rounded-full" />
+                <Skeleton className="h-4 w-14" />
+                <Skeleton className="h-4 w-20" />
+                <Skeleton className="h-4 w-16" />
               </div>
             </div>
           </div>
@@ -206,7 +205,7 @@ function LinkedUserCardSkeleton() {
       </CardHeader>
       <CardContent>
         <div className="flex items-center gap-3 rounded-lg border border-border/80 bg-muted/20 p-3">
-          <Skeleton className="size-8 shrink-0 rounded-full" />
+          <Skeleton className="size-8 shrink-0" />
           <div className="min-w-0 flex-1 space-y-1.5">
             <Skeleton className="h-3.5 w-36" />
             <Skeleton className="h-3 w-48" />
@@ -709,8 +708,8 @@ function CommentsCard({ detail }: { detail: TeamMemberDetail }) {
               type="submit"
               sizeVariant="sm"
               disabled={isPending || !newComment.trim()}
-              icon={isPending ? Loader2 : MessageSquarePlus}
-              iconClassName={isPending ? "animate-spin" : undefined}
+              icon={MessageSquarePlus}
+              loading={isPending}
             >
               {isPending ? "Guardando…" : "Agregar"}
             </Button>

@@ -118,7 +118,7 @@ function Stat({
   return (
     <div className="flex flex-col items-center gap-0.5 rounded-md border bg-accent/10 px-2 py-1.5">
       <span className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
-        <span className={cn("size-2 rounded-full", colorClassName)} />
+        <span className={cn("size-2", colorClassName)} />
         {label}
       </span>
       <span className="text-sm font-semibold tabular-nums">

@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { defineTool } from '../agent-sdk.js';
 import { hasScope } from '../agent-scopes.js';
+import { normalizeText, rankBySimilarity } from '../agent-text-similarity.js';
 import {
   type AgentToolContext,
   toModelText,
@@ -37,6 +38,36 @@ function round2(value: number): number {
   return Math.round(value * 100) / 100;
 }
 
+const COMPANY_SUFFIX =
+  /\b(s\s*a\s*de\s*c\s*v|s\s*a|s\s*de\s*r\s*l(\s*de\s*c\s*v)?|ltda)\b/g;
+
+function customerKey(name: string): string {
+  return normalizeText(name)
+    .replace(COMPANY_SUFFIX, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function filterByCustomer(rows: SalesRow[], customer: string) {
+  const key = customerKey(customer);
+  const names = [...new Set(rows.map((r) => r.customerName))];
+  const matched = key
+    ? names.filter((name) => customerKey(name).includes(key))
+    : [];
+  const suggestions = matched.length
+    ? []
+    : rankBySimilarity(customer, names, (name) => name, {
+        limit: 5,
+        minScore: 0.2,
+      }).map((r) => r.item);
+  const set = new Set(matched);
+  return {
+    rows: rows.filter((r) => set.has(r.customerName)),
+    matched,
+    suggestions,
+  };
+}
+
 function groupBy(
   rows: SalesRow[],
   pick: (row: SalesRow) => string,
@@ -64,7 +95,7 @@ export function buildSalesTools(ctx: AgentToolContext) {
   return {
     get_sales_summary: defineTool({
       description:
-        'Official VEO sales (facturación) for a date range, computed exactly like the "Facturación por centro de costos" analytics view: posted, non-voided CCF, FCF and NDC documents from Brilo, line totals with VAT and line taxes, credit notes signed negative. Use it for ANY question about sales/billing totals ("venta del mes", "cuánto hemos facturado", sales by cost center, seller, client or document type). Never compute sales totals with run_query. ADMIN users get company-wide sales; other users get only their own sales as seller.',
+        'Official VEO sales (facturación) for a date range, computed exactly like the "Facturación por centro de costos" analytics view: posted, non-voided CCF, FCF and NDC documents from Brilo, line totals with VAT and line taxes, credit notes signed negative. Use it for ANY question about sales/billing totals ("venta del mes", "cuánto hemos facturado", sales by cost center, seller, client or document type). When the question names a client ("ventas a X", "compras de X", "lo que nos ha comprado X"), pass `customer` so the totals are for that client only. Never compute sales totals with run_query. ADMIN users get company-wide sales; other users get only their own sales as seller.',
       inputSchema: z.object({
         from: z
           .string()
@@ -74,8 +105,16 @@ export function buildSalesTools(ctx: AgentToolContext) {
           .string()
           .regex(DATE_REGEX, 'Usa el formato YYYY-MM-DD')
           .describe('Last day of the range, inclusive (YYYY-MM-DD)'),
+        customer: z
+          .string()
+          .min(2)
+          .max(120)
+          .optional()
+          .describe(
+            'Client name or part of it (case, accents and "S.A. de C.V." are ignored). Omit for all clients.',
+          ),
       }),
-      execute: async ({ from, to }) => {
+      execute: async ({ from, to, customer }) => {
         const companyWide = hasScope(ctx.user, 'analytics');
         if (!companyWide && !hasScope(ctx.user, 'my_space')) {
           return unauthorized('analytics');
@@ -91,12 +130,30 @@ export function buildSalesTools(ctx: AgentToolContext) {
         if (!response.ok) return { ok: false as const, error: response.error };
 
         const report = response.data?.data;
-        const rows = report?.rows ?? [];
+        const allRows = report?.rows ?? [];
+        const filter = customer ? filterByCustomer(allRows, customer) : null;
+        const rows = filter?.rows ?? allRows;
         return {
           ok: true as const,
           scope: companyWide ? 'company' : 'own_sales',
           range: report?.range ?? { from, to },
-          total: report?.total ?? 0,
+          ...(filter
+            ? {
+                customerFilter: {
+                  query: customer,
+                  matchedCustomers: filter.matched,
+                  ...(filter.matched.length
+                    ? {}
+                    : {
+                        note: 'Ningún cliente con ventas en el periodo coincide con ese nombre. Revisa las sugerencias o pregunta al usuario.',
+                        suggestions: filter.suggestions,
+                      }),
+                },
+              }
+            : {}),
+          total: filter
+            ? round2(rows.reduce((sum, r) => sum + r.total, 0))
+            : (report?.total ?? 0),
           invoices: new Set(rows.map((r) => r.invoiceId)).size,
           byCostCenter: groupBy(rows, (r) => r.costCenterName),
           bySubCostCenter: groupBy(

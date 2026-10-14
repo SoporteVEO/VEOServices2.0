@@ -12,7 +12,7 @@ export function VallasGrid({ billboards }: VallasGridProps) {
   if (billboards.length === 0) {
     return (
       <div className="mt-8 flex flex-col items-center justify-center rounded-2xl border border-dashed border-border/60 bg-card/30 py-32 text-center">
-        <div className="mb-6 flex size-20 items-center justify-center rounded-full bg-muted/50">
+        <div className="mb-6 flex size-20 items-center justify-center bg-muted/50">
           <Frown className="size-10 text-muted-foreground" />
         </div>
         <h3 className="mb-2 text-xl font-semibold text-foreground">

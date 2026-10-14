@@ -91,18 +91,24 @@ export function AgentPanel() {
         className={cn(
           "absolute inset-y-0 -left-1 z-10 hidden w-2 cursor-col-resize md:block",
           "after:absolute after:inset-y-0 after:left-1/2 after:w-px after:-translate-x-1/2 after:transition-colors",
-          "hover:after:bg-primary/60",
-          resizing && "after:bg-primary",
+          "hover:after:w-0.5 hover:after:bg-veo-gray",
+          resizing && "after:w-0.5 after:bg-veo-lime",
         )}
       />
 
-      <div className="flex h-12 shrink-0 items-center gap-2 border-b px-3">
-        <span className="flex size-8 items-center justify-center rounded-full bg-zinc-950 ring-1 ring-primary/30">
+      <div className="flex h-14 shrink-0 items-center gap-2.5 border-b border-border bg-card px-3">
+        <span className="flex size-8 items-center justify-center bg-veo-dark">
           <NexoAvatar size={28} priority />
         </span>
-        <p className="min-w-0 flex-1 truncate text-sm font-semibold">
-          {AGENT_FEATURE_NAME}
-        </p>
+        <div className="flex min-w-0 flex-1 flex-col">
+          <p className="truncate font-heading text-[0.9375rem] leading-tight font-semibold">
+            {AGENT_FEATURE_NAME}
+          </p>
+          <p className="flex items-center gap-1.5 text-[0.6875rem] text-muted-foreground">
+            <span aria-hidden className="size-1.5 bg-veo-lime" />
+            {view === "history" ? "Historial" : "Asistente"}
+          </p>
+        </div>
         {view === "chat" ? (
           <AgentIconButton
             side="bottom"

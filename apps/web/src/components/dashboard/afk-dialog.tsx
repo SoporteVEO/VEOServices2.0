@@ -26,7 +26,7 @@ export function AfkDialog({ open, onDismiss }: AfkDialogProps) {
     >
       <DialogContent showCloseButton={false}>
         <DialogHeader>
-          <div className="mb-2 flex size-12 items-center justify-center rounded-full bg-muted ring-1 ring-border">
+          <div className="mb-2 flex size-12 items-center justify-center bg-muted ring-1 ring-border">
             <PauseCircle className="size-6 text-muted-foreground" />
           </div>
           <DialogTitle>Seguimiento de tiempo pausado</DialogTitle>

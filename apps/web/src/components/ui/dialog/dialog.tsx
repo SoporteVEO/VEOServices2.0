@@ -54,10 +54,7 @@ function DialogOverlay({
 }: React.ComponentProps<typeof PrimitiveDialogOverlay>) {
   return (
     <PrimitiveDialogOverlay
-      className={cn(
-        "bg-black/25 supports-backdrop-filter:backdrop-blur-[2px]",
-        className,
-      )}
+      className={className}
       {...props}
     />
   );
@@ -72,7 +69,7 @@ function DialogContent({
   return (
     <PrimitiveDialogContent
       className={cn(
-        "flex max-h-[min(90dvh,calc(100dvh-2rem))] w-full flex-col gap-0 overflow-hidden rounded-2xl border bg-background p-0 shadow-xl",
+        "flex max-h-[min(90dvh,calc(100dvh-2rem))] w-full flex-col gap-0 overflow-hidden border-t-4 border-t-veo-dark bg-card p-0 dark:border-t-veo-lime",
         DIALOG_SIZE_CLASS[size],
         className,
       )}
@@ -89,7 +86,7 @@ function DialogHeader({
 }: React.ComponentProps<typeof PrimitiveDialogHeader>) {
   return (
     <PrimitiveDialogHeader
-      className={cn("shrink-0 px-6 pt-6 pb-4 text-left", className)}
+      className={cn("shrink-0 gap-1.5 px-6 pt-6 pb-4 pe-12 text-left", className)}
       {...props}
     />
   );
@@ -113,7 +110,7 @@ function DialogFooter({
 }: React.ComponentProps<typeof PrimitiveDialogFooter>) {
   return (
     <PrimitiveDialogFooter
-      className={cn("px-6 pb-6 pt-2", className)}
+      className={cn("m-0 shrink-0 px-6 py-4", className)}
       {...props}
     />
   );

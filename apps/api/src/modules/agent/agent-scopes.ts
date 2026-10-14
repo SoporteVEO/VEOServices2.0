@@ -187,7 +187,7 @@ export const AGENT_SCOPES: AgentScope[] = [
     key: 'development',
     label: 'Desarrollo',
     description:
-      'Bug tickets Nexo filed for the dev team (list, details, status updates).',
+      'Bug tickets Nexo filed for the dev team (list, details, status updates), and Nexo lessons and answer ratings to review.',
     allowedRoles: [],
     requiredSubRoles: ['DESARROLLADOR'],
     pathPrefixes: ['/development'],

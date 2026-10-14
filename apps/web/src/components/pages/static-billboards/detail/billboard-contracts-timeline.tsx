@@ -147,7 +147,7 @@ export function BillboardContractsTimeline({
                   className="absolute inset-y-0 z-10 w-px bg-yellow-500"
                   style={{ insetInlineStart: `${todayPercent}%` }}
                 >
-                  <span className="absolute -top-1 -translate-x-1/2 rtl:translate-x-1/2 size-2 rounded-full bg-yellow-500" />
+                  <span className="absolute -top-1 -translate-x-1/2 rtl:translate-x-1/2 size-2 bg-yellow-500" />
                 </div>
               </TooltipTrigger>
               <TooltipContent side="top">
@@ -174,7 +174,7 @@ export function BillboardContractsTimeline({
             Disponible
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="size-2.5 rounded-full bg-yellow-500" />
+            <span className="size-2.5 bg-yellow-500" />
             Hoy
           </span>
         </div>

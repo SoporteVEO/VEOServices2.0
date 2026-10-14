@@ -41,7 +41,7 @@ export function AgentComposer({
   }
 
   return (
-    <form onSubmit={submit} className="border-t bg-background p-3">
+    <form onSubmit={submit} className="border-t border-border bg-card p-3">
       <div className="relative">
         <Textarea
           value={text}
@@ -59,7 +59,7 @@ export function AgentComposer({
             type="button"
             variant="secondary"
             label="Detener respuesta"
-            className="absolute bottom-2 right-2 rounded-full"
+            className="absolute bottom-2 right-2"
             icon={Square}
             iconClassName="size-3.5 fill-current"
             onClick={onStop}
@@ -69,7 +69,7 @@ export function AgentComposer({
             type="submit"
             variant="default"
             label="Enviar (Enter)"
-            className="absolute bottom-2 right-2 rounded-full"
+            className="absolute bottom-2 right-2"
             icon={ArrowUp}
             disabled={!canSend}
           />

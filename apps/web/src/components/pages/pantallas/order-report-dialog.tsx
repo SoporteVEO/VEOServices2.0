@@ -13,6 +13,7 @@ import {
   TableRow,
 } from "@/components/primitives/ui/table";
 import { Button } from "@/components/ui/button";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { DatePicker } from "@/components/ui/date-picker";
 import {
   Dialog,
@@ -59,8 +60,8 @@ const EMPTY_MESSAGES: Record<ReportInclude, string> = {
 
 function Chip({ dot, children }: { dot?: string; children: React.ReactNode }) {
   return (
-    <span className="inline-flex items-center gap-1.5 rounded-full border bg-background px-2.5 py-1 text-xs text-muted-foreground">
-      {dot ? <span className={cn("size-1.5 rounded-full", dot)} /> : null}
+    <span className="inline-flex items-center gap-1.5 border bg-background px-2.5 py-1 text-xs text-muted-foreground">
+      {dot ? <span className={cn("size-1.5", dot)} /> : null}
       {children}
     </span>
   );
@@ -154,6 +155,7 @@ function OrderReport({ onClose }: { onClose: () => void }) {
   const [to, setTo] = useState<string | null>(null);
   const [include, setInclude] = useState<ReportInclude>("all");
   const [generating, setGenerating] = useState(false);
+  const [confirmClearOpen, setConfirmClearOpen] = useState(false);
 
   const blocks = reportBlocks(logs, board, from, to, include);
   const rows = blocks.flatMap((b) => b.rows);
@@ -187,16 +189,12 @@ function OrderReport({ onClose }: { onClose: () => void }) {
 
   function handleClear() {
     if (!logs.length) return;
-    if (
-      !confirm(
-        `Se van a borrar los ${formatCount(logs.length)} movimientos del historial.\n\nEsto NO toca clientes, campañas ni pantallas: solo se pierde el historial del Reporte OP, y el reporte volverá a empezar desde cero.\n\nSi quieres conservarlo, cancela y descarga el CSV primero.\n\n¿Borrar el historial?`,
-      )
-    ) {
-      return;
-    }
     const total = logs.length;
     clearLogs.mutate(undefined, {
-      onSuccess: () => toast.success(`Historial borrado · ${formatCount(total)} movimientos`),
+      onSuccess: () => {
+        toast.success(`Historial borrado · ${formatCount(total)} movimientos`);
+        setConfirmClearOpen(false);
+      },
       onError: (err) => toast.error(err.message),
     });
   }
@@ -319,7 +317,7 @@ function OrderReport({ onClose }: { onClose: () => void }) {
               variant="outline"
               className="text-red-600"
               disabled={!logs.length || clearLogs.isPending}
-              onClick={handleClear}
+              onClick={() => setConfirmClearOpen(true)}
             >
               Limpiar registros
             </Button>
@@ -340,6 +338,16 @@ function OrderReport({ onClose }: { onClose: () => void }) {
           </Button>
         </div>
       </DialogFooter>
+
+      <ConfirmDialog
+        open={confirmClearOpen}
+        onOpenChange={setConfirmClearOpen}
+        title="¿Borrar el historial?"
+        description={`Se van a borrar los ${formatCount(logs.length)} movimientos del historial. Esto NO toca clientes, campañas ni pantallas: solo se pierde el historial del Reporte OP y el reporte volverá a empezar desde cero. Si quieres conservarlo, cancela y descarga el CSV primero.`}
+        confirmLabel="Borrar historial"
+        pending={clearLogs.isPending}
+        onConfirm={handleClear}
+      />
     </>
   );
 }

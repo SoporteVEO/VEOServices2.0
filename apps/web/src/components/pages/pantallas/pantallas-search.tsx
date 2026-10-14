@@ -20,7 +20,7 @@ import { CampaignStatusBadge } from "./tone-badge";
 
 function Chip({ children }: { children: React.ReactNode }) {
   return (
-    <span className="rounded-full border bg-background px-2.5 py-1 text-xs text-muted-foreground">
+    <span className="border bg-background px-2.5 py-1 text-xs text-muted-foreground">
       {children}
     </span>
   );

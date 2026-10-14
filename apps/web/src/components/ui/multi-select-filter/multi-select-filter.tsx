@@ -81,7 +81,12 @@ export function MultiSelectFilter({
           disabled={disabled}
           className={cn("justify-start gap-2 px-2.5 font-medium", className)}
         >
-          <span className={cn(selected.size === 0 && "text-muted-foreground")}>
+          <span
+            className={cn(
+              selected.size === 0 &&
+                "text-muted-foreground transition-colors group-hover/button:text-background",
+            )}
+          >
             {label}
           </span>
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { CheckIcon, ChevronDown, Loader2 } from "lucide-react";
+import { CheckIcon, ChevronDown } from "lucide-react";
 import * as React from "react";
 import { type VariantProps } from "class-variance-authority";
 
@@ -19,6 +19,7 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/primitives/ui/command";
+import { Skeleton } from "@/components/primitives/ui/skeleton";
 import { useIntersectionObserver } from "@/hooks/use-intersection-observer";
 
 export interface ComboboxOption {
@@ -174,14 +175,13 @@ export function Combobox({
               "w-full justify-start gap-2 px-2.5 font-medium",
               usesCustomValue && "h-auto min-h-10 items-start py-2",
               disabled && "pointer-events-none opacity-50",
-              !hasSelection &&
-                "text-muted-foreground hover:text-muted-foreground!",
+              !hasSelection && "text-muted-foreground",
               triggerClassName,
             )}
             disabled={disabled}
           >
             {leadingIcon ? (
-              <span className="shrink-0 text-muted-foreground [&_svg]:pointer-events-none [&_svg]:shrink-0">
+              <span className="shrink-0 text-muted-foreground transition-colors group-hover/button:text-background [&_svg]:pointer-events-none [&_svg]:shrink-0">
                 {leadingIcon}
               </span>
             ) : null}
@@ -215,8 +215,20 @@ export function Combobox({
             <CommandList>
               <CommandEmpty>
                 {isLoading ? (
-                  <div className="flex h-10 w-full items-center justify-center">
-                    <Loader2 className="size-4 animate-spin" />
+                  <div
+                    role="status"
+                    aria-label="Cargando opciones"
+                    className="flex w-full flex-col gap-1 px-1"
+                  >
+                    {["w-3/4", "w-1/2", "w-2/3"].map((width) => (
+                      <div
+                        key={width}
+                        className="flex h-8 items-center gap-2 px-2"
+                      >
+                        <Skeleton className="size-4 shrink-0" />
+                        <Skeleton className={cn("h-3", width)} />
+                      </div>
+                    ))}
                   </div>
                 ) : (
                   emptyLabel
@@ -288,7 +300,7 @@ export function Combobox({
                     className="flex h-9 items-center justify-center text-xs text-muted-foreground"
                   >
                     {isLoadingMore ? (
-                      <Loader2 className="size-4 animate-spin" />
+                      <Skeleton className="h-3 w-24" />
                     ) : (
                       <span className="opacity-0">cargar más</span>
                     )}

@@ -247,11 +247,11 @@ function OrderIntakeForm({ onDone }: { onDone: () => void }) {
           toast.success(message);
           const expand = placed.filter((r) => r.needsMoreHours).map((r) => r.screenName);
           if (expand.length) {
-            alert(
-              `La OP entró, pero estas pantallas se quedaron sin horas suficientes:\n\n${expand
-                .map((x) => `  · ${x}`)
-                .join("\n")}\n\nAbre cada una y aplica la sugerencia de horario.`,
-            );
+            toast.warning("La OP entró, pero estas pantallas se quedaron sin horas suficientes", {
+              description: `${expand.join(", ")}. Abre cada una y aplica la sugerencia de horario.`,
+              duration: Infinity,
+              closeButton: true,
+            });
           }
         },
         onError: (err) => toast.error(err.message),

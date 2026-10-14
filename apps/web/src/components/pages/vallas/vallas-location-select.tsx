@@ -32,7 +32,7 @@ export function VallasLocationSelect({
         label: (
           <div className="flex w-full items-center justify-between gap-4">
             <span className="truncate font-medium">{s.departmentName}</span>
-            <span className="flex shrink-0 items-center justify-center rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-bold text-primary">
+            <span className="flex shrink-0 items-center justify-center bg-primary/10 px-2 py-0.5 text-[10px] font-bold text-primary">
               {s.availableCount} disponibles
             </span>
           </div>

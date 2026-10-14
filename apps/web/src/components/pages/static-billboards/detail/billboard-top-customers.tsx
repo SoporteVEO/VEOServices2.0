@@ -78,7 +78,7 @@ export function BillboardTopCustomers({
               className="flex items-center justify-between gap-3 rounded-md border bg-accent/10 p-2.5"
             >
               <div className="flex min-w-0 items-center gap-2">
-                <div className="flex size-7 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
+                <div className="flex size-7 shrink-0 items-center justify-center bg-primary/10 text-xs font-semibold text-primary">
                   {idx === 0 ? <Trophy className="size-3.5" /> : idx + 1}
                 </div>
                 <div className="flex min-w-0 flex-col gap-0.5">

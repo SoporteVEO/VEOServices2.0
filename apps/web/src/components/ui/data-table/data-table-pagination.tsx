@@ -42,13 +42,14 @@ export function DataTablePagination({
   const rangeEnd = Math.min((pageIndex + 1) * pageSize, totalRows);
 
   return (
-    <div className="flex flex-col gap-2 px-1 py-3 sm:flex-row sm:items-center sm:justify-between">
-      <div className="text-sm text-muted-foreground">
+    <div className="@container">
+    <div className="flex flex-col gap-2 py-1 @2xl:flex-row @2xl:items-center @2xl:justify-between">
+      <div className="text-sm text-muted-foreground tabular-nums">
         {totalRows === 0
           ? "Sin resultados"
           : `Mostrando ${rangeStart}-${rangeEnd} de ${totalRows}`}
       </div>
-      <div className="flex flex-wrap items-center gap-4">
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
         <div className="flex items-center gap-2">
           <span className="text-sm text-muted-foreground">Por página</span>
           <Select
@@ -113,6 +114,7 @@ export function DataTablePagination({
           </Button>
         </div>
       </div>
+    </div>
     </div>
   );
 }

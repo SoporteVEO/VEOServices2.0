@@ -7,7 +7,6 @@ import {
   ChevronRight,
   Download,
   ExternalLink,
-  Loader2,
 } from "lucide-react";
 import { S3_IMAGE_TYPE_SHORT_LABELS } from "@/api/s3-images/s3-images.get";
 import type { AgentImage } from "@/api/agent/agent.types";
@@ -97,14 +96,14 @@ export function AgentImageDialog({
                 <>
                   <Button
                     variant="secondary"
-                    className="absolute left-3 top-1/2 size-9 -translate-y-1/2 rounded-full p-0"
+                    className="absolute left-3 top-1/2 size-9 -translate-y-1/2 p-0"
                     icon={ChevronLeft}
                     onClick={() => step(-1)}
                     aria-label="Imagen anterior"
                   />
                   <Button
                     variant="secondary"
-                    className="absolute right-3 top-1/2 size-9 -translate-y-1/2 rounded-full p-0"
+                    className="absolute right-3 top-1/2 size-9 -translate-y-1/2 p-0"
                     icon={ChevronRight}
                     onClick={() => step(1)}
                     aria-label="Imagen siguiente"
@@ -136,8 +135,8 @@ export function AgentImageDialog({
                   </a>
                 </Button>
                 <Button
-                  icon={downloading ? Loader2 : Download}
-                  iconClassName={downloading ? "animate-spin" : ""}
+                  icon={Download}
+                  loading={downloading}
                   disabled={downloading}
                   onClick={handleDownload}
                 >

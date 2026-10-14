@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { Download, Loader2, Presentation, Send } from "lucide-react";
+import { Download, Presentation, Send } from "lucide-react";
 import { toast } from "sonner";
 import {
   getActiveContracts,
@@ -202,8 +202,8 @@ function ContractReportItem({
         <Button
           variant="outline"
           className="justify-center"
-          icon={busy && !isSendOpen ? Loader2 : Download}
-          iconClassName={busy && !isSendOpen ? "animate-spin" : ""}
+          icon={Download}
+          loading={busy && !isSendOpen}
           disabled={busy}
           onClick={handleDownload}
         >

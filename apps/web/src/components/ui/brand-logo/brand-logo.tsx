@@ -6,8 +6,7 @@ const LOGOS = {
     src: "/VEO_Logotipo_Oscuro_Original.png",
     width: 306,
     height: 63,
-    className:
-      "h-6 w-auto invert hue-rotate-180 dark:invert-0 dark:hue-rotate-0",
+    className: "h-6 w-auto",
   },
   isotipo: {
     src: "/FAVICON_VEO_Isotipo_Lima.png",
@@ -17,15 +16,21 @@ const LOGOS = {
   },
 } as const;
 
+const THEMED_WORDMARK_CLASS =
+  "invert hue-rotate-180 dark:invert-0 dark:hue-rotate-0";
+
 type BrandLogoProps = {
   /** The wordmark ships white-on-transparent, so it is inverted on light themes. */
   variant?: keyof typeof LOGOS;
+  /** Keeps the wordmark white regardless of theme, for dark surfaces. */
+  onDark?: boolean;
   className?: string;
   priority?: boolean;
 };
 
 function BrandLogo({
   variant = "wordmark",
+  onDark = false,
   className,
   priority,
 }: BrandLogoProps) {
@@ -37,7 +42,12 @@ function BrandLogo({
       height={logo.height}
       alt="VEO"
       priority={priority}
-      className={cn("select-none", logo.className, className)}
+      className={cn(
+        "select-none",
+        logo.className,
+        variant === "wordmark" && !onDark && THEMED_WORDMARK_CLASS,
+        className,
+      )}
     />
   );
 }

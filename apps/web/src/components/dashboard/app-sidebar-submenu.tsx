@@ -25,9 +25,6 @@ import {
 } from "@/components/primitives/ui/sidebar";
 import { isUnderPath, type NavItem } from "@/lib/routes";
 
-const MENU_BUTTON_CLASS =
-  "data-[active=true]:bg-accent data-[active=true]:text-accent-foreground data-[active=false]:text-muted-foreground data-[active=false]:hover:bg-accent data-[active=false]:hover:text-accent-foreground";
-
 type Props = {
   item: NavItem & { children: NavItem[] };
   pathname: string;
@@ -49,11 +46,10 @@ export function AppSidebarSubmenu({ item, pathname }: Props) {
           <DropdownMenuTrigger asChild>
             <SidebarMenuButton
               isActive={isActive}
-              className={MENU_BUTTON_CLASS}
               tooltip={{ children: item.title, side: "right", align: "center" }}
             >
-              <item.icon className="size-4" />
-              <span className="text-sm font-medium">{item.title}</span>
+              <item.icon />
+              <span>{item.title}</span>
             </SidebarMenuButton>
           </DropdownMenuTrigger>
           <DropdownMenuContent side="right" align="start">
@@ -84,16 +80,16 @@ export function AppSidebarSubmenu({ item, pathname }: Props) {
         <CollapsibleTrigger asChild>
           <SidebarMenuButton
             isActive={false}
-            className={MENU_BUTTON_CLASS}
+            className={activeChild ? "text-sidebar-foreground" : undefined}
             tooltip={{ children: item.title, side: "right", align: "center" }}
           >
-            <item.icon className="size-4" />
-            <span className="text-sm font-medium">{item.title}</span>
-            <ChevronRight className="ml-auto size-4 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
+            <item.icon />
+            <span>{item.title}</span>
+            <ChevronRight className="ms-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
           </SidebarMenuButton>
         </CollapsibleTrigger>
         <CollapsibleContent>
-          <SidebarMenuSub className="pt-1">
+          <SidebarMenuSub className="border-sidebar-border pt-1">
             {item.children.map((child) => (
               <SidebarMenuSubItem key={child.href}>
                 <SidebarMenuSubButton

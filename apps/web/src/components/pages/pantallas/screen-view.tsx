@@ -9,6 +9,7 @@ import { Card, CardContent } from "@/components/primitives/ui/card";
 import { Label } from "@/components/primitives/ui/label";
 import { Switch } from "@/components/primitives/ui/switch";
 import { Button } from "@/components/ui/button";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { cn } from "@/lib/utils";
 import { FULL_SUBLIST_SPOTS, HALF_SUBLIST_SPOTS, SCREEN_CHANGE_LABELS } from "./pantallas-const";
 import { usePantallas } from "./pantallas-context";
@@ -43,10 +44,16 @@ function Metric({
   );
 }
 
+type OverflowConfirm = { title: string; description: string } & (
+  | { kind: "sublist"; capacity: number }
+  | { kind: "move"; drag: DraggedCampaign; target: Sublist }
+);
+
 export function ScreenView({ screen }: { screen: Screen }) {
   const { board, refDate, canEdit, openDialog } = usePantallas();
   const [hideFinished, setHideFinished] = useState(false);
   const [dragging, setDragging] = useState<DraggedCampaign | null>(null);
+  const [overflow, setOverflow] = useState<OverflowConfirm | null>(null);
   const createSublist = useCreateSublist();
   const moveCampaign = useMoveCampaign();
 
@@ -55,16 +62,7 @@ export function ScreenView({ screen }: { screen: Screen }) {
   const remainder = stats.capacity - fitting * FULL_SUBLIST_SPOTS;
   const overnight = (minutesOf(screen.turnOffAt) ?? 0) <= (minutesOf(screen.turnOnAt) ?? 0);
 
-  function addSublist(capacity: number) {
-    const listed = screen.sublists.reduce((sum, s) => sum + s.capacity, 0);
-    if (
-      listed + capacity > stats.capacity &&
-      !confirm(
-        `Con esta sublista las listas suman ${formatCount(listed + capacity)} spots y la pantalla solo tiene ${formatCount(stats.capacity)} (${formatHours(stats.hours)}).\n\nSube las horas al aire o agrégala de todos modos.\n\n¿Agregar igual?`,
-      )
-    ) {
-      return;
-    }
+  function createSublistNow(capacity: number) {
     createSublist.mutate(
       { screenId: screen.id, capacity },
       {
@@ -74,6 +72,20 @@ export function ScreenView({ screen }: { screen: Screen }) {
     );
   }
 
+  function addSublist(capacity: number) {
+    const listed = screen.sublists.reduce((sum, s) => sum + s.capacity, 0);
+    if (listed + capacity > stats.capacity) {
+      setOverflow({
+        kind: "sublist",
+        capacity,
+        title: "¿Agregar la sublista de todos modos?",
+        description: `Con esta sublista las listas suman ${formatCount(listed + capacity)} spots y la pantalla solo tiene ${formatCount(stats.capacity)} (${formatHours(stats.hours)}). Sube las horas al aire o agrégala de todos modos.`,
+      });
+      return;
+    }
+    createSublistNow(capacity);
+  }
+
   function handleDrop(target: Sublist) {
     const drag = dragging;
     setDragging(null);
@@ -81,14 +93,22 @@ export function ScreenView({ screen }: { screen: Screen }) {
     const location = findLocation(board, drag.campaignId);
     if (!location) return;
     const free = sublistStats(target, refDate).free;
-    if (
-      drag.spotsPerDay > free &&
-      !confirm(
-        `${location.campaign.client} lleva ${formatCount(drag.spotsPerDay)} spots y en ${target.name} solo quedan ${formatCount(free)} libres.\n\n¿Moverla de todos modos?`,
-      )
-    ) {
+    if (drag.spotsPerDay > free) {
+      setOverflow({
+        kind: "move",
+        drag,
+        target,
+        title: "¿Mover la campaña de todos modos?",
+        description: `${location.campaign.client} lleva ${formatCount(drag.spotsPerDay)} spots y en ${target.name} solo quedan ${formatCount(free)} libres.`,
+      });
       return;
     }
+    moveCampaignNow(drag, target);
+  }
+
+  function moveCampaignNow(drag: DraggedCampaign, target: Sublist) {
+    const location = findLocation(board, drag.campaignId);
+    if (!location) return;
     moveCampaign.mutate(
       { id: drag.campaignId, sublistId: target.id },
       {
@@ -144,7 +164,7 @@ export function ScreenView({ screen }: { screen: Screen }) {
           <ScreenSchedulePanel screen={screen} stats={stats} />
           <OccupancyBar pct={stats.pct} className="h-2.5" />
 
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-7">
+          <div className="grid grid-cols-2 gap-3 @xl/main:grid-cols-4 @5xl/main:grid-cols-7">
             <Metric
               label="Ocupación"
               value={`${stats.pct.toFixed(1)}%`}
@@ -205,7 +225,7 @@ export function ScreenView({ screen }: { screen: Screen }) {
         </CardContent>
       </Card>
 
-      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+      <div className="grid gap-3 @3xl/main:grid-cols-2 @7xl/main:grid-cols-3 @[96rem]/main:grid-cols-4">
         {screen.sublists.map((sublist) => (
           <SublistCard
             key={sublist.id}
@@ -239,6 +259,23 @@ export function ScreenView({ screen }: { screen: Screen }) {
         </div>
       ) : null}
       <StatusLegend />
+
+      <ConfirmDialog
+        open={overflow !== null}
+        onOpenChange={(open) => {
+          if (!open) setOverflow(null);
+        }}
+        title={overflow?.title ?? ""}
+        description={overflow?.description}
+        confirmLabel={overflow?.kind === "move" ? "Mover igual" : "Agregar igual"}
+        variant="default"
+        onConfirm={() => {
+          if (!overflow) return;
+          if (overflow.kind === "sublist") createSublistNow(overflow.capacity);
+          else moveCampaignNow(overflow.drag, overflow.target);
+          setOverflow(null);
+        }}
+      />
     </div>
   );
 }

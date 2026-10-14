@@ -1,4 +1,3 @@
-import { Card, CardContent } from "@/components/primitives/ui/card";
 import { cn } from "@/lib/utils";
 
 export function KpiCard({
@@ -18,29 +17,46 @@ export function KpiCard({
   onClick?: () => void;
   title?: string;
 }) {
+  const interactive = Boolean(onClick);
   return (
-    <Card
-      size="sm"
+    <div
       title={title}
       onClick={onClick}
+      role={interactive ? "button" : undefined}
+      tabIndex={interactive ? 0 : undefined}
+      onKeyDown={
+        interactive
+          ? (e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                onClick?.();
+              }
+            }
+          : undefined
+      }
       className={cn(
-        "border border-border/80 bg-accent/20 py-3 shadow-none ring-0",
-        onClick && "cursor-pointer transition-colors hover:bg-accent/40",
+        "group/kpi relative flex min-w-0 flex-col gap-1.5 border border-border bg-card p-4 transition-colors",
+        interactive &&
+          "cursor-pointer outline-none hover:border-border-strong focus-visible:ring-2 focus-visible:ring-ring",
       )}
     >
-      <CardContent className="flex min-w-0 flex-col gap-1 px-4 py-0">
-        <div className="text-xs font-medium text-muted-foreground">{label}</div>
-        <div
-          className={cn(
-            "truncate text-xl font-semibold tabular-nums tracking-tight text-foreground",
-            valueClassName,
-          )}
-        >
-          {value}
-        </div>
-        {note ? <div className="text-xs text-muted-foreground">{note}</div> : null}
-        {extra}
-      </CardContent>
-    </Card>
+      {interactive ? (
+        <span
+          aria-hidden
+          className="absolute inset-x-0 top-0 h-0.5 origin-left scale-x-0 bg-veo-dark transition-transform duration-300 ease-(--ease-standard) group-hover/kpi:scale-x-100 dark:bg-veo-lime"
+        />
+      ) : null}
+      <div className="eyebrow text-muted-foreground">{label}</div>
+      <div
+        className={cn(
+          "truncate font-heading text-2xl font-semibold leading-tight tabular-nums tracking-tight text-foreground",
+          valueClassName,
+        )}
+      >
+        {value}
+      </div>
+      {note ? <div className="text-xs text-muted-foreground">{note}</div> : null}
+      {extra}
+    </div>
   );
 }

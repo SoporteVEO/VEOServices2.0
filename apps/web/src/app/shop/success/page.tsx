@@ -41,7 +41,7 @@ export default function SuccessPage({
   if (isLoading) {
     return (
       <div className="mx-auto max-w-2xl space-y-6 p-6">
-        <Skeleton className="mx-auto h-16 w-16 rounded-full" />
+        <Skeleton className="mx-auto h-16 w-16" />
         <Skeleton className="mx-auto h-8 w-64" />
         <Skeleton className="h-48 w-full" />
       </div>
@@ -65,7 +65,7 @@ export default function SuccessPage({
   return (
     <main className="relative mx-auto w-full max-w-2xl px-4 py-10 sm:px-6 sm:py-16">
       <div className="flex flex-col items-center text-center">
-        <div className="mb-6 flex size-16 items-center justify-center rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400">
+        <div className="mb-6 flex size-16 items-center justify-center bg-emerald-500/15 text-emerald-600 dark:text-emerald-400">
           <CheckCircle2 className="size-9" aria-hidden />
         </div>
         <h1 className="font-(family-name:--font-heading) text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">

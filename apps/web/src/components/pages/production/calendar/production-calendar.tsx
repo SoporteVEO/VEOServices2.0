@@ -167,7 +167,7 @@ export function ProductionCalendar() {
   }
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col gap-3 lg:flex-row">
+    <div className="flex min-h-0 flex-1 flex-col gap-3 @5xl/main:flex-row">
       <PrintingBacklogPanel
         items={backlog ?? []}
         isLoading={backlogLoading}
@@ -228,7 +228,7 @@ export function ProductionCalendar() {
 
 function PhaseLegend() {
   return (
-    <div className="hidden items-center gap-3 sm:flex">
+    <div className="hidden items-center gap-3 @xl/main:flex">
       {(Object.keys(PHASE_LABELS) as (keyof typeof PHASE_LABELS)[]).map(
         (phase) => (
           <span

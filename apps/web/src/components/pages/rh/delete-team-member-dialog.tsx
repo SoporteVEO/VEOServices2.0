@@ -1,7 +1,6 @@
 "use client";
 
 import { toast } from "sonner";
-import { Loader2 } from "lucide-react";
 import type { TeamMember } from "@/api/team-members/team-members.types";
 import { useDeleteTeamMember } from "@/api/team-members/team-members.mutations";
 import { Button } from "@/components/ui/button";
@@ -71,10 +70,7 @@ export function DeleteTeamMemberDialog({
             variant="destructive"
             onClick={handleDelete}
             disabled={deleteMutation.isPending}
-            icon={deleteMutation.isPending ? Loader2 : undefined}
-            iconClassName={
-              deleteMutation.isPending ? "animate-spin" : undefined
-            }
+            loading={deleteMutation.isPending}
           >
             {deleteMutation.isPending ? "Eliminando..." : "Eliminar"}
           </Button>

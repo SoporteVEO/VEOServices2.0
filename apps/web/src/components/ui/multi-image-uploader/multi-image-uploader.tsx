@@ -216,7 +216,7 @@ export function MultiImageUploader({
                     e.stopPropagation();
                     removeAt(index);
                   }}
-                  className="absolute right-1 top-1 inline-flex size-5 items-center justify-center rounded-full bg-background/90 text-foreground opacity-0 ring-1 ring-border transition-opacity hover:bg-destructive hover:text-destructive-foreground group-hover:opacity-100 focus-visible:opacity-100"
+                  className="absolute right-1 top-1 inline-flex size-5 items-center justify-center bg-background/90 text-foreground opacity-0 ring-1 ring-border transition-opacity hover:bg-destructive hover:text-destructive-foreground group-hover:opacity-100 focus-visible:opacity-100"
                   disabled={disabled}
                 >
                   <X className="size-3" />

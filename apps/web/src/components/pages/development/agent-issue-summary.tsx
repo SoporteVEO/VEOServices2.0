@@ -38,7 +38,7 @@ export function AgentIssueSummary({ issue }: { issue: AgentIssue }) {
   );
 }
 
-function Block({
+export function Block({
   title,
   children,
 }: {

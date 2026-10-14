@@ -24,7 +24,7 @@ function Textarea({
         <Label
           htmlFor={textareaId}
           className={cn(
-            "text-xs font-medium text-muted-foreground",
+            "text-xs font-semibold text-foreground/85",
             labelClassName,
           )}
         >
@@ -34,7 +34,7 @@ function Textarea({
       <PrimitiveTextarea
         id={textareaId}
         className={cn(
-          "px-3 py-1.5 bg-input border border-border shadow-sm",
+          "px-3 py-2",
           className,
         )}
         {...props}

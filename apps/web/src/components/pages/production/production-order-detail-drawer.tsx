@@ -19,6 +19,7 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from "@/components/ui/drawer";
+import { DetailPanelSkeleton } from "@/components/ui/skeletons";
 import { formatBriloShortDate, formatDimensions } from "@/lib/format";
 import { ProductionOrderDocumentPreviewButton } from "@/components/pages/production-orders-shared/production-order-document-preview";
 import { ProductionOrderDocumentSlot } from "@/components/pages/production-orders-shared/production-order-document-slot";
@@ -74,15 +75,19 @@ function DrawerBody({
   if (isLoading || !data) {
     return (
       <>
-        <DrawerHeader className="border-b">
-          <DrawerTitle>Cargando orden…</DrawerTitle>
+        <DrawerHeader className={isError ? "border-b" : "sr-only"}>
+          <DrawerTitle className="sr-only">Cargando orden…</DrawerTitle>
           <DrawerDescription>
             {isError
               ? "No se pudo cargar la orden de producción."
               : "Preparando los detalles."}
           </DrawerDescription>
         </DrawerHeader>
-        <div className="flex-1" />
+        {isError ? (
+          <div className="flex-1" />
+        ) : (
+          <DetailPanelSkeleton sections={2} withFooter={false} />
+        )}
         <DrawerFooter className="border-t">
           <Button type="button" variant="outline" onClick={onClose}>
             Cerrar
@@ -334,11 +339,11 @@ function DocumentCard({
       <div className="flex items-center justify-between gap-2">
         <p className="min-w-0 flex-1 truncate text-xs font-medium">{title}</p>
         {available ? (
-          <span className="rounded-full bg-emerald-500/15 px-1.5 py-0.5 text-[10px] font-medium text-emerald-700 dark:text-emerald-400">
+          <span className="bg-emerald-500/15 px-1.5 py-0.5 text-[10px] font-medium text-emerald-700 dark:text-emerald-400">
             Cargado
           </span>
         ) : (
-          <span className="rounded-full bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
+          <span className="bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
             Sin cargar
           </span>
         )}

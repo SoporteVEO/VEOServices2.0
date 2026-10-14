@@ -23,6 +23,7 @@ export interface AgentToolContext {
   endpoints: AgentEndpointsService;
   email: EmailService;
   reportIssue: (report: AgentIssueReport) => Promise<{ ticket: string }>;
+  rememberLearning: (content: string) => Promise<{ saved: boolean }>;
 }
 
 export interface UnauthorizedResult {

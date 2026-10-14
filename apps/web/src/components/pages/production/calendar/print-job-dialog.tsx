@@ -213,7 +213,7 @@ export function PrintJobDialog({
             </DialogTitle>
             <span
               className={cn(
-                "rounded-full border px-2 py-0.5 text-[11px] font-medium",
+                "border px-2 py-0.5 text-[11px] font-medium",
                 PRINT_JOB_STATUS_STYLES[job.status],
               )}
             >
@@ -512,10 +512,10 @@ function CapacityNote({
             {formatArea(capacity.limitM2)} m²
           </span>
         </div>
-        <div className="h-1.5 overflow-hidden rounded-full bg-border">
+        <div className="h-1.5 overflow-hidden bg-border">
           <div
             className={cn(
-              "h-full rounded-full transition-all",
+              "h-full transition-all",
               fits ? "bg-sky-500" : "bg-destructive",
             )}
             style={{
@@ -549,7 +549,7 @@ function MinutesField({
       label={
         <span className="flex items-center gap-1.5">
           <span
-            className={cn("size-2 rounded-full", PHASE_SWATCHES[phase])}
+            className={cn("size-2", PHASE_SWATCHES[phase])}
             aria-hidden
           />
           {PHASE_LABELS[phase]} (min)

@@ -1,10 +1,12 @@
 "use client";
 
+import { useState } from "react";
 import { Gauge, Pencil, Receipt, Trash2, Wrench } from "lucide-react";
 import { toast } from "sonner";
 import { useDeleteFleetMaintenance } from "@/api/fleet/fleet.mutations";
 import type { FleetMaintenance } from "@/api/fleet/fleet.types";
 import { Button as PrimitiveButton } from "@/components/primitives/ui/button";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { formatBriloShortDate } from "@/lib/format";
 import { formatCost, formatKm } from "./fleet-const";
 import { FleetServiceTypeBadge } from "./fleet-service-type-badge";
@@ -40,13 +42,16 @@ function ServiceRow({
   onEdit: (service: FleetMaintenance) => void;
 }) {
   const deleteService = useDeleteFleetMaintenance();
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
 
   function handleDelete() {
-    if (!confirm("¿Eliminar este registro de mantenimiento?")) return;
     deleteService.mutate(
       { id: service.id },
       {
-        onSuccess: () => toast.success("Mantenimiento eliminado."),
+        onSuccess: () => {
+          toast.success("Mantenimiento eliminado.");
+          setConfirmDeleteOpen(false);
+        },
         onError: (error) =>
           toast.error(
             error instanceof Error
@@ -82,7 +87,7 @@ function ServiceRow({
             size="icon"
             aria-label="Eliminar mantenimiento"
             disabled={deleteService.isPending}
-            onClick={handleDelete}
+            onClick={() => setConfirmDeleteOpen(true)}
           >
             <Trash2 className="size-4 text-destructive" />
           </PrimitiveButton>
@@ -124,6 +129,15 @@ function ServiceRow({
           </span>
         ) : null}
       </div>
+
+      <ConfirmDialog
+        open={confirmDeleteOpen}
+        onOpenChange={setConfirmDeleteOpen}
+        title="¿Eliminar este registro de mantenimiento?"
+        description="Esta acción no se puede deshacer."
+        pending={deleteService.isPending}
+        onConfirm={handleDelete}
+      />
     </li>
   );
 }

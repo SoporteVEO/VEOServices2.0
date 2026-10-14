@@ -1,6 +1,6 @@
 "use client";
 
-import { Loader2, QrCode } from "lucide-react";
+import { QrCode } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import type { ProductionOrderItem } from "@/api/production-orders/production-orders.types";
@@ -51,13 +51,10 @@ export function ProductionOrderQrButton({ item, campaignLabel }: Props) {
       size="sm"
       className="gap-1.5"
       disabled={isGenerating}
+      loading={isGenerating}
       onClick={() => void handleDownload()}
     >
-      {isGenerating ? (
-        <Loader2 className="size-3.5 animate-spin" aria-hidden />
-      ) : (
-        <QrCode className="size-3.5" aria-hidden />
-      )}
+      <QrCode className="size-3.5" aria-hidden />
       Descargar QR
     </Button>
   );

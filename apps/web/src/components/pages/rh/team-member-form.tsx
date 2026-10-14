@@ -2,7 +2,6 @@
 
 import { useMemo } from "react";
 import { useForm, Controller } from "react-hook-form";
-import { Loader2 } from "lucide-react";
 import type { User } from "@/api/users/users.types";
 import type {
   ContractType,
@@ -380,8 +379,7 @@ export function TeamMemberForm({
         <Button
           type="submit"
           disabled={isPending}
-          icon={isPending ? Loader2 : undefined}
-          iconClassName={isPending ? "animate-spin" : undefined}
+          loading={isPending}
         >
           {isPending
             ? "Guardando..."

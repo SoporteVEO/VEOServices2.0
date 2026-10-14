@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { FileText, Loader2, Presentation } from "lucide-react";
+import { FileText, Presentation } from "lucide-react";
 import { toast } from "sonner";
 import { getAvailableBillboardsForReport } from "@/api/billboards/billboards.get";
 import type { AgentReportOutput } from "@/api/agent/agent.types";
@@ -83,8 +83,8 @@ export function AgentReportCard({ report }: { report: AgentReportOutput }) {
         ) : null}
         <Button
           className="w-full justify-center"
-          icon={isGenerating ? Loader2 : FileText}
-          iconClassName={isGenerating ? "animate-spin" : ""}
+          icon={FileText}
+          loading={isGenerating}
           disabled={isGenerating || report.count === 0}
           onClick={handleGenerate}
         >

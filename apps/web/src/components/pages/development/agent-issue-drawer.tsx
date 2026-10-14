@@ -1,6 +1,6 @@
 "use client";
 
-import { ClipboardCopy, Loader2, X } from "lucide-react";
+import { ClipboardCopy, X } from "lucide-react";
 import { toast } from "sonner";
 import { useAgentIssue } from "@/api/development/agent-issues.get";
 import type { AgentIssue } from "@/api/development/agent-issues.types";
@@ -15,6 +15,7 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from "@/components/ui/drawer";
+import { DetailPanelSkeleton } from "@/components/ui/skeletons";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { IssueSeverityBadge, IssueStatusBadge } from "./agent-issue-badges";
 import { AgentIssueContextView } from "./agent-issue-context";
@@ -62,11 +63,7 @@ function DrawerBody({
   const { data: issue, isLoading, isError } = useAgentIssue(issueId);
 
   if (isLoading) {
-    return (
-      <div className="flex flex-1 items-center justify-center text-muted-foreground">
-        <Loader2 className="size-6 animate-spin" aria-hidden />
-      </div>
-    );
+    return <DetailPanelSkeleton sections={3} />;
   }
 
   if (isError || !issue) {
@@ -151,7 +148,7 @@ function IssueContent({
           <TabsTrigger value="diagnostico" className="px-4">
             Diagnóstico
             {failureCount > 0 ? (
-              <span className="ml-1.5 rounded-full bg-red-500/15 px-1.5 text-[11px] tabular-nums text-red-700 dark:text-red-400">
+              <span className="ml-1.5 bg-red-500/15 px-1.5 text-[11px] tabular-nums text-red-700 dark:text-red-400">
                 {failureCount}
               </span>
             ) : toolCount > 0 ? (

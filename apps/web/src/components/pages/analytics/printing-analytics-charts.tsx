@@ -79,17 +79,17 @@ interface Props {
 export function PrintingAnalyticsCharts({ overview, isLoading }: Props) {
   if (isLoading || !overview) {
     return (
-      <div className="grid gap-4 lg:grid-cols-3">
-        <Skeleton className="h-[320px] w-full lg:col-span-2" />
+      <div className="grid gap-4 @5xl/main:grid-cols-3">
+        <Skeleton className="h-[320px] w-full @5xl/main:col-span-2" />
         <Skeleton className="h-[320px] w-full" />
-        <Skeleton className="h-[320px] w-full lg:col-span-2" />
+        <Skeleton className="h-[320px] w-full @5xl/main:col-span-2" />
         <Skeleton className="h-[320px] w-full" />
       </div>
     );
   }
 
   return (
-    <div className="grid gap-4 lg:grid-cols-3">
+    <div className="grid gap-4 @5xl/main:grid-cols-3">
       <DailyPhaseCard data={overview.daily} />
       <PhaseSplitCard phaseSplit={overview.phaseSplit} />
       <PlanVsActualCard data={overview.daily} />
@@ -107,7 +107,7 @@ function DailyPhaseCard({ data }: { data: PrintingAnalyticsDailyPoint[] }) {
   );
 
   return (
-    <Card size="sm" className="border-border/80 shadow-none lg:col-span-2">
+    <Card size="sm" className="border-border/80 shadow-none @5xl/main:col-span-2">
       <CardHeader>
         <div className="flex items-start justify-between gap-2">
           <div className="flex flex-col gap-0.5">
@@ -190,7 +190,7 @@ function PlanVsActualCard({ data }: { data: PrintingAnalyticsDailyPoint[] }) {
   );
 
   return (
-    <Card size="sm" className="border-border/80 shadow-none lg:col-span-2">
+    <Card size="sm" className="border-border/80 shadow-none @5xl/main:col-span-2">
       <CardHeader>
         <div className="flex items-start justify-between gap-2">
           <div className="flex flex-col gap-0.5">
@@ -269,7 +269,7 @@ function HourOfDayCard({ data }: { data: PrintingAnalyticsHourPoint[] }) {
   );
 
   return (
-    <Card size="sm" className="border-border/80 shadow-none lg:col-span-2">
+    <Card size="sm" className="border-border/80 shadow-none @5xl/main:col-span-2">
       <CardHeader>
         <div className="flex items-start justify-between gap-2">
           <div className="flex flex-col gap-0.5">

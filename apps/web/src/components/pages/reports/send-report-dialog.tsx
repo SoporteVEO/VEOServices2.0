@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Loader2, Mail, Send } from "lucide-react";
+import { Mail, Send } from "lucide-react";
+import { Skeleton } from "@/components/primitives/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -133,8 +134,11 @@ function SendReportDialogContent({
         )}
 
         {isSubmitting && progressLabel ? (
-          <div className="flex items-center gap-2 rounded-md border bg-muted/40 px-3 py-2 text-xs text-muted-foreground">
-            <Loader2 className="size-3.5 animate-spin" aria-hidden />
+          <div
+            role="status"
+            className="flex items-center gap-2 rounded-md border bg-muted/40 px-3 py-2 text-xs text-muted-foreground"
+          >
+            <Skeleton className="size-3.5 shrink-0" />
             <span>{progressLabel}</span>
           </div>
         ) : null}
@@ -152,8 +156,8 @@ function SendReportDialogContent({
         <Button
           type="submit"
           disabled={isSubmitting || !isValid}
-          icon={isSubmitting ? Loader2 : Send}
-          iconClassName={isSubmitting ? "animate-spin" : undefined}
+          icon={Send}
+          loading={isSubmitting}
         >
           {isSubmitting ? "Enviando…" : "Enviar reporte"}
         </Button>

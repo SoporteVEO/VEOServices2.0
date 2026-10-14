@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { FileSignature, Loader2 } from "lucide-react";
+import { FileSignature } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { useMySpaceViewAs } from "../my-space-view-as-context";
@@ -43,16 +43,13 @@ export function ContractDownloadButton({
       size="sm"
       className="gap-1.5"
       disabled={isDownloading}
+      loading={isDownloading}
       onClick={(event) => {
         event.stopPropagation();
         void handleDownload();
       }}
     >
-      {isDownloading ? (
-        <Loader2 className="size-3.5 animate-spin" aria-hidden />
-      ) : (
-        <FileSignature className="size-3.5" aria-hidden />
-      )}
+      <FileSignature className="size-3.5" aria-hidden />
       Contrato
     </Button>
   );

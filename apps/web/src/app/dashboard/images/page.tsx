@@ -41,12 +41,12 @@ export default function ImagesPage() {
       onClick={() => setUploadOpen(true)}
       aria-label="Subir imagen"
     >
-      <span className="hidden sm:inline">Subir imagen</span>
+      <span className="hidden @xl/main:inline">Subir imagen</span>
     </Button>
   );
 
   return (
-    <div className="flex flex-1 flex-col gap-4 lg:gap-6">
+    <div className="flex flex-1 flex-col gap-4 @5xl/main:gap-6">
       <ImagesFilters
         value={filters}
         onChange={setFilters}

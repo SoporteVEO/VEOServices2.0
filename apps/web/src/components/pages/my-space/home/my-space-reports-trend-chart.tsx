@@ -124,7 +124,7 @@ function SummaryStat({
   return (
     <span className="flex items-center gap-1.5">
       <span
-        className="size-2 rounded-full"
+        className="size-2"
         style={{ backgroundColor: colorVar }}
       />
       <span>{label}:</span>

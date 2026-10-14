@@ -1,8 +1,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Loader2 } from "lucide-react";
 import { usePantallasBoard, usePantallasLogs } from "@/api/pantallas/pantallas.get";
+import { Skeleton } from "@/components/primitives/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PantallasProvider, type PantallasDialogState } from "./pantallas-context";
 import { PantallasDialogs } from "./pantallas-dialogs";
@@ -44,10 +44,70 @@ export function PantallasPage() {
 
   if (isLoading) {
     return (
-      <div className="flex flex-1 items-center justify-center py-20 text-muted-foreground">
-        <Loader2 className="mr-2 size-4 animate-spin" />
-        Cargando pantallas…
-      </div>
+      <section
+        role="status"
+        aria-label="Cargando pantallas…"
+        className="flex min-h-0 flex-1 flex-col gap-4"
+      >
+        <div className="flex flex-wrap items-end justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <Skeleton className="size-10" />
+            <div className="flex flex-col gap-1.5">
+              <Skeleton className="h-5 w-28" />
+              <Skeleton className="h-3 w-44" />
+            </div>
+          </div>
+          <div className="flex flex-wrap items-end gap-2">
+            <Skeleton className="h-9 w-44" />
+            <Skeleton className="h-9 w-28" />
+            <Skeleton className="h-9 w-28" />
+            <Skeleton className="h-9 w-32" />
+          </div>
+        </div>
+        <div className="flex gap-1 pb-1">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <Skeleton key={i} className="h-8 w-24" />
+          ))}
+        </div>
+        <div className="flex flex-col gap-6">
+          <div className="grid gap-3 @xl/main:grid-cols-2 @5xl/main:grid-cols-4 @[96rem]/main:grid-cols-7">
+            {Array.from({ length: 7 }).map((_, i) => (
+              <div
+                key={i}
+                className="flex flex-col gap-2 border border-border/80 bg-accent/20 px-4 py-3"
+              >
+                <Skeleton className="h-3 w-24" />
+                <Skeleton className="h-6 w-20" />
+                <Skeleton className="h-3 w-32" />
+              </div>
+            ))}
+          </div>
+          <div className="flex flex-col gap-3">
+            <Skeleton className="h-4 w-24" />
+            <div className="grid gap-3 @xl/main:grid-cols-2 @7xl/main:grid-cols-3 @[96rem]/main:grid-cols-4">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div
+                  key={i}
+                  className="flex flex-col gap-2 border border-border/80 bg-card px-4 py-4"
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <Skeleton className="h-4 w-28" />
+                    <Skeleton className="h-3 w-16" />
+                  </div>
+                  <Skeleton className="h-3 w-32" />
+                  <Skeleton className="h-5 w-36" />
+                  <Skeleton className="h-2 w-full" />
+                  <div className="flex flex-wrap gap-1.5 pt-1">
+                    <Skeleton className="h-5 w-20" />
+                    <Skeleton className="h-5 w-24" />
+                    <Skeleton className="h-5 w-16" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
     );
   }
 

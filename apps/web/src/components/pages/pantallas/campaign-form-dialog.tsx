@@ -127,11 +127,11 @@ function placementToast(client: string, copies: PlacementResult[], isEdit: boole
   toast.success(message);
   const expand = placed.filter((c) => c.needsMoreHours).map((c) => c.screenName);
   if (expand.length) {
-    alert(
-      `Se crearon sublistas nuevas y estas pantallas se quedaron sin horas suficientes:\n\n${expand
-        .map((x) => `  · ${x}`)
-        .join("\n")}\n\nAbre cada una y aplica la sugerencia de horario para ampliar la operación.`,
-    );
+    toast.warning("Se crearon sublistas nuevas y estas pantallas se quedaron sin horas suficientes", {
+      description: `${expand.join(", ")}. Abre cada una y aplica la sugerencia de horario para ampliar la operación.`,
+      duration: Infinity,
+      closeButton: true,
+    });
   }
 }
 
