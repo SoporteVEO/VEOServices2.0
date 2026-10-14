@@ -539,13 +539,6 @@ LEFT JOIN olComun.dbo.Clientes cli WITH (NOLOCK)
 WHERE detcon.caraId = @CaraId
   AND maecon.mconPosteado <> 0
   AND maecon.mconAnulado <> 1
-  AND NOT EXISTS (
-      SELECT 1
-      FROM olVallas.dbo.maeContratos child WITH (NOLOCK)
-      WHERE child.mconIdPadre = maecon.mconId
-        AND child.mconAnulado <> 1
-        AND child.mconPosteado <> 0
-  )
 ORDER BY detcon.dconFechaDesde DESC;
 `;
 
