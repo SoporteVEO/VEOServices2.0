@@ -43,8 +43,69 @@ model User {
   offerEvents           OfferEvent[]          @relation("OfferEventActor")
   productionOrders      ProductionOrder[]     @relation("ProductionOrderCreatedBy")
   pushSubscriptions     PushSubscription[]
+  agentThreads          AgentThread[]
+  agentIssuesReported   AgentIssue[]          @relation("AgentIssueReporter")
+  agentIssuesResolved   AgentIssue[]          @relation("AgentIssueResolver")
 
   @@map("users")
+}
+
+/// One conversation with the in-app assistant. Messages keep the AI SDK
+/// `UIMessage` shape so the chat can be restored exactly as it was streamed.
+model AgentThread {
+  id        String         @id
+  userId    String         @map("user_id")
+  user      User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String
+  messages  AgentMessage[]
+  createdAt DateTime       @default(now()) @map("created_at")
+  updatedAt DateTime       @updatedAt @map("updated_at")
+
+  @@index([userId, updatedAt])
+  @@map("agent_threads")
+}
+
+/// A failure Nexo filed for the dev team. `diagnostics` is captured by the
+/// server (tool errors, failed API calls), never written by the model.
+model AgentIssue {
+  id               String             @id @default(uuid())
+  number           Int                @unique @default(autoincrement())
+  status           AgentIssueStatus   @default(OPEN)
+  severity         AgentIssueSeverity @default(MEDIUM)
+  title            String
+  summary          String
+  technicalDetails String             @map("technical_details")
+  userRequest      String             @map("user_request")
+  stepsToReproduce String[]           @default([]) @map("steps_to_reproduce")
+  expectedBehavior String?            @map("expected_behavior")
+  diagnostics      Json
+  context          Json
+  threadId         String?            @map("thread_id")
+  reporterId       String?            @map("reporter_id")
+  reporter         User?              @relation("AgentIssueReporter", fields: [reporterId], references: [id], onDelete: SetNull)
+  resolutionNotes  String?            @map("resolution_notes")
+  resolvedAt       DateTime?          @map("resolved_at")
+  resolvedById     String?            @map("resolved_by_id")
+  resolvedBy       User?              @relation("AgentIssueResolver", fields: [resolvedById], references: [id], onDelete: SetNull)
+  createdAt        DateTime           @default(now()) @map("created_at")
+  updatedAt        DateTime           @updatedAt @map("updated_at")
+
+  @@index([status, createdAt])
+  @@map("agent_issues")
+}
+
+model AgentMessage {
+  id        String      @id
+  threadId  String      @map("thread_id")
+  thread    AgentThread @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  position  Int
+  role      String
+  parts     Json
+  metadata  Json?
+  createdAt DateTime    @default(now()) @map("created_at")
+
+  @@unique([threadId, position])
+  @@map("agent_messages")
 }
 
 enum ContractType {
@@ -318,44 +379,168 @@ model Image {
   @@map("images")
 }
 
-model DigitalBillboardUsage {
-  id                  String            @id @default(uuid())
-  digitalBillboardId  String
-  timestamp           DateTime
-  duration            Int
-  campaignName        String?
-  campaignDescription String?
-  offerItemId         String?           @map("offer_item_id")
-  createdAt           DateTime          @default(now())
-  updatedAt           DateTime          @updatedAt
-  digitalBillboard    DigitalBillboard  @relation(fields: [digitalBillboardId], references: [id])
-  offerItem           OfferCreatedItem? @relation(fields: [offerItemId], references: [id], onDelete: SetNull)
-
-  @@index([digitalBillboardId, timestamp])
-  @@index([offerItemId])
-  @@map("digital_billboard_usages")
-}
-
+/// Pantallas (DOOH). `maxSpots` stays as the shop pricing basis; real capacity
+/// is the operating hours times `DigitalBillboardSettings.spotsPerHour`.
 model DigitalBillboard {
-  id                     String                  @id @default(uuid())
-  code                   String                  @unique
-  name                   String
-  address                String
-  latitude               Float
-  longitude              Float
-  price                  Float
-  imageId                String?
-  maxSpots               Int                     @default(900)
-  createdAt              DateTime                @default(now())
-  updatedAt              DateTime                @updatedAt
-  departmentId           Int?                    @map("department_id")
-  departmentName         String?                 @map("department_name")
-  digitalBillboardUsages DigitalBillboardUsage[]
-  offerItems             OfferCreatedItem[]
-  image                  Image?                  @relation(fields: [imageId], references: [id])
-  purchaseItems          PurchaseItem[]
+  id             String  @id @default(uuid())
+  code           String  @unique
+  name           String
+  address        String
+  latitude       Float
+  longitude      Float
+  price          Float
+  imageId        String?
+  maxSpots       Int     @default(900)
+  departmentId   Int?    @map("department_id")
+  departmentName String? @map("department_name")
+
+  turnOnAt  String   @default("05:30") @map("turn_on_at")
+  turnOffAt String   @default("22:00") @map("turn_off_at")
+  position  Int      @default(0)
+  /// Lowercase, accent-free names used to recognise the screen in an OP file.
+  aliases   String[] @default([])
+
+  lastChangeClient String?   @map("last_change_client")
+  lastChangeAction String?   @map("last_change_action")
+  lastChangeAt     DateTime? @map("last_change_at")
+
+  createdAt     DateTime                  @default(now())
+  updatedAt     DateTime                  @updatedAt
+  sublists      DigitalBillboardSublist[]
+  offerItems    OfferCreatedItem[]
+  image         Image?                    @relation(fields: [imageId], references: [id])
+  purchaseItems PurchaseItem[]
 
   @@map("digital_billboards")
+}
+
+model DigitalBillboardSettings {
+  id           Int      @id @default(1)
+  spotsPerHour Int      @default(450) @map("spots_per_hour")
+  minHours     Float    @default(16.5) @map("min_hours")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@map("digital_billboard_settings")
+}
+
+model DigitalBillboardSublist {
+  id                 String           @id @default(uuid())
+  digitalBillboardId String           @map("digital_billboard_id")
+  digitalBillboard   DigitalBillboard @relation(fields: [digitalBillboardId], references: [id], onDelete: Cascade)
+  name               String
+  capacity           Int              @default(900)
+  position           Int              @default(0)
+  createdAt          DateTime         @default(now()) @map("created_at")
+  updatedAt          DateTime         @updatedAt @map("updated_at")
+
+  campaigns DigitalBillboardCampaign[]
+
+  @@index([digitalBillboardId, position])
+  @@map("digital_billboard_sublists")
+}
+
+enum DigitalCampaignArt {
+  RECEIVED
+  MISSING
+  PENDING_APPROVAL
+}
+
+enum DigitalCampaignDeal {
+  COMMERCIAL
+  DONATION
+  EXCHANGE
+  DATION
+  BONUS
+}
+
+model DigitalBillboardCampaign {
+  id          String                  @id @default(uuid())
+  sublistId   String                  @map("sublist_id")
+  sublist     DigitalBillboardSublist @relation(fields: [sublistId], references: [id], onDelete: Cascade)
+  client      String
+  campaign    String                  @default("")
+  startDate   DateTime?               @map("start_date") @db.Date
+  endDate     DateTime?               @map("end_date") @db.Date
+  spotsPerDay Int                     @map("spots_per_day")
+  notes       String?
+  paused      Boolean                 @default(false)
+  pauseReason String?                 @map("pause_reason")
+  art         DigitalCampaignArt      @default(RECEIVED)
+  deal        DigitalCampaignDeal     @default(COMMERCIAL)
+
+  monthlyValue Float? @map("monthly_value")
+  spotValue    Float? @map("spot_value")
+  /// Manual "valor total de la OP"; when null the total is the sum of screens.
+  totalValue   Float? @map("total_value")
+
+  /// Shared by every row entered through the same OP.
+  orderGroupId String?           @map("order_group_id")
+  /// Set when the campaign comes from an accepted offer; removed with it.
+  offerItemId  String?           @map("offer_item_id")
+  offerItem    OfferCreatedItem? @relation(fields: [offerItemId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime                          @default(now()) @map("created_at")
+  updatedAt DateTime                          @updatedAt @map("updated_at")
+  versions  DigitalBillboardCampaignVersion[]
+
+  @@index([sublistId])
+  @@index([client])
+  @@index([orderGroupId])
+  @@index([offerItemId])
+  @@index([startDate, endDate])
+  @@map("digital_billboard_campaigns")
+}
+
+model DigitalBillboardCampaignVersion {
+  id         String                   @id @default(uuid())
+  campaignId String                   @map("campaign_id")
+  campaign   DigitalBillboardCampaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  title      String                   @default("")
+  startDate  DateTime?                @map("start_date") @db.Date
+  endDate    DateTime?                @map("end_date") @db.Date
+  position   Int                      @default(0)
+
+  @@index([campaignId])
+  @@map("digital_billboard_campaign_versions")
+}
+
+enum DigitalBillboardLogType {
+  NEW
+  RENEWED
+  EXTENDED
+  SHORTENED
+  EDITED
+  PAUSED
+  RESUMED
+  MOVED
+  REMOVED
+}
+
+/// Bitácora. Screen and sublist names are copied so the history still reads
+/// correctly after they are renamed or deleted.
+model DigitalBillboardLog {
+  id                  String                  @id @default(uuid())
+  type                DigitalBillboardLogType
+  client              String
+  campaign            String?
+  screenName          String                  @map("screen_name")
+  sublistName         String?                 @map("sublist_name")
+  spotsPerDay         Int?                    @map("spots_per_day")
+  startDate           DateTime?               @map("start_date") @db.Date
+  endDate             DateTime?               @map("end_date") @db.Date
+  previousEndDate     DateTime?               @map("previous_end_date") @db.Date
+  previousSpotsPerDay Int?                    @map("previous_spots_per_day")
+  detail              String?
+  orderGroupId        String?                 @map("order_group_id")
+  newSublist          Boolean                 @default(false) @map("new_sublist")
+  actorUserId         String?                 @map("actor_user_id")
+  actorName           String?                 @map("actor_name")
+  createdAt           DateTime                @default(now()) @map("created_at")
+
+  @@index([createdAt])
+  @@index([type, createdAt])
+  @@index([client])
+  @@map("digital_billboard_logs")
 }
 
 enum Role {
@@ -373,6 +558,23 @@ enum SubRole {
   USERS_MANAGEMENT
   PRODUCTION
   MANTENIMIENTO
+  PANTALLAS_PRODUCCION
+  PANTALLAS_COMERCIAL
+  DESARROLLADOR
+}
+
+enum AgentIssueStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+  DISMISSED
+}
+
+enum AgentIssueSeverity {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
 }
 
 enum NotificationStatus {
@@ -570,30 +772,30 @@ model OfferEvent {
 }
 
 model OfferCreatedItem {
-  id                     String                  @id @default(uuid())
-  offerId                String                  @map("offer_id")
-  offer                  OfferCreated            @relation(fields: [offerId], references: [id], onDelete: Cascade)
-  itemType               OfferItemType           @default(STATIC_BILLBOARD) @map("item_type")
-  billboardId            Int?                    @map("billboard_id")
-  billboardCode          String?                 @map("billboard_code")
-  address                String?
-  cityName               String?                 @map("city_name")
-  departmentName         String?                 @map("department_name")
-  width                  Float?
-  height                 Float?
-  quantity               Int                     @default(1)
-  impressionPrice        Float                   @map("impression_price")
-  rentalPrice            Float                   @map("rental_price")
-  taxRate                Float                   @default(0.13) @map("tax_rate")
-  description            String?
-  digitalBillboardId     String?                 @map("digital_billboard_id")
-  digitalBillboard       DigitalBillboard?       @relation(fields: [digitalBillboardId], references: [id])
-  spotCount              Int?                    @map("spot_count")
-  startDate              DateTime?               @map("start_date")
-  endDate                DateTime?               @map("end_date")
-  createdAt              DateTime                @default(now())
-  digitalBillboardUsages DigitalBillboardUsage[]
-  productionOrderItem    ProductionOrderItem?
+  id                  String                     @id @default(uuid())
+  offerId             String                     @map("offer_id")
+  offer               OfferCreated               @relation(fields: [offerId], references: [id], onDelete: Cascade)
+  itemType            OfferItemType              @default(STATIC_BILLBOARD) @map("item_type")
+  billboardId         Int?                       @map("billboard_id")
+  billboardCode       String?                    @map("billboard_code")
+  address             String?
+  cityName            String?                    @map("city_name")
+  departmentName      String?                    @map("department_name")
+  width               Float?
+  height              Float?
+  quantity            Int                        @default(1)
+  impressionPrice     Float                      @map("impression_price")
+  rentalPrice         Float                      @map("rental_price")
+  taxRate             Float                      @default(0.13) @map("tax_rate")
+  description         String?
+  digitalBillboardId  String?                    @map("digital_billboard_id")
+  digitalBillboard    DigitalBillboard?          @relation(fields: [digitalBillboardId], references: [id])
+  spotCount           Int?                       @map("spot_count")
+  startDate           DateTime?                  @map("start_date")
+  endDate             DateTime?                  @map("end_date")
+  createdAt           DateTime                   @default(now())
+  digitalCampaigns    DigitalBillboardCampaign[]
+  productionOrderItem ProductionOrderItem?
 
   @@index([offerId])
   @@index([digitalBillboardId])
@@ -870,13 +1072,13 @@ enum FleetServiceType {
 
 /// Company cars tracked by the Mantenimiento flota module.
 model FleetVehicle {
-  id     String  @id @default(uuid())
-  plate  String  @unique
-  brand  String
-  model  String
-  year   Int?
-  color  String?
-  notes  String?
+  id    String  @id @default(uuid())
+  plate String  @unique
+  brand String
+  model String
+  year  Int?
+  color String?
+  notes String?
 
   photoS3Key String? @map("photo_s3_key")
 

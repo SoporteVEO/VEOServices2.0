@@ -1,0 +1,58 @@
+{
+ "id": "xjv4rku3w64wp",
+ "corr": "011026-02",
+ "rev": 1,
+ "ts": "2026-10-02T00:00:44.258Z",
+ "tsCambio": "2026-10-02T00:00:44.258Z",
+ "autor": "Soporte Comercial",
+ "ejecutivo": "Marta Descamps",
+ "fechaIngreso": "2026-10-01",
+ "agencia": true,
+ "nombreAgencia": "LEMUSIMUN",
+ "marca": "NOTICIERO EL SALVADOR",
+ "campana": "6 ANIVERSARIO",
+ "formato": "Animado",
+ "inicio": "2026-10-01",
+ "fin": "2026-10-31",
+ "indicaciones": "Descargar editables",
+ "enlaces": [
+  "https://we.tl/t-n82DugkmmBB3Er9q"
+ ],
+ "pantallas": [
+  {
+   "pid": "sdm",
+   "frec": 300,
+   "mes": 367.25,
+   "neg": "",
+   "spotMano": false,
+   "spot": 0.03948924731182796
+  },
+  {
+   "pid": "heroe",
+   "frec": 300,
+   "mes": 367.25,
+   "neg": "",
+   "spotMano": false,
+   "spot": 0.03948924731182796
+  },
+  {
+   "pid": "panam",
+   "frec": 300,
+   "mes": 367.25,
+   "neg": "",
+   "spotMano": false,
+   "spot": 0.03948924731182796
+  },
+  {
+   "pid": "juanpa",
+   "frec": 300,
+   "mes": 367.25,
+   "neg": "",
+   "spotMano": false,
+   "spot": 0.03948924731182796
+  }
+ ],
+ "valorTotal": 1469,
+ "valorMensual": 1469,
+ "archivo": "OPN 011026-02 NOTICIERO EL SALVADOR.json"
+}

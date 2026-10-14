@@ -67,30 +67,47 @@ export function UserFormFields({
       <Controller
         control={control}
         name="role"
-        render={({ field }) => (
-          <div className="flex w-full flex-col gap-2">
-            <span className="text-xs font-medium text-muted-foreground">
-              Rol
-            </span>
-            <Select value={field.value} onValueChange={field.onChange}>
-              <SelectTrigger className="w-full">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {ROLE_OPTIONS.map((option) => (
-                  <SelectItem key={option.value} value={option.value}>
-                    <span className="flex flex-col items-start">
-                      <span>{option.label}</span>
-                      <span className="text-xs text-muted-foreground">
-                        {option.description}
+        render={({ field }) => {
+          const selected = ROLE_OPTIONS.find((o) => o.value === field.value);
+          return (
+            <div className="flex w-full min-w-0 flex-col gap-2">
+              <span className="text-xs font-medium text-muted-foreground">
+                Rol
+              </span>
+              <Select value={field.value} onValueChange={field.onChange}>
+                <SelectTrigger className="w-full min-w-0">
+                  <SelectValue placeholder="Selecciona un rol">
+                    <span className="truncate">{selected?.label}</span>
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent
+                  position="popper"
+                  className="w-(--radix-select-trigger-width) max-w-[calc(100vw-2rem)]"
+                >
+                  {ROLE_OPTIONS.map((option) => (
+                    <SelectItem
+                      key={option.value}
+                      value={option.value}
+                      className="items-start"
+                    >
+                      <span className="flex min-w-0 flex-col items-start gap-0.5 whitespace-normal">
+                        <span className="font-medium">{option.label}</span>
+                        <span className="text-xs text-muted-foreground">
+                          {option.description}
+                        </span>
                       </span>
-                    </span>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        )}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {selected ? (
+                <p className="text-xs text-muted-foreground">
+                  {selected.description}
+                </p>
+              ) : null}
+            </div>
+          );
+        }}
       />
 
       <Controller

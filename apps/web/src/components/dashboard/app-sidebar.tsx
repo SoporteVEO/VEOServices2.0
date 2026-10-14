@@ -15,6 +15,7 @@ import {
   SidebarMenuItem,
   SidebarRail,
 } from "@/components/primitives/ui/sidebar";
+import { BrandLogo } from "@/components/ui/brand-logo";
 import { UserCard } from "@/components/ui/user-card";
 import { AppSidebarSubmenu } from "./app-sidebar-submenu";
 import {
@@ -89,17 +90,18 @@ export function AppSidebar() {
       <SidebarHeader className="hover:bg-sidebar-accent hover:text-sidebar-accent-foreground rounded-lg">
         <Link
           href="/dashboard"
-          className="flex items-center gap-2 rounded-lg text-left outline-none focus-visible:ring-2 transition-all duration-200 will-change-transform"
+          aria-label="VEO Services"
+          className="flex h-8 items-center gap-2 rounded-lg px-1.5 text-left outline-none focus-visible:ring-2 transition-all duration-200 will-change-transform group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0"
         >
-          <span className="flex size-8 items-center justify-center rounded-md bg-sidebar-primary text-xs font-semibold text-sidebar-primary-foreground">
-            V
-          </span>
-          <span className="grid flex-1 text-start text-sm leading-tight group-data-[collapsible=icon]:hidden">
-            <span className="truncate font-semibold tracking-tight">VEO</span>
-            <span className="truncate text-xs text-muted-foreground">
-              Services
-            </span>
-          </span>
+          <BrandLogo
+            variant="isotipo"
+            priority
+            className="hidden group-data-[collapsible=icon]:block"
+          />
+          <BrandLogo
+            priority
+            className="h-5 group-data-[collapsible=icon]:hidden"
+          />
         </Link>
       </SidebarHeader>
       <SidebarContent>

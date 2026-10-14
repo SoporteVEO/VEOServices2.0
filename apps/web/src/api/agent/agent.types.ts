@@ -1,0 +1,269 @@
+import type { UIDataTypes, UIMessage } from "ai";
+import type { S3ImageType } from "@/api/s3-images/s3-images.get";
+
+export type AgentCell = string | number | boolean | null;
+
+export type AgentColumnFormat =
+  | "text"
+  | "number"
+  | "currency"
+  | "percent"
+  | "date";
+
+export interface AgentColumn {
+  key: string;
+  label: string;
+  format?: AgentColumnFormat;
+}
+
+export interface AgentTableData {
+  columns: AgentColumn[];
+  rows: Record<string, AgentCell>[];
+}
+
+export interface AgentTableInput extends AgentTableData {
+  title: string;
+  description?: string;
+}
+
+export interface AgentChartInput {
+  title: string;
+  description?: string;
+  type: "bar" | "line" | "area" | "pie";
+  xKey: string;
+  series: { key: string; label: string }[];
+  data: Record<string, AgentCell>[];
+  valueFormat?: "number" | "currency" | "percent";
+}
+
+export interface AgentExcelInput {
+  fileName: string;
+  sheets: (AgentTableData & { name: string })[];
+}
+
+export interface AgentPdfTable extends AgentTableData {
+  totals?: Record<string, AgentCell>;
+}
+
+export interface AgentPdfChart {
+  title?: string;
+  valueFormat?: "number" | "currency" | "percent";
+  data: { label: string; value: number }[];
+}
+
+export interface AgentPdfHighlight {
+  label: string;
+  value: string;
+  detail?: string;
+}
+
+export interface AgentPdfSection {
+  heading?: string;
+  paragraphs?: string[];
+  bullets?: string[];
+  chart?: AgentPdfChart;
+  table?: AgentPdfTable;
+}
+
+export interface AgentPdfInput {
+  fileName: string;
+  title: string;
+  subtitle?: string;
+  orientation?: "portrait" | "landscape";
+  highlights?: AgentPdfHighlight[];
+  sections: AgentPdfSection[];
+}
+
+export interface AgentUnauthorized {
+  ok: false;
+  unauthorized: true;
+  message: string;
+}
+
+export interface AgentToolError {
+  ok: false;
+  error: string | null;
+}
+
+export interface AgentReportOutput {
+  ok: true;
+  from: string;
+  to: string;
+  billboardIds?: number[];
+  count: number;
+  codes: string[];
+  missingCodes: string[];
+}
+
+export interface AgentMonthlyReportContract {
+  contractNumber: string;
+  customerName: string | null;
+  customerEmail: string | null;
+  description: string | null;
+  endDate: string;
+  totalBillboards: number;
+  billboardsWithImages: number;
+  totalImages: number;
+  reportsSendedCount: number;
+  billboardCodes: string[];
+}
+
+export interface AgentMonthlyReportOutput {
+  ok: true;
+  month: string;
+  search: string;
+  total: number;
+  note?: string;
+  contracts: AgentMonthlyReportContract[];
+}
+
+export interface AgentImage {
+  id: string;
+  url: string;
+  createdAt: string;
+  type: S3ImageType;
+  code: string | null;
+  uploadedBy: string;
+}
+
+export interface AgentImagesOutput {
+  ok: true;
+  code: string;
+  type: S3ImageType | null;
+  fetchedAt: string;
+  images: AgentImage[];
+}
+
+export interface AgentEmailInput {
+  to: string[];
+  subject: string;
+  body: string;
+  excelAttachments?: AgentExcelInput[];
+}
+
+export interface AgentEmailOutput {
+  ok: boolean;
+  sent: string[];
+  failed: { recipient: string; error: string | null }[];
+  attachments: string[];
+  testInbox: boolean;
+}
+
+export interface AgentCallApiInput {
+  method: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
+  path: string;
+  query?: Record<string, string | number | boolean>;
+  body?: Record<string, unknown>;
+}
+
+export interface AgentCallApiOutput {
+  ok: boolean;
+  status?: number;
+  endpoint?: string;
+  data?: unknown;
+  error?: string | null;
+}
+
+export interface AgentIssueReportInput {
+  title: string;
+  severity: "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
+  summary: string;
+  userRequest: string;
+  technicalDetails: string;
+  stepsToReproduce: string[];
+  expectedBehavior?: string;
+}
+
+export interface AgentIssueReportOutput {
+  ok: true;
+  ticket: string;
+  title: string;
+}
+
+type ToolResult<T> = T | AgentUnauthorized | AgentToolError;
+
+export type AgentUITools = {
+  show_table: {
+    input: AgentTableInput;
+    output: { ok: true; rowCount: number };
+  };
+  show_chart: { input: AgentChartInput; output: { ok: true; points: number } };
+  create_excel_file: { input: AgentExcelInput; output: { ok: true } };
+  create_pdf_document: { input: AgentPdfInput; output: { ok: true } };
+  generate_static_billboards_report: {
+    input: { from: string; to: string; billboardCodes?: string[] };
+    output: ToolResult<AgentReportOutput>;
+  };
+  generate_monthly_report: {
+    input: { month: string; search: string };
+    output: ToolResult<AgentMonthlyReportOutput>;
+  };
+  get_billboard_images: {
+    input: { code: string; limit?: number; type?: S3ImageType };
+    output: ToolResult<AgentImagesOutput>;
+  };
+  send_email: { input: AgentEmailInput; output: ToolResult<AgentEmailOutput> };
+  call_api: {
+    input: AgentCallApiInput;
+    output: AgentCallApiOutput | AgentUnauthorized;
+  };
+  list_api_endpoints: {
+    input: { scope?: string; search?: string };
+    output: { count: number };
+  };
+  report_issue: {
+    input: AgentIssueReportInput;
+    output: AgentIssueReportOutput | AgentToolError;
+  };
+};
+
+export interface AgentMessageMetadata {
+  createdAt?: number;
+  model?: string;
+  usage?: {
+    inputTokens?: number;
+    outputTokens?: number;
+    cachedInputTokens?: number;
+  };
+}
+
+export type AgentUIMessage = UIMessage<
+  AgentMessageMetadata,
+  UIDataTypes,
+  AgentUITools
+>;
+
+export type AgentMessagePart = AgentUIMessage["parts"][number];
+
+export interface AgentThreadSummary {
+  id: string;
+  title: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface AgentThreadDetail extends AgentThreadSummary {
+  messages: AgentUIMessage[];
+}
+
+export interface AgentCapabilities {
+  enabled: boolean;
+  role: string;
+  scopes: { key: string; label: string }[];
+}
+
+export function isUnauthorized(output: unknown): output is AgentUnauthorized {
+  return (
+    typeof output === "object" &&
+    output !== null &&
+    (output as { unauthorized?: unknown }).unauthorized === true
+  );
+}
+
+export function isToolError(output: unknown): output is AgentToolError {
+  return (
+    typeof output === "object" &&
+    output !== null &&
+    (output as { ok?: unknown }).ok === false
+  );
+}

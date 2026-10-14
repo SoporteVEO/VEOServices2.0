@@ -11,10 +11,6 @@ import type {
   ActiveContractImage,
 } from "@/api/contracts/contracts.get";
 import {
-  createReportUploadUrl,
-  sendMaintenanceReport,
-} from "@/api/contracts/contracts.post";
-import {
   S3_IMAGE_TYPE_BADGE_CLASSES,
   S3_IMAGE_TYPE_SHORT_LABELS,
   type S3Image,
@@ -31,19 +27,19 @@ import {
 } from "@/components/ui/drawer";
 import { ImagePreviewDialog } from "@/components/pages/images/image-preview-dialog";
 import { formatShortDate } from "@/lib/format";
-import {
-  generateContractReport,
-  type ContractReportProgress,
-} from "@/lib/generate-contract-report";
-import { uploadBlobToPresignedUrl } from "@/lib/upload-blob-to-presigned-url";
+import type { ContractReportProgress } from "@/lib/generate-contract-report";
 import { cn } from "@/lib/utils";
+import {
+  buildContractReport,
+  buildInitialSelection,
+  countSelectedBillboards,
+  formatReportProgress,
+  sendContractReport,
+} from "./contract-report-actions";
 import { SendReportDialog } from "./send-report-dialog";
 import { ContractReportsSendedSection } from "./contract-reports-sended-section";
-import { endOfMonth, formatMonthLabel, startOfMonth } from "./report-period";
+import { formatMonthLabel, startOfMonth } from "./report-period";
 import { BILLBOARD_REPORT_CONFIG } from "./report-types";
-
-const REPORT_FILE_MIME_TYPE =
-  "application/vnd.openxmlformats-officedocument.presentationml.presentation";
 
 function toS3ImagePreview(
   image: ActiveContractImage,
@@ -121,9 +117,7 @@ function ContractReportDrawerContent({
     const billboardsWithImages = group.billboards.filter(
       (b) => b.images.length > 0,
     ).length;
-    const billboardsSelected = group.billboards.filter(
-      (b) => selectedImageIds[b.contractDetailSourceId],
-    ).length;
+    const billboardsSelected = countSelectedBillboards(group, selectedImageIds);
     return { billboardsWithImages, billboardsSelected };
   }, [group, selectedImageIds]);
 
@@ -139,59 +133,25 @@ function ContractReportDrawerContent({
     setProgress({ stage: "Preparando", current: 0, total: 1 });
 
     try {
-      const reportBillboards = group.billboards.map((billboard) => {
-        const selectedImageId =
-          selectedImageIds[billboard.contractDetailSourceId];
-        const selectedImage = selectedImageId
-          ? (billboard.images.find((img) => img.id === selectedImageId) ?? null)
-          : null;
-
-        return {
-          billboardCode: billboard.billboardCode,
-          billboardAddress: billboard.billboardAddress ?? "",
-          latitude: billboard.billboardLatitude,
-          longitude: billboard.billboardLongitude,
-          imageUrl: selectedImage?.url ?? null,
-          imageCreatedAt: selectedImage?.createdAt ?? null,
-        };
-      });
-
-      const { blob, fileName, period } = await generateContractReport({
-        contractNumber: group.contractNumber,
-        customerName: group.customerName ?? "",
-        customerEmail: group.customerEmail ?? "",
-        description: group.description ?? "",
-        dateFrom: month,
-        dateTo: endOfMonth(month),
-        billboards: reportBillboards,
-        coverTitle: config.coverTitle,
-        fileNamePrefix: config.fileNamePrefix,
+      const report = await buildContractReport({
+        group,
+        month,
+        selection: selectedImageIds,
         onProgress: setProgress,
       });
-
-      setProgress({ stage: "Subiendo reporte", current: 0, total: 1 });
-      const { key, url } = await createReportUploadUrl();
-      await uploadBlobToPresignedUrl({
-        url,
-        blob,
-        contentType: REPORT_FILE_MIME_TYPE,
-      });
-
-      setProgress({ stage: "Enviando email", current: 0, total: 1 });
-      await sendMaintenanceReport({
+      await sendContractReport({
+        group,
+        month,
+        report,
         email,
-        contractNumber: group.contractNumber,
-        customerName: group.customerName ?? "",
-        description: group.description ?? undefined,
-        period,
-        periodStart: month.toISOString(),
-        fileName,
-        fileKey: key,
+        onProgress: setProgress,
       });
 
       toast.success(`Reporte enviado a ${email}.`);
       queryClient.invalidateQueries({ queryKey: ["contracts", "active"] });
-      queryClient.invalidateQueries({ queryKey: ["contracts", "reports-sended"] });
+      queryClient.invalidateQueries({
+        queryKey: ["contracts", "reports-sended"],
+      });
       queryClient.invalidateQueries({ queryKey: ["notifications", "active"] });
       setIsSendOpen(false);
     } catch (error) {
@@ -203,17 +163,16 @@ function ContractReportDrawerContent({
     }
   }
 
-  const progressLabel = progress
-    ? `${progress.stage}${progress.total > 1 ? ` (${progress.current}/${progress.total})` : "…"}`
-    : null;
+  const progressLabel = formatReportProgress(progress);
 
   return (
     <>
       <DrawerHeader>
         <DrawerTitle>{group.contractNumber}</DrawerTitle>
         <DrawerDescription>
-          {[group.customerName, group.customerEmail].filter(Boolean).join(" · ") ||
-            "Sin cliente"}
+          {[group.customerName, group.customerEmail]
+            .filter(Boolean)
+            .join(" · ") || "Sin cliente"}
         </DrawerDescription>
       </DrawerHeader>
 
@@ -300,17 +259,6 @@ function ContractReportDrawerContent({
       />
     </>
   );
-}
-
-function buildInitialSelection(
-  group: ActiveContractGroup,
-): Record<number, string | null> {
-  const initial: Record<number, string | null> = {};
-  for (const billboard of group.billboards) {
-    const mostRecent = billboard.images[0];
-    initial[billboard.contractDetailSourceId] = mostRecent?.id ?? null;
-  }
-  return initial;
 }
 
 function ContractSummary({

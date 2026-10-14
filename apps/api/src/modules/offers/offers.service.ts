@@ -6,12 +6,19 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import {
+  DigitalCampaignArt,
+  DigitalCampaignDeal,
   OfferEventType,
   OfferItemType,
   OfferStatus,
   type Prisma,
 } from '@prisma/client';
 import { BriloDatabaseService } from '../brilo-database/brilo-database.service.js';
+import { PantallasPlacementService } from '../digital-billboards/pantallas-placement.service.js';
+import {
+  localIsoDate,
+  todayIso,
+} from '../digital-billboards/pantallas-rules.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import {
   ProductionOrdersService,
@@ -257,11 +264,11 @@ function round2(value: number): number {
 function decodeBase64Pdf(base64: string): Buffer {
   const normalized = base64.includes(',') ? base64.split(',')[1] : base64;
   if (!normalized) {
-    throw new BadRequestException('El PDF está vacío o es inválido');
+    throw new BadRequestException('El PDF estÃ¡ vacÃ­o o es invÃ¡lido');
   }
   const buffer = Buffer.from(normalized, 'base64');
   if (buffer.length < 4 || buffer.subarray(0, 4).toString('ascii') !== '%PDF') {
-    throw new BadRequestException('El archivo no es un PDF válido');
+    throw new BadRequestException('El archivo no es un PDF vÃ¡lido');
   }
   return buffer;
 }
@@ -274,6 +281,7 @@ export class OffersService {
     private readonly clients: ClientsService,
     private readonly brilo: BriloDatabaseService,
     private readonly productionOrders: ProductionOrdersService,
+    private readonly pantallasPlacement: PantallasPlacementService,
   ) {}
 
   async create(
@@ -286,7 +294,7 @@ export class OffersService {
 
     const validUntil = new Date(dto.validUntil);
     if (Number.isNaN(validUntil.getTime())) {
-      throw new BadRequestException('Vigencia de oferta inválida');
+      throw new BadRequestException('Vigencia de oferta invÃ¡lida');
     }
 
     this.validateItems(dto.items);
@@ -367,7 +375,7 @@ export class OffersService {
             events: {
               create: {
                 type: OfferEventType.CREATED,
-                message: `Cotización ${offerNumber} creada`,
+                message: `CotizaciÃ³n ${offerNumber} creada`,
                 actorUserId: createdByUserId,
               },
             },
@@ -402,7 +410,7 @@ export class OffersService {
         }
         if (isUniqueConflict) {
           throw new ConflictException(
-            'Se generó un número de cotización duplicado, intenta de nuevo.',
+            'Se generÃ³ un nÃºmero de cotizaciÃ³n duplicado, intenta de nuevo.',
           );
         }
         throw e;
@@ -413,7 +421,7 @@ export class OffersService {
       await this.storage.deleteByKey(uploadedKey);
     }
     throw new ConflictException(
-      'Se generó un número de cotización duplicado, intenta de nuevo.',
+      'Se generÃ³ un nÃºmero de cotizaciÃ³n duplicado, intenta de nuevo.',
     );
   }
 
@@ -432,7 +440,7 @@ export class OffersService {
       select: { id: true, pdfS3Key: true },
     });
     if (!offer) {
-      throw new NotFoundException('Cotización no encontrada');
+      throw new NotFoundException('CotizaciÃ³n no encontrada');
     }
 
     const buffer = decodeBase64Pdf(pdfBase64);
@@ -465,7 +473,7 @@ export class OffersService {
           data: {
             offerId: id,
             type: OfferEventType.PDF_ATTACHED,
-            message: 'PDF de la cotización regenerado',
+            message: 'PDF de la cotizaciÃ³n regenerado',
             actorUserId,
           },
         });
@@ -822,7 +830,7 @@ export class OffersService {
       include: this.offerDetailInclude(),
     });
     if (!row) {
-      throw new NotFoundException('Cotización no encontrada');
+      throw new NotFoundException('CotizaciÃ³n no encontrada');
     }
 
     const linkedBriloContract = row.briloMconId
@@ -842,7 +850,7 @@ export class OffersService {
     if (dto.status === OfferStatus.ACCEPTED) {
       if (!dto.briloMconId) {
         throw new BadRequestException(
-          'Debes vincular un contrato de Brilo para marcar la cotización como aceptada',
+          'Debes vincular un contrato de Brilo para marcar la cotizaciÃ³n como aceptada',
         );
       }
       await this.assertBriloContractExists(dto.briloMconId);
@@ -863,10 +871,10 @@ export class OffersService {
 
         let productionOrderMeta: ProductionOrderNotificationMeta | null = null;
         if (wasAccepted && !willBeAccepted) {
-          await this.removeDigitalUsagesForOffer(tx, id);
+          await this.removeDigitalCampaignsForOffer(tx, id);
           await this.productionOrders.removeForOffer(tx, id);
         } else if (!wasAccepted && willBeAccepted) {
-          await this.registerDigitalUsagesForOffer(tx, id);
+          await this.registerDigitalCampaignsForOffer(tx, id);
           const result = await this.productionOrders.createForAcceptedOffer(
             tx,
             id,
@@ -920,7 +928,7 @@ export class OffersService {
       include: { items: { orderBy: { createdAt: 'asc' } } },
     });
     if (!existing) {
-      throw new NotFoundException('Cotización no encontrada');
+      throw new NotFoundException('CotizaciÃ³n no encontrada');
     }
     if (existing.status !== OfferStatus.PENDING) {
       throw new BadRequestException(
@@ -930,7 +938,7 @@ export class OffersService {
 
     const validUntil = new Date(dto.validUntil);
     if (Number.isNaN(validUntil.getTime())) {
-      throw new BadRequestException('Vigencia de oferta inválida');
+      throw new BadRequestException('Vigencia de oferta invÃ¡lida');
     }
 
     this.validateItems(dto.items);
@@ -1029,7 +1037,7 @@ export class OffersService {
   async declineOffer(id: string, userId: string): Promise<OfferListItem> {
     const offer = await this.findOwnedOffer(id, userId);
     if (offer.status === OfferStatus.DECLINED) {
-      throw new BadRequestException('La cotización ya está rechazada');
+      throw new BadRequestException('La cotizaciÃ³n ya estÃ¡ rechazada');
     }
 
     const wasAccepted = offer.status === OfferStatus.ACCEPTED;
@@ -1045,14 +1053,14 @@ export class OffersService {
       });
 
       if (wasAccepted) {
-        await this.removeDigitalUsagesForOffer(tx, id);
+        await this.removeDigitalCampaignsForOffer(tx, id);
         await this.productionOrders.removeForOffer(tx, id);
       }
 
       await this.recordEvent(tx, {
         offerId: id,
         type: OfferEventType.DECLINED,
-        message: 'Cotización rechazada',
+        message: 'CotizaciÃ³n rechazada',
         changes: { status: { from: offer.status, to: OfferStatus.DECLINED } },
         actorUserId: userId,
       });
@@ -1088,7 +1096,7 @@ export class OffersService {
           include: this.offerListInclude(),
         });
 
-        await this.registerDigitalUsagesForOffer(tx, id);
+        await this.registerDigitalCampaignsForOffer(tx, id);
         const result = await this.productionOrders.createForAcceptedOffer(
           tx,
           id,
@@ -1097,7 +1105,7 @@ export class OffersService {
         await this.recordEvent(tx, {
           offerId: id,
           type: OfferEventType.ACCEPTED,
-          message: `Cotización aceptada y vinculada al contrato Brilo #${briloMconId}`,
+          message: `CotizaciÃ³n aceptada y vinculada al contrato Brilo #${briloMconId}`,
           changes: {
             status: { from: offer.status, to: OfferStatus.ACCEPTED },
             briloMconId: { from: null, to: briloMconId },
@@ -1128,12 +1136,12 @@ export class OffersService {
       where: { id },
       select: { pdfS3Key: true, createdByUserId: true },
     });
-    if (!row) throw new NotFoundException('Cotización no encontrada');
+    if (!row) throw new NotFoundException('CotizaciÃ³n no encontrada');
     if (requestUserId && row.createdByUserId !== requestUserId) {
-      throw new NotFoundException('Cotización no encontrada');
+      throw new NotFoundException('CotizaciÃ³n no encontrada');
     }
     if (!row.pdfS3Key) {
-      throw new NotFoundException('La cotización no tiene PDF asociado');
+      throw new NotFoundException('La cotizaciÃ³n no tiene PDF asociado');
     }
     const url = await this.storage.getSignedUrl(row.pdfS3Key);
     return { url };
@@ -1178,11 +1186,11 @@ export class OffersService {
     });
 
     if (!offer || offer.createdByUserId !== requestUserId) {
-      throw new NotFoundException('Cotización no encontrada');
+      throw new NotFoundException('CotizaciÃ³n no encontrada');
     }
     if (offer.status !== OfferStatus.ACCEPTED || !offer.briloMconId) {
       throw new BadRequestException(
-        'El contrato solo está disponible para cotizaciones aceptadas y vinculadas a Brilo',
+        'El contrato solo estÃ¡ disponible para cotizaciones aceptadas y vinculadas a Brilo',
       );
     }
 
@@ -1193,7 +1201,7 @@ export class OffersService {
     const contract = rows[0];
     if (!contract) {
       throw new BadRequestException(
-        'El contrato de Brilo vinculado ya no está disponible',
+        'El contrato de Brilo vinculado ya no estÃ¡ disponible',
       );
     }
 
@@ -1284,7 +1292,7 @@ export class OffersService {
       },
     });
     if (!offer || offer.createdByUserId !== actorUserId) {
-      throw new NotFoundException('Cotización no encontrada');
+      throw new NotFoundException('CotizaciÃ³n no encontrada');
     }
 
     const buffer = decodeBase64Pdf(pdfBase64);
@@ -1414,11 +1422,11 @@ export class OffersService {
       select: { id: true, createdByUserId: true, status: true },
     });
     if (!offer) {
-      throw new NotFoundException('Cotización no encontrada');
+      throw new NotFoundException('CotizaciÃ³n no encontrada');
     }
     if (offer.createdByUserId !== userId) {
       throw new ForbiddenException(
-        'No tienes permiso para modificar esta cotización',
+        'No tienes permiso para modificar esta cotizaciÃ³n',
       );
     }
     return offer;
@@ -1435,7 +1443,7 @@ export class OffersService {
       if (type === OfferItemType.DIGITAL_BILLBOARD) {
         if (!item.digitalBillboardId) {
           throw new BadRequestException(
-            'Cada valla digital debe tener una valla asociada',
+            'Cada pantalla de la cotización debe tener una pantalla asociada',
           );
         }
         if (!item.spotCount || !ALLOWED_SPOT_COUNTS.has(item.spotCount)) {
@@ -1445,7 +1453,7 @@ export class OffersService {
         }
         if (!item.startDate || !item.endDate) {
           throw new BadRequestException(
-            'Cada valla digital debe tener fechas de inicio y fin',
+            'Cada pantalla debe tener fechas de inicio y fin',
           );
         }
       }
@@ -1453,7 +1461,7 @@ export class OffersService {
         const desc = item.description?.trim();
         if (!desc) {
           throw new BadRequestException(
-            'Cada concepto adicional debe tener una descripción',
+            'Cada concepto adicional debe tener una descripciÃ³n',
           );
         }
       }
@@ -1461,11 +1469,10 @@ export class OffersService {
   }
 
   /**
-   * Creates one usage row per day for each digital billboard item in the
-   * offer, linked back to the originating offer item so they can be
-   * removed if the offer is later rejected.
+   * Places each screen item of an accepted offer as a campaign in Pantallas,
+   * linked to its offer item so it disappears if the offer is later undone.
    */
-  private async registerDigitalUsagesForOffer(
+  private async registerDigitalCampaignsForOffer(
     tx: Prisma.TransactionClient,
     offerId: string,
   ): Promise<void> {
@@ -1474,11 +1481,10 @@ export class OffersService {
       select: {
         customerName: true,
         customerCompany: true,
-        specialConditions: true,
         items: {
+          where: { itemType: OfferItemType.DIGITAL_BILLBOARD },
           select: {
             id: true,
-            itemType: true,
             digitalBillboardId: true,
             spotCount: true,
             startDate: true,
@@ -1490,37 +1496,51 @@ export class OffersService {
     });
     if (!offer) return;
 
-    const plans = planDigitalUsages(offer, offer.items);
-    if (plans.length === 0) return;
+    const client =
+      offer.customerCompany?.trim() || offer.customerName?.trim() || 'SIN CLIENTE';
+    const items = offer.items.filter(
+      (item) =>
+        item.digitalBillboardId && item.spotCount && item.startDate && item.endDate,
+    );
+    if (items.length === 0) return;
 
-    const data: Prisma.DigitalBillboardUsageCreateManyInput[] = [];
-    for (const plan of plans) {
-      for (const day of plan.days) {
-        data.push({
-          digitalBillboardId: plan.digitalBillboardId,
-          timestamp: day,
-          duration: plan.spotCount,
-          campaignName: plan.campaignName,
-          campaignDescription: plan.campaignDescription,
-          offerItemId: plan.itemId,
-        });
-      }
-    }
-
-    if (data.length > 0) {
-      await tx.digitalBillboardUsage.createMany({ data });
+    const settings = await this.pantallasPlacement.loadSettings(tx);
+    const refIso = todayIso();
+    for (const item of items) {
+      await this.pantallasPlacement.place(
+        tx,
+        {
+          screenId: item.digitalBillboardId!,
+          refIso,
+          orderGroupId: offerId,
+          offerItemId: item.id,
+          data: {
+            client,
+            campaign: item.description?.trim() ?? '',
+            startDate: localIsoDate(item.startDate!),
+            endDate: localIsoDate(item.endDate!),
+            spotsPerDay: item.spotCount!,
+            notes: 'Ingresada desde una cotizaciÃ³n aceptada',
+            paused: false,
+            pauseReason: null,
+            art: DigitalCampaignArt.MISSING,
+            deal: DigitalCampaignDeal.COMMERCIAL,
+            monthlyValue: null,
+            spotValue: null,
+            totalValue: null,
+            versions: [],
+          },
+        },
+        settings,
+      );
     }
   }
 
-  /**
-   * Deletes all digital billboard usages registered through this offer.
-   * Called when an accepted offer transitions away from ACCEPTED.
-   */
-  private async removeDigitalUsagesForOffer(
+  private async removeDigitalCampaignsForOffer(
     tx: Prisma.TransactionClient,
     offerId: string,
   ): Promise<void> {
-    await tx.digitalBillboardUsage.deleteMany({
+    await tx.digitalBillboardCampaign.deleteMany({
       where: { offerItem: { offerId } },
     });
   }
@@ -1735,13 +1755,13 @@ function statusEventType(status: OfferStatus): OfferEventType {
 function statusEventMessage(from: OfferStatus, to: OfferStatus): string {
   switch (to) {
     case OfferStatus.ACCEPTED:
-      return 'Cotización aceptada';
+      return 'CotizaciÃ³n aceptada';
     case OfferStatus.DECLINED:
-      return 'Cotización rechazada';
+      return 'CotizaciÃ³n rechazada';
     case OfferStatus.PENDING:
       return from === OfferStatus.ACCEPTED
-        ? 'Cotización reabierta: se revirtió la aceptación'
-        : 'Cotización reabierta como pendiente';
+        ? 'CotizaciÃ³n reabierta: se revirtiÃ³ la aceptaciÃ³n'
+        : 'CotizaciÃ³n reabierta como pendiente';
   }
 }
 
@@ -1837,74 +1857,4 @@ function computeOfferTotals(items: CreateOfferItemDto[]): OfferTotals {
     totalImpression: round2(subImp + ivaImp),
     totalRental: round2(subRen + ivaRen),
   };
-}
-
-/** Local-time start-of-day helper used to enumerate days within a range. */
-function startOfDay(date: Date): Date {
-  return new Date(date.getFullYear(), date.getMonth(), date.getDate());
-}
-
-/** Inclusive list of days between two dates, normalized to local midnight. */
-function enumerateDays(start: Date, end: Date): Date[] {
-  const days: Date[] = [];
-  const cursor = startOfDay(start);
-  const final = startOfDay(end);
-  while (cursor <= final) {
-    days.push(new Date(cursor));
-    cursor.setDate(cursor.getDate() + 1);
-  }
-  return days;
-}
-
-interface DigitalUsagePlan {
-  itemId: string;
-  digitalBillboardId: string;
-  spotCount: number;
-  days: Date[];
-  campaignName: string | null;
-  campaignDescription: string | null;
-}
-
-/**
- * Builds the per-day usage plan for digital billboard items in an offer.
- * Used both when accepting an offer (to register usages) and could be reused
- * for capacity validation in the future.
- */
-function planDigitalUsages(
-  offer: {
-    customerName: string;
-    customerCompany: string | null;
-    specialConditions: string | null;
-  },
-  items: Array<{
-    id: string;
-    itemType: OfferItemType;
-    digitalBillboardId: string | null;
-    spotCount: number | null;
-    startDate: Date | null;
-    endDate: Date | null;
-    description: string | null;
-  }>,
-): DigitalUsagePlan[] {
-  const plans: DigitalUsagePlan[] = [];
-  const campaignName =
-    (offer.customerCompany?.trim() || offer.customerName?.trim()) ?? null;
-  const campaignDescription = offer.specialConditions?.trim() || null;
-
-  for (const item of items) {
-    if (item.itemType !== OfferItemType.DIGITAL_BILLBOARD) continue;
-    if (!item.digitalBillboardId || !item.spotCount) continue;
-    if (!item.startDate || !item.endDate) continue;
-    const days = enumerateDays(item.startDate, item.endDate);
-    if (days.length === 0) continue;
-    plans.push({
-      itemId: item.id,
-      digitalBillboardId: item.digitalBillboardId,
-      spotCount: item.spotCount,
-      days,
-      campaignName: item.description?.trim() || campaignName,
-      campaignDescription,
-    });
-  }
-  return plans;
 }

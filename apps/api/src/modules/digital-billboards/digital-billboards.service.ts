@@ -1,6 +1,5 @@
 import {
   Injectable,
-  BadRequestException,
   NotFoundException,
   ConflictException,
 } from '@nestjs/common';
@@ -21,23 +20,19 @@ export interface DigitalBillboardListItem {
   maxSpots: number;
 }
 
-export interface CreateDigitalBillboardInput {
+export interface DigitalBillboardInput {
   code: string;
   name: string;
-  address: string;
-  latitude: number;
-  longitude: number;
-  price: number;
+  address?: string;
+  latitude?: number;
+  longitude?: number;
+  price?: number;
   maxSpots?: number;
+  turnOnAt?: string;
+  turnOffAt?: string;
+  position?: number;
+  aliases?: string[];
   imageBase64?: string | null;
-}
-
-export interface CreateUsageInput {
-  digitalBillboardId: string;
-  timestamp: Date;
-  duration: number;
-  campaignName?: string | null;
-  campaignDescription?: string | null;
 }
 
 @Injectable()
@@ -49,7 +44,7 @@ export class DigitalBillboardsService {
 
   async list(): Promise<DigitalBillboardListItem[]> {
     const rows = await this.prisma.digitalBillboard.findMany({
-      orderBy: { createdAt: 'desc' },
+      orderBy: [{ position: 'asc' }, { name: 'asc' }],
       include: { image: true },
     });
 
@@ -69,166 +64,120 @@ export class DigitalBillboardsService {
     }));
   }
 
-  async create(
-    input: CreateDigitalBillboardInput,
-  ): Promise<DigitalBillboardListItem> {
-    const {
-      code,
-      name,
-      address,
-      latitude,
-      longitude,
-      price,
-      maxSpots,
-      imageBase64,
-    } = input;
-
-    if (!code || !name || !address) {
-      throw new BadRequestException('code, name y address son obligatorios');
-    }
-
-    if (
-      maxSpots != null &&
-      (!Number.isInteger(maxSpots) || !Number.isFinite(maxSpots) || maxSpots <= 0)
-    ) {
-      throw new BadRequestException('maxSpots debe ser un entero positivo');
-    }
-
-    let imageId: string | undefined;
-
-    const normalizedImageBase64 =
-      imageBase64 && imageBase64.includes(',')
-        ? imageBase64.split(',')[1]
-        : imageBase64;
-
-    if (normalizedImageBase64 && normalizedImageBase64.length > 0) {
-      const urls = await this.imgbb.upload(normalizedImageBase64);
-      const image = await this.prisma.image.create({
-        data: {
-          completeUrl: urls.completeUrl,
-          thumbnailUrl: urls.thumbnailUrl,
-          mediumUrl: urls.mediumUrl,
-          deleteUrl: urls.deleteUrl,
-        },
-      });
-      imageId = image.id;
-    }
-
-    try {
-      const row = await this.prisma.digitalBillboard.create({
-        data: {
-          code,
-          name,
-          address,
-          latitude,
-          longitude,
-          price,
-          ...(maxSpots != null ? { maxSpots } : {}),
-          ...(imageId ? { imageId } : {}),
-        },
-        include: { image: true },
-      });
-
-      return {
-        id: row.id,
-        code: row.code,
-        name: row.name,
-        address: row.address,
-        latitude: row.latitude,
-        longitude: row.longitude,
-        price: row.price,
-        imageThumbnailUrl:
-          row.image?.thumbnailUrl ?? row.image?.completeUrl ?? null,
-        createdAt: row.createdAt.toISOString(),
-        updatedAt: row.updatedAt.toISOString(),
-        maxSpots: row.maxSpots,
-      };
-    } catch (e: any) {
-      if (imageId) {
-        await this.prisma.image
-          .delete({ where: { id: imageId } })
-          .catch(() => undefined);
-      }
-      if (e?.code === 'P2002') {
-        throw new ConflictException('Ya existe una valla con ese código');
-      }
-      throw e;
-    }
-  }
-
   async findOne(id: string) {
     const board = await this.prisma.digitalBillboard.findUnique({
       where: { id },
       include: { image: true },
     });
-    if (!board) throw new NotFoundException('Valla no encontrada');
+    if (!board) throw new NotFoundException('Pantalla no encontrada');
     return board;
   }
 
-  async listUsagesInRange(
-    digitalBillboardId: string,
-    from: Date,
-    to: Date,
-  ) {
-    const usages = await this.prisma.digitalBillboardUsage.findMany({
-      where: {
-        digitalBillboardId,
-        timestamp: { gte: from, lte: to },
-      },
-      orderBy: { timestamp: 'asc' },
-      select: {
-        id: true,
-        timestamp: true,
-        duration: true,
-        campaignName: true,
-        campaignDescription: true,
-      },
-    });
-
-    return usages.map((u) => ({
-      id: u.id,
-      timestamp: u.timestamp.toISOString(),
-      duration: u.duration,
-      campaignName: u.campaignName,
-      campaignDescription: u.campaignDescription,
-    }));
+  async create(input: DigitalBillboardInput) {
+    const imageId = await this.uploadImage(input.imageBase64);
+    try {
+      return await this.prisma.digitalBillboard.create({
+        data: {
+          code: input.code.trim().toUpperCase(),
+          name: input.name.trim(),
+          address: input.address?.trim() ?? '',
+          latitude: input.latitude ?? 0,
+          longitude: input.longitude ?? 0,
+          price: input.price ?? 0,
+          ...(input.maxSpots != null ? { maxSpots: input.maxSpots } : {}),
+          ...(input.turnOnAt ? { turnOnAt: input.turnOnAt } : {}),
+          ...(input.turnOffAt ? { turnOffAt: input.turnOffAt } : {}),
+          ...(input.position != null ? { position: input.position } : {}),
+          aliases: normalizeAliases(input.aliases ?? [input.name]),
+          ...(imageId ? { imageId } : {}),
+        },
+      });
+    } catch (e) {
+      await this.discardImage(imageId);
+      throw mapUniqueError(e);
+    }
   }
 
-  async createUsage(input: CreateUsageInput) {
-    const { digitalBillboardId, timestamp, duration, campaignName, campaignDescription } = input;
-
-    const d = Math.floor(duration);
-    if (!Number.isFinite(duration) || d <= 0) {
-      throw new BadRequestException('duration debe ser un entero positivo');
+  async update(id: string, input: Partial<DigitalBillboardInput>) {
+    await this.findOne(id);
+    const imageId = await this.uploadImage(input.imageBase64);
+    try {
+      return await this.prisma.digitalBillboard.update({
+        where: { id },
+        data: {
+          ...(input.code !== undefined
+            ? { code: input.code.trim().toUpperCase() }
+            : {}),
+          ...(input.name !== undefined ? { name: input.name.trim() } : {}),
+          ...(input.address !== undefined
+            ? { address: input.address.trim() }
+            : {}),
+          ...(input.latitude !== undefined ? { latitude: input.latitude } : {}),
+          ...(input.longitude !== undefined
+            ? { longitude: input.longitude }
+            : {}),
+          ...(input.price !== undefined ? { price: input.price } : {}),
+          ...(input.maxSpots !== undefined ? { maxSpots: input.maxSpots } : {}),
+          ...(input.turnOnAt !== undefined ? { turnOnAt: input.turnOnAt } : {}),
+          ...(input.turnOffAt !== undefined
+            ? { turnOffAt: input.turnOffAt }
+            : {}),
+          ...(input.position !== undefined ? { position: input.position } : {}),
+          ...(input.aliases !== undefined
+            ? { aliases: normalizeAliases(input.aliases) }
+            : {}),
+          ...(imageId ? { imageId } : {}),
+        },
+      });
+    } catch (e) {
+      await this.discardImage(imageId);
+      throw mapUniqueError(e);
     }
+  }
 
-    const board = await this.prisma.digitalBillboard.findUnique({
-      where: { id: digitalBillboardId },
-      select: { maxSpots: true },
-    });
-    if (!board) throw new NotFoundException('Valla no encontrada');
-    if (d > board.maxSpots) {
-      throw new BadRequestException(
-        `duration no puede superar maxSpots (${board.maxSpots})`,
-      );
-    }
+  private async uploadImage(imageBase64?: string | null) {
+    const normalized =
+      imageBase64 && imageBase64.includes(',')
+        ? imageBase64.split(',')[1]
+        : imageBase64;
+    if (!normalized) return null;
 
-    const created = await this.prisma.digitalBillboardUsage.create({
+    const urls = await this.imgbb.upload(normalized);
+    const image = await this.prisma.image.create({
       data: {
-        digitalBillboardId,
-        timestamp,
-        duration: d,
-        campaignName: campaignName ?? undefined,
-        campaignDescription: campaignDescription ?? undefined,
+        completeUrl: urls.completeUrl,
+        thumbnailUrl: urls.thumbnailUrl,
+        mediumUrl: urls.mediumUrl,
+        deleteUrl: urls.deleteUrl,
       },
     });
-
-    return {
-      id: created.id,
-      timestamp: created.timestamp.toISOString(),
-      duration: created.duration,
-      campaignName: created.campaignName,
-      campaignDescription: created.campaignDescription,
-    };
+    return image.id;
   }
+
+  private async discardImage(imageId: string | null) {
+    if (!imageId) return;
+    await this.prisma.image
+      .delete({ where: { id: imageId } })
+      .catch(() => undefined);
+  }
+}
+
+export function normalizeAlias(value: string) {
+  return value
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function normalizeAliases(values: string[]) {
+  return [...new Set(values.map(normalizeAlias).filter(Boolean))];
+}
+
+function mapUniqueError(e: unknown) {
+  if ((e as { code?: string })?.code === 'P2002') {
+    return new ConflictException('Ya existe una pantalla con ese código');
+  }
+  return e;
 }

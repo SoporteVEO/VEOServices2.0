@@ -101,7 +101,7 @@ export function itemSignature(item: OfferItemSnapshot): string {
 function itemLabel(item: OfferItemSnapshot): string {
   switch (item.itemType) {
     case OfferItemType.DIGITAL_BILLBOARD:
-      return `Valla digital ${item.billboardCode ?? item.digitalBillboardId ?? ''}`.trim();
+      return `Pantalla ${item.billboardCode ?? item.digitalBillboardId ?? ''}`.trim();
     case OfferItemType.MISC:
       return `Concepto "${item.description?.trim() || 'sin descripción'}"`;
     default:

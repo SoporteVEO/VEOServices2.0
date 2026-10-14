@@ -107,7 +107,7 @@ export function MyOfferActions({ offer }: MyOfferActionsProps) {
             <DialogDescription>
               Esta cotización ya fue aceptada y vinculada a un contrato de
               Brilo. Si la rechazas se desvinculará el contrato y se eliminarán
-              los registros de uso de vallas digitales asociados.
+              los registros de uso de pantallas asociados.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>

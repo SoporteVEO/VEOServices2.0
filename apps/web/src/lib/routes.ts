@@ -17,6 +17,7 @@ import {
   Factory,
   Wrench,
   Car,
+  Bug,
 } from "lucide-react";
 import {
   IMAGES_MODULE_FIELD_ROLES,
@@ -79,9 +80,11 @@ export const NAV_GROUPS: NavGroup[] = [
       { title: "Reportes", href: "/dashboard/reports", icon: SquareChartGantt },
       { title: "Contratos", href: "/dashboard/contracts", icon: FileText },
       {
-        title: "Vallas digitales",
-        href: "/dashboard/digital-billboards",
+        title: "Pantallas",
+        href: "/dashboard/pantallas",
         icon: MonitorPlay,
+        allowedRoles: [],
+        requiredSubRoles: ["PANTALLAS_PRODUCCION", "PANTALLAS_COMERCIAL"],
       },
       {
         title: "Vallas estáticas",
@@ -147,6 +150,18 @@ export const NAV_GROUPS: NavGroup[] = [
         href: "/dashboard/tools/recovery",
         icon: Banknote,
         allowedRoles: ["ADMIN"],
+      },
+    ],
+  },
+  {
+    label: "Desarrollo",
+    items: [
+      {
+        title: "Errores de Nexo",
+        href: "/dashboard/desarrollo",
+        icon: Bug,
+        allowedRoles: [],
+        requiredSubRoles: ["DESARROLLADOR"],
       },
     ],
   },

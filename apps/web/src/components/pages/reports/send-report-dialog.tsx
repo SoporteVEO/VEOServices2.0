@@ -82,9 +82,7 @@ function SendReportDialogContent({
           Se enviará el reporte de{" "}
           <span className="font-medium text-foreground">{periodLabel}</span> del
           contrato{" "}
-          <span className="font-medium text-foreground">
-            {contractNumber}
-          </span>{" "}
+          <span className="font-medium text-foreground">{contractNumber}</span>{" "}
           al email indicado.
         </DialogDescription>
       </DialogHeader>

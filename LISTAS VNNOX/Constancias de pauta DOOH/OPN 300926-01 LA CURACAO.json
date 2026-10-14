@@ -1,0 +1,32 @@
+{
+ "id": "xnlwr3byg1xyt",
+ "corr": "300926-01",
+ "rev": 1,
+ "ts": "2026-09-30T15:17:55.557Z",
+ "tsCambio": "2026-09-30T15:17:55.557Z",
+ "autor": "Soporte Comercial",
+ "ejecutivo": "Marta Descamps",
+ "fechaIngreso": "2026-09-30",
+ "agencia": true,
+ "nombreAgencia": "APEX",
+ "marca": "LA CURACAO",
+ "campana": "LA CURACAO",
+ "formato": "Animado",
+ "inicio": "2026-10-01",
+ "fin": "2026-10-31",
+ "indicaciones": "",
+ "enlaces": [],
+ "pantallas": [
+  {
+   "pid": "proce",
+   "frec": 450,
+   "mes": 725,
+   "neg": "",
+   "spotMano": false,
+   "spot": 0.05197132616487455
+  }
+ ],
+ "valorTotal": 725,
+ "valorMensual": 725,
+ "archivo": "OPN 300926-01 LA CURACAO.json"
+}

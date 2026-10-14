@@ -1,0 +1,32 @@
+{
+ "id": "xc1r6rdomkju7",
+ "corr": "021026-01",
+ "rev": 1,
+ "ts": "2026-10-02T16:03:43.691Z",
+ "tsCambio": "2026-10-02T16:03:43.691Z",
+ "autor": "Soporte Comercial",
+ "ejecutivo": "Marta Descamps",
+ "fechaIngreso": "2026-10-02",
+ "agencia": true,
+ "nombreAgencia": "CREACION PUBLICIDAD",
+ "marca": "GRIIN FLEX",
+ "campana": "GRIIN FLEX",
+ "formato": "Animado",
+ "inicio": "2026-10-01",
+ "fin": "2026-10-30",
+ "indicaciones": "Estamos pendientes de artes",
+ "enlaces": [],
+ "pantallas": [
+  {
+   "pid": "proce",
+   "frec": 300,
+   "mes": 550,
+   "neg": "",
+   "spotMano": false,
+   "spot": 0.06111111111111111
+  }
+ ],
+ "valorTotal": 550,
+ "valorMensual": 550,
+ "archivo": "OPN 021026-01 GRIIN FLEX.json"
+}

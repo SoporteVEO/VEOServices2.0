@@ -2,13 +2,14 @@
 
 import { useMemo, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Loader2, Megaphone } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import {
   useAvailableBillboards,
   useBillboardStates,
 } from "@/api/billboards/billboards.get";
 import { toYYYYMMDD, parseYYYYMMDD } from "@/lib/format";
 import { Skeleton } from "@/components/primitives/ui/skeleton";
+import { BrandLogo } from "@/components/ui/brand-logo";
 import { VallasFilterBar } from "./vallas-filter-bar";
 import { VallasGrid } from "./vallas-grid";
 
@@ -82,11 +83,9 @@ export function VallasPortal() {
     <div className="flex min-h-screen flex-col">
       <header className="supports-backdrop-filter:bg-background/60 sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center gap-2">
-            <div className="flex size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-sm">
-              <Megaphone className="size-5" />
-            </div>
-            <h1 className="text-xl font-bold tracking-tight">VEO VALLAS</h1>
+          <div className="flex items-center gap-3">
+            <BrandLogo priority className="h-6" />
+            <h1 className="pt-1 text-xl font-bold tracking-tight">VALLAS</h1>
           </div>
         </div>
       </header>

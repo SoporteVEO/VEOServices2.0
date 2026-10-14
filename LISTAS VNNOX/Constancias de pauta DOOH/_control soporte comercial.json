@@ -1,0 +1,260 @@
+{
+ "rentabilizadas": [
+  "2026-08-26T12:56|NESTLE|MAGGI-AND-ME|alta",
+  "2026-09-01T15:08|SIMAN|VARIAS|extendida",
+  "2026-09-02T20:54|BLT-IHOP-APPLEBEE-S|APERTURA|alta",
+  "OP|x1ebkqn2qaqr0",
+  "OP|x2gxlgcdfg4n7",
+  "OP|x5pc4z14aemnl",
+  "OP|xai0vrn89pt7d",
+  "OP|xe3l0vjut852h",
+  "OP|xh4ce84vyr1ql",
+  "OP|xhuh6638ovhlu",
+  "OP|xjkbfg56rxc8u",
+  "OP|xlzyptkxbwoja",
+  "OP|xopoltqzy3qd5",
+  "OP|xotfddc5d4hie",
+  "OP|xqumdug4noitg",
+  "OP|xu3lwd5kjt2ad",
+  "OP|xvolrppdov4xm",
+  "OP|xwe9tc04rypsh",
+  "OP|xxv8unm5bkoxm",
+  "OP|xxzai9eeaugy9",
+  "OP|xzbatlaye04af",
+  "OP|xnjefynlbo7pz",
+  "OP|xi90subx9dyqf",
+  "OP|xwxciafbg2d0l",
+  "OP|xhgm3sigw31v1",
+  "OP|xlbgjjffosvpo",
+  "OP|x1s2dh569pbhh",
+  "OP|xugl8uklvenh3",
+  "OP|x1coq6482zp39",
+  "OP|x5obnbsne06it",
+  "OP|xn3p50w2r5hfg",
+  "OP|xc5pi3ewteife",
+  "OP|xe33bostdemjo",
+  "OP|xlfhphkb3hqzw",
+  "OP|xp9p7m9thjcmk",
+  "OP|xvw34nbqgdfjx",
+  "OP|xasmoh9bikixn",
+  "2026-09-16T14:14|MISTER-DONUT|2-X-1|renovada",
+  "OP|xx2zkljcquu86",
+  "OP|xnxsbpmp5mzvr",
+  "OP|x9p6hfp2syl2p",
+  "OP|xorbt9zvc1snp"
+ ],
+ "leidas": [],
+ "validadas": [],
+ "excel": {
+  "OP|xzbatlaye04af": {
+   "n": 229,
+   "fila": 231,
+   "ts": "2026-09-28T22:56:17.099Z"
+  },
+  "OP|xwe9tc04rypsh": {
+   "n": 246,
+   "fila": 248,
+   "ts": "2026-09-28T22:56:33.392Z"
+  },
+  "2026-08-26T12:56|NESTLE|MAGGI-AND-ME|alta": {
+   "n": 228,
+   "fila": 230,
+   "ts": "2026-09-29T00:00:00.000Z"
+  },
+  "OP|x5pc4z14aemnl": {
+   "n": 232,
+   "fila": 234,
+   "ts": "2026-09-29T00:00:00.000Z"
+  },
+  "OP|xopoltqzy3qd5": {
+   "n": 236,
+   "fila": 238,
+   "ts": "2026-09-29T00:00:00.000Z"
+  },
+  "OP|x1ebkqn2qaqr0": {
+   "n": 237,
+   "fila": 239,
+   "ts": "2026-09-29T00:00:00.000Z"
+  },
+  "OP|xqumdug4noitg": {
+   "n": 231,
+   "fila": 233,
+   "ts": "2026-09-29T00:00:00.000Z"
+  },
+  "OP|xotfddc5d4hie": {
+   "n": 238,
+   "fila": 240,
+   "ts": "2026-09-29T00:00:00.000Z"
+  },
+  "2026-09-01T15:08|SIMAN|VARIAS|extendida": {
+   "n": 230,
+   "fila": 232,
+   "ts": "2026-09-29T00:00:00.000Z"
+  },
+  "OP|xhuh6638ovhlu": {
+   "n": 242,
+   "fila": 244,
+   "ts": "2026-09-29T00:00:00.000Z"
+  },
+  "OP|xlzyptkxbwoja": {
+   "n": 242,
+   "fila": 244,
+   "ts": "2026-09-29T00:00:00.000Z"
+  },
+  "OP|xe3l0vjut852h": {
+   "n": 241,
+   "fila": 243,
+   "ts": "2026-09-29T00:00:00.000Z"
+  },
+  "OP|xai0vrn89pt7d": {
+   "n": 240,
+   "fila": 242,
+   "ts": "2026-09-29T00:00:00.000Z"
+  },
+  "2026-09-02T20:54|BLT-IHOP-APPLEBEE-S|APERTURA|alta": {
+   "n": 240,
+   "fila": 242,
+   "ts": "2026-09-29T00:00:00.000Z"
+  },
+  "OP|xxzai9eeaugy9": {
+   "n": 239,
+   "fila": 241,
+   "ts": "2026-09-29T00:00:00.000Z"
+  },
+  "OP|xh4ce84vyr1ql": {
+   "n": 235,
+   "fila": 237,
+   "ts": "2026-09-29T00:00:00.000Z"
+  },
+  "OP|xu3lwd5kjt2ad": {
+   "n": 234,
+   "fila": 236,
+   "ts": "2026-09-29T00:00:00.000Z"
+  },
+  "OP|xvolrppdov4xm": {
+   "n": 244,
+   "fila": 246,
+   "ts": "2026-09-29T00:00:00.000Z"
+  },
+  "OP|x2gxlgcdfg4n7": {
+   "n": 245,
+   "fila": 247,
+   "ts": "2026-09-29T00:00:00.000Z"
+  },
+  "OP|xxv8unm5bkoxm": {
+   "n": 248,
+   "fila": 250,
+   "ts": "2026-09-29T00:00:00.000Z"
+  },
+  "OP|xjkbfg56rxc8u": {
+   "n": 247,
+   "fila": 249,
+   "ts": "2026-09-29T00:00:00.000Z"
+  },
+  "OP|xnjefynlbo7pz": {
+   "n": 249,
+   "fila": 251,
+   "ts": "2026-09-30T16:53:17.028Z"
+  },
+  "OP|xi90subx9dyqf": {
+   "n": 250,
+   "fila": 252,
+   "ts": "2026-09-30T16:53:20.818Z"
+  },
+  "OP|xwxciafbg2d0l": {
+   "n": 251,
+   "fila": 253,
+   "ts": "2026-09-30T16:53:24.843Z"
+  },
+  "OP|xhgm3sigw31v1": {
+   "n": 252,
+   "fila": 254,
+   "ts": "2026-09-30T16:53:30.139Z"
+  },
+  "OP|xlbgjjffosvpo": {
+   "n": 253,
+   "fila": 255,
+   "ts": "2026-09-30T20:02:38.518Z"
+  },
+  "OP|x1s2dh569pbhh": {
+   "n": 254,
+   "fila": 256,
+   "ts": "2026-09-30T20:02:43.626Z"
+  },
+  "OP|xugl8uklvenh3": {
+   "n": 239,
+   "fila": 241,
+   "ts": "2026-09-30T20:02:51.594Z"
+  },
+  "OP|x1coq6482zp39": {
+   "n": 255,
+   "fila": 257,
+   "ts": "2026-09-30T20:02:58.436Z"
+  },
+  "OP|x5obnbsne06it": {
+   "n": 255,
+   "fila": 257,
+   "ts": "2026-09-30T20:03:02.378Z"
+  },
+  "OP|xn3p50w2r5hfg": {
+   "n": 256,
+   "fila": 258,
+   "ts": "2026-09-30T20:03:10.392Z"
+  },
+  "OP|xc5pi3ewteife": {
+   "n": 257,
+   "fila": 259,
+   "ts": "2026-09-30T20:03:15.158Z"
+  },
+  "OP|xe33bostdemjo": {
+   "n": 258,
+   "fila": 260,
+   "ts": "2026-09-30T20:03:18.135Z"
+  },
+  "OP|xlfhphkb3hqzw": {
+   "n": 259,
+   "fila": 261,
+   "ts": "2026-09-30T20:03:21.150Z"
+  },
+  "OP|xp9p7m9thjcmk": {
+   "n": 257,
+   "fila": 259,
+   "ts": "2026-09-30T20:04:01.413Z"
+  },
+  "OP|xvw34nbqgdfjx": {
+   "n": 260,
+   "fila": 262,
+   "ts": "2026-10-01T22:46:12.289Z"
+  },
+  "OP|xasmoh9bikixn": {
+   "n": 261,
+   "fila": 263,
+   "ts": "2026-10-01T22:46:15.198Z"
+  },
+  "2026-09-16T14:14|MISTER-DONUT|2-X-1|renovada": {
+   "n": 232,
+   "fila": 234,
+   "ts": "2026-10-01T22:46:19.311Z"
+  },
+  "OP|xx2zkljcquu86": {
+   "n": 262,
+   "fila": 264,
+   "ts": "2026-10-01T22:46:22.731Z"
+  },
+  "OP|xnxsbpmp5mzvr": {
+   "n": 262,
+   "fila": 264,
+   "ts": "2026-10-01T22:46:32.462Z"
+  },
+  "OP|x9p6hfp2syl2p": {
+   "n": 263,
+   "fila": 265,
+   "ts": "2026-10-01T22:46:37.530Z"
+  },
+  "OP|xorbt9zvc1snp": {
+   "n": 264,
+   "fila": 266,
+   "ts": "2026-10-05T14:03:30.671Z"
+  }
+ }
+}

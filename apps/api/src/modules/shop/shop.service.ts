@@ -4,49 +4,15 @@ import type {
   AvailableDigitalBillboard,
   AvailableState,
 } from '../billboards/entities/available-billboard.js';
+import { PantallasCapacityService } from '../digital-billboards/pantallas-capacity.service.js';
 import { isDigitalSpotOption, type DigitalSpotOption } from './digital-spots.js';
 
 @Injectable()
 export class ShopService {
-  constructor(private readonly prisma: PrismaService) {}
-
-  private async loadUsedSpotsByBillboard(
-    from: Date,
-    to: Date,
-  ): Promise<Map<string, number>> {
-    const [usageAgg, purchaseRows] = await Promise.all([
-      this.prisma.digitalBillboardUsage.groupBy({
-        by: ['digitalBillboardId'],
-        where: { timestamp: { gte: from, lte: to } },
-        _sum: { duration: true },
-      }),
-      this.prisma.purchaseItem.findMany({
-        where: {
-          digitalBillboardId: { not: null },
-          spotCount: { not: null },
-          purchase: { status: 'COMPLETED' },
-          AND: [{ from: { lte: to } }, { to: { gte: from } }],
-        },
-        select: { digitalBillboardId: true, spotCount: true },
-      }),
-    ]);
-
-    const map = new Map<string, number>();
-    for (const u of usageAgg) {
-      map.set(
-        u.digitalBillboardId,
-        (map.get(u.digitalBillboardId) ?? 0) + (u._sum.duration ?? 0),
-      );
-    }
-    for (const p of purchaseRows) {
-      if (!p.digitalBillboardId || p.spotCount == null) continue;
-      map.set(
-        p.digitalBillboardId,
-        (map.get(p.digitalBillboardId) ?? 0) + p.spotCount,
-      );
-    }
-    return map;
-  }
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly capacity: PantallasCapacityService,
+  ) {}
 
   async listDigitalShopDepartments(): Promise<AvailableState[]> {
     const rows = await this.prisma.digitalBillboard.findMany({
@@ -79,7 +45,7 @@ export class ShopService {
     to: Date,
     desiredSpots: DigitalSpotOption,
   ): Promise<AvailableDigitalBillboard[]> {
-    const usedMap = await this.loadUsedSpotsByBillboard(from, to);
+    const availability = await this.capacity.availabilityInRange(from, to);
 
     const where: any = { price: { gt: 0 } };
     if (departmentId != null) {
@@ -94,8 +60,9 @@ export class ShopService {
 
     const out: AvailableDigitalBillboard[] = [];
     for (const row of rows) {
-      const used = usedMap.get(row.id) ?? 0;
-      const remaining = row.maxSpots - used;
+      const screen = availability.get(row.id);
+      const used = screen?.peakUsed ?? 0;
+      const remaining = (screen?.capacity ?? 0) - used;
       if (remaining < desiredSpots) continue;
       out.push({
         id: row.id,
@@ -129,17 +96,12 @@ export class ShopService {
     if (!isDigitalSpotOption(desiredSpots)) {
       return { ok: false, message: 'Cantidad de spots no válida' };
     }
-    const board = await this.prisma.digitalBillboard.findUnique({
-      where: { id: digitalBillboardId },
-      select: { maxSpots: true },
-    });
-    if (!board) {
-      return { ok: false, message: 'Valla digital no encontrada' };
+    const availability = await this.capacity.availabilityInRange(from, to);
+    const screen = availability.get(digitalBillboardId);
+    if (!screen) {
+      return { ok: false, message: 'Pantalla no encontrada' };
     }
-    const usedMap = await this.loadUsedSpotsByBillboard(from, to);
-    const used = usedMap.get(digitalBillboardId) ?? 0;
-    const remaining = board.maxSpots - used;
-    if (remaining < desiredSpots) {
+    if (screen.capacity - screen.peakUsed < desiredSpots) {
       return {
         ok: false,
         message: 'Ya no hay disponibilidad para esos spots',

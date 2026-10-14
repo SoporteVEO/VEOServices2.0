@@ -25,6 +25,15 @@
 
 [Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
 
+## Switching the LLM provider (Nexo)
+
+Nexo supports both Google Gemini and Anthropic Claude. Choose per environment with env vars:
+
+- Testing / dev: `AGENT_PROVIDER=google` + `AGENT_MODEL=gemini-3.8-flash` (or `gemini-3.1-flash-lite` when Flash is overloaded) + `GOOGLE_GENERATIVE_AI_API_KEY=…`
+- Production: `AGENT_PROVIDER=anthropic` + `AGENT_MODEL=claude-haiku-4-5` + `ANTHROPIC_API_KEY=…`
+
+No code changes are needed to swap; only the active provider's key is required. Prompt caching is enabled automatically for the active provider (explicit `cacheControl` for Claude, implicit for Gemini).
+
 ## Project setup
 
 ```bash

@@ -1,0 +1,32 @@
+{
+ "id": "xbv6qczhsq0i2",
+ "corr": "290926-04",
+ "rev": 1,
+ "ts": "2026-09-29T18:36:55.920Z",
+ "tsCambio": "2026-09-29T18:36:55.920Z",
+ "autor": "Soporte Comercial",
+ "ejecutivo": "Marta Descamps",
+ "fechaIngreso": "2026-09-29",
+ "agencia": true,
+ "nombreAgencia": "ALMACENES VIDRI/ PUBLICIDAD COMERCIAL",
+ "marca": "SIMAN",
+ "campana": "SIMAN ANIVERSALE",
+ "formato": "Animado",
+ "inicio": "2026-10-01",
+ "fin": "2026-10-31",
+ "indicaciones": "",
+ "enlaces": [],
+ "pantallas": [
+  {
+   "pid": "proce",
+   "frec": 450,
+   "mes": 810,
+   "neg": "",
+   "spotMano": false,
+   "spot": 0.05806451612903226
+  }
+ ],
+ "valorTotal": 810,
+ "valorMensual": 810,
+ "archivo": "290926-04 SIMAN.json"
+}

@@ -82,7 +82,7 @@ export function TypeSelect({ value }: TypeSelectProps) {
               </div>
               <div className="flex flex-col text-left">
                 <span className="font-semibold text-foreground">
-                  Vallas Digitales
+                  Pantallas
                 </span>
                 <span
                   data-description

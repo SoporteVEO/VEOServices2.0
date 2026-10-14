@@ -27,6 +27,8 @@ import { PushModule } from './modules/push/push.module.js';
 import { UserMetricsModule } from './modules/user-metrics/user-metrics.module.js';
 import { AnalyticsModule } from './modules/analytics/analytics.module.js';
 import { BriloWebapiModule } from './modules/brilo-webapi/brilo-webapi.module.js';
+import { AgentModule } from './modules/agent/agent.module.js';
+import { DevelopmentModule } from './modules/development/development.module.js';
 
 @Module({
   imports: [
@@ -58,6 +60,8 @@ import { BriloWebapiModule } from './modules/brilo-webapi/brilo-webapi.module.js
     UserMetricsModule,
     AnalyticsModule,
     BriloWebapiModule,
+    AgentModule,
+    DevelopmentModule,
   ],
 })
 export class AppModule {}

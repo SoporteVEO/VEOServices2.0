@@ -1,0 +1,32 @@
+{
+ "id": "xl2oq8dldku0t",
+ "corr": "300926-03",
+ "rev": 1,
+ "ts": "2026-09-30T16:28:36.132Z",
+ "tsCambio": "2026-09-30T16:28:36.132Z",
+ "autor": "Soporte Comercial",
+ "ejecutivo": "Marta Descamps",
+ "fechaIngreso": "2026-09-30",
+ "agencia": true,
+ "nombreAgencia": "ECO COMUNICACION",
+ "marca": "Walmart",
+ "campana": "WALMART",
+ "formato": "Animado",
+ "inicio": "2026-10-01",
+ "fin": "2026-10-31",
+ "indicaciones": "",
+ "enlaces": [],
+ "pantallas": [
+  {
+   "pid": "benito",
+   "frec": 450,
+   "mes": 600,
+   "neg": "",
+   "spotMano": false,
+   "spot": 0.043010752688172046
+  }
+ ],
+ "valorTotal": 600,
+ "valorMensual": 600,
+ "archivo": "OPN 300926-03 WALMART.json"
+}

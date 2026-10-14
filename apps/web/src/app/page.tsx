@@ -6,6 +6,7 @@ import { Loader2 } from "lucide-react";
 import { isPortalOnlyRole, type UserRole } from "@/api/users/users.types";
 import { authClient } from "@/lib/auth-client";
 import { portalHome } from "@/lib/portal-access";
+import { BrandLogo } from "@/components/ui/brand-logo";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -57,9 +58,7 @@ export default function SignInPage() {
     <div className="flex min-h-svh items-center justify-center bg-background p-4">
       <Card className="w-full max-w-sm">
         <CardHeader className="text-center">
-          <div className="mx-auto mb-2 flex size-10 items-center justify-center rounded-lg bg-primary text-sm font-bold text-primary-foreground">
-            V
-          </div>
+          <BrandLogo priority className="mx-auto mb-3 h-8" />
           <CardTitle className="text-xl">Bienvenido a VEO</CardTitle>
           <p className="text-sm text-muted-foreground">
             Inicia sesión para continuar

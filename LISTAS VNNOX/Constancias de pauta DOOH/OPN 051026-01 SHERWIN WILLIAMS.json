@@ -1,0 +1,34 @@
+{
+ "id": "xayfq0ngtgqke",
+ "corr": "051026-01",
+ "rev": 1,
+ "ts": "2026-10-05T15:51:46.603Z",
+ "tsCambio": "2026-10-05T15:51:46.603Z",
+ "autor": "Soporte Comercial",
+ "ejecutivo": "Marta Descamps",
+ "fechaIngreso": "2026-10-05",
+ "agencia": true,
+ "nombreAgencia": "PUBLICIDAD COMERCIAL",
+ "marca": "SHERWIN WILLIAMS",
+ "campana": "FIN DE AÑO",
+ "formato": "Animado",
+ "inicio": "2026-10-08",
+ "fin": "2026-11-07",
+ "indicaciones": "",
+ "enlaces": [
+  "https://we.tl/t-nYRL1Xb0h346arNW"
+ ],
+ "pantallas": [
+  {
+   "pid": "juanpa",
+   "frec": 600,
+   "mes": 1080,
+   "neg": "",
+   "spotMano": false,
+   "spot": 0.05806451612903226
+  }
+ ],
+ "valorTotal": 1080,
+ "valorMensual": 1080,
+ "archivo": "OPN 051026-01 SHERWIN WILLIAMS.json"
+}

@@ -105,7 +105,7 @@ export default function SuccessPage({
                 <div className="min-w-0">
                   <p className="font-medium text-foreground">
                     {item.digitalBillboardId
-                      ? (item.billboardCode ?? "Valla digital")
+                      ? (item.billboardCode ?? "Pantalla")
                       : (item.billboardCode ?? `Valla ${item.billboardId}`)}
                   </p>
                   {item.digitalBillboardId && item.spotCount != null && (

@@ -91,7 +91,7 @@ export function DigitalItemsSection({
     <section className="space-y-3">
       <div className="flex items-center justify-between gap-3">
         <h3 className="text-sm font-semibold">
-          Vallas digitales ({items.length})
+          Pantallas ({items.length})
         </h3>
         <div className="w-72 max-w-full">
           <DigitalBillboardPicker
@@ -103,7 +103,7 @@ export function DigitalItemsSection({
 
       {items.length === 0 ? (
         <p className="rounded-md border border-dashed p-6 text-center text-sm text-muted-foreground">
-          Aún no has agregado vallas digitales.
+          Aún no has agregado pantallas.
         </p>
       ) : (
         <div className="overflow-x-auto rounded-md border">
@@ -227,7 +227,7 @@ function DigitalItemRow({
           sizeVariant="sm"
           className="size-7 p-0 text-muted-foreground hover:text-destructive"
           onClick={onRemove}
-          aria-label={`Quitar valla digital ${item.billboardCode ?? ""}`}
+          aria-label={`Quitar pantalla ${item.billboardCode ?? ""}`}
         >
           <Trash2 className="size-4" />
         </Button>

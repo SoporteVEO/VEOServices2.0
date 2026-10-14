@@ -226,13 +226,16 @@ function UserDetailContent({
         </div>
       </DrawerHeader>
 
-      <ScrollArea className="min-h-0 flex-1">
-        <div className="flex flex-col gap-6 p-4">
+      <ScrollArea className="min-h-0 flex-1 [&_[data-slot=scroll-area-viewport]>div]:block!">
+        <div className="flex min-w-0 flex-col gap-6 p-4">
           <MetricsRow user={user} onCopyId={handleCopyId} />
 
           <Separator />
 
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          <form
+            onSubmit={handleSubmit(onSubmit)}
+            className="min-w-0 space-y-4"
+          >
             <SectionHeader
               title="Información del usuario"
               description="Edita los datos básicos, contraseña, rol y permisos."

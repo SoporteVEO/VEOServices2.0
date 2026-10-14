@@ -1,0 +1,13 @@
+{
+ "tipo": "estado",
+ "id": "xzv7wchpq1hoj",
+ "corr": "ODD-OOH-05102026-01",
+ "estado": "trabajando",
+ "tsEstado": "2026-10-05T15:31:01.074Z",
+ "historial": [
+  {
+   "estado": "trabajando",
+   "ts": "2026-10-05T15:31:01.074Z"
+  }
+ ]
+}
