@@ -45,8 +45,6 @@ import {
 import { OfferTotalsSummary } from "./offer-totals-summary";
 import { StaticItemsSection } from "./static-items-section";
 
-const VEO_LOGO_SRC = "/VEO_LOGO_COT.png";
-
 function defaultValidUntil(): Date {
   const d = new Date();
   d.setDate(d.getDate() + 15);
@@ -306,7 +304,6 @@ export function GenerateOfferModal({
             advisorFullName,
             items: allItems,
           }}
-          logoSrc={VEO_LOGO_SRC}
         />,
       ).toBlob();
 

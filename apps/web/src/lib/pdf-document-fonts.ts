@@ -1,37 +1,21 @@
 import { Font } from "@react-pdf/renderer";
+import { BRAND_FONT_FAMILY, registerBrandFonts } from "./pdf-brand-fonts";
 
-/**
- * The signed contract template is set in Calibri. Carlito is metric-compatible
- * with it — same advance widths — so reusing the template's font sizes and column
- * widths reproduces the original's line breaks instead of approximating them.
- */
-export const CONTRACT_FONT_FAMILY = "Carlito";
+/** Body copy, labels and table cells of customer documents. */
+export const DOCUMENT_FONT_FAMILY = BRAND_FONT_FAMILY;
+
+/** Titles, figures and headings (SemiBold only). */
+export const DOCUMENT_DISPLAY_FONT_FAMILY = "Funnel Display";
 
 let registered = false;
 
-export function registerContractFonts() {
+export function registerDocumentFonts() {
   if (registered) return;
   registered = true;
 
+  registerBrandFonts();
   Font.register({
-    family: CONTRACT_FONT_FAMILY,
-    fonts: [
-      { src: "/fonts/carlito-400.woff", fontWeight: 400 },
-      { src: "/fonts/carlito-700.woff", fontWeight: 700 },
-      {
-        src: "/fonts/carlito-400-italic.woff",
-        fontWeight: 400,
-        fontStyle: "italic",
-      },
-      {
-        src: "/fonts/carlito-700-italic.woff",
-        fontWeight: 700,
-        fontStyle: "italic",
-      },
-    ],
+    family: DOCUMENT_DISPLAY_FONT_FAMILY,
+    fonts: [{ src: "/fonts/funnel-display-600.woff", fontWeight: 600 }],
   });
-
-  // Word does not hyphenate this template, so neither should we: hyphenation
-  // would change where every justified line breaks.
-  Font.registerHyphenationCallback((word) => [word]);
 }

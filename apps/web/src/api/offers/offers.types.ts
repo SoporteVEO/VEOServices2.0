@@ -127,7 +127,9 @@ export interface OfferContractBillboard {
   vallaType: string;
   code: string;
   location: string;
+  area: string;
   dimensions: string;
+  /** Monthly rent of the line, IVA included. */
   monthlyCost: number;
   startDate: string | null;
   endDate: string | null;
@@ -144,7 +146,11 @@ export interface OfferContractData {
   contractDate: string;
   client: OfferContractClient;
   billboardCount: number;
+  /** Monthly rent of every billboard, IVA included. */
   monthlyRentalTotal: number;
+  contractSubtotal: number;
+  contractIva: number;
+  /** Rent for the whole period with IVA, matching the offer's rental total. */
   contractTotal: number;
   startDate: string | null;
   endDate: string | null;

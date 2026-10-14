@@ -105,6 +105,9 @@ export function DatePicker({
               return false;
             }}
             captionLayout="dropdown"
+            startMonth={minDate ?? yearsFromNow(-YEARS_BACK)}
+            endMonth={maxDate ?? yearsFromNow(YEARS_AHEAD)}
+            defaultMonth={value ?? undefined}
           />
           {allowClear && value ? (
             <div className="border-t border-border p-2">
@@ -126,6 +129,14 @@ export function DatePicker({
       </Popover>
     </div>
   );
+}
+
+const YEARS_BACK = 100;
+const YEARS_AHEAD = 10;
+
+function yearsFromNow(years: number): Date {
+  const now = new Date();
+  return new Date(now.getFullYear() + years, years < 0 ? 0 : 11, 1);
 }
 
 function stripTime(date: Date): Date {

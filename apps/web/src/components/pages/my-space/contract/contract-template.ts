@@ -16,8 +16,10 @@ export interface ContractRun {
 }
 
 export interface ContractClause {
-  /** Bold lead-in, e.g. "I) INSTALACIÓN Y CONTENIDO: ". */
-  label: string;
+  /** e.g. "I)". */
+  numeral: string;
+  /** e.g. "INSTALACIÓN Y CONTENIDO:". */
+  title: string;
   body: ContractRun[];
 }
 
@@ -112,13 +114,17 @@ export function buildPartiesParagraph(data: OfferContractData): ContractRun[] {
 export const ACKNOWLEDGEMENT_PARAGRAPH =
   "Este Contrato está amparado por las cláusulas y condiciones que se detallan a continuación, por lo que \u201cEL CLIENTE\u201d certifica que ha leído y está de acuerdo con estas condiciones.";
 
-export const IVA_NOTE =
-  "Los precios detallados en este contrato no incluyen IVA.";
+export function buildIvaNote(data: OfferContractData): string {
+  return `Los precios detallados en este contrato incluyen IVA. Subtotal ${formatMoney(
+    data.contractSubtotal,
+  )} + IVA ${formatMoney(data.contractIva)} = ${formatMoney(data.contractTotal)}.`;
+}
 
 export function buildClauses(data: OfferContractData): ContractClause[] {
   return [
     {
-      label: "I) INSTALACIÓN Y CONTENIDO: ",
+      numeral: "I)",
+      title: "INSTALACIÓN Y CONTENIDO:",
       body: [
         {
           text: "EL ARRENDANTE instalará el material impreso en un máximo de 5 días hábiles, sujeto a condiciones climáticas, en las ubicaciones y condiciones aceptadas por EL CLIENTE. Toda reubicación o modificación posterior a la instalación será por cuenta de EL CLIENTE. El costo de producción del material (lona, vinil, papel o pintura) se cotiza por separado. EL CLIENTE deberá entregar el arte con 8 días de anticipación al inicio del contrato y será responsable del contenido publicitario; EL ARRENDANTE se reserva el derecho de admisión de mensajes ilícitos o contrarios a la industria publicitaria. EL CLIENTE no podrá ceder este contrato sin autorización previa y por escrito de EL ARRENDANTE. Si por causas ajenas a su control EL ARRENDANTE perdiera algún espacio contratado, podrá reponerlo en otra ubicación con el visto bueno de EL CLIENTE, o compensará proporcionalmente el tiempo de exposición perdido.",
@@ -126,7 +132,8 @@ export function buildClauses(data: OfferContractData): ContractClause[] {
       ],
     },
     {
-      label: "II) PRECIO Y MANTENIMIENTO: ",
+      numeral: "II)",
+      title: "PRECIO Y MANTENIMIENTO:",
       body: [
         {
           text: "El precio del contrato incluye el arrendamiento del espacio, impuestos y pagos a compañías eléctricas cuando aplique; no incluye producción de material ni instalación. EL ARRENDANTE mantendrá la estructura en buena presentación (poda, limpieza) y repondrá el material impreso dañado o perdido, salvo en casos de vandalismo por terceros.",
@@ -134,7 +141,8 @@ export function buildClauses(data: OfferContractData): ContractClause[] {
       ],
     },
     {
-      label: "III) FORMA DE PAGO E INCUMPLIMIENTO: ",
+      numeral: "III)",
+      title: "FORMA DE PAGO E INCUMPLIMIENTO:",
       body: [
         {
           text: "La facturación será mensual y EL CLIENTE pagará dentro de los 30 días siguientes a la emisión de la factura. Los pagos deberán realizarse mediante transferencia bancaria a nombre de ",
@@ -148,7 +156,8 @@ export function buildClauses(data: OfferContractData): ContractClause[] {
       ],
     },
     {
-      label: "IV) RESPONSABILIDAD DE AGENCIA Y CLIENTE: ",
+      numeral: "IV)",
+      title: "RESPONSABILIDAD DE AGENCIA Y CLIENTE:",
       body: [
         {
           text: "Si el contrato se gestiona a través de una agencia publicitaria, ésta y EL CLIENTE serán responsables solidarios de las obligaciones aquí adquiridas. EL CLIENTE reconoce y se hace responsable de los actos de la persona que firma este contrato en su representación.",
@@ -156,7 +165,8 @@ export function buildClauses(data: OfferContractData): ContractClause[] {
       ],
     },
     {
-      label: "V) TERMINACIÓN Y RENOVACIÓN: ",
+      numeral: "V)",
+      title: "TERMINACIÓN Y RENOVACIÓN:",
       body: [
         {
           text: "Cualquiera de las partes podrá dar por terminado este contrato mediante notificación escrita con al menos 60 días de anticipación a su vencimiento. Si ninguna de las partes notifica su intención de no renovar con al menos 30 días calendario de anticipación, el contrato se renovará automáticamente, ajustándose las tarifas de alquiler vigentes al nuevo período.",
@@ -164,7 +174,8 @@ export function buildClauses(data: OfferContractData): ContractClause[] {
       ],
     },
     {
-      label: "VI) NOTIFICACIONES: ",
+      numeral: "VI)",
+      title: "NOTIFICACIONES:",
       body: [
         {
           text: `Todo aviso entre las partes deberá realizarse por escrito. EL ARRENDANTE recibirá notificaciones en ${LESSOR.noticeAddress}, teléfono ${LESSOR.noticePhone}. A EL CLIENTE se le comunicará por escrito al correo electrónico `,
@@ -176,7 +187,8 @@ export function buildClauses(data: OfferContractData): ContractClause[] {
       ],
     },
     {
-      label: "VII) JURISDICCIÓN Y DISPOSICIONES GENERALES: ",
+      numeral: "VII)",
+      title: "JURISDICCIÓN Y DISPOSICIONES GENERALES:",
       body: [
         {
           text: "Las partes se someten a los Tribunales de la ciudad de San Salvador para cualquier controversia derivada de este contrato, renunciando al fuero de sus domicilios. Ninguna de las partes queda obligada por acuerdos o cláusulas no estipulados expresamente en este documento. Cualquier ajuste al canon mensual de las vallas contratadas requerirá el acuerdo escrito de ambas partes y sólo podrá aplicarse a partir de la renovación del contrato.",

@@ -31,8 +31,8 @@ import { EditOfferDto } from './dto/edit-offer.dto.js';
 import type { ListBriloContractsFilters } from './dto/list-brilo-contracts-query.dto.js';
 import { UpdateOfferDto } from './dto/update-offer.dto.js';
 import {
-  billableMonths,
   BRILO_CONTRACT_WITH_CLIENT_SQL,
+  computeContractAmounts,
   formatDimensions,
   vallaTypeFromCode,
   type BriloContractWithClientRow,
@@ -1178,6 +1178,7 @@ export class OffersService {
             height: true,
             quantity: true,
             rentalPrice: true,
+            taxRate: true,
             startDate: true,
             endDate: true,
           },
@@ -1211,17 +1212,23 @@ export class OffersService {
       (item) => item.itemType !== OfferItemType.MISC,
     );
 
-    const billboards = leased.map((item) => ({
-      vallaType: vallaTypeFromCode(item.billboardCode),
-      code: item.billboardCode ?? '',
-      location:
-        item.address ??
-        [item.cityName, item.departmentName].filter(Boolean).join(', '),
-      dimensions: formatDimensions(item.height, item.width),
-      monthlyCost: item.rentalPrice * item.quantity,
-      startDate: item.startDate?.toISOString() ?? null,
-      endDate: item.endDate?.toISOString() ?? null,
-    }));
+    const amounts = computeContractAmounts(leased);
+
+    const billboards = leased.map((item, index) => {
+      const area = [item.cityName, item.departmentName]
+        .filter(Boolean)
+        .join(', ');
+      return {
+        vallaType: vallaTypeFromCode(item.billboardCode),
+        code: item.billboardCode ?? '',
+        location: item.address ?? area,
+        area: item.address ? area : '',
+        dimensions: formatDimensions(item.height, item.width),
+        monthlyCost: amounts.lineMonthlyCosts[index],
+        startDate: item.startDate?.toISOString() ?? null,
+        endDate: item.endDate?.toISOString() ?? null,
+      };
+    });
 
     const startDates = leased
       .map((item) => item.startDate)
@@ -1235,12 +1242,6 @@ export class OffersService {
     const endDate = endDates.length
       ? new Date(Math.max(...endDates.map((d) => d.getTime())))
       : null;
-
-    const monthlyRentalTotal = billboards.reduce(
-      (sum, b) => sum + b.monthlyCost,
-      0,
-    );
-    const months = startDate && endDate ? billableMonths(startDate, endDate) : 1;
 
     const domicile =
       contract.cliCiudadMuni?.trim() || contract.cliDeptoEstado?.trim() || null;
@@ -1265,8 +1266,10 @@ export class OffersService {
           null,
       },
       billboardCount: leased.reduce((sum, item) => sum + item.quantity, 0),
-      monthlyRentalTotal,
-      contractTotal: monthlyRentalTotal * months,
+      monthlyRentalTotal: amounts.monthlyRentalTotal,
+      contractSubtotal: amounts.contractSubtotal,
+      contractIva: amounts.contractIva,
+      contractTotal: amounts.contractTotal,
       startDate: startDate?.toISOString() ?? null,
       endDate: endDate?.toISOString() ?? null,
       billboards,

@@ -45,7 +45,6 @@ function toOfferPdfData(data: QuotationData): OfferPdfData {
 
 export interface QuotationPdfDocumentProps {
   data: QuotationData;
-  logoSrc: string;
 }
 
 /**
@@ -53,9 +52,6 @@ export interface QuotationPdfDocumentProps {
  * render through the same document instead of maintaining a second layout
  * that inevitably drifts.
  */
-export function QuotationPdfDocument({
-  data,
-  logoSrc,
-}: QuotationPdfDocumentProps) {
-  return <OfferPdfDocument data={toOfferPdfData(data)} logoSrc={logoSrc} />;
+export function QuotationPdfDocument({ data }: QuotationPdfDocumentProps) {
+  return <OfferPdfDocument data={toOfferPdfData(data)} />;
 }

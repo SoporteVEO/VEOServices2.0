@@ -12,8 +12,6 @@ import { offerDetailToPdfData } from "./quotation/offer-detail-to-pdf-data";
 import { OfferPdfDocument } from "./quotation/offer-pdf-document";
 import { useMySpaceViewAs } from "./my-space-view-as-context";
 
-const VEO_LOGO_SRC = "/VEO_LOGO_COT.png";
-
 type MyOfferDownloadButtonProps = {
   offer: OfferListItem;
 };
@@ -31,10 +29,7 @@ export function MyOfferDownloadButton({ offer }: MyOfferDownloadButtonProps) {
     try {
       const detail = await getOffer(offer.id, { viewAsUserId });
       const blob = await pdf(
-        <OfferPdfDocument
-          data={offerDetailToPdfData(detail)}
-          logoSrc={VEO_LOGO_SRC}
-        />,
+        <OfferPdfDocument data={offerDetailToPdfData(detail)} />,
       ).toBlob();
 
       downloadBlob(blob, safeFileName(`${offer.offerNumber}.pdf`));

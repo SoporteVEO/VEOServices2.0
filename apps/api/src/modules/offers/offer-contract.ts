@@ -63,8 +63,11 @@ export interface OfferContractBillboard {
   vallaType: string;
   code: string;
   location: string;
+  /** "City, Department" shown after the address; blank when it is the location. */
+  area: string;
   /** Pre-formatted "alto x ancho", blank when either side is unknown. */
   dimensions: string;
+  /** Monthly rent of the line, IVA included. */
   monthlyCost: number;
   startDate: string | null;
   endDate: string | null;
@@ -78,7 +81,12 @@ export interface OfferContractData {
   contractDate: string;
   client: OfferContractClient;
   billboardCount: number;
+  /** Sum of the lines' monthly rent, IVA included. */
   monthlyRentalTotal: number;
+  /** Rent for the whole period before IVA, as on the offer. */
+  contractSubtotal: number;
+  contractIva: number;
+  /** Rent for the whole period with IVA, matching the offer's rental total. */
   contractTotal: number;
   /** Earliest start and latest end across the billboards on the contract. */
   startDate: string | null;
@@ -103,17 +111,82 @@ export function vallaTypeFromCode(code: string | null | undefined): string {
   return VALLA_TYPE_BY_PREFIX[prefix] ?? prefix;
 }
 
+const MS_PER_DAY = 24 * 60 * 60 * 1000;
+const RENTAL_PERIOD_DAYS = 30;
+
+function utcDay(date: Date): number {
+  return Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
+}
+
 /**
- * Billable months in a lease period. A period that ends on or after the
- * day-of-month it started counts its final month in full, which is how
- * 1/9 → 30/11 bills as three months rather than two.
+ * 30-day rental periods in a date range, counted the way the offer builder
+ * prices static billboards, so a line's rent splits back into the monthly rate
+ * the client was quoted.
  */
-export function billableMonths(start: Date, end: Date): number {
-  const wholeMonths =
-    (end.getUTCFullYear() - start.getUTCFullYear()) * 12 +
-    (end.getUTCMonth() - start.getUTCMonth());
-  const endsOnOrAfterStartDay = end.getUTCDate() >= start.getUTCDate();
-  return Math.max(1, wholeMonths + (endsOnOrAfterStartDay ? 1 : 0));
+export function rentalPeriods(start: Date | null, end: Date | null): number {
+  if (!start || !end) return 1;
+  const startDay = utcDay(start);
+  const endDay = utcDay(end);
+  if (endDay < startDay) return 1;
+  const inclusiveDays = Math.round((endDay - startDay) / MS_PER_DAY) + 1;
+  return Math.max(1, Math.ceil(inclusiveDays / RENTAL_PERIOD_DAYS));
+}
+
+function round2(value: number): number {
+  return Math.round(value * 100) / 100;
+}
+
+export interface ContractAmountLine {
+  /** Rent for the line's whole period, per unit, before IVA. */
+  rentalPrice: number;
+  quantity: number;
+  taxRate: number;
+  startDate: Date | null;
+  endDate: Date | null;
+}
+
+export interface ContractAmounts {
+  /** Monthly rent per line with IVA, in input order. */
+  lineMonthlyCosts: number[];
+  monthlyRentalTotal: number;
+  contractSubtotal: number;
+  contractIva: number;
+  contractTotal: number;
+}
+
+/**
+ * Totals are rounded the same way as the offer's rental column (subtotal and
+ * IVA each rounded, then added) so the signed figure equals the quoted one.
+ */
+export function computeContractAmounts(
+  lines: ContractAmountLine[],
+): ContractAmounts {
+  let subtotal = 0;
+  let iva = 0;
+  let monthly = 0;
+  const lineMonthlyCosts: number[] = [];
+
+  for (const line of lines) {
+    const lineRental = line.rentalPrice * line.quantity;
+    const lineMonthly =
+      (lineRental / rentalPeriods(line.startDate, line.endDate)) *
+      (1 + line.taxRate);
+    subtotal += lineRental;
+    iva += lineRental * line.taxRate;
+    monthly += lineMonthly;
+    lineMonthlyCosts.push(round2(lineMonthly));
+  }
+
+  const contractSubtotal = round2(subtotal);
+  const contractIva = round2(iva);
+
+  return {
+    lineMonthlyCosts,
+    monthlyRentalTotal: round2(monthly),
+    contractSubtotal,
+    contractIva,
+    contractTotal: round2(contractSubtotal + contractIva),
+  };
 }
 
 export function formatDimensions(

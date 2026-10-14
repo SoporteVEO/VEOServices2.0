@@ -6,8 +6,6 @@ import type { AvailableBillboardListing } from "@/api/billboards/billboards.get"
 import { Button } from "@/components/ui/button";
 import { GenerateQuotationModal } from "./generate-quotation-modal";
 
-const VEO_LOGO_SRC = "/VEO_LOGO_COT.png";
-
 export interface GenerateQuotationButtonProps {
   selectedRows: AvailableBillboardListing[];
   /** Default duration applied to each billboard item (taken from the page-level date range). */
@@ -42,7 +40,6 @@ export function GenerateQuotationButton({
           open={open}
           onOpenChange={setOpen}
           billboards={selectedRows}
-          logoSrc={VEO_LOGO_SRC}
           defaultStartDate={defaultStartDate}
           defaultEndDate={defaultEndDate}
           onSuccess={onSuccess}

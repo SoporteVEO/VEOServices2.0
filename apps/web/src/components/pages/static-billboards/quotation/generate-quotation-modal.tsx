@@ -105,7 +105,6 @@ export interface GenerateQuotationModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   billboards: AvailableBillboardListing[];
-  logoSrc: string;
   defaultStartDate?: Date | null;
   defaultEndDate?: Date | null;
   onSuccess?: () => void;
@@ -115,7 +114,6 @@ export function GenerateQuotationModal({
   open,
   onOpenChange,
   billboards,
-  logoSrc,
   defaultStartDate = null,
   defaultEndDate = null,
   onSuccess,
@@ -320,7 +318,6 @@ export function GenerateQuotationModal({
             advisorFullName,
             items,
           }}
-          logoSrc={logoSrc}
         />,
       ).toBlob();
 
