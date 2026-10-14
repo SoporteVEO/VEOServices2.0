@@ -3,10 +3,12 @@
  *
  *   npx tsx scripts/import-pantallas.ts "<ruta>/datos listas vnnox.json"          (dry run)
  *   npx tsx scripts/import-pantallas.ts "<ruta>/datos listas vnnox.json" --apply
+ *   npx tsx scripts/import-pantallas.ts "<ruta>/datos listas vnnox.json" --apply --wipe
  *
- * Screens are matched by code or name. Their manually entered campaigns and
- * the whole bitácora are replaced by the file; campaigns that came from an
- * accepted quotation are kept.
+ * Screens are matched by code or name and keep their current code. Their
+ * manually entered campaigns and the whole bitácora are replaced by the file;
+ * campaigns that came from an accepted quotation are kept unless --wipe is
+ * passed, which first removes every sublist and campaign of every screen.
  */
 import 'dotenv/config';
 import { readFileSync } from 'node:fs';
@@ -130,6 +132,7 @@ async function main() {
     process.exit(1);
   }
   const apply = flags.includes('--apply');
+  const wipe = flags.includes('--wipe');
   const source = JSON.parse(readFileSync(file, 'utf8')) as SourceData;
   if (!Array.isArray(source.pantallas)) throw new Error('El archivo no tiene "pantallas".');
 
@@ -157,6 +160,15 @@ async function main() {
     );
   }
   console.log(`Bitácora: ${source.bitacora?.length ?? 0} movimientos (reemplaza la actual)`);
+  if (wipe) {
+    const [sublists, campaigns] = await Promise.all([
+      prisma.digitalBillboardSublist.count(),
+      prisma.digitalBillboardCampaign.count(),
+    ]);
+    console.log(
+      `--wipe: se borran ${sublists} sublistas y ${campaigns} campañas existentes (incluye las de cotizaciones)`,
+    );
+  }
 
   if (!apply) {
     console.log('\nSimulación. Vuelve a correrlo con --apply para escribir en la base.');
@@ -166,6 +178,11 @@ async function main() {
 
   await prisma.$transaction(
     async (tx) => {
+      if (wipe) {
+        await tx.digitalBillboardCampaign.deleteMany({});
+        await tx.digitalBillboardSublist.deleteMany({});
+      }
+
       await tx.digitalBillboardSettings.upsert({
         where: { id: 1 },
         create: {
@@ -199,13 +216,9 @@ async function main() {
         const match = findExisting(screen);
         let screenId: string;
         if (match) {
-          const codeTaken = existing.some(
-            (e) => e.id !== match.id && e.code.toUpperCase() === code,
-          );
           await tx.digitalBillboard.update({
             where: { id: match.id },
             data: {
-              ...(codeTaken ? {} : { code }),
               name: screen.nombre,
               position: index,
               aliases,

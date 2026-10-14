@@ -4,6 +4,7 @@ import type { HttpMethod } from '../agent-endpoints.service.js';
 import {
   type AgentToolContext,
   limitPayload,
+  stripLongUrls,
   toModelText,
   unauthorized,
 } from './agent-tool-context.js';
@@ -97,7 +98,7 @@ export function buildApiTools(ctx: AgentToolContext) {
           error: response.error,
         };
       },
-      toModelOutput: ({ output }) => toModelText(output),
+      toModelOutput: ({ output }) => toModelText(stripLongUrls(output)),
     }),
   };
 }

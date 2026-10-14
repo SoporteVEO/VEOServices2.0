@@ -200,24 +200,30 @@ interface BriloDashboardCostCenterRow {
   Name: string | null;
 }
 
+/**
+ * Range params (`YYYY-MM-DD`) and Brilo dates (mssql `useUTC`) both arrive as
+ * UTC-based wall-clock values, so every calendar helper here works in UTC.
+ * Local getters would shift `2026-01-01T00:00Z` into December on a UTC-6 host.
+ */
 function startOfDay(date: Date): Date {
   return new Date(
-    date.getFullYear(),
-    date.getMonth(),
-    date.getDate(),
-    0,
-    0,
-    0,
-    0,
+    Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()),
   );
 }
 
+function todayWallClock(): Date {
+  const now = new Date();
+  return new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
+}
+
 function startOfMonth(date: Date): Date {
-  return new Date(date.getFullYear(), date.getMonth(), 1);
+  return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), 1));
 }
 
 function addMonths(date: Date, months: number): Date {
-  return new Date(date.getFullYear(), date.getMonth() + months, 1);
+  return new Date(
+    Date.UTC(date.getUTCFullYear(), date.getUTCMonth() + months, 1),
+  );
 }
 
 function daysBetween(from: Date, to: Date): number {
@@ -238,20 +244,14 @@ function overlapDays(
 }
 
 function monthKey(date: Date): string {
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  return `${date.getFullYear()}-${month}`;
+  const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+  return `${date.getUTCFullYear()}-${month}`;
 }
 
 function shiftYears(date: Date, years: number): Date {
-  return new Date(
-    date.getFullYear() + years,
-    date.getMonth(),
-    date.getDate(),
-    date.getHours(),
-    date.getMinutes(),
-    date.getSeconds(),
-    date.getMilliseconds(),
-  );
+  const shifted = new Date(date.getTime());
+  shifted.setUTCFullYear(date.getUTCFullYear() + years);
+  return shifted;
 }
 
 function shiftMonthKey(key: string, monthsDelta: number): string {
@@ -259,7 +259,7 @@ function shiftMonthKey(key: string, monthsDelta: number): string {
   const year = Number(yearStr);
   const month = Number(monthStr);
   if (!Number.isFinite(year) || !Number.isFinite(month)) return key;
-  const baseDate = new Date(year, month - 1, 1);
+  const baseDate = new Date(Date.UTC(year, month - 1, 1));
   return monthKey(addMonths(baseDate, monthsDelta));
 }
 
@@ -498,7 +498,7 @@ function computeDashboardAnalytics({
   rangeFrom,
   rangeTo,
 }: DashboardComputationInput): BillboardDashboardAnalytics {
-  const today = startOfDay(new Date());
+  const today = todayWallClock();
   const endingSoonThreshold = new Date(today.getTime() + 30 * MS_PER_DAY);
 
   const validContracts = contractRows.filter(
@@ -618,8 +618,8 @@ function computeDashboardAnalytics({
       if (monthBucket) {
         monthBucket.contractsActive += 1;
         if (
-          start.getFullYear() === monthCursor.getFullYear() &&
-          start.getMonth() === monthCursor.getMonth() &&
+          start.getUTCFullYear() === monthCursor.getUTCFullYear() &&
+          start.getUTCMonth() === monthCursor.getUTCMonth() &&
           start >= rangeFrom
         ) {
           monthBucket.contractsStarted += 1;

@@ -119,14 +119,14 @@ export const NAV_GROUPS: NavGroup[] = [
         icon: Wrench,
         children: [
           {
-            title: "Mantenimiento Vallas",
+            title: "Vallas",
             href: "/dashboard/mantenimiento",
             icon: Monitor,
             allowedRoles: [],
             requiredSubRoles: ["MANTENIMIENTO"],
           },
           {
-            title: "Mantenimiento Flota",
+            title: "Flota",
             href: "/dashboard/mantenimiento/flota",
             icon: Car,
             allowedRoles: [],

@@ -138,8 +138,12 @@ export class AgentChatService {
       model,
       instructions: [
         cachedSystemMessage(provider, AGENT_SYSTEM_PROMPT),
-        { role: 'system', content: buildUserContext(user) },
-        ...(memory ? [{ role: 'system' as const, content: memory }] : []),
+        ...(memory
+          ? [
+              { role: 'system' as const, content: buildUserContext(user) },
+              cachedSystemMessage(provider, memory),
+            ]
+          : [cachedSystemMessage(provider, buildUserContext(user))]),
       ],
       messages: await sdk.ai.convertToModelMessages(messages, { tools }),
       tools,
