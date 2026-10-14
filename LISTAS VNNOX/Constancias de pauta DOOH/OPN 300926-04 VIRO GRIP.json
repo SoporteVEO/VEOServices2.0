@@ -1,0 +1,40 @@
+{
+ "id": "x6ue0rt94bwdj",
+ "corr": "300926-04",
+ "rev": 1,
+ "ts": "2026-09-30T21:01:35.431Z",
+ "tsCambio": "2026-09-30T21:01:35.431Z",
+ "autor": "Soporte Comercial",
+ "ejecutivo": "Marta Descamps",
+ "fechaIngreso": "2026-09-30",
+ "agencia": true,
+ "nombreAgencia": "CREACION PUBLICIDAD",
+ "marca": "Viro Grip",
+ "campana": "VIROGRIP",
+ "formato": "Animado",
+ "inicio": "2026-10-01",
+ "fin": "2026-10-31",
+ "indicaciones": "",
+ "enlaces": [],
+ "pantallas": [
+  {
+   "pid": "sdm",
+   "frec": 450,
+   "mes": 550,
+   "neg": "",
+   "spotMano": false,
+   "spot": 0.03942652329749104
+  },
+  {
+   "pid": "heroe",
+   "frec": 450,
+   "mes": 550,
+   "neg": "",
+   "spotMano": false,
+   "spot": 0.03942652329749104
+  }
+ ],
+ "valorTotal": 1100,
+ "valorMensual": 1100,
+ "archivo": "OPN 300926-04 VIRO GRIP.json"
+}

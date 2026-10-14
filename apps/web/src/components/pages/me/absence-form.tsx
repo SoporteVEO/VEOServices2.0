@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
-import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DatePicker } from "@/components/ui/date-picker";
 import { Textarea } from "@/components/ui/textarea";
@@ -143,8 +142,7 @@ export function AbsenceForm({
         <Button
           type="submit"
           disabled={isPending}
-          icon={isPending ? Loader2 : undefined}
-          iconClassName={isPending ? "animate-spin" : undefined}
+          loading={isPending}
         >
           {isPending ? "Enviando..." : "Crear solicitud"}
         </Button>

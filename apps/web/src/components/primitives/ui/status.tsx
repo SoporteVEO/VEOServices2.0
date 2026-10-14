@@ -4,7 +4,7 @@ import type * as React from "react";
 import { cn } from "@/lib/utils";
 
 const statusVariants = cva(
-  "inline-flex w-fit shrink-0 items-center gap-1.5 overflow-hidden whitespace-nowrap rounded-full border px-2.5 py-1 font-medium text-xs transition-colors",
+  "inline-flex w-fit shrink-0 items-center gap-1.5 overflow-hidden whitespace-nowrap border px-2 py-0.5 font-semibold text-xs transition-colors",
   {
     variants: {
       variant: {
@@ -54,9 +54,9 @@ function StatusIndicator(props: React.ComponentProps<"div">) {
       data-slot="status-indicator"
       {...indicatorProps}
       className={cn(
-        "relative flex size-2 shrink-0 rounded-full",
-        "before:absolute before:inset-0 before:animate-ping before:rounded-full before:bg-inherit",
-        "after:absolute after:inset-[2px] after:rounded-full after:bg-inherit",
+        "relative flex size-2 shrink-0",
+        "before:absolute before:inset-0 before:animate-square-blink before:bg-inherit before:opacity-40",
+        "after:absolute after:inset-[2px] after:bg-inherit",
         className,
       )}
     />

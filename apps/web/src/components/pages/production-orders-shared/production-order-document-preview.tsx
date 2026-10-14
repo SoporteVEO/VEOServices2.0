@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ExternalLink, Loader2 } from "lucide-react";
+import { ExternalLink } from "lucide-react";
 import { toast } from "sonner";
 import { getProductionOrderDocumentUrl } from "@/api/production-orders/production-orders.get";
 import type { ProductionDocumentKind } from "@/api/production-orders/production-orders.types";
@@ -48,16 +48,13 @@ export function ProductionOrderDocumentPreviewButton({
       size={size === "sm" ? "sm" : undefined}
       className="gap-1.5"
       disabled={disabled || isLoading}
+      loading={isLoading}
       onClick={(event) => {
         event.stopPropagation();
         void handlePreview();
       }}
     >
-      {isLoading ? (
-        <Loader2 className="size-3.5 animate-spin" aria-hidden />
-      ) : (
-        <ExternalLink className="size-3.5" aria-hidden />
-      )}
+      <ExternalLink className="size-3.5" aria-hidden />
       {label}
     </Button>
   );

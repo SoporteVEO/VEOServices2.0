@@ -21,6 +21,7 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from "@/components/ui/drawer";
+import { DetailPanelSkeleton } from "@/components/ui/skeletons";
 import { formatBriloShortDate, formatDimensions } from "@/lib/format";
 import { ProductionOrderDocumentSlot } from "@/components/pages/production-orders-shared/production-order-document-slot";
 import { ProductionOrderStatusBadge } from "@/components/pages/production-orders-shared/production-order-status-badge";
@@ -77,15 +78,19 @@ function DrawerBody({
   if (isLoading || !data) {
     return (
       <>
-        <DrawerHeader className="border-b">
-          <DrawerTitle>Cargando orden…</DrawerTitle>
+        <DrawerHeader className={isError ? "border-b" : "sr-only"}>
+          <DrawerTitle className="sr-only">Cargando orden…</DrawerTitle>
           <DrawerDescription>
             {isError
               ? "No se pudo cargar la orden de producción."
               : "Preparando los detalles."}
           </DrawerDescription>
         </DrawerHeader>
-        <div className="flex-1" />
+        {isError ? (
+          <div className="flex-1" />
+        ) : (
+          <DetailPanelSkeleton sections={2} withFooter={false} />
+        )}
         <DrawerFooter className="border-t">
           <Button type="button" variant="outline" onClick={onClose}>
             Cerrar

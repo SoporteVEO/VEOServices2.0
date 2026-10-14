@@ -8,7 +8,6 @@ import {
   Download,
   FileText,
   ImageIcon,
-  Loader2,
   Mail,
   User as UserIcon,
   X,
@@ -280,8 +279,8 @@ function HrAbsenceDetailContent({
         <Button
           onClick={handleDownloadPdf}
           disabled={isGeneratingPdf}
-          icon={isGeneratingPdf ? Loader2 : Download}
-          iconClassName={isGeneratingPdf ? "animate-spin" : undefined}
+          icon={Download}
+          loading={isGeneratingPdf}
         >
           {isGeneratingPdf ? "Generando..." : "Descargar reporte"}
         </Button>

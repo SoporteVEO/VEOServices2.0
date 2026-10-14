@@ -91,9 +91,9 @@ export function DashboardDepartmentBreakdownCard({
                         {formatMoney(d.estimatedRevenue)}
                       </span>
                     </div>
-                    <div className="relative h-1.5 w-full overflow-hidden rounded-full bg-accent">
+                    <div className="relative h-1.5 w-full overflow-hidden bg-accent">
                       <div
-                        className="absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-primary to-primary/70"
+                        className="absolute inset-y-0 left-0 bg-gradient-to-r from-primary to-primary/70"
                         style={{ width: `${revenueShare * 100}%` }}
                       />
                     </div>
@@ -130,7 +130,7 @@ export function DashboardDepartmentBreakdownCard({
 }
 
 function DotIndicator({ color }: { color: string }) {
-  return <span className={cn("size-2 rounded-full", color)} />;
+  return <span className={cn("size-2", color)} />;
 }
 
 function EmptyState() {

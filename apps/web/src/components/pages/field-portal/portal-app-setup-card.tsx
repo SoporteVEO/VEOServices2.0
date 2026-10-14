@@ -4,7 +4,6 @@ import {
   Bell,
   BellOff,
   Download,
-  Loader2,
   Share,
   SquarePlus,
   type LucideIcon,
@@ -19,6 +18,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/primitives/ui/card";
+import { PendingBar } from "@/components/ui/button";
 import { usePushNotifications } from "@/hooks/use-push-notifications";
 import { usePwaInstall } from "@/hooks/use-pwa-install";
 
@@ -97,9 +97,11 @@ export function PortalAppSetupCard() {
             size="lg"
             onClick={push.requestEnable}
             disabled={push.isEnabling}
+            aria-busy={push.isEnabling || undefined}
           >
-            {push.isEnabling ? <Loader2 className="animate-spin" /> : <Bell />}
+            <Bell />
             Activar notificaciones
+            {push.isEnabling ? <PendingBar /> : null}
           </Button>
         ) : null}
 
@@ -130,7 +132,7 @@ function IosStep({
 }) {
   return (
     <li className="flex items-start gap-3">
-      <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
+      <span className="flex size-6 shrink-0 items-center justify-center bg-primary/10 text-xs font-semibold text-primary">
         {index}
       </span>
       <span className="flex-1 leading-6">{children}</span>

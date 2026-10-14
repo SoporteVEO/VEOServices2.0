@@ -25,26 +25,26 @@ export function ProfileSummary({
       <ProfileActivityPanel />
 
       <div className="flex min-w-0 flex-col gap-4">
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+        <div className="grid grid-cols-1 gap-4 @5xl/main:grid-cols-2">
           {teamMember ? (
             <>
               <ProfileKpis />
               <MeTeamMemberBusinessReadonly teamMember={teamMember} />
-              <div className="min-w-0 lg:col-span-2">
+              <div className="min-w-0 @5xl/main:col-span-2">
                 <MeTeamMemberVisibleCommentsCard teamMember={teamMember} />
               </div>
-              <div className="min-w-0 lg:col-span-2">
+              <div className="min-w-0 @5xl/main:col-span-2">
                 <MeTeamMemberPersonalCard teamMember={teamMember} />
               </div>
-              <div className="min-w-0 lg:col-span-2">
+              <div className="min-w-0 @5xl/main:col-span-2">
                 <MeTeamMemberEmergencyCard teamMember={teamMember} />
               </div>
-              <div className="min-w-0 lg:col-span-2">
+              <div className="min-w-0 @5xl/main:col-span-2">
                 <MeTeamMemberBankCard teamMember={teamMember} />
               </div>
             </>
           ) : null}
-          <div className="min-w-0 lg:col-span-2">
+          <div className="min-w-0 @5xl/main:col-span-2">
             <ProfileForm profile={profile} />
           </div>
         </div>

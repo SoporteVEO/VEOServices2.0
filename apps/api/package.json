@@ -19,12 +19,16 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
+    "import:pantallas": "tsx scripts/import-pantallas.ts",
     "vercel-build": "prisma generate && prisma migrate deploy && turbo run build --filter=api"
   },
   "prisma": {
     "schema": "./prisma/schema/"
   },
   "dependencies": {
+    "@ai-sdk/anthropic": "^4.0.79",
+    "@ai-sdk/google": "^4.0.95",
+    "@ai-sdk/mcp": "^2.0.74",
     "@aws-sdk/client-s3": "^3.1032.0",
     "@aws-sdk/s3-request-presigner": "^3.1032.0",
     "@nestjs/common": "^11.0.1",
@@ -38,6 +42,7 @@
     "@prisma/adapter-pg": "^7.5.0",
     "@prisma/client": "^7.5.0",
     "@tidbcloud/serverless": "^0.2.0",
+    "ai": "^7.0.140",
     "better-auth": "^1.5.6",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.15.1",
@@ -52,7 +57,9 @@
     "resend": "^6.9.4",
     "rxjs": "^7.8.1",
     "sharp": "^0.34.5",
-    "web-push": "^3.6.7"
+    "web-push": "^3.6.7",
+    "xlsx": "^0.18.5",
+    "zod": "^4.6.7"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.2.0",

@@ -5,7 +5,6 @@ import Image from "next/image";
 import {
   ExternalLink,
   Image as ImageIcon,
-  Loader2,
   MapPin,
   Pencil,
   Ruler,
@@ -33,6 +32,7 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from "@/components/ui/drawer";
+import { DetailPanelSkeleton } from "@/components/ui/skeletons";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { formatBriloShortDate, formatDimensions } from "@/lib/format";
 import { googleMapsUrl } from "@/lib/installer-portal";
@@ -85,11 +85,7 @@ function DrawerBody({
   const [editOpen, setEditOpen] = useState(false);
 
   if (isLoading) {
-    return (
-      <div className="flex flex-1 items-center justify-center text-muted-foreground">
-        <Loader2 className="size-6 animate-spin" aria-hidden />
-      </div>
-    );
+    return <DetailPanelSkeleton sections={2} />;
   }
 
   if (isError || !job) {

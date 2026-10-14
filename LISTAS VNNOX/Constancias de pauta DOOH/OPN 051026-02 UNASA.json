@@ -1,0 +1,64 @@
+{
+ "id": "xzq9hj4dllc8c",
+ "corr": "051026-02",
+ "rev": 1,
+ "ts": "2026-10-05T15:55:21.309Z",
+ "tsCambio": "2026-10-05T15:55:21.309Z",
+ "autor": "Soporte Comercial",
+ "ejecutivo": "Maggy Jeanpierre",
+ "fechaIngreso": "2026-10-05",
+ "agencia": false,
+ "nombreAgencia": "",
+ "marca": "UNASA",
+ "campana": "UNASA",
+ "formato": "Animado",
+ "inicio": "2026-10-05",
+ "fin": "2026-10-20",
+ "indicaciones": "",
+ "enlaces": [],
+ "pantallas": [
+  {
+   "pid": "panam",
+   "frec": 300,
+   "mes": null,
+   "neg": "donacion",
+   "spotMano": false,
+   "spot": null
+  },
+  {
+   "pid": "paseo",
+   "frec": 300,
+   "mes": null,
+   "neg": "donacion",
+   "spotMano": false,
+   "spot": null
+  },
+  {
+   "pid": "jerusa",
+   "frec": 300,
+   "mes": null,
+   "neg": "donacion",
+   "spotMano": false,
+   "spot": null
+  },
+  {
+   "pid": "benito",
+   "frec": 300,
+   "mes": null,
+   "neg": "donacion",
+   "spotMano": false,
+   "spot": null
+  },
+  {
+   "pid": "juanpa",
+   "frec": 300,
+   "mes": null,
+   "neg": "donacion",
+   "spotMano": false,
+   "spot": null
+  }
+ ],
+ "valorTotal": 0,
+ "valorMensual": 0,
+ "archivo": "OPN 051026-02 UNASA.json"
+}

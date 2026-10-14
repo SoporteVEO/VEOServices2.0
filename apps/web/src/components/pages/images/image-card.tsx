@@ -90,7 +90,7 @@ export function ImageCard({
         </div>
 
         <div className="pointer-events-none absolute inset-x-0 bottom-0 flex items-end justify-end bg-gradient-to-t from-black/75 via-black/25 to-transparent p-3 pt-10 opacity-0 duration-initial group-hover:opacity-100 cursor-pointer">
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-2.5 py-1 text-[11px] font-medium text-white shadow-sm backdrop-blur-sm ring-1 ring-white/20 cursor-pointer">
+          <span className="inline-flex items-center gap-1.5 bg-white/15 px-2.5 py-1 text-[11px] font-medium text-white shadow-sm backdrop-blur-sm ring-1 ring-white/20 cursor-pointer">
             <Eye className="size-3.5" aria-hidden />
             Ver imagen
           </span>
@@ -104,7 +104,7 @@ export function ImageCard({
               <Button
                 variant="secondary"
                 sizeVariant="sm"
-                className="size-8 rounded-full p-0 shadow-md"
+                className="size-8 p-0 shadow-md"
                 disabled={isDeleting}
                 aria-label="Acciones de la imagen"
               >

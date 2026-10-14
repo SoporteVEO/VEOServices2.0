@@ -39,7 +39,7 @@ export function PurchaseDetailDrawer({
               <div className="min-w-0 space-y-0.5">
                 <p className="font-medium">
                   {item.digitalBillboardId
-                    ? (item.billboardCode ?? "Valla digital")
+                    ? (item.billboardCode ?? "Pantalla")
                     : (item.billboardCode ?? `Valla ${item.billboardId}`)}
                 </p>
                 {item.digitalBillboardId && item.spotCount != null && (

@@ -1,9 +1,10 @@
 "use client";
 
-import { Camera, ImagePlus, Loader2 } from "lucide-react";
+import { Camera, ImagePlus } from "lucide-react";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/primitives/ui/button";
+import { PendingBar } from "@/components/ui/button";
 import { blobToBase64, compressImage } from "@/lib/compress-image";
 
 const MAX_IMAGE_SIZE = 25 * 1024 * 1024;
@@ -122,14 +123,12 @@ export function MaintenancePhotoUploader({
           type="button"
           className="h-11 flex-1"
           disabled={busy || disabled}
+          aria-busy={busy || undefined}
           onClick={() => cameraRef.current?.click()}
         >
-          {busy ? (
-            <Loader2 className="animate-spin" aria-hidden />
-          ) : (
-            <Camera aria-hidden />
-          )}
+          <Camera aria-hidden />
           Tomar foto
+          {busy ? <PendingBar /> : null}
         </Button>
 
         <Button

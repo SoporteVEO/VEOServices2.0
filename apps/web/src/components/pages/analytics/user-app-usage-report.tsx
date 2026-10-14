@@ -51,7 +51,7 @@ export function UserAppUsageReport() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center justify-end">
+      <div className="flex flex-col gap-3 @xl/main:flex-row @xl/main:flex-wrap @xl/main:items-center justify-end">
         <DateRangePicker
           key={`${fromStr}-${toStr}`}
           showCompare={false}

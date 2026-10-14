@@ -10,6 +10,7 @@ import {
   Query,
 } from '@nestjs/common';
 import { S3ImageType } from '@prisma/client';
+import { businessDayRange } from '../../lib/business-time.js';
 import {
   AllowFieldRoles,
   AllowLimited,
@@ -24,13 +25,26 @@ interface AuthUser {
   id: string;
 }
 
-function parseDate(value: string | undefined, field: string): Date | undefined {
+const DATE_ONLY = /^\d{4}-\d{2}-\d{2}$/;
+
+/**
+ * A bare `YYYY-MM-DD` means a whole business day: `dateFrom` resolves to its
+ * first instant and `dateTo` to its last, so a single-day range is inclusive.
+ */
+function parseDate(
+  value: string | undefined,
+  field: string,
+  bound: 'start' | 'end',
+): Date | undefined {
   if (!value) return undefined;
-  const parsed = new Date(value);
+  const isDateOnly = DATE_ONLY.test(value);
+  const parsed = new Date(isDateOnly ? `${value}T12:00:00Z` : value);
   if (isNaN(parsed.getTime())) {
     throw new BadRequestException(`${field} no es una fecha válida (ISO 8601)`);
   }
-  return parsed;
+  if (!isDateOnly) return parsed;
+  const { start, end } = businessDayRange(parsed);
+  return bound === 'start' ? start : new Date(end.getTime() - 1);
 }
 
 @AllowLimited()
@@ -77,8 +91,8 @@ export class S3ImagesController {
       staticBillboardCodeId,
       code: code?.trim() || undefined,
       uploadedUserId,
-      dateFrom: parseDate(dateFromRaw, 'dateFrom'),
-      dateTo: parseDate(dateToRaw, 'dateTo'),
+      dateFrom: parseDate(dateFromRaw, 'dateFrom', 'start'),
+      dateTo: parseDate(dateToRaw, 'dateTo', 'end'),
       sortOrder: sortOrder === 'asc' ? 'asc' : 'desc',
       limit,
       cursor: cursor || undefined,

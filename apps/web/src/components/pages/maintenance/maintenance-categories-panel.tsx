@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Archive, Loader2, Plus, RotateCcw, Trash2 } from "lucide-react";
+import { Archive, Plus, RotateCcw, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { useMaintenanceCategories } from "@/api/maintenance/maintenance.get";
 import {
@@ -12,6 +12,7 @@ import {
 import type { MaintenanceCategory } from "@/api/maintenance/maintenance.types";
 import { Badge } from "@/components/primitives/ui/badge";
 import { Button as PrimitiveButton } from "@/components/primitives/ui/button";
+import { Skeleton } from "@/components/primitives/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { BRAND_CHART_COLORS } from "@/lib/brand-colors";
@@ -90,7 +91,7 @@ export function MaintenanceCategoriesPanel() {
                   }}
                 >
                   <span
-                    className="mx-auto block size-3 rounded-full"
+                    className="mx-auto block size-3"
                     style={{ backgroundColor: preset }}
                   />
                 </button>
@@ -115,9 +116,21 @@ export function MaintenanceCategoriesPanel() {
           </span>
         </h3>
         {isLoading ? (
-          <div className="flex justify-center py-8 text-muted-foreground">
-            <Loader2 className="size-5 animate-spin" aria-hidden />
-          </div>
+          <ul role="status" aria-label="Cargando" className="flex flex-col gap-2">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <li
+                key={i}
+                className="flex items-center gap-3 rounded-lg border bg-card p-3"
+              >
+                <Skeleton className="h-5.5 w-28" />
+                <Skeleton className="h-5 w-16" />
+                <div className="ml-auto flex items-center gap-1">
+                  <Skeleton className="size-8" />
+                  <Skeleton className="size-8" />
+                </div>
+              </li>
+            ))}
+          </ul>
         ) : active.length === 0 ? (
           <p className="rounded-lg border bg-card p-4 text-xs text-muted-foreground">
             Aún no hay categorías. Crea la primera arriba.

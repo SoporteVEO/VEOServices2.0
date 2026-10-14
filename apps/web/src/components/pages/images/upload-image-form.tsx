@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -135,8 +134,7 @@ export function UploadImageForm({
         <Button
           type="submit"
           disabled={isSubmitDisabled}
-          icon={isSubmitDisabled ? Loader2 : undefined}
-          iconClassName={isSubmitDisabled ? "animate-spin" : undefined}
+          loading={isSubmitDisabled}
         >
           {submitLabel}
         </Button>

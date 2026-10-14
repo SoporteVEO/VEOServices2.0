@@ -6,7 +6,6 @@ import {
   CalendarClock,
   CheckCircle2,
   ExternalLink,
-  Loader2,
   MapPin,
   PlayCircle,
   Ruler,
@@ -22,6 +21,8 @@ import type { MaintenanceJob } from "@/api/maintenance/maintenance.types";
 import { MaintenanceCategoryBadge } from "@/components/pages/maintenance/maintenance-category-badge";
 import { MaintenanceStatusBadge } from "@/components/pages/maintenance/maintenance-status-badge";
 import { Button } from "@/components/primitives/ui/button";
+import { Skeleton } from "@/components/primitives/ui/skeleton";
+import { PendingBar } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { formatBriloShortDate, formatDimensions } from "@/lib/format";
 import { googleMapsUrl, openStreetMapEmbedUrl } from "@/lib/installer-portal";
@@ -36,8 +37,35 @@ export function MaintenanceJobDetail({ jobId }: { jobId: string }) {
   if (isLoading) {
     return (
       <FieldPortalShell title="Cargando orden…">
-        <div className="flex items-center justify-center py-20 text-muted-foreground">
-          <Loader2 className="size-6 animate-spin" aria-hidden />
+        <div role="status" aria-label="Cargando" className="flex flex-col gap-4">
+          <section className="flex flex-col gap-3 rounded-xl border bg-card p-4">
+            <div className="flex flex-wrap gap-2">
+              <Skeleton className="h-5.5 w-24" />
+              <Skeleton className="h-5.5 w-20" />
+              <Skeleton className="h-5.5 w-28" />
+            </div>
+            <Skeleton className="h-3 w-32" />
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-3/4" />
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              {Array.from({ length: 2 }).map((_, i) => (
+                <div key={i} className="flex items-start gap-2">
+                  <Skeleton className="size-4 shrink-0" />
+                  <div className="flex flex-1 flex-col gap-1.5">
+                    <Skeleton className="h-2.5 w-24" />
+                    <Skeleton className="h-4 w-32" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+          <section className="flex flex-col gap-3 rounded-xl border bg-card p-4">
+            <Skeleton className="h-4 w-24" />
+            <Skeleton className="h-4 w-2/3" />
+            <Skeleton className="h-48 w-full" />
+            <Skeleton className="h-11 w-full" />
+          </section>
+          <Skeleton className="h-12 w-full" />
         </div>
       </FieldPortalShell>
     );
@@ -154,6 +182,7 @@ function JobView({ job }: { job: MaintenanceJob }) {
           <Button
             className="h-12"
             disabled={startJob.isPending}
+            aria-busy={startJob.isPending || undefined}
             onClick={() =>
               startJob.mutate(
                 { id: job.id },
@@ -169,12 +198,9 @@ function JobView({ job }: { job: MaintenanceJob }) {
               )
             }
           >
-            {startJob.isPending ? (
-              <Loader2 className="animate-spin" aria-hidden />
-            ) : (
-              <PlayCircle aria-hidden />
-            )}
+            <PlayCircle aria-hidden />
             Iniciar trabajo
+            {startJob.isPending ? <PendingBar /> : null}
           </Button>
         ) : null}
 
@@ -234,6 +260,7 @@ function JobView({ job }: { job: MaintenanceJob }) {
             <Button
               className="mt-3 h-12 w-full"
               disabled={completeJob.isPending}
+              aria-busy={completeJob.isPending || undefined}
               onClick={() =>
                 completeJob.mutate(
                   { id: job.id, completionNotes: notes.trim() || undefined },
@@ -249,12 +276,9 @@ function JobView({ job }: { job: MaintenanceJob }) {
                 )
               }
             >
-              {completeJob.isPending ? (
-                <Loader2 className="animate-spin" aria-hidden />
-              ) : (
-                <CheckCircle2 aria-hidden />
-              )}
+              <CheckCircle2 aria-hidden />
               Marcar como finalizada
+              {completeJob.isPending ? <PendingBar /> : null}
             </Button>
           </section>
         ) : null}

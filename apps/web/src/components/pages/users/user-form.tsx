@@ -1,7 +1,6 @@
 "use client";
 
 import { useForm } from "react-hook-form";
-import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DialogBody, DialogFooter } from "@/components/ui/dialog";
 import { UserFormFields, type UserFormValues } from "./user-form-fields";
@@ -51,8 +50,7 @@ export function UserForm({
         <Button
           type="submit"
           disabled={isPending}
-          icon={isPending ? Loader2 : undefined}
-          iconClassName={isPending ? "animate-spin" : undefined}
+          loading={isPending}
         >
           {isPending
             ? "Guardando..."

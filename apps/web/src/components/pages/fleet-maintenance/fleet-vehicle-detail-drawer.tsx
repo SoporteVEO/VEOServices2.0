@@ -5,7 +5,6 @@ import {
   Archive,
   CalendarClock,
   Gauge,
-  Loader2,
   Palette,
   Pencil,
   Plus,
@@ -30,6 +29,7 @@ import { Badge } from "@/components/primitives/ui/badge";
 import { Button as PrimitiveButton } from "@/components/primitives/ui/button";
 import { ScrollArea } from "@/components/primitives/ui/scroll-area";
 import { Button } from "@/components/ui/button";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import {
   Drawer,
   DrawerContent,
@@ -38,6 +38,7 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from "@/components/ui/drawer";
+import { DetailPanelSkeleton } from "@/components/ui/skeletons";
 import { formatBriloShortDate } from "@/lib/format";
 import { personName } from "@/components/pages/maintenance/maintenance-const";
 import { formatCost, formatKm, vehicleName } from "./fleet-const";
@@ -91,11 +92,7 @@ function DrawerBody({
     useState<FleetMaintenance | null>(null);
 
   if (isLoading) {
-    return (
-      <div className="flex flex-1 items-center justify-center text-muted-foreground">
-        <Loader2 className="size-6 animate-spin" aria-hidden />
-      </div>
-    );
+    return <DetailPanelSkeleton sections={2} />;
   }
 
   if (isError || !vehicle) {
@@ -269,6 +266,7 @@ function VehicleActions({
   const updateVehicle = useUpdateFleetVehicle();
   const deleteVehicle = useDeleteFleetVehicle();
   const isBusy = updateVehicle.isPending || deleteVehicle.isPending;
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
 
   function toggleArchived() {
     updateVehicle.mutate(
@@ -289,12 +287,12 @@ function VehicleActions({
   }
 
   function handleDelete() {
-    if (!confirm(`¿Eliminar el vehículo ${vehicle.plate}?`)) return;
     deleteVehicle.mutate(
       { id: vehicle.id },
       {
         onSuccess: () => {
           toast.success("Vehículo eliminado.");
+          setConfirmDeleteOpen(false);
           onDeleted();
         },
         onError: (error) =>
@@ -319,7 +317,7 @@ function VehicleActions({
           sizeVariant="sm"
           icon={Trash2}
           disabled={isBusy}
-          onClick={handleDelete}
+          onClick={() => setConfirmDeleteOpen(true)}
         >
           Eliminar
         </Button>
@@ -338,6 +336,15 @@ function VehicleActions({
       <Button sizeVariant="sm" icon={Pencil} onClick={onEdit}>
         Editar
       </Button>
+
+      <ConfirmDialog
+        open={confirmDeleteOpen}
+        onOpenChange={setConfirmDeleteOpen}
+        title={`¿Eliminar el vehículo ${vehicle.plate}?`}
+        description="Esta acción no se puede deshacer."
+        pending={deleteVehicle.isPending}
+        onConfirm={handleDelete}
+      />
     </div>
   );
 }

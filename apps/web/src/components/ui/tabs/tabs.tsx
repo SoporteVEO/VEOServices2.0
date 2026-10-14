@@ -22,7 +22,7 @@ function TabsList({
 }: React.ComponentProps<typeof PrimitiveTabsList>) {
   return (
     <PrimitiveTabsList
-      className={cn("hover:text-accent-foreground", className)}
+      className={className}
       {...props}
     />
   );
@@ -34,7 +34,7 @@ function TabsTrigger({
 }: React.ComponentProps<typeof PrimitiveTabsTrigger>) {
   return (
     <PrimitiveTabsTrigger
-      className={cn("px-6 py-1 cursor-pointer", className)}
+      className={cn("cursor-pointer px-4", className)}
       {...props}
     />
   );
@@ -45,7 +45,7 @@ function TabsContent({
   ...props
 }: React.ComponentProps<typeof PrimitiveTabsContent>) {
   return (
-    <PrimitiveTabsContent className={cn("px-1 py-2", className)} {...props} />
+    <PrimitiveTabsContent className={cn("py-3", className)} {...props} />
   );
 }
 

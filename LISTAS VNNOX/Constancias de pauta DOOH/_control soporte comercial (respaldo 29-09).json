@@ -1,0 +1,20 @@
+{
+ "rentabilizadas": [
+  "OP|xzbatlaye04af",
+  "OP|xwe9tc04rypsh"
+ ],
+ "leidas": [],
+ "validadas": [],
+ "excel": {
+  "OP|xzbatlaye04af": {
+   "n": 229,
+   "fila": 231,
+   "ts": "2026-09-28T22:56:17.099Z"
+  },
+  "OP|xwe9tc04rypsh": {
+   "n": 246,
+   "fila": 248,
+   "ts": "2026-09-28T22:56:33.392Z"
+  }
+ }
+}

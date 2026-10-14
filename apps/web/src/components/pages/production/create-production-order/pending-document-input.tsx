@@ -37,11 +37,11 @@ export function PendingDocumentInput({ title, file, disabled, onChange }: Props)
         <FileText className="size-4 shrink-0 text-muted-foreground" aria-hidden />
         <p className="min-w-0 flex-1 truncate text-xs font-medium">{title}</p>
         {file ? (
-          <span className="rounded-full bg-emerald-500/15 px-1.5 py-0.5 text-[10px] font-medium text-emerald-700 dark:text-emerald-400">
+          <span className="bg-emerald-500/15 px-1.5 py-0.5 text-[10px] font-medium text-emerald-700 dark:text-emerald-400">
             Listo
           </span>
         ) : (
-          <span className="rounded-full bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
+          <span className="bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
             Opcional
           </span>
         )}

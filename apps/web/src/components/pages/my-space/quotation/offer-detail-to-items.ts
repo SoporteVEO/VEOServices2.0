@@ -45,7 +45,7 @@ export function offerDetailItemsToOfferItems(
         type: "DIGITAL_BILLBOARD",
         digitalBillboardId: item.digitalBillboardId ?? "",
         billboardCode: item.billboardCode,
-        name: item.description ?? item.billboardCode ?? "Valla digital",
+        name: item.description ?? item.billboardCode ?? "Pantalla",
         address: item.address,
         quantity: item.quantity,
         unitPrice: round2(item.rentalPrice / Math.max(1, days)),

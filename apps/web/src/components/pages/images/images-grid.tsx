@@ -1,11 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { ImagePlus, Loader2 } from "lucide-react";
+import { ImagePlus } from "lucide-react";
 import { toast } from "sonner";
 import type { S3Image } from "@/api/s3-images/s3-images.get";
 import { useDeleteS3Image } from "@/api/s3-images/s3-images.post";
 import { Skeleton } from "@/components/primitives/ui/skeleton";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { useIntersectionObserver } from "@/hooks/use-intersection-observer";
 import { EditImageCodeDialog } from "./edit-image-code-dialog";
 import { ImageCard } from "./image-card";
@@ -55,11 +56,13 @@ export function ImagesGrid({
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [previewImage, setPreviewImage] = useState<S3Image | null>(null);
   const [editingImage, setEditingImage] = useState<S3Image | null>(null);
+  const [imageToDelete, setImageToDelete] = useState<S3Image | null>(null);
 
   const deleteMutation = useDeleteS3Image({
     onSuccess: () => {
       toast.success("Imagen eliminada.");
       setDeletingId(null);
+      setImageToDelete(null);
     },
     onError: (error) => {
       toast.error(error.message || "No se pudo eliminar la imagen.");
@@ -67,10 +70,10 @@ export function ImagesGrid({
     },
   });
 
-  function handleDelete(image: S3Image) {
-    if (!confirm("¿Seguro que deseas eliminar esta imagen?")) return;
-    setDeletingId(image.id);
-    deleteMutation.mutate(image.id);
+  function handleConfirmDelete() {
+    if (!imageToDelete) return;
+    setDeletingId(imageToDelete.id);
+    deleteMutation.mutate(imageToDelete.id);
   }
 
   const sentinelRef = useIntersectionObserver<HTMLDivElement>(
@@ -92,7 +95,7 @@ export function ImagesGrid({
   if (images.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center gap-3 rounded-xl border border-dashed bg-muted/20 py-20 text-center">
-        <div className="rounded-full bg-background p-3 text-muted-foreground ring-1 ring-foreground/10">
+        <div className="bg-background p-3 text-muted-foreground ring-1 ring-foreground/10">
           <ImagePlus className="size-6" aria-hidden />
         </div>
         <p className="max-w-sm text-sm text-muted-foreground">{emptyMessage}</p>
@@ -109,7 +112,7 @@ export function ImagesGrid({
             image={image}
             onPreview={setPreviewImage}
             onEdit={setEditingImage}
-            onDelete={handleDelete}
+            onDelete={setImageToDelete}
             isDeleting={deletingId === image.id}
             priority={index < PRIORITY_COUNT}
           />
@@ -117,17 +120,13 @@ export function ImagesGrid({
       </div>
 
       {hasNextPage ? (
-        <div
-          ref={sentinelRef}
-          className="flex items-center justify-center py-6 text-sm text-muted-foreground"
-        >
+        <div ref={sentinelRef} className="pt-3 pb-6 text-sm text-muted-foreground">
           {isFetchingNextPage ? (
-            <span className="inline-flex items-center gap-2">
-              <Loader2 className="size-4 animate-spin" />
-              Cargando más imágenes…
-            </span>
+            <div role="status" aria-label="Cargando más imágenes…">
+              <GridSkeleton count={5} />
+            </div>
           ) : (
-            <span className="opacity-0">cargar más</span>
+            <span className="block py-3 text-center opacity-0">cargar más</span>
           )}
         </div>
       ) : images.length > 0 ? null : null}
@@ -146,6 +145,17 @@ export function ImagesGrid({
         onOpenChange={(open) => {
           if (!open) setEditingImage(null);
         }}
+      />
+
+      <ConfirmDialog
+        open={imageToDelete !== null}
+        onOpenChange={(open) => {
+          if (!open) setImageToDelete(null);
+        }}
+        title="¿Eliminar esta imagen?"
+        description="La imagen se eliminará permanentemente."
+        pending={deleteMutation.isPending}
+        onConfirm={handleConfirmDelete}
       />
     </>
   );

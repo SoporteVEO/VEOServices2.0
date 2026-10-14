@@ -1,0 +1,32 @@
+{
+ "id": "xbqiv6gbyy6sw",
+ "corr": "300926-02",
+ "rev": 1,
+ "ts": "2026-09-30T16:10:59.609Z",
+ "tsCambio": "2026-09-30T16:10:59.609Z",
+ "autor": "Soporte Comercial",
+ "ejecutivo": "Marta Descamps",
+ "fechaIngreso": "2026-09-30",
+ "agencia": true,
+ "nombreAgencia": "ECO COMUNICACION",
+ "marca": "TIGO",
+ "campana": "POSPAGO RETAIL",
+ "formato": "Animado",
+ "inicio": "2026-10-01",
+ "fin": "2026-10-03",
+ "indicaciones": "01, 02, 03,  MATERIALES DE ESTAS FECHAS APROBADOS Y EN NUESTRO PODER.REDMI NOTE 15 + SAMSUNG GALAXY A17 + GALAXY \nContratación dura 15 días todo el mes de octubre repartirán las fechas según convenga.",
+ "enlaces": [],
+ "pantallas": [
+  {
+   "pid": "juanpa",
+   "frec": 450,
+   "mes": 67.5,
+   "neg": "",
+   "spotMano": false,
+   "spot": 0.05
+  }
+ ],
+ "valorTotal": 67.5,
+ "valorMensual": 67.5,
+ "archivo": "OPN 300926-02 TIGO.json"
+}

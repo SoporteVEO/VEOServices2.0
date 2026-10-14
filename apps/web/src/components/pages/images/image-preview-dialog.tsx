@@ -6,7 +6,6 @@ import {
   Calendar,
   Check,
   Download,
-  Loader2,
   Pencil,
   Tag,
   Trash2,
@@ -33,6 +32,7 @@ import {
   DialogTitle,
 } from "@/components/primitives/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import {
   Select,
   SelectContent,
@@ -135,10 +135,7 @@ function ImagePreviewBody({
     updateMutation.mutate({ id: image.id, ...input });
   }
 
-  function handleDelete() {
-    if (!confirm("¿Seguro que deseas eliminar esta imagen?")) return;
-    deleteMutation.mutate(image.id);
-  }
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
 
   return (
     <div className="flex min-h-0 flex-1 flex-col bg-background md:flex-row">
@@ -221,9 +218,9 @@ function ImagePreviewBody({
           <Button
             variant="destructive"
             sizeVariant="lg"
-            icon={deleteMutation.isPending ? Loader2 : Trash2}
-            iconClassName={deleteMutation.isPending ? "animate-spin" : ""}
-            onClick={handleDelete}
+            icon={Trash2}
+            loading={deleteMutation.isPending}
+            onClick={() => setConfirmDeleteOpen(true)}
             disabled={deleteMutation.isPending}
             className="w-full justify-center"
           >
@@ -231,6 +228,15 @@ function ImagePreviewBody({
           </Button>
         </div>
       </aside>
+
+      <ConfirmDialog
+        open={confirmDeleteOpen}
+        onOpenChange={setConfirmDeleteOpen}
+        title="¿Eliminar esta imagen?"
+        description="La imagen se eliminará permanentemente."
+        pending={deleteMutation.isPending}
+        onConfirm={() => deleteMutation.mutate(image.id)}
+      />
     </div>
   );
 }
@@ -286,8 +292,8 @@ function CodeSection({ image, isSaving, onSave }: CodeSectionProps) {
             <Button
               type="button"
               sizeVariant="md"
-              icon={isSaving ? Loader2 : Check}
-              iconClassName={isSaving ? "animate-spin" : ""}
+              icon={Check}
+              loading={isSaving}
               onClick={handleSave}
               disabled={isSaving}
               className="flex-1 justify-center"
@@ -384,8 +390,8 @@ function TypeSection({ image, isSaving, onSave }: TypeSectionProps) {
             <Button
               type="button"
               sizeVariant="md"
-              icon={isSaving ? Loader2 : Check}
-              iconClassName={isSaving ? "animate-spin" : ""}
+              icon={Check}
+              loading={isSaving}
               onClick={handleSave}
               disabled={isSaving}
               className="flex-1 justify-center"

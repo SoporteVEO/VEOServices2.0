@@ -71,7 +71,7 @@ export default function DashboardPage() {
 
   return (
     <div className="flex flex-1 flex-col gap-4">
-      <header className="flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center">
+      <header className="flex flex-col items-start justify-between gap-3 @xl/main:flex-row @xl/main:items-center">
         <div className="flex flex-col gap-1">
           <h1 className="text-2xl font-semibold tracking-tight">
             Resumen de operaciones
@@ -81,7 +81,7 @@ export default function DashboardPage() {
             {selectedCostCenterLabel}
           </p>
         </div>
-        <div className="flex flex-wrap items-center justify-end gap-2 sm:ml-auto">
+        <div className="flex flex-wrap items-center justify-end gap-2 @xl/main:ml-auto">
           <Combobox
             triggerClassName="w-64"
             placeholder="Todos los centros de costos"
@@ -110,8 +110,8 @@ export default function DashboardPage() {
 
       <DashboardYoyChart yoy={data?.yoyTrend ?? []} isLoading={isLoading} />
 
-      <div className="grid gap-4 lg:grid-cols-3">
-        <div className="lg:col-span-2">
+      <div className="grid gap-4 @5xl/main:grid-cols-3">
+        <div className="@5xl/main:col-span-2">
           <DashboardTrendChart
             trend={data?.monthlyTrend ?? []}
             isLoading={isLoading}
@@ -120,7 +120,7 @@ export default function DashboardPage() {
         <DashboardAvailabilityDonut kpis={data?.kpis} isLoading={isLoading} />
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-2">
+      <div className="grid gap-4 @5xl/main:grid-cols-2">
         <DashboardTopCustomers
           customers={data?.topCustomers ?? []}
           isLoading={isLoading}

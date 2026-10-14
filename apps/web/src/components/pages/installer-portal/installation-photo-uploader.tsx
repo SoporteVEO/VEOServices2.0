@@ -1,10 +1,12 @@
 "use client";
 
-import { Camera, ImagePlus, Images, Loader2, Trash2 } from "lucide-react";
+import { Camera, ImagePlus, Images, Trash2 } from "lucide-react";
 import Image from "next/image";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/primitives/ui/button";
+import { PendingBar } from "@/components/ui/button";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { blobToBase64, compressImage } from "@/lib/compress-image";
 
 const MAX_IMAGE_SIZE = 25 * 1024 * 1024;
@@ -40,6 +42,8 @@ export function InstallationPhotoUploader({
   const inputRef = useRef<HTMLInputElement>(null);
   const galleryInputRef = useRef<HTMLInputElement>(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
 
   async function handleFileSelected(file: File | null | undefined) {
     if (!file) return;
@@ -71,14 +75,17 @@ export function InstallationPhotoUploader({
 
   async function handleDelete() {
     if (!onDelete) return;
-    if (!confirm(`¿Eliminar "${title}"?`)) return;
+    setIsDeleting(true);
     try {
       await onDelete();
       toast.success("Imagen eliminada.");
+      setConfirmDeleteOpen(false);
     } catch (err) {
       toast.error(
         err instanceof Error ? err.message : "No se pudo eliminar la imagen.",
       );
+    } finally {
+      setIsDeleting(false);
     }
   }
 
@@ -134,14 +141,12 @@ export function InstallationPhotoUploader({
           type="button"
           className="h-11 flex-1"
           disabled={busy}
+          aria-busy={busy || undefined}
           onClick={() => inputRef.current?.click()}
         >
-          {busy ? (
-            <Loader2 className="animate-spin" aria-hidden />
-          ) : (
-            <Camera aria-hidden />
-          )}
+          <Camera aria-hidden />
           {buttonLabel}
+          {busy ? <PendingBar /> : null}
         </Button>
 
         <Button
@@ -161,13 +166,22 @@ export function InstallationPhotoUploader({
             variant="outline"
             className="h-11 text-destructive hover:text-destructive"
             disabled={busy}
-            onClick={() => void handleDelete()}
+            onClick={() => setConfirmDeleteOpen(true)}
           >
             <Trash2 aria-hidden />
             Eliminar
           </Button>
         ) : null}
       </div>
+
+      <ConfirmDialog
+        open={confirmDeleteOpen}
+        onOpenChange={setConfirmDeleteOpen}
+        title={`¿Eliminar "${title}"?`}
+        description="La foto se eliminará y tendrás que tomarla de nuevo."
+        pending={isDeleting}
+        onConfirm={() => void handleDelete()}
+      />
     </section>
   );
 }

@@ -8,7 +8,6 @@ import {
   Clock,
   Copy,
   type LucideIcon,
-  Loader2,
   LogOut,
   Mail,
   Trash2,
@@ -226,13 +225,16 @@ function UserDetailContent({
         </div>
       </DrawerHeader>
 
-      <ScrollArea className="min-h-0 flex-1">
-        <div className="flex flex-col gap-6 p-4">
+      <ScrollArea className="min-h-0 flex-1 [&_[data-slot=scroll-area-viewport]>div]:block!">
+        <div className="flex min-w-0 flex-col gap-6 p-4">
           <MetricsRow user={user} onCopyId={handleCopyId} />
 
           <Separator />
 
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          <form
+            onSubmit={handleSubmit(onSubmit)}
+            className="min-w-0 space-y-4"
+          >
             <SectionHeader
               title="Información del usuario"
               description="Edita los datos básicos, contraseña, rol y permisos."
@@ -250,10 +252,7 @@ function UserDetailContent({
               <ActionButton
                 type="submit"
                 disabled={!isDirty || updateMutation.isPending}
-                icon={updateMutation.isPending ? Loader2 : undefined}
-                iconClassName={
-                  updateMutation.isPending ? "animate-spin" : undefined
-                }
+                loading={updateMutation.isPending}
               >
                 {updateMutation.isPending ? "Guardando..." : "Guardar cambios"}
               </ActionButton>
@@ -388,8 +387,7 @@ function DangerZone({
             variant={user.disabled ? "outline" : "destructive"}
             onClick={() => onToggleDisabled(!user.disabled)}
             disabled={isUpdating}
-            icon={isUpdating ? Loader2 : undefined}
-            iconClassName={isUpdating ? "animate-spin" : undefined}
+            loading={isUpdating}
           >
             {user.disabled ? "Habilitar" : "Deshabilitar"}
           </ActionButton>
@@ -406,8 +404,7 @@ function DangerZone({
             variant="outline"
             onClick={onForceLogout}
             disabled={isLoggingOut}
-            icon={isLoggingOut ? Loader2 : undefined}
-            iconClassName={isLoggingOut ? "animate-spin" : undefined}
+            loading={isLoggingOut}
           >
             Cerrar sesiones
           </ActionButton>

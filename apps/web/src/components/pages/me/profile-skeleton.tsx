@@ -13,7 +13,7 @@ export function ProfileSkeleton() {
       <Card>
         <CardContent>
           <div className="flex items-center gap-4">
-            <Skeleton className="size-16 rounded-full" />
+            <Skeleton className="size-16" />
             <div className="flex flex-1 flex-col gap-2">
               <Skeleton className="h-5 w-48" />
               <Skeleton className="h-4 w-64" />
@@ -23,7 +23,7 @@ export function ProfileSkeleton() {
         </CardContent>
       </Card>
 
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 @5xl/main:grid-cols-2">
         <Card>
           <CardHeader>
             <Skeleton className="h-5 w-40" />

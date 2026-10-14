@@ -130,10 +130,10 @@ export function OffersAnalyticsCharts({
 }: OffersAnalyticsChartsProps) {
   if (isLoading || !overview) {
     return (
-      <div className="grid gap-4 lg:grid-cols-3">
-        <Skeleton className="h-[320px] w-full lg:col-span-2" />
+      <div className="grid gap-4 @5xl/main:grid-cols-3">
+        <Skeleton className="h-[320px] w-full @5xl/main:col-span-2" />
         <Skeleton className="h-[320px] w-full" />
-        <Skeleton className="h-[320px] w-full lg:col-span-2" />
+        <Skeleton className="h-[320px] w-full @5xl/main:col-span-2" />
         <Skeleton className="h-[320px] w-full" />
       </div>
     );
@@ -142,7 +142,7 @@ export function OffersAnalyticsCharts({
   const { daily, monthly, byStatus, byUser } = overview;
 
   return (
-    <div className="grid gap-4 lg:grid-cols-3">
+    <div className="grid gap-4 @5xl/main:grid-cols-3">
       <DailyOffersCard data={daily} />
       <StatusDonutCard overview={overview} />
 
@@ -159,7 +159,7 @@ function DailyOffersCard({ data }: { data: OffersAnalyticsDailyPoint[] }) {
   );
 
   return (
-    <Card size="sm" className="border-border/80 shadow-none lg:col-span-2">
+    <Card size="sm" className="border-border/80 shadow-none @5xl/main:col-span-2">
       <CardHeader>
         <div className="flex items-start justify-between gap-2">
           <div className="flex flex-col gap-0.5">
@@ -206,7 +206,7 @@ function MonthlyAmountCard({
   );
 
   return (
-    <Card size="sm" className="border-border/80 shadow-none lg:col-span-2">
+    <Card size="sm" className="border-border/80 shadow-none @5xl/main:col-span-2">
       <CardHeader>
         <div className="flex items-start justify-between gap-2">
           <div className="flex flex-col gap-0.5">
@@ -315,7 +315,7 @@ function DonutLegend({
   return (
     <div className="flex flex-col items-center gap-0.5 rounded-md border bg-accent/10 px-2 py-1.5">
       <span className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
-        <span className={cn("size-2 rounded-full", colorClassName)} />
+        <span className={cn("size-2", colorClassName)} />
         {label}
       </span>
       <span className="text-sm font-semibold tabular-nums">

@@ -16,6 +16,7 @@ type UsersTableProps = {
   users: User[];
   isLoading?: boolean;
   onRowClick?: (user: User) => void;
+  emptyMessage?: string;
 };
 
 const columns: ColumnDef<User>[] = [
@@ -101,6 +102,7 @@ export function UsersTable({
   users,
   isLoading = false,
   onRowClick,
+  emptyMessage = "No hay usuarios registrados.",
 }: UsersTableProps) {
   return (
     <DataTable
@@ -109,7 +111,7 @@ export function UsersTable({
       isLoading={isLoading}
       skeletonRowCount={5}
       onRowClick={onRowClick}
-      emptyMessage="No hay usuarios registrados."
+      emptyMessage={emptyMessage}
     />
   );
 }

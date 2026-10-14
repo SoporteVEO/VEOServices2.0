@@ -52,7 +52,10 @@ export type SubRole =
   | "HR"
   | "USERS_MANAGEMENT"
   | "PRODUCTION"
-  | "MANTENIMIENTO";
+  | "MANTENIMIENTO"
+  | "PANTALLAS_PRODUCCION"
+  | "PANTALLAS_COMERCIAL"
+  | "DESARROLLADOR";
 
 export type User = {
   id: string;

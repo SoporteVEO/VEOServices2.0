@@ -453,7 +453,7 @@ function DigitalItemsTable({ items }: { items: DigitalOfferItem[] }) {
   );
 
   return (
-    <ItemsSection title="VALLAS DIGITALES">
+    <ItemsSection title="PANTALLAS">
       <Table
         variant="compact"
         zebraStripe
@@ -513,7 +513,7 @@ function DigitalItemsTable({ items }: { items: DigitalOfferItem[] }) {
         </TableBody>
         <TableFooter>
           <TotalRowFooter
-            label="Subtotal vallas digitales"
+            label="Subtotal pantallas"
             amount={total}
             spanBefore="84%"
             width={DIGITAL_COL_W.total}

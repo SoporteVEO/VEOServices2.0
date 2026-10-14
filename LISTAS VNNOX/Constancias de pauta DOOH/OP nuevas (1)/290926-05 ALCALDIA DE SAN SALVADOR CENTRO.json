@@ -1,0 +1,88 @@
+{
+ "id": "x743fds5nl3p6",
+ "corr": "290926-05",
+ "rev": 1,
+ "ts": "2026-09-29T21:21:04.477Z",
+ "tsCambio": "2026-09-29T21:21:04.477Z",
+ "autor": "Soporte Comercial",
+ "ejecutivo": "Marta Descamps",
+ "fechaIngreso": "2026-09-29",
+ "agencia": false,
+ "nombreAgencia": "",
+ "marca": "ALCALDIA DE SAN SALVADOR CENTRO",
+ "campana": "AMNISTIA",
+ "formato": "Animado",
+ "inicio": "2026-09-29",
+ "fin": "2026-11-27",
+ "indicaciones": "",
+ "enlaces": [],
+ "pantallas": [
+  {
+   "pid": "sdm",
+   "frec": 300,
+   "mes": null,
+   "neg": "donacion",
+   "spotMano": false,
+   "spot": null
+  },
+  {
+   "pid": "heroe",
+   "frec": 300,
+   "mes": null,
+   "neg": "donacion",
+   "spotMano": false,
+   "spot": null
+  },
+  {
+   "pid": "panam",
+   "frec": 300,
+   "mes": null,
+   "neg": "donacion",
+   "spotMano": false,
+   "spot": null
+  },
+  {
+   "pid": "proce",
+   "frec": 300,
+   "mes": null,
+   "neg": "donacion",
+   "spotMano": false,
+   "spot": null
+  },
+  {
+   "pid": "paseo",
+   "frec": 300,
+   "mes": null,
+   "neg": "donacion",
+   "spotMano": false,
+   "spot": null
+  },
+  {
+   "pid": "jerusa",
+   "frec": 300,
+   "mes": null,
+   "neg": "donacion",
+   "spotMano": false,
+   "spot": null
+  },
+  {
+   "pid": "benito",
+   "frec": 300,
+   "mes": null,
+   "neg": "donacion",
+   "spotMano": false,
+   "spot": null
+  },
+  {
+   "pid": "juanpa",
+   "frec": 300,
+   "mes": null,
+   "neg": "donacion",
+   "spotMano": false,
+   "spot": null
+  }
+ ],
+ "valorTotal": 0,
+ "valorMensual": 0,
+ "archivo": "290926-05 ALCALDIA DE SAN SALVADOR CENTRO.json"
+}

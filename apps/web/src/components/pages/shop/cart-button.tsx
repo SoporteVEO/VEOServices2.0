@@ -34,13 +34,13 @@ export function CartButton() {
       <Button
         variant="outline"
         asChild
-        className="relative h-10 rounded-full border-border/40 bg-background/50 px-4 shadow-sm backdrop-blur-sm transition-all hover:bg-accent/50"
+        className="relative h-10 border-border/40 bg-background/50 px-4 shadow-sm backdrop-blur-sm transition-all hover:bg-accent/50"
       >
         <Link href="/shop/cart">
           <ShoppingBag className="mr-2 size-4" />
           <span className="font-medium">Carrito</span>
           {count > 0 && (
-            <Badge className="absolute -right-1.5 -top-1.5 flex size-5.5 items-center justify-center rounded-full border-2 border-background p-0 text-[10px] font-bold shadow-sm">
+            <Badge className="absolute -right-1.5 -top-1.5 flex size-5.5 items-center justify-center border-2 border-background p-0 text-[10px] font-bold shadow-sm">
               {count}
             </Badge>
           )}

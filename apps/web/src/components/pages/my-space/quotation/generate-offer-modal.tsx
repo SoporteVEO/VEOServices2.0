@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
-import { Download, Loader2 } from "lucide-react";
+import { Download } from "lucide-react";
 import { toast } from "sonner";
 import { pdf } from "@react-pdf/renderer";
 import type { Client } from "@/api/clients/clients.get";
@@ -256,7 +256,7 @@ export function GenerateOfferModal({
       (item) => !item.startDate || !item.endDate,
     );
     if (digitalMissingDates) {
-      return `Selecciona la duración de la valla digital ${digitalMissingDates.billboardCode ?? digitalMissingDates.name}.`;
+      return `Selecciona la duración de la pantalla ${digitalMissingDates.billboardCode ?? digitalMissingDates.name}.`;
     }
     const miscMissingDescription = miscItems.find(
       (item) => !item.description.trim(),
@@ -352,7 +352,7 @@ export function GenerateOfferModal({
           <DialogDescription>
             {isEditing
               ? "Ajusta los datos del cliente o los ítems. Se regenerará el PDF y se guardará el historial del cambio."
-              : "Agrega vallas estáticas, digitales o conceptos adicionales y descarga la cotización en PDF."}
+              : "Agrega vallas estáticas, pantallas o conceptos adicionales y descarga la cotización en PDF."}
           </DialogDescription>
         </DialogHeader>
 
@@ -401,8 +401,8 @@ export function GenerateOfferModal({
             <Button
               type="submit"
               disabled={isSubmitting || allItems.length === 0}
-              icon={isSubmitting ? Loader2 : Download}
-              iconClassName={isSubmitting ? "animate-spin" : undefined}
+              icon={Download}
+              loading={isSubmitting}
             >
               {isSubmitting
                 ? "Guardando..."

@@ -1,8 +1,9 @@
 "use client";
 
-import { Loader2 } from "lucide-react";
 import { useMyInstallationTasks } from "@/api/installations/installations.get";
 import { useMyMaintenanceJobs } from "@/api/maintenance/maintenance.get";
+import { Skeleton } from "@/components/primitives/ui/skeleton";
+import { ListSkeleton } from "@/components/ui/skeletons";
 import { InstallationTaskCard } from "@/components/pages/installer-portal/installation-task-card";
 import { usePortalSession } from "@/components/pages/installer-portal/use-portal-session";
 import { MaintenanceJobCard } from "@/components/pages/maintenance-portal/maintenance-job-card";
@@ -43,8 +44,9 @@ export function FieldOrderList() {
       subtitle="Trabajos asignados a tu cuenta"
     >
       {isLoading ? (
-        <div className="flex items-center justify-center py-20 text-muted-foreground">
-          <Loader2 className="size-6 animate-spin" aria-hidden />
+        <div className="flex flex-col gap-2">
+          <Skeleton className="h-3 w-28" />
+          <ListSkeleton rows={4} variant="card" />
         </div>
       ) : isError ? (
         <p className="rounded-xl border bg-card p-4 text-sm text-muted-foreground">

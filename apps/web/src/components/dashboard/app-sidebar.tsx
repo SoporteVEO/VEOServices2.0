@@ -15,6 +15,7 @@ import {
   SidebarMenuItem,
   SidebarRail,
 } from "@/components/primitives/ui/sidebar";
+import { BrandLogo } from "@/components/ui/brand-logo";
 import { UserCard } from "@/components/ui/user-card";
 import { AppSidebarSubmenu } from "./app-sidebar-submenu";
 import {
@@ -85,31 +86,39 @@ export function AppSidebar() {
   }
 
   return (
-    <Sidebar collapsible="icon" variant="inset">
-      <SidebarHeader className="hover:bg-sidebar-accent hover:text-sidebar-accent-foreground rounded-lg">
+    <Sidebar collapsible="icon">
+      <SidebarHeader className="h-14 justify-center border-b border-sidebar-border px-3 group-data-[collapsible=icon]:px-2">
         <Link
           href="/dashboard"
-          className="flex items-center gap-2 rounded-lg text-left outline-none focus-visible:ring-2 transition-all duration-200 will-change-transform"
+          aria-label="VEO Services"
+          className="flex h-9 items-center gap-2.5 px-1.5 text-left outline-none ring-sidebar-ring focus-visible:ring-2 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0"
         >
-          <span className="flex size-8 items-center justify-center rounded-md bg-sidebar-primary text-xs font-semibold text-sidebar-primary-foreground">
-            V
-          </span>
-          <span className="grid flex-1 text-start text-sm leading-tight group-data-[collapsible=icon]:hidden">
-            <span className="truncate font-semibold tracking-tight">VEO</span>
-            <span className="truncate text-xs text-muted-foreground">
-              Services
-            </span>
+          <BrandLogo
+            variant="isotipo"
+            priority
+            className="hidden group-data-[collapsible=icon]:block"
+          />
+          <BrandLogo
+            priority
+            onDark
+            className="h-5 group-data-[collapsible=icon]:hidden"
+          />
+          <span className="pt-1 text-xs font-medium text-sidebar-muted-foreground group-data-[collapsible=icon]:hidden">
+            Services
           </span>
         </Link>
       </SidebarHeader>
-      <SidebarContent>
+      <SidebarContent className="py-2">
         {visibleGroups.map((group) => (
-          <SidebarGroup key={group.label || group.items[0]?.href}>
+          <SidebarGroup
+            key={group.label || group.items[0]?.href}
+            className="py-1.5"
+          >
             {group.label ? (
               <SidebarGroupLabel>{group.label}</SidebarGroupLabel>
             ) : null}
             <SidebarGroupContent>
-              <SidebarMenu className="flex flex-col gap-2">
+              <SidebarMenu className="flex flex-col gap-0.5">
                 {group.items.map((item) =>
                   item.children ? (
                     <AppSidebarSubmenu
@@ -122,7 +131,6 @@ export function AppSidebar() {
                       <SidebarMenuButton
                         asChild
                         isActive={pathname === item.href}
-                        className="data-[active=true]:bg-accent data-[active=true]:text-accent-foreground data-[active=false]:text-muted-foreground data-[active=false]:hover:bg-accent data-[active=false]:hover:text-accent-foreground"
                         tooltip={{
                           children: item.title,
                           side: "right",
@@ -130,10 +138,8 @@ export function AppSidebar() {
                         }}
                       >
                         <Link href={item.href}>
-                          <item.icon className="size-4" />
-                          <span className="text-sm font-medium">
-                            {item.title}
-                          </span>
+                          <item.icon />
+                          <span>{item.title}</span>
                         </Link>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
@@ -144,7 +150,7 @@ export function AppSidebar() {
           </SidebarGroup>
         ))}
       </SidebarContent>
-      <SidebarFooter className="border-t border-sidebar-border">
+      <SidebarFooter className="border-t border-sidebar-border p-2">
         <UserCard
           name={userName}
           subtitle={userEmail}

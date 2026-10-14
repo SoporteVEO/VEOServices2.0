@@ -104,7 +104,7 @@ export function PortalNavSheet() {
         <nav className="flex flex-col gap-4 overflow-y-auto p-3">
           {sections.map((section) => (
             <div key={section.label} className="flex flex-col gap-1">
-              <p className="px-2 text-xs font-medium text-muted-foreground">
+              <p className="eyebrow px-2 text-muted-foreground">
                 {section.label}
               </p>
               {section.destinations.map((destination) => {
@@ -118,9 +118,9 @@ export function PortalNavSheet() {
                       href={destination.href}
                       aria-current={isActive ? "page" : undefined}
                       className={cn(
-                        "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
+                        "flex items-center gap-3 border-l-2 border-transparent px-3 py-2.5 text-sm font-medium transition-colors",
                         isActive
-                          ? "bg-accent text-accent-foreground"
+                          ? "border-veo-lime bg-accent font-semibold text-accent-foreground"
                           : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
                       )}
                     >

@@ -45,7 +45,7 @@ function CardTitleWithInfo({
   return (
     <div className={cn("flex w-full min-w-0 items-start gap-2", className)}>
       <CardTitle
-        className={cn("min-w-0 flex-1 text-muted-foreground", titleClassName)}
+        className={cn("min-w-0 flex-1", titleClassName)}
       >
         {children}
       </CardTitle>

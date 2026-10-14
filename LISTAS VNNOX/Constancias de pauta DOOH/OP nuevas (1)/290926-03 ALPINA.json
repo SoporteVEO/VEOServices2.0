@@ -1,0 +1,40 @@
+{
+ "id": "xa0zij27s631f",
+ "corr": "290926-03",
+ "rev": 1,
+ "ts": "2026-09-29T18:21:26.097Z",
+ "tsCambio": "2026-09-29T18:21:26.097Z",
+ "autor": "Soporte Comercial",
+ "ejecutivo": "Marta Descamps",
+ "fechaIngreso": "2026-09-29",
+ "agencia": true,
+ "nombreAgencia": "PROXIMA GROUP / APEX",
+ "marca": "ALPINA",
+ "campana": "ALPINA BEBE",
+ "formato": "Animado",
+ "inicio": "2026-09-29",
+ "fin": "2026-10-28",
+ "indicaciones": "",
+ "enlaces": [],
+ "pantallas": [
+  {
+   "pid": "jerusa",
+   "frec": 450,
+   "mes": 900,
+   "neg": "",
+   "spotMano": false,
+   "spot": 0.06666666666666667
+  },
+  {
+   "pid": "benito",
+   "frec": 450,
+   "mes": 675,
+   "neg": "",
+   "spotMano": false,
+   "spot": 0.05
+  }
+ ],
+ "valorTotal": 1575,
+ "valorMensual": 1575,
+ "archivo": "290926-03 ALPINA.json"
+}

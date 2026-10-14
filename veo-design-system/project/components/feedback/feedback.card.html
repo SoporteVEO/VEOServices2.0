@@ -1,0 +1,19 @@
+<!-- @dsCard group="Components" viewport="700x420" name="Feedback" subtitle="Dialog, Toast, Tooltip" -->
+<!DOCTYPE html><html><head><meta charset="utf-8"><link rel="stylesheet" href="../../styles.css">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="../../_ds_bundle.js"></script>
+<style>body{padding:24px;background:#fff}.row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}.col{display:flex;flex-direction:column;gap:18px}.lab{font:600 12px var(--font-sans);letter-spacing:.08em;text-transform:uppercase;color:var(--veo-gray);width:90px;flex-shrink:0}</style></head><body><div id="root"></div>
+<script type="text/babel">
+const { Dialog, Toast, Tooltip, IconButton, Button, Glyph } = window.VEODesignSystem_0c07b8;
+
+function App(){const [o,setO]=React.useState(false);return <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:24}}>
+<div className="col"><Toast title="Reporte listo">Las exhibiciones de la semana pasada están en el portal.</Toast><Toast tone="danger" title="Pantalla 07 fuera de servicio" onClose={()=>{}}>El equipo está en sitio. El crédito ya está aplicado en su contrato.</Toast><Toast tone="warning" title="Arte pendiente de aprobación"/>
+<div className="row" style={{paddingTop:30}}><Tooltip content="Descargar evidencia"><IconButton label="Descargar" variant="secondary" icon={<Glyph name="download"/>}/></Tooltip><Button size="sm" variant="secondary" onClick={()=>setO('live')}>Abrir diálogo</Button></div></div>
+<div style={{position:'relative',background:'var(--overlay-scrim)',display:'flex',alignItems:'center',justifyContent:'center',padding:18}}>
+<div style={{background:'#fff',boxShadow:'var(--shadow-overlay)',width:'100%'}}><div style={{padding:'24px 24px 0',display:'flex',flexDirection:'column',gap:6}}><span style={{font:'600 12px var(--font-sans)',letterSpacing:'.08em',textTransform:'uppercase',color:'var(--veo-gray)'}}>Reserva</span><span style={{font:'600 24px/1.1 var(--font-display)'}}>Corredor Sur · Unipolar 14</span></div><div style={{padding:24,font:'300 14px/1.5 var(--font-sans)'}}>La estructura queda reservada 48 horas. Le enviamos la propuesta con el número de permiso.</div><div style={{display:'flex',justifyContent:'flex-end',gap:12,padding:'18px 24px',borderTop:'1px solid var(--border-subtle)'}}><Button variant="ghost" size="sm">Cancelar</Button><Button size="sm">Confirmar</Button></div></div></div>
+<Dialog open={o==='live'} title="Reserva" onClose={()=>setO(false)}>La estructura queda reservada 48 horas.</Dialog>
+</div>}
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script></body></html>

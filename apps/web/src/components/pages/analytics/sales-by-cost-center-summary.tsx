@@ -255,7 +255,7 @@ export function SalesByCostCenterSummaryCards({
 
   if (isLoading && !report) {
     return (
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 @xl/main:grid-cols-2 @7xl/main:grid-cols-4">
         {Array.from({ length: 4 }).map((_, i) => (
           <Card key={i}>
             <CardHeader className="pb-2">
@@ -280,7 +280,7 @@ export function SalesByCostCenterSummaryCards({
 
   return (
     <div className="grid grid-cols-1 gap-4">
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 @xl/main:grid-cols-2 @7xl/main:grid-cols-4">
         <StatCard
           title="Total general"
           description="Suma con IVA e impuestos (incluye NDC)"
@@ -313,7 +313,7 @@ export function SalesByCostCenterSummaryCards({
         />
       </div>
 
-      <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 @7xl/main:grid-cols-2">
         <BreakdownCard
           title="Por Centro de Costos"
           description="Distribución por centro de costos a nivel de línea"

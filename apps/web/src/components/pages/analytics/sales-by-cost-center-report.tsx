@@ -186,14 +186,14 @@ export function SalesByCostCenterReport({
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center justify-between">
+      <div className="flex flex-col gap-3 @xl/main:flex-row @xl/main:flex-wrap @xl/main:items-center justify-between">
         {showHeader ? (
           <div>
             <h2 className="text-lg font-semibold">{title}</h2>
             <p className="text-sm text-muted-foreground">{description}</p>
           </div>
         ) : null}
-        <div className="flex flex-wrap items-center justify-end gap-2 sm:ml-auto">
+        <div className="flex flex-wrap items-center justify-end gap-2 @xl/main:ml-auto">
           <Combobox
             triggerClassName="w-64"
             placeholder="Todos los centros de costos"
@@ -235,7 +235,7 @@ export function SalesByCostCenterReport({
       <SalesByCostCenterSummaryCards report={filteredReport} isLoading={busy} />
 
       <Card>
-        <CardHeader className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+        <CardHeader className="flex flex-col gap-1 @xl/main:flex-row @xl/main:items-end @xl/main:justify-between">
           <div>
             <CardTitle className="text-base">Detalle de facturas</CardTitle>
             <CardDescription>

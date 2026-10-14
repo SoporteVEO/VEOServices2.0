@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { FileText, Loader2, Trash2, Upload } from "lucide-react";
+import { FileText, Trash2, Upload } from "lucide-react";
 import { toast } from "sonner";
 import {
   useDeleteProductionOrderDocument,
@@ -9,6 +9,7 @@ import {
 } from "@/api/production-orders/production-orders.patch";
 import type { ProductionDocumentKind } from "@/api/production-orders/production-orders.types";
 import { Button } from "@/components/ui/button";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { ProductionOrderDocumentPreviewButton } from "./production-order-document-preview";
 import { fileToBase64, validateProductionPdf } from "./production-order-pdf";
 
@@ -29,6 +30,7 @@ export function ProductionOrderDocumentSlot({
 }: Props) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
   const uploadMutation = useUploadProductionOrderDocument();
   const deleteMutation = useDeleteProductionOrderDocument();
 
@@ -56,10 +58,10 @@ export function ProductionOrderDocumentSlot({
   }
 
   async function handleDelete() {
-    if (!confirm(`¿Eliminar el documento "${title}"?`)) return;
     try {
       await deleteMutation.mutateAsync({ itemId, kind });
       toast.success("Documento eliminado.");
+      setConfirmDeleteOpen(false);
     } catch (err) {
       toast.error(
         err instanceof Error ? err.message : "No se pudo eliminar el documento.",
@@ -76,11 +78,11 @@ export function ProductionOrderDocumentSlot({
         <FileText className="size-4 shrink-0 text-muted-foreground" aria-hidden />
         <p className="min-w-0 flex-1 truncate text-xs font-medium">{title}</p>
         {hasDocument ? (
-          <span className="rounded-full bg-emerald-500/15 px-1.5 py-0.5 text-[10px] font-medium text-emerald-700 dark:text-emerald-400">
+          <span className="bg-emerald-500/15 px-1.5 py-0.5 text-[10px] font-medium text-emerald-700 dark:text-emerald-400">
             Cargado
           </span>
         ) : (
-          <span className="rounded-full bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
+          <span className="bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
             Pendiente
           </span>
         )}
@@ -113,13 +115,10 @@ export function ProductionOrderDocumentSlot({
               size="sm"
               className="gap-1.5"
               disabled={isBusy}
+              loading={isProcessing || uploadMutation.isPending}
               onClick={() => inputRef.current?.click()}
             >
-              {isProcessing || uploadMutation.isPending ? (
-                <Loader2 className="size-3.5 animate-spin" aria-hidden />
-              ) : (
-                <Upload className="size-3.5" aria-hidden />
-              )}
+              <Upload className="size-3.5" aria-hidden />
               {hasDocument ? "Reemplazar" : "Cargar PDF"}
             </Button>
 
@@ -130,19 +129,25 @@ export function ProductionOrderDocumentSlot({
                 size="sm"
                 className="gap-1.5 text-destructive hover:text-destructive"
                 disabled={isBusy}
-                onClick={() => void handleDelete()}
+                loading={deleteMutation.isPending}
+                onClick={() => setConfirmDeleteOpen(true)}
               >
-                {deleteMutation.isPending ? (
-                  <Loader2 className="size-3.5 animate-spin" aria-hidden />
-                ) : (
-                  <Trash2 className="size-3.5" aria-hidden />
-                )}
+                <Trash2 className="size-3.5" aria-hidden />
                 Eliminar
               </Button>
             ) : null}
           </>
         )}
       </div>
+
+      <ConfirmDialog
+        open={confirmDeleteOpen}
+        onOpenChange={setConfirmDeleteOpen}
+        title={`¿Eliminar el documento "${title}"?`}
+        description="El PDF se eliminará de la orden de producción."
+        pending={deleteMutation.isPending}
+        onConfirm={() => void handleDelete()}
+      />
     </div>
   );
 }

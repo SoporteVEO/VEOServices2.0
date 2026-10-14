@@ -28,7 +28,7 @@ export function PrintingBacklogPanel({
   onDragEnd,
 }: Props) {
   return (
-    <div className="flex min-h-0 w-full flex-col gap-3 rounded-xl border bg-card p-3 lg:w-72">
+    <div className="flex min-h-0 w-full flex-col gap-3 rounded-xl border bg-card p-3 @5xl/main:w-72">
       <div className="flex flex-col gap-1">
         <h3 className="text-sm font-semibold">Sin agendar</h3>
         <p className="text-xs text-muted-foreground">

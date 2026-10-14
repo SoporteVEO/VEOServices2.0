@@ -8,9 +8,9 @@ import { cn } from "@/lib/utils";
 type ButtonSizeVariant = "sm" | "md" | "lg";
 
 const SIZE_VARIANT_CLASS: Record<ButtonSizeVariant, string> = {
-  sm: "h-7 px-2.5 text-[0.8rem]",
-  md: "h-8 px-3 text-sm",
-  lg: "h-9 px-4 text-sm",
+  sm: "h-8 px-2.5 text-[0.8125rem]",
+  md: "h-9 px-3 text-sm",
+  lg: "h-11 px-4 text-[0.9375rem]",
 };
 
 type ButtonIcon = React.ComponentType<{ className?: string }>;
@@ -20,7 +20,17 @@ type ButtonProps = React.ComponentProps<typeof PrimitiveButton> & {
   icon?: ButtonIcon;
   iconPosition?: "left" | "right";
   iconClassName?: string;
+  loading?: boolean;
 };
+
+function PendingBar() {
+  return (
+    <span
+      aria-hidden
+      className="pointer-events-none absolute inset-x-0 bottom-0 h-0.5 origin-left animate-pending-fill bg-veo-lime"
+    />
+  );
+}
 
 function Button({
   className,
@@ -29,6 +39,8 @@ function Button({
   iconPosition = "left",
   iconClassName,
   asChild = false,
+  loading = false,
+  disabled,
   children,
   ...props
 }: ButtonProps) {
@@ -36,11 +48,7 @@ function Button({
     return (
       <PrimitiveButton
         asChild
-        className={cn(
-          "cursor-pointer shadow-sm border-border border",
-          SIZE_VARIANT_CLASS[sizeVariant],
-          className,
-        )}
+        className={cn("cursor-pointer", SIZE_VARIANT_CLASS[sizeVariant], className)}
         {...props}
       >
         {children}
@@ -51,8 +59,9 @@ function Button({
   return (
     <PrimitiveButton
       className={cn(
-        `cursor-pointer shadow-sm border-border border`,
+        "cursor-pointer",
         SIZE_VARIANT_CLASS[sizeVariant],
+        loading && "disabled:opacity-80",
         className,
       )}
       data-icon={
@@ -62,7 +71,8 @@ function Button({
             : "inline-start"
           : undefined
       }
-      asChild={asChild}
+      disabled={disabled || loading}
+      aria-busy={loading || undefined}
       {...props}
     >
       {Icon && iconPosition === "left" ? (
@@ -72,9 +82,10 @@ function Button({
       {Icon && iconPosition === "right" ? (
         <Icon className={cn("size-4", iconClassName)} />
       ) : null}
+      {loading ? <PendingBar /> : null}
     </PrimitiveButton>
   );
 }
 
-export { Button, buttonVariants };
+export { Button, PendingBar, buttonVariants };
 export type { ButtonProps, ButtonSizeVariant };

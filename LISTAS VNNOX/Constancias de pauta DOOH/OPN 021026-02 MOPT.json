@@ -1,0 +1,88 @@
+{
+ "id": "xu9kl9d2g147e",
+ "corr": "021026-02",
+ "rev": 1,
+ "ts": "2026-10-02T21:24:32.325Z",
+ "tsCambio": "2026-10-02T21:24:32.325Z",
+ "autor": "Soporte Comercial",
+ "ejecutivo": "Maggy Jeanpierre",
+ "fechaIngreso": "2026-10-02",
+ "agencia": false,
+ "nombreAgencia": "",
+ "marca": "MOPT",
+ "campana": "RESTRICCIONES DE HORARIO DE CARGA",
+ "formato": "Animado",
+ "inicio": "2026-10-02",
+ "fin": "2026-10-16",
+ "indicaciones": "",
+ "enlaces": [],
+ "pantallas": [
+  {
+   "pid": "sdm",
+   "frec": 300,
+   "mes": null,
+   "neg": "donacion",
+   "spotMano": false,
+   "spot": null
+  },
+  {
+   "pid": "heroe",
+   "frec": 300,
+   "mes": null,
+   "neg": "donacion",
+   "spotMano": false,
+   "spot": null
+  },
+  {
+   "pid": "panam",
+   "frec": 300,
+   "mes": null,
+   "neg": "donacion",
+   "spotMano": false,
+   "spot": null
+  },
+  {
+   "pid": "proce",
+   "frec": 300,
+   "mes": null,
+   "neg": "donacion",
+   "spotMano": false,
+   "spot": null
+  },
+  {
+   "pid": "paseo",
+   "frec": 300,
+   "mes": null,
+   "neg": "donacion",
+   "spotMano": false,
+   "spot": null
+  },
+  {
+   "pid": "jerusa",
+   "frec": 300,
+   "mes": null,
+   "neg": "donacion",
+   "spotMano": false,
+   "spot": null
+  },
+  {
+   "pid": "benito",
+   "frec": 300,
+   "mes": null,
+   "neg": "donacion",
+   "spotMano": false,
+   "spot": null
+  },
+  {
+   "pid": "juanpa",
+   "frec": 300,
+   "mes": null,
+   "neg": "donacion",
+   "spotMano": false,
+   "spot": null
+  }
+ ],
+ "valorTotal": 0,
+ "valorMensual": 0,
+ "archivo": "OPN 021026-02 MOPT.json"
+}

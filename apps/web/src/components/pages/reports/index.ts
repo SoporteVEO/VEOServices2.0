@@ -4,3 +4,4 @@ export * from "./report-month-selector";
 export * from "./report-period";
 export * from "./send-report-dialog";
 export * from "./report-types";
+export * from "./contract-report-actions";

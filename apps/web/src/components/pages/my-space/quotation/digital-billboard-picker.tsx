@@ -47,11 +47,11 @@ export function DigitalBillboardPicker({
 
   return (
     <Combobox
-      placeholder="Agregar valla digital..."
+      placeholder="Agregar pantalla..."
       emptyLabel={
         isLoading
-          ? "Cargando vallas digitales..."
-          : "No hay más vallas digitales disponibles."
+          ? "Cargando pantallas..."
+          : "No hay más pantallas disponibles."
       }
       options={options}
       value={null}

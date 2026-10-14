@@ -1,7 +1,6 @@
 "use client";
 
 import { useForm } from "react-hook-form";
-import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import type { MeTeamMember } from "@/api/me/me.types";
 import { useUpdateMyTeamMember } from "@/api/me/me.mutations";
@@ -64,11 +63,11 @@ export function MeTeamMemberBankCard({
           onSubmit={handleSubmit(onSubmit)}
           className="flex flex-col gap-4"
         >
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-4 @xl/main:grid-cols-2">
             <Input label="Banco" {...register("bankName")} />
             <Input label="Cuenta bancaria" {...register("bankAccount")} />
           </div>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-4 @xl/main:grid-cols-2">
             <Input label="Número AFP" {...register("afpNumber")} />
             <Input label="Administradora AFP" {...register("afpEntity")} />
           </div>
@@ -76,8 +75,7 @@ export function MeTeamMemberBankCard({
             <Button
               type="submit"
               disabled={mutation.isPending || !formState.isDirty}
-              icon={mutation.isPending ? Loader2 : undefined}
-              iconClassName={mutation.isPending ? "animate-spin" : undefined}
+              loading={mutation.isPending}
             >
               {mutation.isPending ? "Guardando..." : "Guardar"}
             </Button>

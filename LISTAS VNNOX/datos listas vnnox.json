@@ -1,0 +1,5905 @@
+{
+ "version": 1,
+ "spotsPorHora": 450,
+ "pantallas": [
+  {
+   "id": "sdm",
+   "nombre": "Salvador del Mundo",
+   "codigo": "SDM",
+   "horas": 16.5,
+   "sublistas": [
+    {
+     "id": "sdm-s1",
+     "nombre": "SDM1",
+     "capacidad": 900,
+     "campanas": [
+      {
+       "cliente": "MOPT",
+       "campana": "RESTRICCIONES DE HORARIO DE CARGA",
+       "inicio": "2026-10-02",
+       "fin": "2026-11-30",
+       "notas": "OP DOOH_MOPT_021026-02 · Ejecutivo: Maggy Jeanpierre · Cliente directo · Arte: Animado",
+       "neg": "donacion",
+       "pausada": false,
+       "motivoPausa": "",
+       "frec": 300,
+       "vMes": null,
+       "vSpot": null,
+       "id": "xwjim7qr71snp",
+       "versiones": []
+      }
+     ]
+    },
+    {
+     "id": "sdm-s2",
+     "nombre": "SDM2_450",
+     "capacidad": 900,
+     "campanas": [
+      {
+       "cliente": "UNILEVER",
+       "campana": "NATURA´S MAGIC",
+       "inicio": "2026-09-21",
+       "fin": "2026-10-20",
+       "notas": "Agencia: ECO COMUNICACIONES · Ejecutivo: Ricardo Ayala",
+       "arte": "",
+       "pausada": false,
+       "motivoPausa": "",
+       "frec": 450,
+       "vMes": 776.25,
+       "vSpot": 0.0575,
+       "id": "x4crsewawkoxm",
+       "versiones": []
+      },
+      {
+       "cliente": "MD",
+       "campana": "TEMPORADA FIN DE AÑO",
+       "inicio": "2026-11-12",
+       "fin": "2026-11-30",
+       "notas": "Agencia: OGILVY",
+       "arte": "sin",
+       "neg": "",
+       "pausada": false,
+       "motivoPausa": "",
+       "frec": 450,
+       "vMes": 316.75,
+       "vSpot": 0.037,
+       "id": "xys42wngzzp39",
+       "versiones": []
+      },
+      {
+       "cliente": "MD",
+       "campana": "TEMPORADA FIN DE AÑO",
+       "inicio": "2026-12-01",
+       "fin": "2026-12-31",
+       "notas": "Agencia: OGILVY · Ejecutivo: MARTA DESCAMPS",
+       "arte": "sin",
+       "neg": "",
+       "pausada": false,
+       "motivoPausa": "",
+       "frec": 450,
+       "vMes": 500,
+       "vSpot": 0.0358,
+       "id": "xokqfhu1q06it",
+       "versiones": []
+      }
+     ]
+    },
+    {
+     "id": "sdm-s3",
+     "nombre": "SDM3_300",
+     "capacidad": 900,
+     "campanas": [
+      {
+       "id": "sdm-s3-c2",
+       "cliente": "DONKEYS",
+       "campana": "Genérico",
+       "inicio": "2026-04-27",
+       "fin": "2027-01-26",
+       "frec": 300,
+       "notas": "4 Versiones",
+       "pausada": false,
+       "motivoPausa": "",
+       "versiones": [
+        {
+         "id": "x613y68899o9a",
+         "titulo": "Tacos sin vergüenza",
+         "inicio": "2026-07-22",
+         "fin": "2027-01-26"
+        },
+        {
+         "id": "x7ruokw9ha966",
+         "titulo": "Generico 2",
+         "inicio": "2026-07-06",
+         "fin": "2027-01-26"
+        },
+        {
+         "id": "xe1v2n9b7aw8g",
+         "titulo": "Generico 1",
+         "inicio": "2026-07-06",
+         "fin": "2027-01-26"
+        },
+        {
+         "id": "xqifa4ib8bfl4",
+         "titulo": "Burrito fiesta",
+         "inicio": "2026-07-06",
+         "fin": "2027-01-26"
+        }
+       ],
+       "arte": ""
+      },
+      {
+       "cliente": "Viro Grip",
+       "campana": "VIROGRIP",
+       "inicio": "2026-10-01",
+       "fin": "2026-10-31",
+       "notas": "OP DOOH_VIRO GRIP_300926-04 · Ejecutivo: Marta Descamps · Agencia: CREACION PUBLICIDAD · Arte: Animado",
+       "arte": "",
+       "neg": "",
+       "pausada": false,
+       "motivoPausa": "",
+       "frec": 450,
+       "vMes": 550,
+       "vSpot": 0.0394,
+       "id": "xalknik33dfjy",
+       "versiones": []
+      }
+     ]
+    },
+    {
+     "id": "sdm-s4",
+     "nombre": "SDM4_300",
+     "capacidad": 900,
+     "campanas": [
+      {
+       "id": "sdm-s4-c1",
+       "cliente": "DLC",
+       "campana": "Generico",
+       "inicio": "2026-01-07",
+       "fin": "2026-12-06",
+       "frec": 300,
+       "notas": "4 versiones",
+       "pausada": false,
+       "motivoPausa": "",
+       "versiones": [
+        {
+         "id": "xsdd2jg40cvov",
+         "titulo": "Parada obligatoria",
+         "inicio": "2026-08-01",
+         "fin": "2026-08-31"
+        },
+        {
+         "id": "xe6skfjt0d9qm",
+         "titulo": "Desde casa",
+         "inicio": "2026-08-01",
+         "fin": "2026-08-31"
+        },
+        {
+         "id": "xfa6622vsdqdz",
+         "titulo": "Full aventura - Vacaciones",
+         "inicio": "2026-07-20",
+         "fin": "2026-08-31"
+        },
+        {
+         "id": "x8b0rqfmkeio8",
+         "titulo": "Refrescate con un ICEE",
+         "inicio": "2026-07-15",
+         "fin": "2026-08-31"
+        }
+       ]
+      },
+      {
+       "cliente": "FRIOAIRE",
+       "campana": "GENERICO",
+       "inicio": "2026-09-12",
+       "fin": "2026-12-11",
+       "notas": "Ejecutivo: Ricardo Ayala · Arte: Animado · OP: OP FRIO AIRE DOOH 040926.pdf",
+       "arte": "",
+       "pausada": false,
+       "motivoPausa": "",
+       "frec": 300,
+       "vMes": 550,
+       "vSpot": 0.0611,
+       "id": "xtn3i9170t2ad",
+       "versiones": [],
+       "vTotal": 3300
+      },
+      {
+       "cliente": "LEMUSIMUN",
+       "campana": "50 ANIVERSARIO",
+       "inicio": "2026-09-21",
+       "fin": "2026-10-20",
+       "notas": "Agencia: LEMUSIMUN · Ejecutivo: MARTA DESCAMPS · Arte: Animado · OP: OP LEMUSIMUN 50 ANIVERSARIO.pdf",
+       "arte": "",
+       "neg": "canje",
+       "pausada": false,
+       "motivoPausa": "",
+       "frec": 300,
+       "vMes": 0,
+       "vSpot": 0,
+       "id": "xg6jusv7s31v1",
+       "versiones": []
+      }
+     ]
+    },
+    {
+     "id": "sdm-s5",
+     "nombre": "SDM5_300",
+     "capacidad": 900,
+     "campanas": [
+      {
+       "cliente": "ALCALDIA DE SAN SALVADOR CENTRO",
+       "campana": "AMNISTIA",
+       "inicio": "2026-09-29",
+       "fin": "2026-11-27",
+       "notas": "OP DOOH_ALCALDIA DE SAN SALVADOR CENTRO_290926-05 · Ejecutivo: Marta Descamps · Cliente directo · Arte: Animado",
+       "arte": "",
+       "neg": "donacion",
+       "pausada": false,
+       "motivoPausa": "",
+       "frec": 300,
+       "vMes": null,
+       "vSpot": null,
+       "id": "x19t14l4psvpo",
+       "versiones": []
+      },
+      {
+       "cliente": "MINED",
+       "campana": "MINED",
+       "inicio": "2026-10-01",
+       "fin": "2026-10-31",
+       "notas": "OP DOOH_MINED_011026-01",
+       "arte": "",
+       "neg": "",
+       "pausada": false,
+       "motivoPausa": "",
+       "frec": 450,
+       "vMes": 705.88,
+       "vSpot": 0.0506,
+       "id": "xkafn2cploer0",
+       "versiones": []
+      }
+     ]
+    },
+    {
+     "id": "sdm-s6",
+     "nombre": "SDM6_450",
+     "capacidad": 900,
+     "campanas": [
+      {
+       "cliente": "PUMA",
+       "campana": "NEVER NOT SUEDE",
+       "inicio": "2026-10-13",
+       "fin": "2026-10-31",
+       "notas": "Agencia: OGILVY · Ejecutivo: MAGGY JEANPIERRE",
+       "arte": "",
+       "neg": "",
+       "pausada": false,
+       "motivoPausa": "",
+       "frec": 450,
+       "vMes": 425,
+       "vSpot": 0.0315,
+       "id": "x0x9gxg7zn9ww",
+       "versiones": []
+      },
+      {
+       "cliente": "PUMA",
+       "campana": "NEVER NOT SUEDE",
+       "inicio": "2026-11-01",
+       "fin": "2026-11-30",
+       "notas": "Agencia: OGILVY · Ejecutivo: MAGGY JEANPIERRE",
+       "arte": "",
+       "neg": "",
+       "pausada": false,
+       "motivoPausa": "",
+       "frec": 450,
+       "vMes": 425,
+       "vSpot": 0.0315,
+       "id": "xe2ylpt8sp273",
+       "versiones": []
+      }
+     ]
+    },
+    {
+     "id": "sdm-s7",
+     "nombre": "SDM7_450",
+     "capacidad": 900,
+     "campanas": [
+      {
+       "cliente": "NOTICIERO EL SALVADOR",
+       "campana": "6 ANIVERSARIO",
+       "inicio": "2026-10-01",
+       "fin": "2026-10-31",
+       "notas": "OP DOOH_NOTICIERO EL SALVADOR_011026-02 · Ejecutivo: Marta Descamps · Agencia: LEMUSIMUN · Arte: Animado · Editables: https://we.tl/t-n82DugkmmBB3Er9q · Indicaciones: Descargar editables",
+       "arte": "",
+       "neg": "",
+       "pausada": false,
+       "motivoPausa": "",
+       "frec": 300,
+       "vMes": 367.25,
+       "vSpot": 0.0395,
+       "id": "xohb9yhn8t3gl",
+       "versiones": []
+      },
+      {
+       "cliente": "BLT (IHOP/ APPLEBEE'S)",
+       "campana": "Apertura",
+       "inicio": "2026-11-01",
+       "fin": "2026-12-30",
+       "notas": "Ejecutivo: Ricardo Ayala",
+       "arte": "sin",
+       "neg": "",
+       "pausada": false,
+       "motivoPausa": "",
+       "frec": 300,
+       "vMes": 1000,
+       "vSpot": 0.0556,
+       "id": "xfpabgizhpt7d",
+       "versiones": []
+      }
+     ]
+    },
+    {
+     "id": "x5jz1scsa4om8",
+     "nombre": "SDM EXTRA 8",
+     "capacidad": 900,
+     "campanas": []
+    }
+   ],
+   "on": "05:30",
+   "off": "22:00",
+   "ultimo": {
+    "cliente": "MOPT",
+    "accion": "movida",
+    "ts": "2026-10-02T22:00:52.745Z"
+   }
+  },
+  {
+   "id": "heroe",
+   "nombre": "Héroes",
+   "codigo": "HEROE",
+   "horas": 16.5,
+   "sublistas": [
+    {
+     "id": "heroe-s1",
+     "nombre": "HEROES1_900",
+     "capacidad": 900,
+     "campanas": [
+      {
+       "cliente": "UNILEVER",
+       "campana": "NATURA´S MAGIC",
+       "inicio": "2026-09-21",
+       "fin": "2026-10-20",
+       "notas": "Agencia: ECO COMUNICACIONES · Ejecutivo: Ricardo Ayala",
+       "arte": "",
+       "pausada": false,
+       "motivoPausa": "",
+       "frec": 450,
+       "vMes": 776.25,
+       "vSpot": 0.0575,
+       "id": "xfj2uvo0ekoxm",
+       "versiones": []
+      },
+      {
+       "cliente": "Viro Grip",
+       "campana": "VIROGRIP",
+       "inicio": "2026-10-01",
+       "fin": "2026-10-31",
+       "notas": "OP DOOH_VIRO GRIP_300926-04 · Ejecutivo: Marta Descamps · Agencia: CREACION PUBLICIDAD · Arte: Animado",
+       "arte": "",
+       "neg": "",
+       "pausada": false,
+       "motivoPausa": "",
+       "frec": 450,
+       "vMes": 550,
+       "vSpot": 0.0394,
+       "id": "x2jyc0tvqdfjz",
+       "versiones": []
+      }
+     ]
+    },
+    {
+     "id": "heroe-s3",
+     "nombre": "HEROES3_450",
+     "capacidad": 900,
+     "campanas": [
+      {
+       "id": "heroe-s3-c1",
+       "cliente": "BANCO AGRICOLA",
+       "campana": "",
+       "inicio": "2026-06-08",
+       "fin": "2026-12-31",
+       "frec": 450,
+       "notas": "",
+       "pausada": false,
+       "motivoPausa": "",
+       "versiones": [
+        {
+         "id": "xtqroitpbgfrx",
+         "titulo": "(GELU PERMANENTE)-SEPT 26",
+         "inicio": "2026-09-08",
+         "fin": "2026-09-30"
+        },
+        {
+         "id": "x4w14bexbc5m9",
+         "titulo": "ALIANZAS (SEÑOR-GAUCHO SEPTIMBRE)-SEP 26",
+         "inicio": "2026-06-08",
+         "fin": "2026-12-31"
+        },
+        {
+         "id": "xq6qu91y1d268",
+         "titulo": "BANCO AGRICOLA / ALIANZAS (XCLAIM-SEPTIEMBRE)-SEP",
+         "inicio": "2026-06-08",
+         "fin": "2026-12-31"
+        },
+        {
+         "id": "xy9ow3k2rutki",
+         "titulo": "BANCO AGRICOLA / ALIANZAS (FAUSTO-SEPTIEMBRE)",
+         "inicio": "2026-09-01",
+         "fin": "2026-09-30"
+        },
+        {
+         "id": "x39ms33jdux4r",
+         "titulo": "BANCO AGRICOLA / ALIANZAS (GENERICA DÍA DEL NIÑO)",
+         "inicio": "2026-06-08",
+         "fin": "2026-12-31"
+        },
+        {
+         "id": "xfftiezu1vnma",
+         "titulo": "BANCO AGRICOLA / ALIANZAS (VIDALS SEPTIEMBRE)-SEP",
+         "inicio": "2026-06-08",
+         "fin": "2026-12-31"
+        },
+        {
+         "id": "x91eagmbfvtk2",
+         "titulo": "ANIMACIONES BANCO AGRICOLA / ALIANZAS (JUGUETON-DIA DEL NIÑO)-SEPT",
+         "inicio": "2026-06-08",
+         "fin": "2026-12-31"
+        }
+       ]
+      },
+      {
+       "cliente": "ST JACKS",
+       "campana": "ST JACKS",
+       "inicio": "2026-09-16",
+       "fin": "2026-10-15",
+       "notas": "Ejecutivo: LUIS SEGOVIA · Arte: Animado · OP: OP st jacks septiembre.pdf",
+       "arte": "",
+       "neg": "",
+       "pausada": false,
+       "motivoPausa": "",
+       "frec": 300,
+       "vMes": 360,
+       "vSpot": 0.04,
+       "id": "xz8bbqvedg4n7",
+       "versiones": []
+      }
+     ]
+    },
+    {
+     "id": "heroe-s4",
+     "nombre": "HEROES4_450",
+     "capacidad": 900,
+     "campanas": [
+      {
+       "cliente": "MAGGI",
+       "campana": "MAGGI AND ME",
+       "inicio": "2026-09-24",
+       "fin": "2026-10-23",
+       "notas": "Agencia: CREA PUBLICIDAD · Ejecutivo: MARTA DESCAMPS",
+       "arte": "",
+       "neg": "",
+       "pausada": false,
+       "motivoPausa": "",
+       "frec": 450,
+       "vMes": 810,
+       "vSpot": 0.06,
+       "id": "xsibpgaxc2d0l",
+       "versiones": []
+      },
+      {
+       "cliente": "MINSAL",
+       "campana": "INSTITUCIONAL",
+       "inicio": "2026-09-01",
+       "fin": "2026-09-30",
+       "notas": "Ejecutivo: MAGGY JEANPIERRE",
+       "arte": "",
+       "neg": "",
+       "pausada": false,
+       "motivoPausa": "",
+       "frec": 300,
+       "vMes": 600,
+       "vSpot": 0.0667,
+       "id": "xr0d905ofuu86",
+       "versiones": []
+      },
+      {
+       "cliente": "APEX PUBLICIDAD",
+       "campana": "MINSAL INSTITUCIONAL",
+       "inicio": "2026-10-01",
+       "fin": "2026-10-31",
+       "notas": "Ejecutivo: MARTA DESCAMPS · Arte: Animado",
+       "arte": "",
+       "neg": "",
+       "pausada": false,
+       "motivoPausa": "",
+       "frec": 300,
+       "vMes": 600,
+       "vSpot": 0.0645,
+       "id": "xfg8agg4pmzvr",
+       "versiones": []
+      }
+     ]
+    },
+    {
+     "id": "heroe-s5",
+     "nombre": "HEROES5_450",
+     "capacidad": 900,
+     "campanas": [
+      {
+       "cliente": "LEMUSIMUN",
+       "campana": "50 ANIVERSARIO",
+       "inicio": "2026-09-21",
+       "fin": "2026-10-20",
+       "notas": "Agencia: LEMUSIMUN · Ejecutivo: MARTA DESCAMPS · Arte: Animado · OP: OP LEMUSIMUN 50 ANIVERSARIO.pdf",
+       "arte": "",
+       "neg": "canje",
+       "pausada": false,
+       "motivoPausa": "",
+       "frec": 300,
+       "vMes": 0,
+       "vSpot": 0,
+       "id": "xcwe1kefc31v1",
+       "versiones": []
+      },
+      {
+       "cliente": "ALCALDIA DE SAN SALVADOR CENTRO",
+       "campana": "AMNISTIA",
+       "inicio": "2026-09-29",
+       "fin": "2026-11-27",
+       "notas": "OP DOOH_ALCALDIA DE SAN SALVADOR CENTRO_290926-05 · Ejecutivo: Marta Descamps · Cliente directo · Arte: Animado",
+       "arte": "",
+       "neg": "donacion",
+       "pausada": false,
+       "motivoPausa": "",
+       "frec": 300,
+       "vMes": null,
+       "vSpot": null,
+       "id": "xt40ky4dasvpo",
+       "versiones": []
+      },
+      {
+       "cliente": "NOTICIERO EL SALVADOR",
+       "campana": "6 ANIVERSARIO",
+       "inicio": "2026-10-01",
+       "fin": "2026-10-31",
+       "notas": "OP DOOH_NOTICIERO EL SALVADOR_011026-02 · Ejecutivo: Marta Descamps · Agencia: LEMUSIMUN · Arte: Animado · Editables: https://we.tl/t-n82DugkmmBB3Er9q · Indicaciones: Descargar editables",
+       "arte": "",
+       "neg": "",
+       "pausada": false,
+       "motivoPausa": "",
+       "frec": 300,
+       "vMes": 367.25,
+       "vSpot": 0.0395,
+       "id": "xsddet0d9t3gl",
+       "versiones": []
+      }
+     ]
+    },
+    {
+     "id": "heroe-s9",
+     "nombre": "HEROES2",
+     "capacidad": 900,
+     "campanas": [
+      {
+       "cliente": "MD",
+       "campana": "TEMPORADA FIN DE AÑO",
+       "inicio": "2026-12-01",
+       "fin": "2026-12-31",
+       "notas": "Agencia: OGILVY · Ejecutivo: MARTA DESCAMPS",
+       "arte": "sin",
+       "neg": "",
+       "pausada": false,
+       "motivoPausa": "",
+       "frec": 450,
+       "vMes": 500,
+       "vSpot": 0.0358,
+       "id": "xl809ln0c06iu",
+       "versiones": []
+      },
+      {
+       "cliente": "MD",
+       "campana": "TEMPORADA FIN DE AÑO",
+       "inicio": "2026-11-12",
+       "fin": "2026-11-30",
+       "notas": "Agencia: OGILVY",
+       "arte": "sin",
+       "neg": "",
+       "pausada": false,
+       "motivoPausa": "",
+       "frec": 450,
+       "vMes": 316.75,
+       "vSpot": 0.037,
+       "id": "xulcahndczp3a",
+       "versiones": []
+      },
+      {
+       "cliente": "MOPT",
+       "campana": "RESTRICCIONES DE HORARIO DE CARGA",
+       "inicio": "2026-10-02",
+       "fin": "2026-11-30",
+       "notas": "OP DOOH_MOPT_021026-02 · Ejecutivo: Maggy Jeanpierre · Cliente directo · Arte: Animado",
+       "neg": "donacion",
+       "pausada": false,
+       "motivoPausa": "",
+       "frec": 300,
+       "vMes": null,
+       "vSpot": null,
+       "id": "x5vmwyta01snp",
+       "versiones": []
+      }
+     ]
+    },
+    {
+     "id": "x1oa4ls8cklja",
+     "nombre": "HEROES 6",
+     "capacidad": 900,
+     "campanas": [
+      {
+       "cliente": "PUMA",
+       "campana": "NEVER NOT SUEDE",
+       "inicio": "2026-11-01",
+       "fin": "2026-11-30",
+       "notas": "Agencia: OGILVY · Ejecutivo: MAGGY JEANPIERRE",
+       "arte": "",
+       "neg": "",
+       "pausada": false,
+       "motivoPausa": "",
+       "frec": 450,
+       "vMes": 425,
+       "vSpot": 0.0315,
+       "id": "xi603gr56p273",
+       "versiones": []
+      },
+      {
+       "cliente": "PUMA",
+       "campana": "NEVER NOT SUEDE",
+       "inicio": "2026-10-13",
+       "fin": "2026-10-31",
+       "notas": "Agencia: OGILVY · Ejecutivo: MAGGY JEANPIERRE",
+       "arte": "",
+       "neg": "",
+       "pausada": false,
+       "motivoPausa": "",
+       "frec": 450,
+       "vMes": 425,
+       "vSpot": 0.0315,
+       "id": "xhct3vcpbn9ww",
+       "versiones": []
+      }
+     ]
+    }
+   ],
+   "on": "05:30",
+   "off": "22:00",
+   "ultimo": {
+    "cliente": "MOPT",
+    "accion": "agregada",
+    "ts": "2026-10-02T21:53:03.829Z"
+   }
+  },
+  {
+   "id": "panam",
+   "nombre": "Panamericana",
+   "codigo": "PANAM",
+   "horas": 16.5,
+   "sublistas": [
+    {
+     "id": "panam-s1",
+     "nombre": "PANAMERICANA1_900",
+     "capacidad": 900,
+     "campanas": [
+      {
+       "id": "panam-s1-c1",
+       "cliente": "BANCO AGRICOLA",
+       "campana": "",
+       "inicio": "2026-01-01",
+       "fin": "2026-12-31",
+       "frec": 450,
+       "notas": "Cambia todos los días.",
+       "pausada": false,
+       "motivoPausa": "",
+       "versiones": [
+        {
+         "id": "xov23q9xygfrx",
+         "titulo": "(GELU PERMANENTE)-SEPT 26",
+         "inicio": "2026-09-08",
+         "fin": "2026-09-30"
+        },
+        {
+         "id": "xsambhm3zc5m9",
+         "titulo": "ALIANZAS (SEÑOR-GAUCHO SEPTIMBRE)-SEP 26",
+         "inicio": "2026-06-08",
+         "fin": "2026-12-31"
+        },
+        {
+         "id": "x7n4847uyd268",
+         "titulo": "BANCO AGRICOLA / ALIANZAS (XCLAIM-SEPTIEMBRE)-SEP",
+         "inicio": "2026-06-08",
+         "fin": "2026-12-31"
+        },
+        {
+         "id": "xgleo5oomutki",
+         "titulo": "BANCO AGRICOLA / ALIANZAS (FAUSTO-SEPTIEMBRE)",
+         "inicio": "2026-09-01",
+         "fin": "2026-09-30"
+        },
+        {
+         "id": "xs7w05cl0ux4r",
+         "titulo": "BANCO AGRICOLA / ALIANZAS (GENERICA DÍA DEL NIÑO)",
+         "inicio": "2026-06-08",
+         "fin": "2026-12-31"
+        },
+        {
+         "id": "xrs42t4pjvnma",
+         "titulo": "BANCO AGRICOLA / ALIANZAS (VIDALS SEPTIEMBRE)-SEP",
+         "inicio": "2026-06-08",
+         "fin": "2026-12-31"
+        },
+        {
+         "id": "xerc8p4e4vtk2",
+         "titulo": "ANIMACIONES BANCO AGRICOLA / ALIANZAS (JUGUETON-DIA DEL NIÑO)-SEPT",
+         "inicio": "2026-06-08",
+         "fin": "2026-12-31"
+        }
+       ]
+      },
+      {
+       "cliente": "ST JACKS",
+       "campana": "ST JACKS",
+       "inicio": "2026-09-16",
+       "fin": "2026-10-15",
+       "notas": "Ejecutivo: LUIS SEGOVIA · Arte: Animado · OP: OP st jacks septiembre.pdf",
+       "arte": "",
+       "neg": "",
+       "pausada": false,
+       "motivoPausa": "",
+       "frec": 300,
+       "vMes": 360,
+       "vSpot": 0.04,
+       "id": "x75wnetpeg4n7",
+       "versiones": []
+      }
+     ]
+    },
+    {
+     "id": "panam-s2",
+     "nombre": "PANAMERICANA2_600",
+     "capacidad": 900,
+     "campanas": [
+      {
+       "id": "panam-s2-c1",
+       "cliente": "PANDA EXPRESS",
+       "campana": "Rice box y Hot orange chicken",
+       "inicio": "2026-08-01",
+       "fin": "2026-12-31",
+       "frec": 450,
+       "notas": "2 versiones",
+       "pausada": false,
+       "motivoPausa": "",
+       "versiones": [
+        {
+         "id": "x0jql06liznbr",
+         "titulo": "RICE BOX",
+         "inicio": "2026-08-17",
+         "fin": null
+        },
+        {
+         "id": "xt0gdu5l9zzs1",
+         "titulo": "HOT ORANGE CHICKEN",
+         "inicio": "2026-08-17",
+         "fin": null
+        }
+       ]
+      },
+      {
+       "cliente": "ALMACENES VIDRI",
+       "campana": "PINTURAS",
+       "inicio": "2026-10-15",
+       "fin": "2026-11-14",
+       "notas": "",
+       "arte": "sin",
+       "neg": "",
+       "pausada": false,
+       "motivoPausa": "",
+       "frec": 450,
+       "vMes": 575,
+       "vSpot": 0.0412,
+       "id": "x9g0l14ymo7pz",
+       "versiones": []
+      },
+      {
+       "cliente": "LEMUSIMUN",
+       "campana": "50 ANIVERSARIO",
+       "inicio": "2026-09-21",
+       "fin": "2026-10-20",
+       "notas": "Agencia: LEMUSIMUN · Ejecutivo: MARTA DESCAMPS · Arte: Animado · OP: OP LEMUSIMUN 50 ANIVERSARIO.pdf",
+       "arte": "",
+       "neg": "canje",
+       "pausada": false,
+       "motivoPausa": "",
+       "frec": 300,
+       "vMes": 0,
+       "vSpot": 0,
+       "id": "x4hk6bhmm31v1",
+       "versiones": []
+      }
+     ]
+    },
+    {
+     "id": "panam-s3",
+     "nombre": "PANAMERICANA3_600",
+     "capacidad": 900,
+     "campanas": [
+      {
+       "cliente": "ALMACENES VIDRI",
+       "campana": "REMODELACION DESCUENTOS",
+       "inicio": "2026-09-01",
+       "fin": "2026-09-30",
+       "notas": "",
+       "pausada": false,
+       "motivoPausa": "",
+       "frec": 450,
+       "id": "x6mqu414004ag",
+       "versiones": [
+        {
+         "id": "x1awt5eamkvil",
+         "titulo": "REMODELACION",
+         "inicio": "2026-09-01",
+         "fin": "2026-09-30"
+        }
+       ],
+       "arte": "",
+       "vMes": 650,
+       "vSpot": 0.0481,
+       "neg": ""
+      },
+      {
+       "cliente": "ALCALDIA DE SAN SALVADOR CENTRO",
+       "campana": "AMNISTIA",
+       "inicio": "2026-09-29",
+       "fin": "2026-11-27",
+       "notas": "OP DOOH_ALCALDIA DE SAN SALVADOR CENTRO_290926-05 · Ejecutivo: Marta Descamps · Cliente directo · Arte: Animado",
+       "arte": "",
+       "neg": "donacion",
+       "pausada": false,
+       "motivoPausa": "",
+       "frec": 300,
+       "vMes": null,
+       "vSpot": null,
+       "id": "xwtp91sqosvpo",
+       "versiones": []
+      },
+      {
+       "cliente": "NOTICIERO EL SALVADOR",
+       "campana": "6 ANIVERSARIO",
+       "inicio": "2026-10-01",
+       "fin": "2026-10-31",
+       "notas": "OP DOOH_NOTICIERO EL SALVADOR_011026-02 · Ejecutivo: Marta Descamps · Agencia: LEMUSIMUN · Arte: Animado · Editables: https://we.tl/t-n82DugkmmBB3Er9q · Indicaciones: Descargar editables",
+       "arte": "",
+       "neg": "",
+       "pausada": false,
+       "motivoPausa": "",
+       "frec": 300,
+       "vMes": 367.25,
+       "vSpot": 0.0395,
+       "id": "x0bix4hvxt3gl",
+       "versiones": []
+      },
+      {
+       "cliente": "MOPT",
+       "campana": "RESTRICCIONES DE HORARIO DE CARGA",
+       "inicio": "2026-10-02",
+       "fin": "2026-11-30",
+       "notas": "OP DOOH_MOPT_021026-02 · Ejecutivo: Maggy Jeanpierre · Cliente directo · Arte: Animado",
+       "neg": "donacion",
+       "pausada": false,
+       "motivoPausa": "",
+       "frec": 300,
+       "vMes": null,
+       "vSpot": null,
+       "id": "x4vsmct9i1snp",
+       "versiones": []
+      }
+     ]
+    },
+    {
+     "id": "panam-s5",
+     "nombre": "PANAMERICANA5_450",
+     "capacidad": 900,
+     "campanas": [
+      {
+       "id": "panam-s5-c1",
+       "cliente": "MAXBLOCH",
+       "campana": "",
+       "inicio": "2026-06-08",
+       "fin": "2027-01-07",
+       "frec": 300,
+       "notas": "",
+       "pausada": false,
+       "motivoPausa": "",
+       "versiones": [
+        {
+         "id": "x7lpmu2v956cv",
+         "titulo": "V1",
+         "inicio": "2026-06-08",
+         "fin": null
+        },
+        {
+         "id": "xascm4sph5g07",
+         "titulo": "V2",
+         "inicio": "2026-06-08",
+         "fin": null
+        },
+        {
+         "id": "xqom2z7485haf",
+         "titulo": "V3",
+         "inicio": "2026-06-08",
+         "fin": null
+        }
+       ]
+      },
+      {
+       "cliente": "BLT (IHOP/ APPLEBEE'S)",
+       "campana": "Apertura",
+       "inicio": "2026-11-01",
+       "fin": "2026-12-30",
+       "notas": "Ejecutivo: Ricardo Ayala",
+       "arte": "sin",
+       "neg": "",
+       "pausada": false,
+       "motivoPausa": "",
+       "frec": 300,
+       "vMes": 1000,
+       "vSpot": 0.0556,
+       "id": "x75ytb5n7pt7d",
+       "versiones": []
+      },
+      {
+       "cliente": "UNASA",
+       "campana": "UNASA",
+       "inicio": "2026-10-05",
+       "fin": "2026-10-20",
+       "notas": "OP DOOH_UNASA_051026-02 · Ejecutivo: Maggy Jeanpierre · Cliente directo · Arte: Animado",
+       "arte": "",
+       "neg": "donacion",
+       "pausada": false,
+       "motivoPausa": "",
+       "frec": 300,
+       "vMes": null,
+       "vSpot": null,
+       "id": "x26m3uvz58emp",
+       "versiones": []
+      }
+     ]
+    },
+    {
+     "id": "panam-s8",
+     "nombre": "PANAMERICANA4_450",
+     "capacidad": 900,
+     "campanas": [
+      {
+       "cliente": "PALM SOLARIS",
+       "campana": "INSTITUCIONAL",
+       "inicio": "2026-09-01",
+       "fin": "2026-09-30",
+       "notas": "Agencia: ALPHA INVERSIONES · Ejecutivo: MAGGY JEANPIERRE",
+       "arte": "",
+       "neg": "",
+       "pausada": false,
+       "motivoPausa": "",
+       "frec": 300,
+       "vMes": 381.38,
+       "vSpot": 0.0424,
+       "id": "xls8btetsxc8u",
+       "versiones": []
+      }
+     ]
+    },
+    {
+     "id": "xfutgx5dnhrbv",
+     "nombre": "PANAMERICANA_6",
+     "capacidad": 900,
+     "campanas": []
+    }
+   ],
+   "on": "05:30",
+   "off": "22:00",
+   "ultimo": {
+    "cliente": "UNASA",
+    "accion": "agregada",
+    "ts": "2026-10-05T16:13:17.713Z"
+   }
+  },
+  {
+   "id": "proce",
+   "nombre": "Próceres",
+   "codigo": "PROCE",
+   "horas": 16.5,
+   "sublistas": [
+    {
+     "id": "proce-s2",
+     "nombre": "PROCERES2_450",
+     "capacidad": 900,
+     "campanas": [
+      {
+       "id": "proce-s2-c2",
+       "cliente": "MISTER DONUT",
+       "campana": "Horario 24 hrs",
+       "inicio": "2026-01-01",
+       "fin": "2026-12-31",
+       "frec": 450,
+       "notas": "",
+       "pausada": false,
+       "motivoPausa": "",
+       "versiones": []
+      },
+      {
+       "cliente": "ST JACKS",
+       "campana": "ST JACKS",
+       "inicio": "2026-09-16",
+       "fin": "2026-10-15",
+       "notas": "Ejecutivo: LUIS SEGOVIA · Arte: Animado · OP: OP st jacks septiembre.pdf",
+       "arte": "",
+       "neg": "",
+       "pausada": false,
+       "motivoPausa": "",
+       "frec": 300,
+       "vMes": 360,
+       "vSpot": 0.04,
+       "id": "xeahi01p1g4n8",
+       "versiones": []
+      }
+     ]
+    },
+    {
+     "id": "proce-s3",
+     "nombre": "PROCERES3_450",
+     "capacidad": 900,
+     "campanas": [
+      {
+       "cliente": "MD",
+       "campana": "TEMPORADA FIN DE AÑO",
+       "inicio": "2026-11-12",
+       "fin": "2026-11-30",
+       "notas": "Agencia: OGILVY",
+       "arte": "sin",
+       "neg": "",
+       "pausada": false,
+       "motivoPausa": "",
+       "frec": 450,
+       "vMes": 316.75,
+       "vSpot": 0.037,
+       "id": "xkryahvvyzp3a",
+       "versiones": []
+      },
+      {
+       "cliente": "MD",
+       "campana": "TEMPORADA FIN DE AÑO",
+       "inicio": "2026-12-01",
+       "fin": "2026-12-31",
+       "notas": "Agencia: OGILVY · Ejecutivo: MARTA DESCAMPS",
+       "arte": "sin",
+       "neg": "",
+       "pausada": false,
+       "motivoPausa": "",
+       "frec": 450,
+       "vMes": 500,
+       "vSpot": 0.0358,
+       "id": "x741lyeg506iu",
+       "versiones": []
+      },
+      {
+       "cliente": "LEMUSIMUN",
+       "campana": "50 ANIVERSARIO",
+       "inicio": "2026-09-21",
+       "fin": "2026-10-20",
+       "notas": "Agencia: LEMUSIMUN · Ejecutivo: MARTA DESCAMPS · Arte: Animado · OP: OP LEMUSIMUN 50 ANIVERSARIO.pdf",
+       "arte": "",
+       "neg": "canje",
+       "pausada": false,
+       "motivoPausa": "",
+       "frec": 300,
+       "vMes": 0,
+       "vSpot": 0,
+       "id": "xzs48lpa231v1",
+       "versiones": []
+      }
+     ]
+    },
+    {
+     "id": "proce-s4",
+     "nombre": "PROCERES4_450",
+     "capacidad": 900,
+     "campanas": [
+      {
+       "id": "proce-s4-c1",
+       "cliente": "MAXBLOCH",
+       "campana": "",
+       "inicio": "2026-06-08",
+       "fin": "2027-01-07",
+       "frec": 300,
+       "notas": "",
+       "pausada": false,
+       "motivoPausa": "",
+       "versiones": [
+        {
+         "id": "xg6efjxv5o9za",
+         "titulo": "V1",
+         "inicio": "2026-06-08",
+         "fin": null
+        },
+        {
+         "id": "xll7y2xjvobxc",
+         "titulo": "V2",
+         "inicio": "2026-06-08",
+         "fin": null
+        },
+        {
+         "id": "xv1esi60cod1q",
+         "titulo": "V3",
+         "inicio": "2026-06-08",
+         "fin": null
+        }
+       ],
+       "arte": ""
+      },
+      {
+       "cliente": "H&M",
+       "campana": "GENERICO",
+       "inicio": "2026-10-01",
+       "fin": "2026-10-20",
+       "notas": "Ejecutivo: Ricardo Ayala · Arte: Animado",
+       "arte": "sin",
+       "neg": "",
+       "pausada": false,
+       "motivoPausa": "",
+       "frec": 450,
+       "vMes": 800,
+       "vSpot": 0.0889,
+       "id": "x6u3govwb852i",
+       "versiones": []
+      }
+     ]
+    },
+    {
+     "id": "proce-s5",
+     "nombre": "PROCERES5_600",
+     "capacidad": 900,
+     "campanas": [
+      {
+       "cliente": "ALCALDIA DE SAN SALVADOR CENTRO",
+       "campana": "AMNISTIA",
+       "inicio": "2026-09-29",
+       "fin": "2026-11-27",
+       "notas": "OP DOOH_ALCALDIA DE SAN SALVADOR CENTRO_290926-05 · Ejecutivo: Marta Descamps · Cliente directo · Arte: Animado",
+       "arte": "",
+       "neg": "donacion",
+       "pausada": false,
+       "motivoPausa": "",
+       "frec": 300,
+       "vMes": null,
+       "vSpot": null,
+       "id": "x9m1jih56svpo",
+       "versiones": []
+      },
+      {
+       "cliente": "LA CURACAO",
+       "campana": "LA CURACAO",
+       "inicio": "2026-10-01",
+       "fin": "2026-10-31",
+       "notas": "OP DOOH_LA CURACAO_300926-01 · Ejecutivo: Marta Descamps · Agencia: APEX · Arte: Animado",
+       "arte": "sin",
+       "neg": "",
+       "pausada": false,
+       "motivoPausa": "",
+       "frec": 450,
+       "vMes": 725,
+       "vSpot": 0.052,
+       "id": "xs7f8uid3enh4",
+       "versiones": []
+      }
+     ]
+    },
+    {
+     "id": "proce-s6",
+     "nombre": "PROCERES6_300",
+     "capacidad": 900,
+     "campanas": [
+      {
+       "id": "proce-s6-c1",
+       "cliente": "PANDA EXPRESS",
+       "campana": "",
+       "inicio": "2026-06-26",
+       "fin": "2026-12-20",
+       "frec": 450,
+       "notas": "",
+       "pausada": false,
+       "motivoPausa": "",
+       "versiones": [
+        {
+         "id": "xmv0t4ltyw45b",
+         "titulo": "RICE BOX",
+         "inicio": "2026-08-17",
+         "fin": null
+        },
+        {
+         "id": "xu59fgbpvw7ls",
+         "titulo": "HOT ORANGE CHICKEN",
+         "inicio": "2026-08-17",
+         "fin": null
+        }
+       ]
+      },
+      {
+       "cliente": "PUMA",
+       "campana": "NEVER NOT SUEDE",
+       "inicio": "2026-10-13",
+       "fin": "2026-10-31",
+       "notas": "Agencia: OGILVY · Ejecutivo: MAGGY JEANPIERRE",
+       "arte": "aprob",
+       "neg": "",
+       "pausada": false,
+       "motivoPausa": "",
+       "frec": 450,
+       "vMes": 425,
+       "vSpot": 0.0315,
+       "id": "x0fp99df6n9ww",
+       "versiones": []
+      },
+      {
+       "cliente": "PUMA",
+       "campana": "NEVER NOT SUEDE",
+       "inicio": "2026-11-01",
+       "fin": "2026-11-30",
+       "notas": "Agencia: OGILVY · Ejecutivo: MAGGY JEANPIERRE",
+       "arte": "aprob",
+       "neg": "",
+       "pausada": false,
+       "motivoPausa": "",
+       "frec": 450,
+       "vMes": 425,
+       "vSpot": 0.0315,
+       "id": "xr0bln6k3p273",
+       "versiones": []
+      },
+      {
+       "cliente": "MOPT",
+       "campana": "RESTRICCIONES DE HORARIO DE CARGA",
+       "inicio": "2026-10-02",
+       "fin": "2026-11-30",
+       "notas": "OP DOOH_MOPT_021026-02 · Ejecutivo: Maggy Jeanpierre · Cliente directo · Arte: Animado",
+       "neg": "donacion",
+       "pausada": false,
+       "motivoPausa": "",
+       "frec": 300,
+       "vMes": null,
+       "vSpot": null,
+       "id": "x5dmbgnf51snp",
+       "versiones": []
+      }
+     ]
+    },
+    {
+     "id": "proce-s8",
+     "nombre": "PROCERES8_450",
+     "capacidad": 900,
+     "campanas": [
+      {
+       "cliente": "GRIIN FLEX",
+       "campana": "GRIIN FLEX",
+       "inicio": "2026-09-01",
+       "fin": "2026-09-30",
+       "notas": "Agencia: ECO COMUNICACIONES · Ejecutivo: Ricardo Ayala",
+       "arte": "",
+       "neg": "",
+       "pausada": false,
+       "motivoPausa": "",
+       "frec": 300,
+       "vMes": 550,
+       "vSpot": 0.0611,
+       "id": "x8nbduoccoitg",
+       "versiones": [
+        {
+         "id": "x2wyxm0bc3apd",
+         "titulo": "Griin flex",
+         "inicio": "2026-09-01",
+         "fin": "2026-09-30"
+        },
+        {
+         "id": "xr5x6vs9u3js1",
+         "titulo": "Virifabulosa",
+         "inicio": "2026-09-01",
+         "fin": "2026-09-30"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "proce-s9",
+     "nombre": "PROCERES9_450",
+     "capacidad": 900,
+     "campanas": [
+      {
+       "id": "xtqz9psshye9b",
+       "cliente": "BANCO AGRICOLA",
+       "campana": "",
+       "inicio": "2026-01-01",
+       "fin": "2026-12-31",
+       "frec": 450,
+       "notas": "Varias versiones / Cambia todos los días.",
+       "pausada": false,
+       "motivoPausa": "",
+       "versiones": [
+        {
+         "id": "xlz1ws1mhgfrx",
+         "titulo": "(GELU PERMANENTE)-SEPT 26",
+         "inicio": "2026-09-08",
+         "fin": "2026-09-30"
+        },
+        {
+         "id": "xovmba5rfc5m9",
+         "titulo": "ALIANZAS (SEÑOR-GAUCHO SEPTIMBRE)-SEP 26",
+         "inicio": "2026-06-08",
+         "fin": "2026-12-31"
+        },
+        {
+         "id": "xiwh5yevcd268",
+         "titulo": "BANCO AGRICOLA / ALIANZAS (XCLAIM-SEPTIEMBRE)-SEP",
+         "inicio": "2026-06-08",
+         "fin": "2026-12-31"
+        },
+        {
+         "id": "xdgkszv9hutkj",
+         "titulo": "BANCO AGRICOLA / ALIANZAS (FAUSTO-SEPTIEMBRE)",
+         "inicio": "2026-09-01",
+         "fin": "2026-09-30"
+        },
+        {
+         "id": "xx2qhhjzrux4r",
+         "titulo": "BANCO AGRICOLA / ALIANZAS (GENERICA DÍA DEL NIÑO)",
+         "inicio": "2026-06-08",
+         "fin": "2026-12-31"
+        },
+        {
+         "id": "x4yme0cbjvnma",
+         "titulo": "BANCO AGRICOLA / ALIANZAS (VIDALS SEPTIEMBRE)-SEP",
+         "inicio": "2026-06-08",
+         "fin": "2026-12-31"
+        },
+        {
+         "id": "x97n23krcvtk2",
+         "titulo": "ANIMACIONES BANCO AGRICOLA / ALIANZAS (JUGUETON-DIA DEL NIÑO)-SEPT",
+         "inicio": "2026-06-08",
+         "fin": "2026-12-31"
+        }
+       ]
+      },
+      {
+       "cliente": "SIMAN",
+       "campana": "SIMAN ANIVERSALE",
+       "inicio": "2026-10-01",
+       "fin": "2026-10-31",
+       "notas": "OP DOOH_SIMAN_290926-04 · Ejecutivo: Marta Descamps · Agencia: ALMACENES VIDRI/ PUBLICIDAD COMERCIAL · Arte: Animado",
+       "arte": "",
+       "neg": "",
+       "pausada": false,
+       "motivoPausa": "",
+       "frec": 450,
+       "vMes": 810,
+       "vSpot": 0.0581,
+       "id": "xm26rl8u8emjo",
+       "versiones": []
+      }
+     ]
+    },
+    {
+     "id": "x1bzf48rxr2nd",
+     "nombre": "PROCERES 7",
+     "capacidad": 900,
+     "campanas": [
+      {
+       "cliente": "GRUPO EXCEL",
+       "campana": "PROMO GRUPO EXCEL",
+       "inicio": "2026-10-01",
+       "fin": "2026-10-31",
+       "notas": "OP DOOH_GRUPO EXCEL_300926-05 · Ejecutivo: Marta Descamps · Agencia: OMNIMARK · Arte: Animado · Editables: https://we.tl/t-PETuPCsx77QCEKBq · Indicaciones: L200 4X4",
+       "arte": "",
+       "neg": "",
+       "pausada": false,
+       "motivoPausa": "",
+       "frec": 900,
+       "vMes": 1500,
+       "vSpot": 0.0538,
+       "id": "xu0gkqsqlkixn",
+       "versiones": []
+      }
+     ]
+    }
+   ],
+   "on": "05:30",
+   "off": "22:00",
+   "ultimo": {
+    "cliente": "MOPT",
+    "accion": "agregada",
+    "ts": "2026-10-02T21:53:03.830Z"
+   }
+  },
+  {
+   "id": "paseo",
+   "nombre": "Paseo",
+   "codigo": "PASEO",
+   "horas": 16.5,
+   "sublistas": [
+    {
+     "id": "paseo-s2",
+     "nombre": "PASEO2_450",
+     "capacidad": 900,
+     "campanas": [
+      {
+       "id": "paseo-s2-c2",
+       "cliente": "BANCO AGRICOLA",
+       "campana": "",
+       "inicio": "2026-01-01",
+       "fin": "2026-12-31",
+       "frec": 450,
+       "notas": "",
+       "pausada": false,
+       "motivoPausa": "",
+       "versiones": [
+        {
+         "id": "xwmui0s23gfrx",
+         "titulo": "(GELU PERMANENTE)-SEPT 26",
+         "inicio": "2026-09-08",
+         "fin": "2026-09-30"
+        },
+        {
+         "id": "xk8ljddg4c5m9",
+         "titulo": "ALIANZAS (SEÑOR-GAUCHO SEPTIMBRE)-SEP 26",
+         "inicio": "2026-06-08",
+         "fin": "2026-12-31"
+        },
+        {
+         "id": "xian8ao4xd268",
+         "titulo": "BANCO AGRICOLA / ALIANZAS (XCLAIM-SEPTIEMBRE)-SEP",
+         "inicio": "2026-06-08",
+         "fin": "2026-12-31"
+        },
+        {
+         "id": "x38ce1movutkj",
+         "titulo": "BANCO AGRICOLA / ALIANZAS (FAUSTO-SEPTIEMBRE)",
+         "inicio": "2026-09-01",
+         "fin": "2026-09-30"
+        },
+        {
+         "id": "x4iedhmruux4r",
+         "titulo": "BANCO AGRICOLA / ALIANZAS (GENERICA DÍA DEL NIÑO)",
+         "inicio": "2026-06-08",
+         "fin": "2026-12-31"
+        },
+        {
+         "id": "xxx2lyf4kvnma",
+         "titulo": "BANCO AGRICOLA / ALIANZAS (VIDALS SEPTIEMBRE)-SEP",
+         "inicio": "2026-06-08",
+         "fin": "2026-12-31"
+        },
+        {
+         "id": "xq68iar84vtk2",
+         "titulo": "ANIMACIONES BANCO AGRICOLA / ALIANZAS (JUGUETON-DIA DEL NIÑO)-SEPT",
+         "inicio": "2026-06-08",
+         "fin": "2026-12-31"
+        }
+       ]
+      },
+      {
+       "cliente": "DUICENTRO",
+       "campana": "RENUEVA TU DUI",
+       "inicio": "2026-09-01",
+       "fin": "2026-09-30",
+       "notas": "Agencia: INDIBRANDS · Ejecutivo: Ricardo Ayala",
+       "arte": "",
+       "neg": "bonificacion",
+       "pausada": false,
+       "motivoPausa": "",
+       "frec": 300,
+       "vMes": 0,
+       "vSpot": 0,
+       "id": "xhmriewl7woja",
+       "versiones": []
+      },
+      {
+       "cliente": "MOPT",
+       "campana": "RESTRICCIONES DE HORARIO DE CARGA",
+       "inicio": "2026-10-02",
+       "fin": "2026-11-30",
+       "notas": "OP DOOH_MOPT_021026-02 · Ejecutivo: Maggy Jeanpierre · Cliente directo · Arte: Animado",
+       "neg": "donacion",
+       "pausada": false,
+       "motivoPausa": "",
+       "frec": 300,
+       "vMes": null,
+       "vSpot": null,
+       "id": "x221nnwpe1snq",
+       "versiones": []
+      }
+     ]
+    },
+    {
+     "id": "paseo-s3",
+     "nombre": "PASEO3_300",
+     "capacidad": 900,
+     "campanas": [
+      {
+       "id": "paseo-s3-c1",
+       "cliente": "MAXBLOCH",
+       "campana": "",
+       "inicio": "2026-06-08",
+       "fin": "2027-01-07",
+       "frec": 300,
+       "notas": "",
+       "pausada": false,
+       "motivoPausa": "",
+       "versiones": [
+        {
+         "id": "xy9wkebn7np3x",
+         "titulo": "V1",
+         "inicio": "2026-06-08",
+         "fin": null
+        },
+        {
+         "id": "x2hqi6m8snwpy",
+         "titulo": "V2",
+         "inicio": "2026-06-08",
+         "fin": null
+        },
+        {
+         "id": "xejtxlux6nyba",
+         "titulo": "V3",
+         "inicio": "2026-06-08",
+         "fin": null
+        }
+       ]
+      },
+      {
+       "cliente": "MINSAL",
+       "campana": "INSTITUCIONAL",
+       "inicio": "2026-09-01",
+       "fin": "2026-09-30",
+       "notas": "Ejecutivo: MAGGY JEANPIERRE",
+       "arte": "",
+       "neg": "",
+       "pausada": false,
+       "motivoPausa": "",
+       "frec": 300,
+       "vMes": 600,
+       "vSpot": 0.0667,
+       "id": "xuffbpj49uu87",
+       "versiones": []
+      },
+      {
+       "cliente": "APEX PUBLICIDAD",
+       "campana": "MINSAL INSTITUCIONAL",
+       "inicio": "2026-10-01",
+       "fin": "2026-10-31",
+       "notas": "Ejecutivo: MARTA DESCAMPS · Arte: Animado",
+       "arte": "",
+       "neg": "",
+       "pausada": false,
+       "motivoPausa": "",
+       "frec": 300,
+       "vMes": 600,
+       "vSpot": 0.0645,
+       "id": "xszec39i8mzvs",
+       "versiones": []
+      },
+      {
+       "cliente": "LEMUSIMUN",
+       "campana": "50 ANIVERSARIO",
+       "inicio": "2026-09-21",
+       "fin": "2026-10-20",
+       "notas": "Agencia: LEMUSIMUN · Ejecutivo: MARTA DESCAMPS · Arte: Animado · OP: OP LEMUSIMUN 50 ANIVERSARIO.pdf",
+       "arte": "",
+       "neg": "canje",
+       "pausada": false,
+       "motivoPausa": "",
+       "frec": 300,
+       "vMes": 0,
+       "vSpot": 0,
+       "id": "x2qid5pcp31v1",
+       "versiones": []
+      }
+     ]
+    },
+    {
+     "id": "paseo-s4",
+     "nombre": "PASEO4_450",
+     "capacidad": 900,
+     "campanas": [
+      {
+       "cliente": "UNILEVER",
+       "campana": "NATURA´S MAGIC",
+       "inicio": "2026-09-21",
+       "fin": "2026-10-20",
+       "notas": "Agencia: ECO COMUNICACIONES · Ejecutivo: Ricardo Ayala",
+       "arte": "",
+       "pausada": false,
+       "motivoPausa": "",
+       "frec": 450,
+       "vMes": 776.25,
+       "vSpot": 0.0575,
+       "id": "x0ze92z69koxm",
+       "versiones": []
+      },
+      {
+       "cliente": "MD",
+       "campana": "TEMPORADA FIN DE AÑO",
+       "inicio": "2026-11-12",
+       "fin": "2026-11-30",
+       "notas": "Agencia: OGILVY",
+       "arte": "sin",
+       "neg": "",
+       "pausada": false,
+       "motivoPausa": "",
+       "frec": 450,
+       "vMes": 316.75,
+       "vSpot": 0.037,
+       "id": "xt1vxq2bizp3a",
+       "versiones": []
+      },
+      {
+       "cliente": "MD",
+       "campana": "TEMPORADA FIN DE AÑO",
+       "inicio": "2026-12-01",
+       "fin": "2026-12-31",
+       "notas": "Agencia: OGILVY · Ejecutivo: MARTA DESCAMPS",
+       "arte": "sin",
+       "neg": "",
+       "pausada": false,
+       "motivoPausa": "",
+       "frec": 450,
+       "vMes": 500,
+       "vSpot": 0.0358,
+       "id": "xt81m7u4206iu",
+       "versiones": []
+      },
+      {
+       "cliente": "ALCALDIA DE SAN SALVADOR CENTRO",
+       "campana": "AMNISTIA",
+       "inicio": "2026-09-29",
+       "fin": "2026-11-27",
+       "notas": "OP DOOH_ALCALDIA DE SAN SALVADOR CENTRO_290926-05 · Ejecutivo: Marta Descamps · Cliente directo · Arte: Animado",
+       "arte": "",
+       "neg": "donacion",
+       "pausada": false,
+       "motivoPausa": "",
+       "frec": 300,
+       "vMes": null,
+       "vSpot": null,
+       "id": "x9ovx8ob5svpp",
+       "versiones": []
+      }
+     ]
+    },
+    {
+     "id": "paseo-s5",
+     "nombre": "PASEO5_450",
+     "capacidad": 900,
+     "campanas": [
+      {
+       "cliente": "PUMA",
+       "campana": "NEVER NOT SUEDE",
+       "inicio": "2026-10-13",
+       "fin": "2026-10-31",
+       "notas": "Agencia: OGILVY · Ejecutivo: MAGGY JEANPIERRE",
+       "arte": "",
+       "neg": "",
+       "pausada": false,
+       "motivoPausa": "",
+       "frec": 450,
+       "vMes": 425,
+       "vSpot": 0.0315,
+       "id": "xp5zavrg6n9ww",
+       "versiones": []
+      },
+      {
+       "cliente": "PUMA",
+       "campana": "NEVER NOT SUEDE",
+       "inicio": "2026-11-01",
+       "fin": "2026-11-30",
+       "notas": "Agencia: OGILVY · Ejecutivo: MAGGY JEANPIERRE",
+       "arte": "",
+       "neg": "",
+       "pausada": false,
+       "motivoPausa": "",
+       "frec": 450,
+       "vMes": 425,
+       "vSpot": 0.0315,
+       "id": "xsgis2b3np273",
+       "versiones": []
+      }
+     ]
+    },
+    {
+     "id": "xfrc2tk1h5osi",
+     "nombre": "PASEO 1",
+     "capacidad": 900,
+     "campanas": [
+      {
+       "cliente": "BLT (IHOP/ APPLEBEE'S)",
+       "campana": "Apertura",
+       "inicio": "2026-11-01",
+       "fin": "2026-12-30",
+       "notas": "Ejecutivo: Ricardo Ayala",
+       "arte": "sin",
+       "neg": "",
+       "pausada": false,
+       "motivoPausa": "",
+       "frec": 300,
+       "vMes": 900,
+       "vSpot": 0.05,
+       "id": "xtwkzkc79pt7d",
+       "versiones": []
+      }
+     ]
+    },
+    {
+     "id": "xnjg4dlufeepa",
+     "nombre": "PASEO 6",
+     "capacidad": 900,
+     "campanas": [
+      {
+       "cliente": "FUSALMO",
+       "campana": "ROBOTICA",
+       "inicio": "2026-09-24",
+       "fin": "2026-10-08",
+       "notas": "Ejecutivo: Roxana Avalos",
+       "arte": "",
+       "neg": "donacion",
+       "pausada": false,
+       "motivoPausa": "",
+       "frec": 450,
+       "vMes": 0,
+       "vSpot": 0,
+       "id": "xb65oybfdpbhh",
+       "versiones": []
+      },
+      {
+       "cliente": "UNASA",
+       "campana": "UNASA",
+       "inicio": "2026-10-05",
+       "fin": "2026-10-20",
+       "notas": "OP DOOH_UNASA_051026-02 · Ejecutivo: Maggy Jeanpierre · Cliente directo · Arte: Animado",
+       "arte": "",
+       "neg": "donacion",
+       "pausada": false,
+       "motivoPausa": "",
+       "frec": 300,
+       "vMes": null,
+       "vSpot": null,
+       "id": "xrd3sz7si8emq",
+       "versiones": []
+      }
+     ]
+    }
+   ],
+   "on": "05:30",
+   "off": "22:00",
+   "ultimo": {
+    "cliente": "UNASA",
+    "accion": "agregada",
+    "ts": "2026-10-05T16:13:17.714Z"
+   }
+  },
+  {
+   "id": "jerusa",
+   "nombre": "Jerusalén",
+   "codigo": "JERUSA",
+   "horas": 16.5,
+   "sublistas": [
+    {
+     "id": "jerusa-s1",
+     "nombre": "JERUSALEN2_900",
+     "capacidad": 900,
+     "campanas": [
+      {
+       "cliente": "BLT (IHOP/ APPLEBEE'S)",
+       "campana": "Apertura",
+       "inicio": "2026-11-01",
+       "fin": "2026-12-30",
+       "notas": "Ejecutivo: Ricardo Ayala",
+       "arte": "sin",
+       "neg": "",
+       "pausada": false,
+       "motivoPausa": "",
+       "frec": 300,
+       "vMes": 900,
+       "vSpot": 0.05,
+       "id": "xq9rdf8vgpt7d",
+       "versiones": []
+      },
+      {
+       "cliente": "UNILEVER",
+       "campana": "NATURA´S MAGIC",
+       "inicio": "2026-09-21",
+       "fin": "2026-10-20",
+       "notas": "Agencia: ECO COMUNICACIONES · Ejecutivo: Ricardo Ayala",
+       "arte": "",
+       "pausada": false,
+       "motivoPausa": "",
+       "frec": 450,
+       "vMes": 776.25,
+       "vSpot": 0.0575,
+       "id": "xcszzj6o6koxm",
+       "versiones": []
+      },
+      {
+       "cliente": "LEMUSIMUN",
+       "campana": "50 ANIVERSARIO",
+       "inicio": "2026-09-21",
+       "fin": "2026-10-20",
+       "notas": "Agencia: LEMUSIMUN · Ejecutivo: MARTA DESCAMPS · Arte: Animado · OP: OP LEMUSIMUN 50 ANIVERSARIO.pdf",
+       "arte": "",
+       "neg": "canje",
+       "pausada": false,
+       "motivoPausa": "",
+       "frec": 300,
+       "vMes": 0,
+       "vSpot": 0,
+       "id": "xft6ely1d31v1",
+       "versiones": []
+      }
+     ]
+    },
+    {
+     "id": "jerusa-s2",
+     "nombre": "JERUSALEN 01",
+     "capacidad": 900,
+     "campanas": [
+      {
+       "cliente": "DUICENTRO",
+       "campana": "RENUEVA TU DUI",
+       "inicio": "2026-09-01",
+       "fin": "2026-09-30",
+       "notas": "Agencia: INDIBRANDS · Ejecutivo: Ricardo Ayala",
+       "arte": "",
+       "neg": "",
+       "pausada": false,
+       "motivoPausa": "",
+       "frec": 300,
+       "vMes": 705.88,
+       "vSpot": 0.0784,
+       "id": "xb9mu394ivhlw",
+       "versiones": []
+      },
+      {
+       "cliente": "UNASA",
+       "campana": "UNASA",
+       "inicio": "2026-10-05",
+       "fin": "2026-10-20",
+       "notas": "OP DOOH_UNASA_051026-02 · Ejecutivo: Maggy Jeanpierre · Cliente directo · Arte: Animado",
+       "arte": "",
+       "neg": "donacion",
+       "pausada": false,
+       "motivoPausa": "",
+       "frec": 300,
+       "vMes": null,
+       "vSpot": null,
+       "id": "xhnamltx08emq",
+       "versiones": []
+      }
+     ]
+    },
+    {
+     "id": "jerusa-s7",
+     "nombre": "JERUSALEN3",
+     "capacidad": 900,
+     "campanas": [
+      {
+       "cliente": "H&M",
+       "campana": "GENERICO",
+       "inicio": "2026-10-01",
+       "fin": "2026-10-20",
+       "notas": "Ejecutivo: Ricardo Ayala · Arte: Animado",
+       "arte": "sin",
+       "neg": "",
+       "pausada": false,
+       "motivoPausa": "",
+       "frec": 450,
+       "vMes": 800,
+       "vSpot": 0.0889,
+       "id": "x5xpb1hq5852i",
+       "versiones": []
+      },
+      {
+       "cliente": "MOPT",
+       "campana": "RESTRICCIONES DE HORARIO DE CARGA",
+       "inicio": "2026-10-02",
+       "fin": "2026-11-30",
+       "notas": "OP DOOH_MOPT_021026-02 · Ejecutivo: Maggy Jeanpierre · Cliente directo · Arte: Animado",
+       "neg": "donacion",
+       "pausada": false,
+       "motivoPausa": "",
+       "frec": 300,
+       "vMes": null,
+       "vSpot": null,
+       "id": "xkrnd4qp01snq",
+       "versiones": []
+      }
+     ]
+    },
+    {
+     "id": "xeoigadvxvocx",
+     "nombre": "JERUSALEN5",
+     "capacidad": 900,
+     "campanas": [
+      {
+       "cliente": "ALPINA",
+       "campana": "ALPINA BEBE",
+       "inicio": "2026-09-29",
+       "fin": "2026-10-28",
+       "notas": "",
+       "arte": "",
+       "neg": "",
+       "pausada": false,
+       "motivoPausa": "",
+       "frec": 450,
+       "vMes": 900,
+       "vSpot": 0.0667,
+       "id": "xqpirslwedyqf",
+       "versiones": []
+      },
+      {
+       "cliente": "ALCALDIA DE SAN SALVADOR CENTRO",
+       "campana": "AMNISTIA",
+       "inicio": "2026-09-29",
+       "fin": "2026-11-27",
+       "notas": "OP DOOH_ALCALDIA DE SAN SALVADOR CENTRO_290926-05 · Ejecutivo: Marta Descamps · Cliente directo · Arte: Animado",
+       "arte": "",
+       "neg": "donacion",
+       "pausada": false,
+       "motivoPausa": "",
+       "frec": 300,
+       "vMes": null,
+       "vSpot": null,
+       "id": "xj57977jpsvpp",
+       "versiones": []
+      }
+     ]
+    }
+   ],
+   "on": "05:30",
+   "off": "22:00",
+   "ultimo": {
+    "cliente": "UNASA",
+    "accion": "agregada",
+    "ts": "2026-10-05T16:13:17.714Z"
+   }
+  },
+  {
+   "id": "benito",
+   "nombre": "San Benito",
+   "codigo": "BENITO",
+   "horas": 16.5,
+   "sublistas": [
+    {
+     "id": "benito-s1",
+     "nombre": "BENITO1_900",
+     "capacidad": 900,
+     "campanas": [
+      {
+       "cliente": "APEX PUBLICIDAD",
+       "campana": "MINSAL INSTITUCIONAL",
+       "inicio": "2026-10-01",
+       "fin": "2026-10-31",
+       "notas": "Ejecutivo: MARTA DESCAMPS · Arte: Animado",
+       "arte": "",
+       "neg": "",
+       "pausada": false,
+       "motivoPausa": "",
+       "frec": 300,
+       "vMes": 600,
+       "vSpot": 0.0645,
+       "id": "xdnzqhpkymzvs",
+       "versiones": []
+      },
+      {
+       "cliente": "ALCALDIA DE SAN SALVADOR CENTRO",
+       "campana": "AMNISTIA",
+       "inicio": "2026-09-29",
+       "fin": "2026-11-27",
+       "notas": "OP DOOH_ALCALDIA DE SAN SALVADOR CENTRO_290926-05 · Ejecutivo: Marta Descamps · Cliente directo · Arte: Animado",
+       "arte": "",
+       "neg": "donacion",
+       "pausada": false,
+       "motivoPausa": "",
+       "frec": 300,
+       "vMes": null,
+       "vSpot": null,
+       "id": "xvsq74it8svpp",
+       "versiones": []
+      },
+      {
+       "cliente": "MOPT",
+       "campana": "RESTRICCIONES DE HORARIO DE CARGA",
+       "inicio": "2026-10-02",
+       "fin": "2026-11-30",
+       "notas": "OP DOOH_MOPT_021026-02 · Ejecutivo: Maggy Jeanpierre · Cliente directo · Arte: Animado",
+       "neg": "donacion",
+       "pausada": false,
+       "motivoPausa": "",
+       "frec": 300,
+       "vMes": null,
+       "vSpot": null,
+       "id": "x5mn63fv71snq",
+       "versiones": []
+      }
+     ]
+    },
+    {
+     "id": "benito-s2",
+     "nombre": "BENITO2_450",
+     "capacidad": 900,
+     "campanas": [
+      {
+       "cliente": "ALPINA",
+       "campana": "ALPINA BEBE",
+       "inicio": "2026-09-29",
+       "fin": "2026-10-28",
+       "notas": "",
+       "arte": "",
+       "neg": "",
+       "pausada": false,
+       "motivoPausa": "",
+       "frec": 450,
+       "vMes": 675,
+       "vSpot": 0.05,
+       "id": "xibsod5j9dyqf",
+       "versiones": []
+      },
+      {
+       "cliente": "Walmart",
+       "campana": "WALMART",
+       "inicio": "2026-10-01",
+       "fin": "2026-10-31",
+       "notas": "OP DOOH_WALMART_300926-03 · Ejecutivo: Marta Descamps · Agencia: ECO COMUNICACION · Arte: Animado",
+       "arte": "",
+       "neg": "",
+       "pausada": false,
+       "motivoPausa": "",
+       "frec": 450,
+       "vMes": 600,
+       "vSpot": 0.043,
+       "id": "xokm2w0s1hqzw",
+       "versiones": []
+      }
+     ]
+    },
+    {
+     "id": "benito-s4",
+     "nombre": "BENITO4_450",
+     "capacidad": 900,
+     "campanas": [
+      {
+       "cliente": "UNIVERSIDAD DON BOSCO",
+       "campana": "DISEÑO",
+       "inicio": "2026-09-21",
+       "fin": "2026-10-09",
+       "notas": "Ejecutivo: Ricardo Ayala · Arte: Animado · OP: OP UDB DOOH SEPT 210926.pdf",
+       "arte": "",
+       "neg": "",
+       "pausada": false,
+       "motivoPausa": "",
+       "frec": 450,
+       "vMes": 385,
+       "vSpot": 0.045,
+       "id": "xh8nm58n35hfg",
+       "versiones": []
+      },
+      {
+       "cliente": "LEMUSIMUN",
+       "campana": "50 ANIVERSARIO",
+       "inicio": "2026-09-21",
+       "fin": "2026-10-20",
+       "notas": "Agencia: LEMUSIMUN · Ejecutivo: MARTA DESCAMPS · Arte: Animado · OP: OP LEMUSIMUN 50 ANIVERSARIO.pdf",
+       "arte": "",
+       "neg": "canje",
+       "pausada": false,
+       "motivoPausa": "",
+       "frec": 300,
+       "vMes": 0,
+       "vSpot": 0,
+       "id": "x663ztqsr31v1",
+       "versiones": []
+      }
+     ]
+    },
+    {
+     "id": "benito-s7",
+     "nombre": "BENITO3_300",
+     "capacidad": 900,
+     "campanas": [
+      {
+       "cliente": "CONAMIPE / CAPRES",
+       "campana": "FAMILIA",
+       "inicio": "2026-09-04",
+       "fin": "2026-09-30",
+       "notas": "Agencia: AMERICA PUBLICIDAD · Ejecutivo: Ricardo Ayala",
+       "arte": "",
+       "neg": "",
+       "pausada": false,
+       "motivoPausa": "",
+       "frec": 450,
+       "vMes": 693.96,
+       "vSpot": 0.0571,
+       "id": "xm4zrwxevr1ql",
+       "versiones": []
+      },
+      {
+       "cliente": "FRIOAIRE",
+       "campana": "GENERICO",
+       "inicio": "2026-09-12",
+       "fin": "2026-12-11",
+       "notas": "Ejecutivo: Ricardo Ayala · Arte: Animado · OP: OP FRIO AIRE DOOH 040926.pdf",
+       "arte": "",
+       "pausada": false,
+       "motivoPausa": "",
+       "frec": 300,
+       "vMes": 550,
+       "vSpot": 0.0611,
+       "id": "x3xx2xhozt2ad",
+       "versiones": [],
+       "vTotal": 3300
+      },
+      {
+       "cliente": "UNASA",
+       "campana": "UNASA",
+       "inicio": "2026-10-05",
+       "fin": "2026-10-20",
+       "notas": "OP DOOH_UNASA_051026-02 · Ejecutivo: Maggy Jeanpierre · Cliente directo · Arte: Animado",
+       "arte": "",
+       "neg": "donacion",
+       "pausada": false,
+       "motivoPausa": "",
+       "frec": 300,
+       "vMes": null,
+       "vSpot": null,
+       "id": "xl6vc9ibk8emq",
+       "versiones": []
+      }
+     ]
+    },
+    {
+     "id": "xl1updwzelsf8",
+     "nombre": "BENITO 5",
+     "capacidad": 900,
+     "campanas": [
+      {
+       "cliente": "UBIQUITY",
+       "campana": "APPLY NOW",
+       "inicio": "2026-09-16",
+       "fin": "2026-10-15",
+       "notas": "Agencia: PLAYER MEDIA · Ejecutivo: Marta Descamps",
+       "arte": "",
+       "neg": "",
+       "pausada": false,
+       "motivoPausa": "",
+       "frec": 450,
+       "vMes": 900,
+       "vSpot": 0.0667,
+       "id": "xnez293deypsi",
+       "versiones": []
+      },
+      {
+       "cliente": "UNILEVER",
+       "campana": "NATURA´S MAGIC",
+       "inicio": "2026-09-21",
+       "fin": "2026-10-20",
+       "notas": "Agencia: ECO COMUNICACIONES · Ejecutivo: Ricardo Ayala",
+       "arte": "",
+       "neg": "bonificacion",
+       "pausada": false,
+       "motivoPausa": "",
+       "frec": 450,
+       "vSpot": 0,
+       "id": "x3z1khgdukoxm",
+       "versiones": []
+      }
+     ]
+    },
+    {
+     "id": "xmdakzdknn7bn",
+     "nombre": "BENITO 6",
+     "capacidad": 900,
+     "campanas": [
+      {
+       "cliente": "BLT (IHOP/ APPLEBEE'S)",
+       "campana": "Apertura",
+       "inicio": "2026-11-01",
+       "fin": "2026-12-30",
+       "notas": "Ejecutivo: Ricardo Ayala",
+       "arte": "sin",
+       "neg": "bonificacion",
+       "pausada": false,
+       "motivoPausa": "",
+       "frec": 300,
+       "vMes": 0,
+       "vSpot": 0,
+       "id": "xhmfabv2kpt7d",
+       "versiones": []
+      },
+      {
+       "cliente": "ALMACENES VIDRI",
+       "campana": "PINTURAS",
+       "inicio": "2026-10-15",
+       "fin": "2026-11-14",
+       "notas": "",
+       "arte": "sin",
+       "neg": "",
+       "pausada": false,
+       "motivoPausa": "",
+       "frec": 450,
+       "vMes": 575,
+       "vSpot": 0.0412,
+       "id": "xo25q41avo7q0",
+       "versiones": []
+      }
+     ]
+    },
+    {
+     "id": "x2gvrbnbjczxe",
+     "nombre": "BENITO 7",
+     "capacidad": 900,
+     "campanas": [
+      {
+       "cliente": "H&M",
+       "campana": "GENERICO",
+       "inicio": "2026-10-01",
+       "fin": "2026-10-20",
+       "notas": "Ejecutivo: Ricardo Ayala · Arte: Animado",
+       "arte": "sin",
+       "neg": "",
+       "pausada": false,
+       "motivoPausa": "",
+       "frec": 450,
+       "vMes": 800,
+       "vSpot": 0.0889,
+       "id": "xnb5k3ffe852i",
+       "versiones": []
+      },
+      {
+       "cliente": "MINED",
+       "campana": "MINED",
+       "inicio": "2026-10-01",
+       "fin": "2026-10-31",
+       "notas": "OP DOOH_MINED_011026-01",
+       "arte": "",
+       "neg": "",
+       "pausada": false,
+       "motivoPausa": "",
+       "frec": 450,
+       "vMes": 705.88,
+       "vSpot": 0.0506,
+       "id": "x0ft72y4foer0",
+       "versiones": []
+      }
+     ]
+    }
+   ],
+   "on": "05:30",
+   "off": "22:00",
+   "ultimo": {
+    "cliente": "UNASA",
+    "accion": "agregada",
+    "ts": "2026-10-05T16:13:17.714Z"
+   }
+  },
+  {
+   "id": "juanpa",
+   "nombre": "Constitución / Juan Pablo",
+   "codigo": "JUANPA",
+   "horas": 16.5,
+   "sublistas": [
+    {
+     "id": "juanpa-s2",
+     "nombre": "JUAN PABLO 01",
+     "capacidad": 900,
+     "campanas": [
+      {
+       "id": "x22rpgg8fsehr",
+       "cliente": "PANDA EXPRESS",
+       "campana": "Rice box y Hot orange chicken",
+       "inicio": "2026-08-01",
+       "fin": "2026-12-31",
+       "frec": 450,
+       "notas": "",
+       "pausada": false,
+       "motivoPausa": "",
+       "versiones": [
+        {
+         "id": "xnz5au40tyu2v",
+         "titulo": "RICE BOX",
+         "inicio": "2026-08-17",
+         "fin": null
+        },
+        {
+         "id": "xfhiaa49fyywf",
+         "titulo": "HOT ORANGE CHICKEN",
+         "inicio": "2026-08-17",
+         "fin": null
+        }
+       ]
+      },
+      {
+       "cliente": "LEMUSIMUN",
+       "campana": "50 ANIVERSARIO",
+       "inicio": "2026-09-21",
+       "fin": "2026-10-20",
+       "notas": "Agencia: LEMUSIMUN · Ejecutivo: MARTA DESCAMPS · Arte: Animado · OP: OP LEMUSIMUN 50 ANIVERSARIO.pdf",
+       "arte": "",
+       "neg": "canje",
+       "pausada": false,
+       "motivoPausa": "",
+       "frec": 300,
+       "vMes": 0,
+       "vSpot": 0,
+       "id": "xvsooxao531v1",
+       "versiones": []
+      }
+     ]
+    },
+    {
+     "id": "juanpa-s3",
+     "nombre": "JUAN PABLO 03",
+     "capacidad": 900,
+     "campanas": [
+      {
+       "cliente": "TIGO",
+       "campana": "POSPAGO RETAIL",
+       "inicio": "2026-10-01",
+       "fin": "2026-10-03",
+       "notas": "OP DOOH_TIGO_300926-02 · Ejecutivo: Marta Descamps · Agencia: ECO COMUNICACION · Arte: Animado · Indicaciones: 01, 02, 03,  MATERIALES DE ESTAS FECHAS APROBADOS Y EN NUESTRO PODER.REDMI NOTE 15 + SAMSUNG GALAXY A17 + GALAXY Contratación dura 15 días todo el mes de octubre repartirán las fechas según convenga.",
+       "arte": "",
+       "neg": "",
+       "pausada": false,
+       "motivoPausa": "",
+       "frec": 450,
+       "vMes": 67.5,
+       "vSpot": 0.05,
+       "id": "xw7gjshyxjcmk",
+       "versiones": []
+      },
+      {
+       "cliente": "NOTICIERO EL SALVADOR",
+       "campana": "6 ANIVERSARIO",
+       "inicio": "2026-10-01",
+       "fin": "2026-10-31",
+       "notas": "OP DOOH_NOTICIERO EL SALVADOR_011026-02 · Ejecutivo: Marta Descamps · Agencia: LEMUSIMUN · Arte: Animado · Editables: https://we.tl/t-n82DugkmmBB3Er9q · Indicaciones: Descargar editables",
+       "arte": "",
+       "neg": "",
+       "pausada": false,
+       "motivoPausa": "",
+       "frec": 300,
+       "vMes": 367.25,
+       "vSpot": 0.0395,
+       "id": "x1cndtmjtt3gl",
+       "versiones": []
+      },
+      {
+       "cliente": "UNASA",
+       "campana": "UNASA",
+       "inicio": "2026-10-05",
+       "fin": "2026-10-20",
+       "notas": "OP DOOH_UNASA_051026-02 · Ejecutivo: Maggy Jeanpierre · Cliente directo · Arte: Animado",
+       "arte": "",
+       "neg": "donacion",
+       "pausada": false,
+       "motivoPausa": "",
+       "frec": 300,
+       "vMes": null,
+       "vSpot": null,
+       "id": "xzqsc946z8emq",
+       "versiones": []
+      }
+     ]
+    },
+    {
+     "id": "xokjppwb8852i",
+     "nombre": "JUANPA EXTRA 3_450",
+     "capacidad": 900,
+     "campanas": [
+      {
+       "cliente": "H&M",
+       "campana": "GENERICO",
+       "inicio": "2026-10-01",
+       "fin": "2026-10-20",
+       "notas": "Ejecutivo: Ricardo Ayala · Arte: Animado",
+       "arte": "sin",
+       "neg": "bonificacion",
+       "pausada": false,
+       "motivoPausa": "",
+       "frec": 450,
+       "vMes": 0,
+       "vSpot": 0,
+       "id": "x9dzcqsq5852i",
+       "versiones": []
+      },
+      {
+       "cliente": "ALCALDIA DE SAN SALVADOR CENTRO",
+       "campana": "AMNISTIA",
+       "inicio": "2026-09-29",
+       "fin": "2026-11-27",
+       "notas": "OP DOOH_ALCALDIA DE SAN SALVADOR CENTRO_290926-05 · Ejecutivo: Marta Descamps · Cliente directo · Arte: Animado",
+       "arte": "",
+       "neg": "donacion",
+       "pausada": false,
+       "motivoPausa": "",
+       "frec": 300,
+       "vMes": null,
+       "vSpot": null,
+       "id": "xq99g7vfmsvpp",
+       "versiones": []
+      }
+     ]
+    },
+    {
+     "id": "x6j7502b8r2nd",
+     "nombre": "JUANPA EXTRA 4_900",
+     "capacidad": 900,
+     "campanas": [
+      {
+       "cliente": "MOPT",
+       "campana": "RESTRICCIONES DE HORARIO DE CARGA",
+       "inicio": "2026-10-02",
+       "fin": "2026-11-30",
+       "notas": "OP DOOH_MOPT_021026-02 · Ejecutivo: Maggy Jeanpierre · Cliente directo · Arte: Animado",
+       "neg": "donacion",
+       "pausada": false,
+       "motivoPausa": "",
+       "frec": 300,
+       "vMes": null,
+       "vSpot": null,
+       "id": "x5oab5p7h1snq",
+       "versiones": []
+      },
+      {
+       "cliente": "SHERWIN WILLIAMS",
+       "campana": "FIN DE AÑO",
+       "inicio": "2026-10-08",
+       "fin": "2026-11-07",
+       "notas": "OP DOOH_SHERWIN WILLIAMS_051026-01 · Ejecutivo: Marta Descamps · Agencia: PUBLICIDAD COMERCIAL · Arte: Animado · Editables: https://we.tl/t-nYRL1Xb0h346arNW",
+       "arte": "",
+       "neg": "",
+       "pausada": false,
+       "motivoPausa": "",
+       "frec": 600,
+       "vMes": 1080,
+       "vSpot": 0.0581,
+       "id": "xs1m0cvgqcio0",
+       "versiones": []
+      }
+     ]
+    }
+   ],
+   "on": "05:30",
+   "off": "22:00",
+   "ultimo": {
+    "cliente": "SHERWIN WILLIAMS",
+    "accion": "agregada",
+    "ts": "2026-10-05T20:28:26.112Z"
+   }
+  }
+ ],
+ "minHoras": 16.5,
+ "bitacora": [
+  {
+   "ts": "2026-08-25T15:06:51.028Z",
+   "tipo": "pausada",
+   "cliente": "NESTLÉ",
+   "campana": "Maggi and me",
+   "pantalla": "Jerusalén",
+   "sublista": "JERUSALEN 01",
+   "frec": 450,
+   "inicio": "2026-08-24",
+   "fin": "2026-09-23",
+   "detalle": ""
+  },
+  {
+   "ts": "2026-08-25T15:06:52.908Z",
+   "tipo": "reanudada",
+   "cliente": "NESTLÉ",
+   "campana": "Maggi and me",
+   "pantalla": "Jerusalén",
+   "sublista": "JERUSALEN 01",
+   "frec": 450,
+   "inicio": "2026-08-24",
+   "fin": "2026-09-23",
+   "detalle": ""
+  },
+  {
+   "ts": "2026-08-25T18:28:42.973Z",
+   "tipo": "movida",
+   "cliente": "MINED",
+   "pantalla": "Salvador del Mundo",
+   "sublista": "SDM7_450",
+   "frec": 450,
+   "inicio": "2026-07-27",
+   "fin": "2026-08-26",
+   "detalle": "desde SDM8_450"
+  },
+  {
+   "ts": "2026-08-25T18:28:46.186Z",
+   "tipo": "movida",
+   "cliente": "MINED",
+   "pantalla": "Salvador del Mundo",
+   "sublista": "SDM8_450",
+   "frec": 450,
+   "inicio": "2026-07-27",
+   "fin": "2026-08-26",
+   "detalle": "desde SDM7_450"
+  },
+  {
+   "ts": "2026-08-25T23:28:16.120Z",
+   "tipo": "editada",
+   "cliente": "SIMAN",
+   "campana": "Multiples promociones",
+   "pantalla": "Próceres",
+   "sublista": "PROCERES9_450",
+   "frec": 450,
+   "inicio": "2026-01-01",
+   "fin": "2026-12-31",
+   "finAntes": "2026-12-31",
+   "frecAntes": 450
+  },
+  {
+   "ts": "2026-08-25T23:29:34.226Z",
+   "tipo": "editada",
+   "cliente": "SIMAN",
+   "campana": "Multiples promociones",
+   "pantalla": "Próceres",
+   "sublista": "PROCERES9_450",
+   "frec": 450,
+   "inicio": "2026-01-01",
+   "fin": "2026-12-31",
+   "finAntes": "2026-12-31",
+   "frecAntes": 450
+  },
+  {
+   "ts": "2026-08-25T23:30:23.791Z",
+   "tipo": "editada",
+   "cliente": "SIMAN",
+   "campana": "Multiples promociones",
+   "pantalla": "Próceres",
+   "sublista": "PROCERES9_450",
+   "frec": 450,
+   "inicio": "2026-01-01",
+   "fin": "2026-12-31",
+   "finAntes": "2026-12-31",
+   "frecAntes": 450
+  },
+  {
+   "ts": "2026-08-25T23:32:42.631Z",
+   "tipo": "editada",
+   "cliente": "SIMAN",
+   "campana": "Multiples promociones",
+   "pantalla": "Próceres",
+   "sublista": "PROCERES9_450",
+   "frec": 450,
+   "inicio": "2026-01-01",
+   "fin": "2026-12-31",
+   "finAntes": "2026-12-31",
+   "frecAntes": 450
+  },
+  {
+   "ts": "2026-08-25T23:34:20.143Z",
+   "tipo": "editada",
+   "cliente": "PANDA EXPRESS",
+   "pantalla": "Próceres",
+   "sublista": "PROCERES6_300",
+   "frec": 450,
+   "inicio": "2026-06-26",
+   "fin": "2026-12-20",
+   "finAntes": "2026-12-20",
+   "frecAntes": 450
+  },
+  {
+   "ts": "2026-08-25T23:34:55.399Z",
+   "tipo": "editada",
+   "cliente": "PANDA EXPRESS",
+   "pantalla": "Próceres",
+   "sublista": "PROCERES6_300",
+   "frec": 450,
+   "inicio": "2026-06-26",
+   "fin": "2026-12-20",
+   "finAntes": "2026-12-20",
+   "frecAntes": 450
+  },
+  {
+   "ts": "2026-08-25T23:35:33.799Z",
+   "tipo": "editada",
+   "cliente": "PANDA EXPRESS",
+   "campana": "Rice box y Hot orange chicken",
+   "pantalla": "Constitución / Juan Pablo",
+   "sublista": "JUAN PABLO 01",
+   "frec": 450,
+   "inicio": "2026-08-01",
+   "fin": "2026-12-31",
+   "finAntes": "2026-12-31",
+   "frecAntes": 450
+  },
+  {
+   "ts": "2026-08-25T23:36:30.119Z",
+   "tipo": "editada",
+   "cliente": "PANDA EXPRESS",
+   "campana": "Rice box y Hot orange chicken",
+   "pantalla": "Panamericana",
+   "sublista": "PANAMERICANA2_600",
+   "frec": 450,
+   "inicio": "2026-08-01",
+   "fin": "2026-12-31",
+   "finAntes": "2026-12-31",
+   "frecAntes": 450
+  },
+  {
+   "ts": "2026-08-25T23:36:43.537Z",
+   "tipo": "editada",
+   "cliente": "PANDA EXPRESS",
+   "campana": "Rice box y Hot orange chicken",
+   "pantalla": "Panamericana",
+   "sublista": "PANAMERICANA2_600",
+   "frec": 450,
+   "inicio": "2026-08-01",
+   "fin": "2026-12-31",
+   "finAntes": "2026-12-31",
+   "frecAntes": 450
+  },
+  {
+   "ts": "2026-08-25T23:37:02.289Z",
+   "tipo": "editada",
+   "cliente": "MISTER DONUT",
+   "campana": "Horario 24 hrs",
+   "pantalla": "Próceres",
+   "sublista": "PROCERES2_450",
+   "frec": 450,
+   "inicio": "2026-01-01",
+   "fin": "2026-12-31",
+   "finAntes": "2026-12-31",
+   "frecAntes": 450
+  },
+  {
+   "ts": "2026-08-25T23:37:42.655Z",
+   "tipo": "editada",
+   "cliente": "VIROGRIP",
+   "campana": "Virifabulosa - Griinflex",
+   "pantalla": "Próceres",
+   "sublista": "PROCERES8_450",
+   "frec": 300,
+   "inicio": "2026-08-25",
+   "fin": "2026-08-31",
+   "finAntes": "2026-08-31",
+   "frecAntes": 300
+  },
+  {
+   "ts": "2026-08-25T23:39:12.961Z",
+   "tipo": "editada",
+   "cliente": "SIMAN",
+   "campana": "Multiples promociones",
+   "pantalla": "Próceres",
+   "sublista": "PROCERES9_450",
+   "frec": 450,
+   "inicio": "2026-01-01",
+   "fin": "2026-12-31",
+   "finAntes": "2026-12-31",
+   "frecAntes": 450
+  },
+  {
+   "ts": "2026-08-25T23:39:34.343Z",
+   "tipo": "editada",
+   "cliente": "SIMAN",
+   "campana": "Multiples promociones",
+   "pantalla": "Próceres",
+   "sublista": "PROCERES9_450",
+   "frec": 450,
+   "inicio": "2026-01-01",
+   "fin": "2026-12-31",
+   "finAntes": "2026-12-31",
+   "frecAntes": 450
+  },
+  {
+   "ts": "2026-08-25T23:39:48.167Z",
+   "tipo": "editada",
+   "cliente": "SIMAN",
+   "campana": "Multiples promociones",
+   "pantalla": "Próceres",
+   "sublista": "PROCERES9_450",
+   "frec": 450,
+   "inicio": "2026-01-01",
+   "fin": "2026-12-31",
+   "finAntes": "2026-12-31",
+   "frecAntes": 450
+  },
+  {
+   "ts": "2026-08-25T23:40:27.671Z",
+   "tipo": "editada",
+   "cliente": "MAXBLOCH",
+   "pantalla": "Panamericana",
+   "sublista": "PANAMERICANA5_450",
+   "frec": 300,
+   "inicio": "2026-06-08",
+   "fin": "2027-01-07",
+   "finAntes": "2027-01-07",
+   "frecAntes": 300
+  },
+  {
+   "ts": "2026-08-25T23:40:52.391Z",
+   "tipo": "editada",
+   "cliente": "MINED",
+   "campana": "Family Friendly",
+   "pantalla": "Panamericana",
+   "sublista": "PANAMERICANA10_450",
+   "frec": 450,
+   "inicio": "2026-07-27",
+   "fin": "2026-08-26",
+   "finAntes": "2026-08-26",
+   "frecAntes": 450
+  },
+  {
+   "ts": "2026-08-25T23:41:55.271Z",
+   "tipo": "editada",
+   "cliente": "DUICENTRO",
+   "pantalla": "Salvador del Mundo",
+   "sublista": "SDM_EXTRA 4",
+   "frec": 300,
+   "inicio": "2026-07-02",
+   "fin": "2026-08-31",
+   "finAntes": "2026-08-31",
+   "frecAntes": 300
+  },
+  {
+   "ts": "2026-08-25T23:42:07.607Z",
+   "tipo": "editada",
+   "cliente": "MINED",
+   "campana": "Familly Friendly",
+   "pantalla": "Salvador del Mundo",
+   "sublista": "SDM8_450",
+   "frec": 450,
+   "inicio": "2026-07-27",
+   "fin": "2026-08-26",
+   "finAntes": "2026-08-26",
+   "frecAntes": 450
+  },
+  {
+   "ts": "2026-08-25T23:42:18.959Z",
+   "tipo": "editada",
+   "cliente": "HERO MOTOS",
+   "campana": "Moto ECO",
+   "pantalla": "Salvador del Mundo",
+   "sublista": "SDM7_450",
+   "frec": 450,
+   "inicio": "2026-07-01",
+   "fin": "2026-09-30",
+   "finAntes": "2026-09-30",
+   "frecAntes": 450
+  },
+  {
+   "ts": "2026-08-25T23:43:14.206Z",
+   "tipo": "editada",
+   "cliente": "VIROGRIP",
+   "campana": "Virifabulosa",
+   "pantalla": "Salvador del Mundo",
+   "sublista": "SDM3_300",
+   "frec": 300,
+   "inicio": "2026-07-01",
+   "fin": "2026-08-31",
+   "finAntes": "2026-08-31",
+   "frecAntes": 300
+  },
+  {
+   "ts": "2026-08-25T23:45:29.398Z",
+   "tipo": "editada",
+   "cliente": "DONKEYS",
+   "campana": "Genérico",
+   "pantalla": "Salvador del Mundo",
+   "sublista": "SDM3_300",
+   "frec": 300,
+   "inicio": "2026-04-27",
+   "fin": "2027-01-26",
+   "finAntes": "2027-01-26",
+   "frecAntes": 300
+  },
+  {
+   "ts": "2026-08-25T23:48:05.767Z",
+   "tipo": "editada",
+   "cliente": "DLC",
+   "campana": "Generico",
+   "pantalla": "Salvador del Mundo",
+   "sublista": "SDM4_300",
+   "frec": 300,
+   "inicio": "2026-01-07",
+   "fin": "2026-12-06",
+   "finAntes": "2026-12-06",
+   "frecAntes": 300
+  },
+  {
+   "ts": "2026-08-26T00:04:11.703Z",
+   "tipo": "editada",
+   "cliente": "MAZOLA",
+   "campana": "Aceite",
+   "pantalla": "Salvador del Mundo",
+   "sublista": "SDM4_300",
+   "frec": 300,
+   "inicio": "2026-04-18",
+   "fin": "2026-09-17",
+   "finAntes": "2026-09-17",
+   "frecAntes": 300
+  },
+  {
+   "ts": "2026-08-26T00:05:45.062Z",
+   "tipo": "editada",
+   "cliente": "RADIO SHACK",
+   "campana": "Week audio",
+   "pantalla": "Salvador del Mundo",
+   "sublista": "SDM1_900",
+   "frec": 900,
+   "inicio": "2026-08-15",
+   "fin": "2026-08-31",
+   "finAntes": "2026-08-31",
+   "frecAntes": 900
+  },
+  {
+   "ts": "2026-08-26T00:06:09.439Z",
+   "tipo": "editada",
+   "cliente": "RADIO SHACK",
+   "campana": "Week audio",
+   "pantalla": "Salvador del Mundo",
+   "sublista": "SDM1_900",
+   "frec": 900,
+   "inicio": "2026-08-15",
+   "fin": "2026-08-31",
+   "finAntes": "2026-08-31",
+   "frecAntes": 900
+  },
+  {
+   "ts": "2026-08-26T00:14:09.806Z",
+   "tipo": "editada",
+   "cliente": "LA CURACAO",
+   "campana": "Hot Week",
+   "pantalla": "Salvador del Mundo",
+   "sublista": "SDM2_450",
+   "frec": 900,
+   "inicio": "2026-08-11",
+   "fin": "2026-08-31",
+   "finAntes": "2026-08-31",
+   "frecAntes": 900
+  },
+  {
+   "ts": "2026-08-26T00:15:46.758Z",
+   "tipo": "editada",
+   "cliente": "LA CURACAO",
+   "pantalla": "Próceres",
+   "sublista": "PROCERES5_600",
+   "frec": 900,
+   "inicio": "2026-08-11",
+   "fin": "2026-08-31",
+   "finAntes": "2026-08-31",
+   "frecAntes": 900
+  },
+  {
+   "ts": "2026-08-26T00:16:15.397Z",
+   "tipo": "editada",
+   "cliente": "LA CURACAO",
+   "campana": "Hot Week",
+   "pantalla": "Salvador del Mundo",
+   "sublista": "SDM2_450",
+   "frec": 900,
+   "inicio": "2026-08-11",
+   "fin": "2026-08-31",
+   "finAntes": "2026-08-31",
+   "frecAntes": 900
+  },
+  {
+   "ts": "2026-08-26T00:17:14.358Z",
+   "tipo": "editada",
+   "cliente": "LA CURACAO",
+   "campana": "Promociones",
+   "pantalla": "Paseo",
+   "sublista": "PASEO6_300",
+   "frec": 900,
+   "inicio": "2026-08-15",
+   "fin": "2026-08-31",
+   "finAntes": "2026-08-31",
+   "frecAntes": 900
+  },
+  {
+   "ts": "2026-08-26T00:20:10.438Z",
+   "tipo": "editada",
+   "cliente": "LA CURACAO",
+   "campana": "Hot week",
+   "pantalla": "Paseo",
+   "sublista": "PASEO6_300",
+   "frec": 900,
+   "inicio": "2026-08-15",
+   "fin": "2026-08-31",
+   "finAntes": "2026-08-31",
+   "frecAntes": 900
+  },
+  {
+   "ts": "2026-08-26T00:20:40.381Z",
+   "tipo": "editada",
+   "cliente": "LA CURACAO",
+   "campana": "Hot week",
+   "pantalla": "Próceres",
+   "sublista": "PROCERES5_600",
+   "frec": 900,
+   "inicio": "2026-08-11",
+   "fin": "2026-08-31",
+   "finAntes": "2026-08-31",
+   "frecAntes": 900
+  },
+  {
+   "ts": "2026-08-26T00:21:18.645Z",
+   "tipo": "editada",
+   "cliente": "LA CURACAO",
+   "campana": "Hot Week",
+   "pantalla": "Salvador del Mundo",
+   "sublista": "SDM2_450",
+   "frec": 900,
+   "inicio": "2026-08-11",
+   "fin": "2026-08-31",
+   "finAntes": "2026-08-31",
+   "frecAntes": 900
+  },
+  {
+   "ts": "2026-08-26T00:21:25.960Z",
+   "tipo": "editada",
+   "cliente": "LA CURACAO",
+   "campana": "Hot week",
+   "pantalla": "Salvador del Mundo",
+   "sublista": "SDM2_450",
+   "frec": 900,
+   "inicio": "2026-08-11",
+   "fin": "2026-08-31",
+   "finAntes": "2026-08-31",
+   "frecAntes": 900
+  },
+  {
+   "ts": "2026-08-26T00:22:58.486Z",
+   "tipo": "editada",
+   "cliente": "MAXBLOCH",
+   "pantalla": "Paseo",
+   "sublista": "PASEO3_300",
+   "frec": 300,
+   "inicio": "2026-06-08",
+   "fin": "2027-01-07",
+   "finAntes": "2027-01-07",
+   "frecAntes": 300
+  },
+  {
+   "ts": "2026-08-26T00:23:08.552Z",
+   "tipo": "editada",
+   "cliente": "MAXBLOCH",
+   "pantalla": "Próceres",
+   "sublista": "PROCERES4_450",
+   "frec": 300,
+   "inicio": "2026-06-08",
+   "fin": "2027-01-07",
+   "finAntes": "2027-01-07",
+   "frecAntes": 300
+  },
+  {
+   "ts": "2026-08-26T00:23:48.727Z",
+   "tipo": "editada",
+   "cliente": "SHERWIN WILLIAMS",
+   "campana": "Impermeabilizantes",
+   "pantalla": "Constitución / Juan Pablo",
+   "sublista": "JUAN PABLO 01",
+   "frec": 450,
+   "inicio": "2026-08-08",
+   "fin": "2026-09-07",
+   "finAntes": "2026-09-07",
+   "frecAntes": 450
+  },
+  {
+   "ts": "2026-08-26T12:56:01.206Z",
+   "tipo": "editada",
+   "cliente": "NESTLÉ",
+   "campana": "Maggi and me",
+   "pantalla": "Jerusalén",
+   "sublista": "JERUSALEN 01",
+   "frec": 450,
+   "inicio": "2026-08-24",
+   "fin": "2026-09-23",
+   "finAntes": "2026-09-23",
+   "frecAntes": 450
+  },
+  {
+   "ts": "2026-08-26T12:56:01.207Z",
+   "tipo": "alta",
+   "cliente": "NESTLÉ",
+   "campana": "Maggi and me",
+   "pantalla": "Héroes",
+   "sublista": "HEROES4_450",
+   "frec": 450,
+   "inicio": "2026-08-24",
+   "fin": "2026-09-23",
+   "vig": {
+    "cliente": "NESTLÉ",
+    "campana": "Maggi and me",
+    "inicio": "2026-08-24",
+    "fin": "2026-09-23",
+    "estado": "v_vigente",
+    "dias": 16,
+    "pantallas": 2,
+    "pausadas": 0
+   }
+  },
+  {
+   "ts": "2026-08-26T12:57:04.400Z",
+   "tipo": "baja",
+   "cliente": "NESTLÉ",
+   "campana": "Maggi and me",
+   "pantalla": "Jerusalén",
+   "sublista": "JERUSALEN 01",
+   "frec": 450,
+   "inicio": "2026-08-24",
+   "fin": "2026-09-23"
+  },
+  {
+   "ts": "2026-08-26T18:46:26.942Z",
+   "tipo": "editada",
+   "cliente": "MINED",
+   "campana": "Family Friendly",
+   "pantalla": "Héroes",
+   "sublista": "HEROES10_300",
+   "frec": 450,
+   "inicio": "2026-07-27",
+   "fin": "2026-08-26",
+   "finAntes": "2026-08-26",
+   "frecAntes": 450
+  },
+  {
+   "ts": "2026-08-26T18:55:16.017Z",
+   "tipo": "alta",
+   "cliente": "MISTER DONUT",
+   "campana": "2 X 1",
+   "pantalla": "Salvador del Mundo",
+   "sublista": "SDM6_450",
+   "frec": 450,
+   "inicio": "2026-09-01",
+   "fin": "2026-09-15",
+   "op": "x5pc4z14aemnl",
+   "vig": {
+    "cliente": "MISTER DONUT",
+    "campana": "2 X 1",
+    "inicio": "2026-01-01",
+    "fin": "2026-12-31",
+    "estado": "v_vigente",
+    "dias": 115,
+    "pantallas": 2,
+    "pausadas": 0
+   }
+  },
+  {
+   "ts": "2026-08-26T20:54:28.508Z",
+   "tipo": "editada",
+   "cliente": "WALMART",
+   "pantalla": "San Benito",
+   "sublista": "BENITO2_450",
+   "frec": 450,
+   "inicio": "2026-07-01",
+   "fin": "2026-08-31",
+   "finAntes": "2026-08-31",
+   "frecAntes": 450
+  },
+  {
+   "ts": "2026-08-26T21:59:56.345Z",
+   "tipo": "alta",
+   "cliente": "ALMACENES VIDRI",
+   "pantalla": "Panamericana",
+   "sublista": "PANAMERICANA3_600",
+   "frec": 450,
+   "inicio": "2026-09-01",
+   "fin": "2026-09-30",
+   "op": "xzbatlaye04af",
+   "vig": {
+    "cliente": "ALMACENES VIDRI",
+    "campana": "REMODELACION DESCUENTOS",
+    "inicio": "2026-09-01",
+    "fin": "2026-09-30",
+    "estado": "v_vigente",
+    "dias": 23,
+    "pantallas": 1,
+    "pausadas": 0
+   }
+  },
+  {
+   "ts": "2026-08-26T22:18:43.814Z",
+   "tipo": "editada",
+   "cliente": "TIGO",
+   "pantalla": "Constitución / Juan Pablo",
+   "sublista": "JUAN PABLO 03",
+   "frec": 300,
+   "inicio": "2026-08-25",
+   "frecAntes": 300
+  },
+  {
+   "ts": "2026-08-27T21:15:38.838Z",
+   "tipo": "alta",
+   "cliente": "PRUEBA",
+   "campana": "PRUEBA",
+   "pantalla": "Salvador del Mundo",
+   "sublista": "SDM3_300",
+   "frec": 300,
+   "inicio": "2026-08-27",
+   "fin": "2026-08-28",
+   "op": "x1bmzllibv0eu"
+  },
+  {
+   "ts": "2026-08-28T14:38:11.515Z",
+   "tipo": "alta",
+   "cliente": "Walmart",
+   "campana": "Generico",
+   "pantalla": "San Benito",
+   "sublista": "BENITO2_450",
+   "frec": 450,
+   "inicio": "2026-09-01",
+   "fin": "2026-09-30",
+   "op": "xopoltqzy3qd5",
+   "vig": {
+    "cliente": "Walmart",
+    "campana": "Generico",
+    "inicio": "2026-09-01",
+    "fin": "2026-09-30",
+    "estado": "v_vigente",
+    "dias": 23,
+    "pantallas": 1,
+    "pausadas": 0
+   }
+  },
+  {
+   "ts": "2026-08-28T14:43:38.604Z",
+   "tipo": "alta",
+   "cliente": "Viro Grip",
+   "campana": "GENERICO",
+   "pantalla": "Salvador del Mundo",
+   "sublista": "SDM3_300",
+   "frec": 300,
+   "inicio": "2026-09-01",
+   "fin": "2026-09-30",
+   "op": "x1ebkqn2qaqr0"
+  },
+  {
+   "ts": "2026-08-28T14:43:38.605Z",
+   "tipo": "alta",
+   "cliente": "Viro Grip",
+   "campana": "GENERICO",
+   "pantalla": "Héroes",
+   "sublista": "HEROES5_450",
+   "frec": 300,
+   "inicio": "2026-09-01",
+   "fin": "2026-09-30",
+   "op": "x1ebkqn2qaqr0",
+   "vig": {
+    "cliente": "Viro Grip",
+    "campana": "GENERICO",
+    "inicio": "2026-09-01",
+    "fin": "2026-09-30",
+    "estado": "v_vigente",
+    "dias": 23,
+    "pantallas": 2,
+    "pausadas": 0
+   }
+  },
+  {
+   "ts": "2026-08-28T14:54:21.508Z",
+   "tipo": "alta",
+   "cliente": "GRIIN FLEX",
+   "campana": "GRIIN FLEX",
+   "pantalla": "Próceres",
+   "sublista": "PROCERES6_300",
+   "frec": 300,
+   "inicio": "2026-09-01",
+   "fin": "2026-09-30",
+   "op": "xqumdug4noitg",
+   "vig": {
+    "cliente": "GRIIN FLEX",
+    "campana": "GRIIN FLEX",
+    "inicio": "2026-09-01",
+    "fin": "2026-09-30",
+    "estado": "v_vigente",
+    "dias": 23,
+    "pantallas": 1,
+    "pausadas": 0
+   }
+  },
+  {
+   "ts": "2026-08-31T22:49:05.329Z",
+   "tipo": "alta",
+   "cliente": "SIMAN",
+   "campana": "VARIAS",
+   "pantalla": "Próceres",
+   "sublista": "PROCERES6_300",
+   "frec": 450,
+   "inicio": "2026-09-01",
+   "fin": "2026-09-15",
+   "op": "x9p6hfp2syl2p"
+  },
+  {
+   "ts": "2026-08-31T23:36:16.880Z",
+   "tipo": "alta",
+   "cliente": "PUMA",
+   "campana": "NEVER NOT SUEDE",
+   "pantalla": "Salvador del Mundo",
+   "sublista": "SDM6_450",
+   "frec": 450,
+   "inicio": "2026-10-13",
+   "fin": "2026-10-31",
+   "op": "xd0h17y92n9wv"
+  },
+  {
+   "ts": "2026-08-31T23:36:16.880Z",
+   "tipo": "alta",
+   "cliente": "PUMA",
+   "campana": "NEVER NOT SUEDE",
+   "pantalla": "Héroes",
+   "sublista": "HEROES5_450",
+   "frec": 450,
+   "inicio": "2026-10-13",
+   "fin": "2026-10-31",
+   "op": "xd0h17y92n9wv"
+  },
+  {
+   "ts": "2026-08-31T23:36:16.880Z",
+   "tipo": "alta",
+   "cliente": "PUMA",
+   "campana": "NEVER NOT SUEDE",
+   "pantalla": "Próceres",
+   "sublista": "PROCERES6_300",
+   "frec": 450,
+   "inicio": "2026-10-13",
+   "fin": "2026-10-31",
+   "op": "xd0h17y92n9wv"
+  },
+  {
+   "ts": "2026-08-31T23:36:16.880Z",
+   "tipo": "alta",
+   "cliente": "PUMA",
+   "campana": "NEVER NOT SUEDE",
+   "pantalla": "Paseo",
+   "sublista": "PASEO2_450",
+   "frec": 450,
+   "inicio": "2026-10-13",
+   "fin": "2026-10-31",
+   "op": "xd0h17y92n9wv"
+  },
+  {
+   "ts": "2026-08-31T23:37:40.191Z",
+   "tipo": "alta",
+   "cliente": "PUMA",
+   "campana": "NEVER NOT SUEDE",
+   "pantalla": "Salvador del Mundo",
+   "sublista": "SDM6_450",
+   "frec": 450,
+   "inicio": "2026-11-01",
+   "fin": "2026-11-30",
+   "op": "x69927eoqp273",
+   "vig": {
+    "cliente": "PUMA",
+    "campana": "NEVER NOT SUEDE",
+    "inicio": "2026-10-13",
+    "fin": "2026-11-30",
+    "estado": "v_programada",
+    "dias": 84,
+    "pantallas": 8,
+    "pausadas": 0
+   }
+  },
+  {
+   "ts": "2026-08-31T23:37:40.191Z",
+   "tipo": "alta",
+   "cliente": "PUMA",
+   "campana": "NEVER NOT SUEDE",
+   "pantalla": "Héroes",
+   "sublista": "HEROES5_450",
+   "frec": 450,
+   "inicio": "2026-11-01",
+   "fin": "2026-11-30",
+   "op": "x69927eoqp273"
+  },
+  {
+   "ts": "2026-08-31T23:37:40.191Z",
+   "tipo": "alta",
+   "cliente": "PUMA",
+   "campana": "NEVER NOT SUEDE",
+   "pantalla": "Próceres",
+   "sublista": "PROCERES6_300",
+   "frec": 450,
+   "inicio": "2026-11-01",
+   "fin": "2026-11-30",
+   "op": "x69927eoqp273"
+  },
+  {
+   "ts": "2026-08-31T23:37:40.191Z",
+   "tipo": "alta",
+   "cliente": "PUMA",
+   "campana": "NEVER NOT SUEDE",
+   "pantalla": "Paseo",
+   "sublista": "PASEO2_450",
+   "frec": 450,
+   "inicio": "2026-11-01",
+   "fin": "2026-11-30",
+   "op": "x69927eoqp273"
+  },
+  {
+   "ts": "2026-09-01T00:45:39.110Z",
+   "tipo": "alta",
+   "cliente": "ALCALDIA DE AHUACHAPAN",
+   "campana": "DIA DE LOS FAROLITOS",
+   "pantalla": "Panamericana",
+   "sublista": "PANAMERICANA2_600",
+   "frec": 300,
+   "inicio": "2026-08-31",
+   "fin": "2026-09-07",
+   "op": "xotfddc5d4hie",
+   "vig": {
+    "cliente": "ALCALDIA DE AHUACHAPAN",
+    "campana": "DIA DE LOS FAROLITOS",
+    "inicio": "2026-08-31",
+    "fin": "2026-09-07",
+    "estado": "v_porvencer",
+    "dias": 0,
+    "pantallas": 3,
+    "pausadas": 0
+   }
+  },
+  {
+   "ts": "2026-09-01T00:45:39.110Z",
+   "tipo": "alta",
+   "cliente": "ALCALDIA DE AHUACHAPAN",
+   "campana": "DIA DE LOS FAROLITOS",
+   "pantalla": "San Benito",
+   "sublista": "BENITO2_450",
+   "frec": 300,
+   "inicio": "2026-08-31",
+   "fin": "2026-09-07",
+   "op": "xotfddc5d4hie"
+  },
+  {
+   "ts": "2026-09-01T00:45:39.110Z",
+   "tipo": "alta",
+   "cliente": "ALCALDIA DE AHUACHAPAN",
+   "campana": "DIA DE LOS FAROLITOS",
+   "pantalla": "Constitución / Juan Pablo",
+   "sublista": "JUAN PABLO 03",
+   "frec": 300,
+   "inicio": "2026-08-31",
+   "fin": "2026-09-07",
+   "op": "xotfddc5d4hie"
+  },
+  {
+   "ts": "2026-09-01T15:08:33.734Z",
+   "tipo": "extendida",
+   "cliente": "SIMAN",
+   "campana": "VARIAS",
+   "pantalla": "Próceres",
+   "sublista": "PROCERES6_300",
+   "frec": 450,
+   "inicio": "2026-09-01",
+   "fin": "2026-09-30",
+   "finAntes": "2026-09-15",
+   "frecAntes": 450,
+   "vig": {
+    "cliente": "SIMAN",
+    "campana": "VARIAS",
+    "inicio": "2026-09-01",
+    "fin": "2026-09-30",
+    "estado": "v_vigente",
+    "dias": 23,
+    "pantallas": 1,
+    "pausadas": 0
+   }
+  },
+  {
+   "ts": "2026-09-01T17:54:25.124Z",
+   "tipo": "alta",
+   "cliente": "DUICENTRO",
+   "campana": "RENUEVA TU DUI",
+   "pantalla": "Salvador del Mundo",
+   "sublista": "SDM3_300",
+   "frec": 300,
+   "inicio": "2026-09-01",
+   "fin": "2026-09-30",
+   "op": "xhuh6638ovhlu"
+  },
+  {
+   "ts": "2026-09-01T17:54:25.124Z",
+   "tipo": "alta",
+   "cliente": "DUICENTRO",
+   "campana": "RENUEVA TU DUI",
+   "pantalla": "Jerusalén",
+   "sublista": "JERUSALEN2_900",
+   "frec": 300,
+   "inicio": "2026-09-01",
+   "fin": "2026-09-30",
+   "op": "xhuh6638ovhlu"
+  },
+  {
+   "ts": "2026-09-01T17:54:25.124Z",
+   "tipo": "alta",
+   "cliente": "DUICENTRO",
+   "campana": "RENUEVA TU DUI",
+   "pantalla": "San Benito",
+   "sublista": "BENITO4_450",
+   "frec": 300,
+   "inicio": "2026-09-01",
+   "fin": "2026-09-30",
+   "op": "xhuh6638ovhlu"
+  },
+  {
+   "ts": "2026-09-01T17:55:20.758Z",
+   "tipo": "alta",
+   "cliente": "DUICENTRO",
+   "campana": "RENUEVA TU DUI",
+   "pantalla": "Paseo",
+   "sublista": "PASEO2_450",
+   "frec": 300,
+   "inicio": "2026-09-01",
+   "fin": "2026-09-30",
+   "op": "xlzyptkxbwoja",
+   "vig": {
+    "cliente": "DUICENTRO",
+    "campana": "RENUEVA TU DUI",
+    "inicio": "2026-09-01",
+    "fin": "2026-09-30",
+    "estado": "v_vigente",
+    "dias": 23,
+    "pantallas": 4,
+    "pausadas": 0
+   }
+  },
+  {
+   "ts": "2026-09-02T20:29:32.935Z",
+   "tipo": "alta",
+   "cliente": "APEX PUBLICIDAD",
+   "campana": "MINSAL INSTITUCIONAL",
+   "pantalla": "Héroes",
+   "sublista": "HEROES5_450",
+   "frec": 300,
+   "inicio": "2026-09-01",
+   "fin": "2026-09-30",
+   "op": "xx2zkljcquu86"
+  },
+  {
+   "ts": "2026-09-02T20:29:32.935Z",
+   "tipo": "alta",
+   "cliente": "APEX PUBLICIDAD",
+   "campana": "MINSAL INSTITUCIONAL",
+   "pantalla": "Paseo",
+   "sublista": "PASEO3_300",
+   "frec": 300,
+   "inicio": "2026-09-01",
+   "fin": "2026-09-30",
+   "op": "xx2zkljcquu86"
+  },
+  {
+   "ts": "2026-09-02T20:29:32.935Z",
+   "tipo": "alta",
+   "cliente": "APEX PUBLICIDAD",
+   "campana": "MINSAL INSTITUCIONAL",
+   "pantalla": "San Benito",
+   "sublista": "BENITO1_900",
+   "frec": 300,
+   "inicio": "2026-09-01",
+   "fin": "2026-09-30",
+   "op": "xx2zkljcquu86"
+  },
+  {
+   "ts": "2026-09-02T20:39:53.514Z",
+   "tipo": "alta",
+   "cliente": "H&M",
+   "campana": "GENERICO",
+   "pantalla": "Próceres",
+   "sublista": "PROCERES4_450",
+   "frec": 450,
+   "inicio": "2026-10-01",
+   "fin": "2026-10-20",
+   "op": "xe3l0vjut852h",
+   "vig": {
+    "cliente": "H&M",
+    "campana": "GENERICO",
+    "inicio": "2026-10-01",
+    "fin": "2026-10-20",
+    "estado": "v_programada",
+    "dias": 43,
+    "pantallas": 4,
+    "pausadas": 0
+   }
+  },
+  {
+   "ts": "2026-09-02T20:39:53.514Z",
+   "tipo": "alta",
+   "cliente": "H&M",
+   "campana": "GENERICO",
+   "pantalla": "Jerusalén",
+   "sublista": "JERUSALEN3",
+   "frec": 450,
+   "inicio": "2026-10-01",
+   "fin": "2026-10-20",
+   "op": "xe3l0vjut852h"
+  },
+  {
+   "ts": "2026-09-02T20:39:53.514Z",
+   "tipo": "alta",
+   "cliente": "H&M",
+   "campana": "GENERICO",
+   "pantalla": "San Benito",
+   "sublista": "BENITO1_900",
+   "frec": 450,
+   "inicio": "2026-10-01",
+   "fin": "2026-10-20",
+   "op": "xe3l0vjut852h"
+  },
+  {
+   "ts": "2026-09-02T20:39:53.514Z",
+   "tipo": "alta",
+   "cliente": "H&M",
+   "campana": "GENERICO",
+   "pantalla": "Constitución / Juan Pablo",
+   "sublista": "JUANPA EXTRA 3_450",
+   "frec": 450,
+   "inicio": "2026-10-01",
+   "fin": "2026-10-20",
+   "nueva": true,
+   "op": "xe3l0vjut852h"
+  },
+  {
+   "ts": "2026-09-02T20:53:37.945Z",
+   "tipo": "alta",
+   "cliente": "BLT (IHOP/ APPLEBEE'S)",
+   "campana": "Apertura",
+   "pantalla": "Salvador del Mundo",
+   "sublista": "SDM4_300",
+   "frec": 300,
+   "inicio": "2026-11-01",
+   "fin": "2026-12-30",
+   "op": "xai0vrn89pt7d"
+  },
+  {
+   "ts": "2026-09-02T20:53:37.945Z",
+   "tipo": "alta",
+   "cliente": "BLT (IHOP/ APPLEBEE'S)",
+   "campana": "Apertura",
+   "pantalla": "Panamericana",
+   "sublista": "PANAMERICANA5_450",
+   "frec": 300,
+   "inicio": "2026-11-01",
+   "fin": "2026-12-30",
+   "op": "xai0vrn89pt7d"
+  },
+  {
+   "ts": "2026-09-02T20:53:37.945Z",
+   "tipo": "alta",
+   "cliente": "BLT (IHOP/ APPLEBEE'S)",
+   "campana": "Apertura",
+   "pantalla": "Paseo",
+   "sublista": "PASEO3_300",
+   "frec": 300,
+   "inicio": "2026-11-01",
+   "fin": "2026-12-30",
+   "op": "xai0vrn89pt7d"
+  },
+  {
+   "ts": "2026-09-02T20:53:37.945Z",
+   "tipo": "alta",
+   "cliente": "BLT (IHOP/ APPLEBEE'S)",
+   "campana": "Apertura",
+   "pantalla": "Jerusalén",
+   "sublista": "JERUSALEN3",
+   "frec": 300,
+   "inicio": "2026-11-01",
+   "fin": "2026-12-30",
+   "op": "xai0vrn89pt7d"
+  },
+  {
+   "ts": "2026-09-02T20:53:37.945Z",
+   "tipo": "alta",
+   "cliente": "BLT (IHOP/ APPLEBEE'S)",
+   "campana": "Apertura",
+   "pantalla": "San Benito",
+   "sublista": "BENITO1_900",
+   "frec": 300,
+   "inicio": "2026-11-01",
+   "fin": "2026-12-30",
+   "op": "xai0vrn89pt7d"
+  },
+  {
+   "ts": "2026-09-02T20:54:36.841Z",
+   "tipo": "alta",
+   "cliente": "BLT (IHOP/ APPLEBEE'S)",
+   "campana": "Apertura",
+   "pantalla": "Héroes",
+   "sublista": "HEROE EXTRA 6_900",
+   "frec": 1800,
+   "inicio": "2026-11-01",
+   "fin": "2026-12-30",
+   "nueva": true,
+   "vig": {
+    "cliente": "BLT (IHOP/ APPLEBEE'S)",
+    "campana": "Apertura",
+    "inicio": "2026-11-01",
+    "fin": "2026-12-30",
+    "estado": "v_programada",
+    "dias": 114,
+    "pantallas": 5,
+    "pausadas": 0
+   }
+  },
+  {
+   "ts": "2026-09-02T20:54:36.841Z",
+   "tipo": "alta",
+   "cliente": "BLT (IHOP/ APPLEBEE'S)",
+   "campana": "Apertura",
+   "pantalla": "Próceres",
+   "sublista": "PROCE EXTRA 8_900",
+   "frec": 1800,
+   "inicio": "2026-11-01",
+   "fin": "2026-12-30",
+   "nueva": true
+  },
+  {
+   "ts": "2026-09-02T20:54:36.841Z",
+   "tipo": "alta",
+   "cliente": "BLT (IHOP/ APPLEBEE'S)",
+   "campana": "Apertura",
+   "pantalla": "Constitución / Juan Pablo",
+   "sublista": "JUANPA EXTRA 4_900",
+   "frec": 1800,
+   "inicio": "2026-11-01",
+   "fin": "2026-12-30",
+   "nueva": true
+  },
+  {
+   "ts": "2026-09-03T23:32:53.457Z",
+   "tipo": "alta",
+   "cliente": "LA CURACAO",
+   "campana": "LA CURACAO",
+   "pantalla": "Próceres",
+   "sublista": "PROCERES6_300",
+   "frec": 450,
+   "inicio": "2026-09-01",
+   "fin": "2026-09-30",
+   "op": "xxzai9eeaugy9",
+   "vig": {
+    "cliente": "LA CURACAO",
+    "campana": "Hot week",
+    "inicio": "2026-08-11",
+    "fin": "2026-09-30",
+    "estado": "v_vigente",
+    "dias": 23,
+    "pantallas": 2,
+    "pausadas": 0
+   }
+  },
+  {
+   "ts": "2026-09-04T18:09:58.413Z",
+   "tipo": "alta",
+   "cliente": "CONAMIPE / CAPRES",
+   "campana": "FAMILIA",
+   "pantalla": "Salvador del Mundo",
+   "sublista": "SDM7_450",
+   "frec": 450,
+   "inicio": "2026-09-04",
+   "fin": "2026-09-30",
+   "op": "xh4ce84vyr1ql",
+   "vig": {
+    "cliente": "CONAMIPE / CAPRES",
+    "campana": "FAMILIA",
+    "inicio": "2026-09-04",
+    "fin": "2026-09-30",
+    "estado": "v_vigente",
+    "dias": 23,
+    "pantallas": 2,
+    "pausadas": 0
+   }
+  },
+  {
+   "ts": "2026-09-04T18:09:58.413Z",
+   "tipo": "alta",
+   "cliente": "CONAMIPE / CAPRES",
+   "campana": "FAMILIA",
+   "pantalla": "San Benito",
+   "sublista": "BENITO1_900",
+   "frec": 450,
+   "inicio": "2026-09-04",
+   "fin": "2026-09-30",
+   "op": "xh4ce84vyr1ql"
+  },
+  {
+   "ts": "2026-09-04T21:32:25.051Z",
+   "tipo": "recortada",
+   "cliente": "CAMPESTRE",
+   "campana": "Campestre hamburguesas",
+   "pantalla": "Salvador del Mundo",
+   "sublista": "SDM5_300",
+   "frec": 300,
+   "inicio": "2026-01-01",
+   "fin": "2026-11-03",
+   "finAntes": "2026-11-30",
+   "frecAntes": 300
+  },
+  {
+   "ts": "2026-09-04T21:37:36.323Z",
+   "tipo": "recortada",
+   "cliente": "CAMPESTRE",
+   "campana": "Campestre hamburguesas",
+   "pantalla": "Salvador del Mundo",
+   "sublista": "SDM5_300",
+   "frec": 300,
+   "inicio": "2026-01-01",
+   "fin": "2026-09-03",
+   "finAntes": "2026-11-03",
+   "frecAntes": 300
+  },
+  {
+   "ts": "2026-09-04T21:43:12.988Z",
+   "tipo": "extendida",
+   "cliente": "CONFORTSTAR / AIREFRIO",
+   "campana": "Somos pasión",
+   "pantalla": "Salvador del Mundo",
+   "sublista": "SDM10_600",
+   "frec": 450,
+   "inicio": "2026-08-12",
+   "fin": "2026-12-11",
+   "finAntes": "2026-09-11",
+   "frecAntes": 450
+  },
+  {
+   "ts": "2026-09-04T21:49:11.091Z",
+   "tipo": "recortada",
+   "cliente": "CONFORTSTAR / AIREFRIO",
+   "campana": "Somos pasión",
+   "pantalla": "Salvador del Mundo",
+   "sublista": "SDM10_600",
+   "frec": 450,
+   "inicio": "2026-08-12",
+   "fin": "2026-09-11",
+   "finAntes": "2026-12-11",
+   "frecAntes": 450,
+   "vig": {
+    "cliente": "CONFORTSTAR / AIREFRIO",
+    "campana": "Somos pasión",
+    "inicio": "2026-08-12",
+    "fin": "2026-09-11",
+    "estado": "v_porvencer",
+    "dias": 4,
+    "pantallas": 1,
+    "pausadas": 0
+   }
+  },
+  {
+   "ts": "2026-09-04T21:55:29.365Z",
+   "tipo": "alta",
+   "cliente": "FRIOAIRE",
+   "campana": "GENERICO",
+   "pantalla": "Salvador del Mundo",
+   "sublista": "SDM4_300",
+   "frec": 300,
+   "inicio": "2026-09-12",
+   "fin": "2026-12-11",
+   "op": "xu3lwd5kjt2ad",
+   "vig": {
+    "cliente": "FRIOAIRE",
+    "campana": "GENERICO",
+    "inicio": "2026-09-12",
+    "fin": "2026-12-11",
+    "estado": "v_programada",
+    "dias": 95,
+    "pantallas": 2,
+    "pausadas": 0
+   }
+  },
+  {
+   "ts": "2026-09-04T21:55:29.365Z",
+   "tipo": "alta",
+   "cliente": "FRIOAIRE",
+   "campana": "GENERICO",
+   "pantalla": "San Benito",
+   "sublista": "BENITO1_900",
+   "frec": 300,
+   "inicio": "2026-09-12",
+   "fin": "2026-12-11",
+   "op": "xu3lwd5kjt2ad"
+  },
+  {
+   "ts": "2026-09-04T21:59:03.068Z",
+   "tipo": "alta",
+   "cliente": "ALCALDÍA DE SAN SALVADOR",
+   "campana": "SIVAR RUN",
+   "pantalla": "Salvador del Mundo",
+   "sublista": "SDM4_300",
+   "frec": 300,
+   "inicio": "2026-09-04",
+   "fin": "2026-09-06",
+   "op": "x2bk1ej53xn6k"
+  },
+  {
+   "ts": "2026-09-04T21:59:03.068Z",
+   "tipo": "alta",
+   "cliente": "ALCALDÍA DE SAN SALVADOR",
+   "campana": "SIVAR RUN",
+   "pantalla": "Héroes",
+   "sublista": "HEROES1_900",
+   "frec": 300,
+   "inicio": "2026-09-04",
+   "fin": "2026-09-06",
+   "op": "x2bk1ej53xn6k"
+  },
+  {
+   "ts": "2026-09-04T21:59:03.068Z",
+   "tipo": "alta",
+   "cliente": "ALCALDÍA DE SAN SALVADOR",
+   "campana": "SIVAR RUN",
+   "pantalla": "Panamericana",
+   "sublista": "PANAMERICANA5_450",
+   "frec": 300,
+   "inicio": "2026-09-04",
+   "fin": "2026-09-06",
+   "op": "x2bk1ej53xn6k"
+  },
+  {
+   "ts": "2026-09-04T21:59:03.068Z",
+   "tipo": "alta",
+   "cliente": "ALCALDÍA DE SAN SALVADOR",
+   "campana": "SIVAR RUN",
+   "pantalla": "Próceres",
+   "sublista": "PROCERES5_600",
+   "frec": 300,
+   "inicio": "2026-09-04",
+   "fin": "2026-09-06",
+   "op": "x2bk1ej53xn6k"
+  },
+  {
+   "ts": "2026-09-04T21:59:03.068Z",
+   "tipo": "alta",
+   "cliente": "ALCALDÍA DE SAN SALVADOR",
+   "campana": "SIVAR RUN",
+   "pantalla": "Paseo",
+   "sublista": "PASEO3_300",
+   "frec": 300,
+   "inicio": "2026-09-04",
+   "fin": "2026-09-06",
+   "op": "x2bk1ej53xn6k"
+  },
+  {
+   "ts": "2026-09-04T21:59:03.068Z",
+   "tipo": "alta",
+   "cliente": "ALCALDÍA DE SAN SALVADOR",
+   "campana": "SIVAR RUN",
+   "pantalla": "Jerusalén",
+   "sublista": "JERUSALEN3",
+   "frec": 300,
+   "inicio": "2026-09-04",
+   "fin": "2026-09-06",
+   "op": "x2bk1ej53xn6k"
+  },
+  {
+   "ts": "2026-09-04T21:59:03.068Z",
+   "tipo": "alta",
+   "cliente": "ALCALDÍA DE SAN SALVADOR",
+   "campana": "SIVAR RUN",
+   "pantalla": "San Benito",
+   "sublista": "BENITO1_900",
+   "frec": 300,
+   "inicio": "2026-09-04",
+   "fin": "2026-09-06",
+   "op": "x2bk1ej53xn6k"
+  },
+  {
+   "ts": "2026-09-04T21:59:03.068Z",
+   "tipo": "alta",
+   "cliente": "ALCALDÍA DE SAN SALVADOR",
+   "campana": "SIVAR RUN",
+   "pantalla": "Constitución / Juan Pablo",
+   "sublista": "JUAN PABLO 03",
+   "frec": 300,
+   "inicio": "2026-09-04",
+   "fin": "2026-09-06",
+   "op": "x2bk1ej53xn6k"
+  },
+  {
+   "ts": "2026-09-07T17:02:01.309Z",
+   "tipo": "recortada",
+   "cliente": "SABA",
+   "pantalla": "Panamericana",
+   "sublista": "PANAMERICANA1_900",
+   "frec": 450,
+   "inicio": "2026-08-15",
+   "fin": "2026-09-13",
+   "finAntes": "2027-09-13",
+   "frecAntes": 450
+  },
+  {
+   "ts": "2026-09-07T17:02:10.798Z",
+   "tipo": "recortada",
+   "cliente": "SABA",
+   "pantalla": "Próceres",
+   "sublista": "PROCERES2_450",
+   "frec": 450,
+   "inicio": "2026-08-15",
+   "fin": "2026-09-13",
+   "finAntes": "2027-09-13",
+   "frecAntes": 450
+  },
+  {
+   "ts": "2026-09-11T23:46:46.331Z",
+   "tipo": "alta",
+   "cliente": "EPA",
+   "campana": "RETAIL",
+   "pantalla": "Panamericana",
+   "sublista": "PANAMERICANA2_600",
+   "frec": 450,
+   "inicio": "2026-09-12",
+   "fin": "2026-09-26",
+   "op": "xvolrppdov4xm"
+  },
+  {
+   "ts": "2026-09-11T23:46:46.331Z",
+   "tipo": "alta",
+   "cliente": "EPA",
+   "campana": "RETAIL",
+   "pantalla": "Paseo",
+   "sublista": "PASEO4_450",
+   "frec": 450,
+   "inicio": "2026-09-12",
+   "fin": "2026-09-26",
+   "op": "xvolrppdov4xm"
+  },
+  {
+   "ts": "2026-09-11T23:46:46.331Z",
+   "tipo": "alta",
+   "cliente": "EPA",
+   "campana": "RETAIL",
+   "pantalla": "Jerusalén",
+   "sublista": "JERUSALEN2_900",
+   "frec": 450,
+   "inicio": "2026-09-12",
+   "fin": "2026-09-26",
+   "op": "xvolrppdov4xm"
+  },
+  {
+   "ts": "2026-09-11T23:46:46.331Z",
+   "tipo": "alta",
+   "cliente": "EPA",
+   "campana": "RETAIL",
+   "pantalla": "San Benito",
+   "sublista": "BENITO2_450",
+   "frec": 450,
+   "inicio": "2026-09-12",
+   "fin": "2026-09-26",
+   "op": "xvolrppdov4xm"
+  },
+  {
+   "ts": "2026-09-16T14:14:53.708Z",
+   "tipo": "renovada",
+   "cliente": "MISTER DONUT",
+   "campana": "2 X 1",
+   "pantalla": "Salvador del Mundo",
+   "sublista": "SDM1_900",
+   "frec": 900,
+   "inicio": "2026-09-01",
+   "fin": "2026-09-30",
+   "finAntes": "2026-09-15",
+   "frecAntes": 900
+  },
+  {
+   "ts": "2026-09-16T22:05:28.579Z",
+   "tipo": "alta",
+   "cliente": "ST JACKS",
+   "campana": "ST JACKS",
+   "pantalla": "Héroes",
+   "sublista": "HEROES3_450",
+   "frec": 300,
+   "inicio": "2026-09-16",
+   "fin": "2026-10-15",
+   "op": "x2gxlgcdfg4n7"
+  },
+  {
+   "ts": "2026-09-16T22:05:28.579Z",
+   "tipo": "alta",
+   "cliente": "ST JACKS",
+   "campana": "ST JACKS",
+   "pantalla": "Panamericana",
+   "sublista": "PANAMERICANA1_900",
+   "frec": 300,
+   "inicio": "2026-09-16",
+   "fin": "2026-10-15",
+   "op": "x2gxlgcdfg4n7"
+  },
+  {
+   "ts": "2026-09-16T22:05:28.580Z",
+   "tipo": "alta",
+   "cliente": "ST JACKS",
+   "campana": "ST JACKS",
+   "pantalla": "Próceres",
+   "sublista": "PROCERES2_450",
+   "frec": 300,
+   "inicio": "2026-09-16",
+   "fin": "2026-10-15",
+   "op": "x2gxlgcdfg4n7"
+  },
+  {
+   "ts": "2026-09-17T17:55:39.666Z",
+   "tipo": "alta",
+   "cliente": "UBIQUITY",
+   "campana": "APPLY NOW",
+   "pantalla": "San Benito",
+   "sublista": "BENITO1_900",
+   "frec": 450,
+   "inicio": "2026-09-16",
+   "fin": "2026-10-15",
+   "op": "xwe9tc04rypsh"
+  },
+  {
+   "ts": "2026-09-17T18:12:44.986Z",
+   "tipo": "alta",
+   "cliente": "UNILEVER",
+   "campana": "NATURA´S MAGIC",
+   "pantalla": "Salvador del Mundo",
+   "sublista": "SDM2_450",
+   "frec": 450,
+   "inicio": "2026-09-21",
+   "fin": "2026-10-20",
+   "op": "xxv8unm5bkoxm"
+  },
+  {
+   "ts": "2026-09-17T18:12:44.986Z",
+   "tipo": "alta",
+   "cliente": "UNILEVER",
+   "campana": "NATURA´S MAGIC",
+   "pantalla": "Héroes",
+   "sublista": "HEROES3_450",
+   "frec": 450,
+   "inicio": "2026-09-21",
+   "fin": "2026-10-20",
+   "op": "xxv8unm5bkoxm"
+  },
+  {
+   "ts": "2026-09-17T18:12:44.986Z",
+   "tipo": "alta",
+   "cliente": "UNILEVER",
+   "campana": "NATURA´S MAGIC",
+   "pantalla": "Paseo",
+   "sublista": "PASEO4_450",
+   "frec": 450,
+   "inicio": "2026-09-21",
+   "fin": "2026-10-20",
+   "op": "xxv8unm5bkoxm"
+  },
+  {
+   "ts": "2026-09-17T18:12:44.986Z",
+   "tipo": "alta",
+   "cliente": "UNILEVER",
+   "campana": "NATURA´S MAGIC",
+   "pantalla": "Jerusalén",
+   "sublista": "JERUSALEN3",
+   "frec": 450,
+   "inicio": "2026-09-21",
+   "fin": "2026-10-20",
+   "op": "xxv8unm5bkoxm"
+  },
+  {
+   "ts": "2026-09-17T18:12:44.986Z",
+   "tipo": "alta",
+   "cliente": "UNILEVER",
+   "campana": "NATURA´S MAGIC",
+   "pantalla": "San Benito",
+   "sublista": "BENITO1_900",
+   "frec": 450,
+   "inicio": "2026-09-21",
+   "fin": "2026-10-20",
+   "op": "xxv8unm5bkoxm"
+  },
+  {
+   "ts": "2026-09-17T22:34:31.614Z",
+   "tipo": "alta",
+   "cliente": "PALM SOLARIS",
+   "campana": "INSTITUCIONAL",
+   "pantalla": "Panamericana",
+   "sublista": "PANAMERICANA1_900",
+   "frec": 300,
+   "inicio": "2026-09-01",
+   "fin": "2026-09-30",
+   "op": "xjkbfg56rxc8u"
+  },
+  {
+   "ts": "2026-09-17T23:43:52.011Z",
+   "tipo": "alta",
+   "cliente": "TIGO",
+   "campana": "RETAIL",
+   "pantalla": "Constitución / Juan Pablo",
+   "sublista": "JUAN PABLO 01",
+   "frec": 450,
+   "inicio": "2026-09-18",
+   "fin": "2026-09-19",
+   "op": "xc5pi3ewteife"
+  },
+  {
+   "ts": "2026-09-29T15:46:37.480Z",
+   "tipo": "alta",
+   "cliente": "APEX PUBLICIDAD",
+   "campana": "MINSAL INSTITUCIONAL",
+   "pantalla": "Héroes",
+   "sublista": "HEROES4_450",
+   "frec": 300,
+   "inicio": "2026-10-01",
+   "fin": "2026-10-31",
+   "op": "xnxsbpmp5mzvr"
+  },
+  {
+   "ts": "2026-09-29T15:46:37.480Z",
+   "tipo": "alta",
+   "cliente": "APEX PUBLICIDAD",
+   "campana": "MINSAL INSTITUCIONAL",
+   "pantalla": "Paseo",
+   "sublista": "PASEO3_300",
+   "frec": 300,
+   "inicio": "2026-10-01",
+   "fin": "2026-10-31",
+   "op": "xnxsbpmp5mzvr"
+  },
+  {
+   "ts": "2026-09-29T15:46:37.480Z",
+   "tipo": "alta",
+   "cliente": "APEX PUBLICIDAD",
+   "campana": "MINSAL INSTITUCIONAL",
+   "pantalla": "San Benito",
+   "sublista": "BENITO1_900",
+   "frec": 300,
+   "inicio": "2026-10-01",
+   "fin": "2026-10-31",
+   "op": "xnxsbpmp5mzvr"
+  },
+  {
+   "ts": "2026-09-29T17:00:16.442Z",
+   "tipo": "alta",
+   "cliente": "PRUEBA",
+   "campana": "PRUEBA",
+   "pantalla": "Héroes",
+   "sublista": "HEROES4_450",
+   "frec": 300,
+   "inicio": "2026-09-29",
+   "fin": "2026-09-29",
+   "op": "xkhr3zyib9pkp"
+  },
+  {
+   "ts": "2026-09-29T18:07:32.376Z",
+   "tipo": "alta",
+   "cliente": "ALMACENES VIDRI",
+   "campana": "PINTURAS",
+   "pantalla": "Panamericana",
+   "sublista": "PANAMERICANA2_600",
+   "frec": 450,
+   "inicio": "2026-10-15",
+   "fin": "2026-11-14",
+   "op": "xnjefynlbo7pz"
+  },
+  {
+   "ts": "2026-09-29T18:07:32.376Z",
+   "tipo": "alta",
+   "cliente": "ALMACENES VIDRI",
+   "campana": "PINTURAS",
+   "pantalla": "San Benito",
+   "sublista": "BENITO2_450",
+   "frec": 450,
+   "inicio": "2026-10-15",
+   "fin": "2026-11-14",
+   "op": "xnjefynlbo7pz"
+  },
+  {
+   "ts": "2026-09-29T18:27:33.783Z",
+   "tipo": "alta",
+   "cliente": "ALPINA",
+   "campana": "ALPINA BEBE",
+   "pantalla": "Jerusalén",
+   "sublista": "JERUSALEN2_900",
+   "frec": 450,
+   "inicio": "2026-09-29",
+   "fin": "2026-10-28",
+   "op": "xi90subx9dyqf"
+  },
+  {
+   "ts": "2026-09-29T18:27:33.783Z",
+   "tipo": "alta",
+   "cliente": "ALPINA",
+   "campana": "ALPINA BEBE",
+   "pantalla": "San Benito",
+   "sublista": "BENITO2_450",
+   "frec": 450,
+   "inicio": "2026-09-29",
+   "fin": "2026-10-28",
+   "op": "xi90subx9dyqf"
+  },
+  {
+   "ts": "2026-09-29T19:42:31.269Z",
+   "tipo": "alta",
+   "cliente": "MAGGI",
+   "campana": "MAGGI AND ME",
+   "pantalla": "Héroes",
+   "sublista": "HEROES4_450",
+   "frec": 450,
+   "inicio": "2026-09-24",
+   "fin": "2026-10-23",
+   "op": "xwxciafbg2d0l"
+  },
+  {
+   "ts": "2026-09-29T20:08:26.565Z",
+   "tipo": "alta",
+   "cliente": "MD",
+   "campana": "TEMPORADA FIN DE AÑO",
+   "pantalla": "Salvador del Mundo",
+   "sublista": "SDM2_450",
+   "frec": 450,
+   "inicio": "2026-11-12",
+   "fin": "2026-11-30",
+   "op": "x1coq6482zp39"
+  },
+  {
+   "ts": "2026-09-29T20:08:26.566Z",
+   "tipo": "alta",
+   "cliente": "MD",
+   "campana": "TEMPORADA FIN DE AÑO",
+   "pantalla": "Héroes",
+   "sublista": "HEROES5_450",
+   "frec": 450,
+   "inicio": "2026-11-12",
+   "fin": "2026-11-30",
+   "op": "x1coq6482zp39"
+  },
+  {
+   "ts": "2026-09-29T20:08:26.566Z",
+   "tipo": "alta",
+   "cliente": "MD",
+   "campana": "TEMPORADA FIN DE AÑO",
+   "pantalla": "Próceres",
+   "sublista": "PROCERES3_450",
+   "frec": 450,
+   "inicio": "2026-11-12",
+   "fin": "2026-11-30",
+   "op": "x1coq6482zp39"
+  },
+  {
+   "ts": "2026-09-29T20:08:26.566Z",
+   "tipo": "alta",
+   "cliente": "MD",
+   "campana": "TEMPORADA FIN DE AÑO",
+   "pantalla": "Paseo",
+   "sublista": "PASEO4_450",
+   "frec": 450,
+   "inicio": "2026-11-12",
+   "fin": "2026-11-30",
+   "op": "x1coq6482zp39"
+  },
+  {
+   "ts": "2026-09-29T20:08:49.158Z",
+   "tipo": "alta",
+   "cliente": "MD",
+   "campana": "TEMPORADA FIN DE AÑO",
+   "pantalla": "Salvador del Mundo",
+   "sublista": "SDM2_450",
+   "frec": 450,
+   "inicio": "2026-12-01",
+   "fin": "2026-12-31",
+   "op": "x5obnbsne06it"
+  },
+  {
+   "ts": "2026-09-29T20:08:49.158Z",
+   "tipo": "alta",
+   "cliente": "MD",
+   "campana": "TEMPORADA FIN DE AÑO",
+   "pantalla": "Héroes",
+   "sublista": "HEROES5_450",
+   "frec": 450,
+   "inicio": "2026-12-01",
+   "fin": "2026-12-31",
+   "op": "x5obnbsne06it"
+  },
+  {
+   "ts": "2026-09-29T20:08:49.158Z",
+   "tipo": "alta",
+   "cliente": "MD",
+   "campana": "TEMPORADA FIN DE AÑO",
+   "pantalla": "Próceres",
+   "sublista": "PROCERES3_450",
+   "frec": 450,
+   "inicio": "2026-12-01",
+   "fin": "2026-12-31",
+   "op": "x5obnbsne06it"
+  },
+  {
+   "ts": "2026-09-29T20:08:49.158Z",
+   "tipo": "alta",
+   "cliente": "MD",
+   "campana": "TEMPORADA FIN DE AÑO",
+   "pantalla": "Paseo",
+   "sublista": "PASEO4_450",
+   "frec": 450,
+   "inicio": "2026-12-01",
+   "fin": "2026-12-31",
+   "op": "x5obnbsne06it"
+  },
+  {
+   "ts": "2026-09-29T20:28:21.989Z",
+   "tipo": "alta",
+   "cliente": "FUSALMO",
+   "campana": "ROBOTICA",
+   "pantalla": "Paseo",
+   "sublista": "PASEO4_450",
+   "frec": 450,
+   "inicio": "2026-09-24",
+   "fin": "2026-10-08",
+   "op": "x1s2dh569pbhh"
+  },
+  {
+   "ts": "2026-09-29T20:39:02.701Z",
+   "tipo": "alta",
+   "cliente": "LEMUSIMUN",
+   "campana": "50 ANIVERSARIO",
+   "pantalla": "Salvador del Mundo",
+   "sublista": "SDM4_300",
+   "frec": 300,
+   "inicio": "2026-09-21",
+   "fin": "2026-10-20",
+   "op": "xhgm3sigw31v1"
+  },
+  {
+   "ts": "2026-09-29T20:39:02.701Z",
+   "tipo": "alta",
+   "cliente": "LEMUSIMUN",
+   "campana": "50 ANIVERSARIO",
+   "pantalla": "Héroes",
+   "sublista": "HEROES5_450",
+   "frec": 300,
+   "inicio": "2026-09-21",
+   "fin": "2026-10-20",
+   "op": "xhgm3sigw31v1"
+  },
+  {
+   "ts": "2026-09-29T20:39:02.701Z",
+   "tipo": "alta",
+   "cliente": "LEMUSIMUN",
+   "campana": "50 ANIVERSARIO",
+   "pantalla": "Panamericana",
+   "sublista": "PANAMERICANA2_600",
+   "frec": 300,
+   "inicio": "2026-09-21",
+   "fin": "2026-10-20",
+   "op": "xhgm3sigw31v1"
+  },
+  {
+   "ts": "2026-09-29T20:39:02.701Z",
+   "tipo": "alta",
+   "cliente": "LEMUSIMUN",
+   "campana": "50 ANIVERSARIO",
+   "pantalla": "Próceres",
+   "sublista": "PROCERES3_450",
+   "frec": 300,
+   "inicio": "2026-09-21",
+   "fin": "2026-10-20",
+   "op": "xhgm3sigw31v1"
+  },
+  {
+   "ts": "2026-09-29T20:39:02.701Z",
+   "tipo": "alta",
+   "cliente": "LEMUSIMUN",
+   "campana": "50 ANIVERSARIO",
+   "pantalla": "Paseo",
+   "sublista": "PASEO3_300",
+   "frec": 300,
+   "inicio": "2026-09-21",
+   "fin": "2026-10-20",
+   "op": "xhgm3sigw31v1"
+  },
+  {
+   "ts": "2026-09-29T20:39:02.701Z",
+   "tipo": "alta",
+   "cliente": "LEMUSIMUN",
+   "campana": "50 ANIVERSARIO",
+   "pantalla": "Jerusalén",
+   "sublista": "JERUSALEN2_900",
+   "frec": 300,
+   "inicio": "2026-09-21",
+   "fin": "2026-10-20",
+   "op": "xhgm3sigw31v1"
+  },
+  {
+   "ts": "2026-09-29T20:39:02.701Z",
+   "tipo": "alta",
+   "cliente": "LEMUSIMUN",
+   "campana": "50 ANIVERSARIO",
+   "pantalla": "San Benito",
+   "sublista": "BENITO1_900",
+   "frec": 300,
+   "inicio": "2026-09-21",
+   "fin": "2026-10-20",
+   "op": "xhgm3sigw31v1"
+  },
+  {
+   "ts": "2026-09-29T20:39:02.701Z",
+   "tipo": "alta",
+   "cliente": "LEMUSIMUN",
+   "campana": "50 ANIVERSARIO",
+   "pantalla": "Constitución / Juan Pablo",
+   "sublista": "JUAN PABLO 01",
+   "frec": 300,
+   "inicio": "2026-09-21",
+   "fin": "2026-10-20",
+   "op": "xhgm3sigw31v1"
+  },
+  {
+   "ts": "2026-09-29T20:40:56.188Z",
+   "tipo": "alta",
+   "cliente": "UNIVERSIDAD DON BOSCO",
+   "campana": "DISEÑO",
+   "pantalla": "San Benito",
+   "sublista": "BENITO4_450",
+   "frec": 450,
+   "inicio": "2026-09-21",
+   "fin": "2026-10-09",
+   "op": "xn3p50w2r5hfg"
+  },
+  {
+   "ts": "2026-09-29T20:48:02.724Z",
+   "tipo": "alta",
+   "cliente": "SIMAN",
+   "campana": "SIMAN ANIVERSALE",
+   "pantalla": "Próceres",
+   "sublista": "PROCERES5_600",
+   "frec": 450,
+   "inicio": "2026-10-01",
+   "fin": "2026-10-31",
+   "op": "xe33bostdemjo"
+  },
+  {
+   "ts": "2026-09-29T21:55:07.020Z",
+   "tipo": "alta",
+   "cliente": "ALCALDIA DE SAN SALVADOR CENTRO",
+   "campana": "AMNISTIA",
+   "pantalla": "Salvador del Mundo",
+   "sublista": "SDM2_450",
+   "frec": 300,
+   "inicio": "2026-09-29",
+   "fin": "2026-11-27",
+   "op": "xlbgjjffosvpo"
+  },
+  {
+   "ts": "2026-09-29T21:55:07.020Z",
+   "tipo": "alta",
+   "cliente": "ALCALDIA DE SAN SALVADOR CENTRO",
+   "campana": "AMNISTIA",
+   "pantalla": "Héroes",
+   "sublista": "HEROES5_450",
+   "frec": 300,
+   "inicio": "2026-09-29",
+   "fin": "2026-11-27",
+   "op": "xlbgjjffosvpo"
+  },
+  {
+   "ts": "2026-09-29T21:55:07.020Z",
+   "tipo": "alta",
+   "cliente": "ALCALDIA DE SAN SALVADOR CENTRO",
+   "campana": "AMNISTIA",
+   "pantalla": "Panamericana",
+   "sublista": "PANAMERICANA3_600",
+   "frec": 300,
+   "inicio": "2026-09-29",
+   "fin": "2026-11-27",
+   "op": "xlbgjjffosvpo"
+  },
+  {
+   "ts": "2026-09-29T21:55:07.020Z",
+   "tipo": "alta",
+   "cliente": "ALCALDIA DE SAN SALVADOR CENTRO",
+   "campana": "AMNISTIA",
+   "pantalla": "Próceres",
+   "sublista": "PROCERES5_600",
+   "frec": 300,
+   "inicio": "2026-09-29",
+   "fin": "2026-11-27",
+   "op": "xlbgjjffosvpo"
+  },
+  {
+   "ts": "2026-09-29T21:55:07.021Z",
+   "tipo": "alta",
+   "cliente": "ALCALDIA DE SAN SALVADOR CENTRO",
+   "campana": "AMNISTIA",
+   "pantalla": "Paseo",
+   "sublista": "PASEO4_450",
+   "frec": 300,
+   "inicio": "2026-09-29",
+   "fin": "2026-11-27",
+   "op": "xlbgjjffosvpo"
+  },
+  {
+   "ts": "2026-09-29T21:55:07.021Z",
+   "tipo": "alta",
+   "cliente": "ALCALDIA DE SAN SALVADOR CENTRO",
+   "campana": "AMNISTIA",
+   "pantalla": "Jerusalén",
+   "sublista": "JERUSALEN5",
+   "frec": 300,
+   "inicio": "2026-09-29",
+   "fin": "2026-11-27",
+   "op": "xlbgjjffosvpo"
+  },
+  {
+   "ts": "2026-09-29T21:55:07.021Z",
+   "tipo": "alta",
+   "cliente": "ALCALDIA DE SAN SALVADOR CENTRO",
+   "campana": "AMNISTIA",
+   "pantalla": "San Benito",
+   "sublista": "BENITO4_450",
+   "frec": 300,
+   "inicio": "2026-09-29",
+   "fin": "2026-11-27",
+   "op": "xlbgjjffosvpo"
+  },
+  {
+   "ts": "2026-09-29T21:55:07.021Z",
+   "tipo": "alta",
+   "cliente": "ALCALDIA DE SAN SALVADOR CENTRO",
+   "campana": "AMNISTIA",
+   "pantalla": "Constitución / Juan Pablo",
+   "sublista": "JUANPA EXTRA 3_450",
+   "frec": 300,
+   "inicio": "2026-09-29",
+   "fin": "2026-11-27",
+   "op": "xlbgjjffosvpo"
+  },
+  {
+   "ts": "2026-09-30T15:27:48.568Z",
+   "tipo": "alta",
+   "cliente": "LA CURACAO",
+   "campana": "LA CURACAO",
+   "pantalla": "Próceres",
+   "sublista": "PROCERES6_300",
+   "frec": 450,
+   "inicio": "2026-10-01",
+   "fin": "2026-10-31",
+   "op": "xugl8uklvenh3"
+  },
+  {
+   "ts": "2026-09-30T16:54:11.948Z",
+   "tipo": "alta",
+   "cliente": "Walmart",
+   "campana": "WALMART",
+   "pantalla": "San Benito",
+   "sublista": "BENITO 6",
+   "frec": 450,
+   "inicio": "2026-10-01",
+   "fin": "2026-10-31",
+   "op": "xlfhphkb3hqzw"
+  },
+  {
+   "ts": "2026-09-30T16:55:26.636Z",
+   "tipo": "alta",
+   "cliente": "TIGO",
+   "campana": "POSPAGO RETAIL",
+   "pantalla": "Constitución / Juan Pablo",
+   "sublista": "JUAN PABLO 03",
+   "frec": 450,
+   "inicio": "2026-10-01",
+   "fin": "2026-10-03",
+   "op": "xp9p7m9thjcmk"
+  },
+  {
+   "ts": "2026-10-01T11:36:06.107Z",
+   "tipo": "alta",
+   "cliente": "GRUPO EXCEL",
+   "campana": "PROMO GRUPO EXCEL",
+   "pantalla": "Próceres",
+   "sublista": "PROCERES 7",
+   "frec": 900,
+   "inicio": "2026-10-01",
+   "fin": "2026-10-31",
+   "op": "xasmoh9bikixn"
+  },
+  {
+   "ts": "2026-10-01T13:50:33.215Z",
+   "tipo": "alta",
+   "cliente": "Viro Grip",
+   "campana": "VIROGRIP",
+   "pantalla": "Salvador del Mundo",
+   "sublista": "SDM2_450",
+   "frec": 450,
+   "inicio": "2026-10-01",
+   "fin": "2026-10-31",
+   "op": "xvw34nbqgdfjx"
+  },
+  {
+   "ts": "2026-10-01T13:50:33.215Z",
+   "tipo": "alta",
+   "cliente": "Viro Grip",
+   "campana": "VIROGRIP",
+   "pantalla": "Héroes",
+   "sublista": "HEROES1_900",
+   "frec": 450,
+   "inicio": "2026-10-01",
+   "fin": "2026-10-31",
+   "op": "xvw34nbqgdfjx"
+  },
+  {
+   "ts": "2026-10-02T00:14:56.940Z",
+   "tipo": "alta",
+   "cliente": "MINED",
+   "campana": "MINED",
+   "pantalla": "Salvador del Mundo",
+   "sublista": "SDM2_450",
+   "frec": 450,
+   "inicio": "2026-10-01",
+   "fin": "2026-10-31",
+   "op": "xv6d9k4rgoer0"
+  },
+  {
+   "ts": "2026-10-02T00:14:56.940Z",
+   "tipo": "alta",
+   "cliente": "MINED",
+   "campana": "MINED",
+   "pantalla": "San Benito",
+   "sublista": "BENITO 7",
+   "frec": 450,
+   "inicio": "2026-10-01",
+   "fin": "2026-10-31",
+   "op": "xv6d9k4rgoer0"
+  },
+  {
+   "ts": "2026-10-02T00:18:35.589Z",
+   "tipo": "alta",
+   "cliente": "NOTICIERO EL SALVADOR",
+   "campana": "6 ANIVERSARIO",
+   "pantalla": "Salvador del Mundo",
+   "sublista": "SDM2_450",
+   "frec": 300,
+   "inicio": "2026-10-01",
+   "fin": "2026-10-31",
+   "op": "xlt26dl4zt3gl"
+  },
+  {
+   "ts": "2026-10-02T00:18:35.589Z",
+   "tipo": "alta",
+   "cliente": "NOTICIERO EL SALVADOR",
+   "campana": "6 ANIVERSARIO",
+   "pantalla": "Héroes",
+   "sublista": "HEROES5_450",
+   "frec": 300,
+   "inicio": "2026-10-01",
+   "fin": "2026-10-31",
+   "op": "xlt26dl4zt3gl"
+  },
+  {
+   "ts": "2026-10-02T00:18:35.589Z",
+   "tipo": "alta",
+   "cliente": "NOTICIERO EL SALVADOR",
+   "campana": "6 ANIVERSARIO",
+   "pantalla": "Panamericana",
+   "sublista": "PANAMERICANA3_600",
+   "frec": 300,
+   "inicio": "2026-10-01",
+   "fin": "2026-10-31",
+   "op": "xlt26dl4zt3gl"
+  },
+  {
+   "ts": "2026-10-02T00:18:35.589Z",
+   "tipo": "alta",
+   "cliente": "NOTICIERO EL SALVADOR",
+   "campana": "6 ANIVERSARIO",
+   "pantalla": "Constitución / Juan Pablo",
+   "sublista": "JUAN PABLO 03",
+   "frec": 300,
+   "inicio": "2026-10-01",
+   "fin": "2026-10-31",
+   "op": "xlt26dl4zt3gl"
+  },
+  {
+   "ts": "2026-10-02T21:53:03.829Z",
+   "tipo": "alta",
+   "cliente": "MOPT",
+   "campana": "RESTRICCIONES DE HORARIO DE CARGA",
+   "pantalla": "Salvador del Mundo",
+   "sublista": "SDM2_450",
+   "frec": 300,
+   "inicio": "2026-10-02",
+   "fin": "2026-10-16",
+   "op": "xorbt9zvc1snp"
+  },
+  {
+   "ts": "2026-10-02T21:53:03.829Z",
+   "tipo": "alta",
+   "cliente": "MOPT",
+   "campana": "RESTRICCIONES DE HORARIO DE CARGA",
+   "pantalla": "Héroes",
+   "sublista": "HEROES2",
+   "frec": 300,
+   "inicio": "2026-10-02",
+   "fin": "2026-10-16",
+   "op": "xorbt9zvc1snp"
+  },
+  {
+   "ts": "2026-10-02T21:53:03.829Z",
+   "tipo": "alta",
+   "cliente": "MOPT",
+   "campana": "RESTRICCIONES DE HORARIO DE CARGA",
+   "pantalla": "Panamericana",
+   "sublista": "PANAMERICANA3_600",
+   "frec": 300,
+   "inicio": "2026-10-02",
+   "fin": "2026-10-16",
+   "op": "xorbt9zvc1snp"
+  },
+  {
+   "ts": "2026-10-02T21:53:03.830Z",
+   "tipo": "alta",
+   "cliente": "MOPT",
+   "campana": "RESTRICCIONES DE HORARIO DE CARGA",
+   "pantalla": "Próceres",
+   "sublista": "PROCERES6_300",
+   "frec": 300,
+   "inicio": "2026-10-02",
+   "fin": "2026-10-16",
+   "op": "xorbt9zvc1snp"
+  },
+  {
+   "ts": "2026-10-02T21:53:03.830Z",
+   "tipo": "alta",
+   "cliente": "MOPT",
+   "campana": "RESTRICCIONES DE HORARIO DE CARGA",
+   "pantalla": "Paseo",
+   "sublista": "PASEO2_450",
+   "frec": 300,
+   "inicio": "2026-10-02",
+   "fin": "2026-10-16",
+   "op": "xorbt9zvc1snp"
+  },
+  {
+   "ts": "2026-10-02T21:53:03.830Z",
+   "tipo": "alta",
+   "cliente": "MOPT",
+   "campana": "RESTRICCIONES DE HORARIO DE CARGA",
+   "pantalla": "Jerusalén",
+   "sublista": "JERUSALEN3",
+   "frec": 300,
+   "inicio": "2026-10-02",
+   "fin": "2026-10-16",
+   "op": "xorbt9zvc1snp"
+  },
+  {
+   "ts": "2026-10-02T21:53:03.830Z",
+   "tipo": "alta",
+   "cliente": "MOPT",
+   "campana": "RESTRICCIONES DE HORARIO DE CARGA",
+   "pantalla": "San Benito",
+   "sublista": "BENITO1_900",
+   "frec": 300,
+   "inicio": "2026-10-02",
+   "fin": "2026-10-16",
+   "op": "xorbt9zvc1snp"
+  },
+  {
+   "ts": "2026-10-02T21:53:03.830Z",
+   "tipo": "alta",
+   "cliente": "MOPT",
+   "campana": "RESTRICCIONES DE HORARIO DE CARGA",
+   "pantalla": "Constitución / Juan Pablo",
+   "sublista": "JUANPA EXTRA 4_900",
+   "frec": 300,
+   "inicio": "2026-10-02",
+   "fin": "2026-10-16",
+   "op": "xorbt9zvc1snp"
+  },
+  {
+   "ts": "2026-10-05T16:13:17.714Z",
+   "tipo": "alta",
+   "cliente": "UNASA",
+   "campana": "UNASA",
+   "pantalla": "Panamericana",
+   "sublista": "PANAMERICANA5_450",
+   "frec": 300,
+   "inicio": "2026-10-05",
+   "fin": "2026-10-20",
+   "op": "xyulejlqf8emp"
+  },
+  {
+   "ts": "2026-10-05T16:13:17.714Z",
+   "tipo": "alta",
+   "cliente": "UNASA",
+   "campana": "UNASA",
+   "pantalla": "Paseo",
+   "sublista": "PASEO 6",
+   "frec": 300,
+   "inicio": "2026-10-05",
+   "fin": "2026-10-20",
+   "op": "xyulejlqf8emp"
+  },
+  {
+   "ts": "2026-10-05T16:13:17.714Z",
+   "tipo": "alta",
+   "cliente": "UNASA",
+   "campana": "UNASA",
+   "pantalla": "Jerusalén",
+   "sublista": "JERUSALEN 01",
+   "frec": 300,
+   "inicio": "2026-10-05",
+   "fin": "2026-10-20",
+   "op": "xyulejlqf8emp"
+  },
+  {
+   "ts": "2026-10-05T16:13:17.714Z",
+   "tipo": "alta",
+   "cliente": "UNASA",
+   "campana": "UNASA",
+   "pantalla": "San Benito",
+   "sublista": "BENITO3_300",
+   "frec": 300,
+   "inicio": "2026-10-05",
+   "fin": "2026-10-20",
+   "op": "xyulejlqf8emp"
+  },
+  {
+   "ts": "2026-10-05T16:13:17.714Z",
+   "tipo": "alta",
+   "cliente": "UNASA",
+   "campana": "UNASA",
+   "pantalla": "Constitución / Juan Pablo",
+   "sublista": "JUAN PABLO 03",
+   "frec": 300,
+   "inicio": "2026-10-05",
+   "fin": "2026-10-20",
+   "op": "xyulejlqf8emp"
+  },
+  {
+   "ts": "2026-10-05T20:28:26.112Z",
+   "tipo": "alta",
+   "cliente": "SHERWIN WILLIAMS",
+   "campana": "FIN DE AÑO",
+   "pantalla": "Constitución / Juan Pablo",
+   "sublista": "JUANPA EXTRA 4_900",
+   "frec": 600,
+   "inicio": "2026-10-08",
+   "fin": "2026-11-07",
+   "op": "xoijdqkr7cio0"
+  }
+ ],
+ "tema": "dark",
+ "avisos": [
+  {
+   "id": "x6g9og11tm45h",
+   "ts": "2026-10-05T14:03:59.237Z",
+   "visto": true,
+   "hecho": false,
+   "tipo": "cambio",
+   "clave": "OP|xorbt9zvc1snp",
+   "cliente": "MOPT",
+   "campana": "RESTRICCIONES DE HORARIO DE CARGA",
+   "ids": [
+    "xwjim7qr71snp",
+    "x5vmwyta01snp",
+    "x4vsmct9i1snp",
+    "x5dmbgnf51snp",
+    "x221nnwpe1snq",
+    "xkrnd4qp01snq",
+    "x5mn63fv71snq",
+    "x5oab5p7h1snq"
+   ],
+   "detalle": "Fin 16/10/26 → 30/11/26"
+  },
+  {
+   "id": "xviif52h6au0b",
+   "ts": "2026-09-21T21:55:42.827Z",
+   "visto": true,
+   "hecho": false,
+   "tipo": "valores",
+   "clave": "C|NESTLE|MAGGI-AND-ME",
+   "cliente": "NESTLÉ",
+   "campana": "Maggi and me",
+   "ids": [
+    "x5zof9k8ykmuv",
+    "xihje2nq3lst1"
+   ],
+   "detalle": "Héroes: por spot $0.05 → $0.0516"
+  },
+  {
+   "id": "xcdfq8p485boh",
+   "ts": "2026-09-21T21:23:26.177Z",
+   "visto": true,
+   "hecho": false,
+   "tipo": "valores",
+   "clave": "C|UNILEVER|NATURA-S-MAGIC",
+   "cliente": "UNILEVER",
+   "campana": "NATURA´S MAGIC",
+   "ids": [
+    "x4crsewawkoxm",
+    "xfj2uvo0ekoxm",
+    "x0ze92z69koxm",
+    "xcszzj6o6koxm",
+    "x3z1khgdukoxm"
+   ],
+   "detalle": "Salvador del Mundo: mensual $450.00 → $776.25 · Héroes: mensual $450.00 → $776.25 · Paseo: mensual $450.00 → $776.25 · Jerusalén: mensual $450.00 → $776.25"
+  },
+  {
+   "id": "xv69644grwhf4",
+   "ts": "2026-09-21T21:16:33.712Z",
+   "visto": true,
+   "hecho": false,
+   "tipo": "valores",
+   "clave": "C|SIMAN|VARIAS",
+   "cliente": "SIMAN",
+   "campana": "VARIAS",
+   "ids": [
+    "x7oglvw4myl2p"
+   ],
+   "detalle": "Total de la OP $405.00 → $810.00"
+  },
+  {
+   "id": "xcghbqvk1v8ct",
+   "ts": "2026-09-21T21:15:35.309Z",
+   "visto": true,
+   "hecho": false,
+   "tipo": "valores",
+   "clave": "C|SIMAN|VARIAS",
+   "cliente": "SIMAN",
+   "campana": "VARIAS",
+   "ids": [
+    "x7oglvw4myl2p"
+   ],
+   "detalle": "Próceres: mensual $405.00 → $810.00"
+  },
+  {
+   "id": "xcfdd3zhap5hh",
+   "ts": "2026-09-10T21:06:28.997Z",
+   "visto": true,
+   "hecho": false,
+   "tipo": "valores",
+   "clave": "C|FRIOAIRE|GENERICO",
+   "cliente": "FRIOAIRE",
+   "campana": "GENERICO",
+   "ids": [
+    "xtn3i9170t2ad",
+    "x3xx2xhozt2ad"
+   ],
+   "detalle": "Salvador del Mundo: por spot $0.0201 → $0.0611 · San Benito: por spot $0.0201 → $0.0611"
+  },
+  {
+   "id": "xwyno9mcppaq3",
+   "ts": "2026-09-07T23:35:33.003Z",
+   "visto": true,
+   "hecho": false,
+   "tipo": "valores",
+   "clave": "C|FRIOAIRE|GENERICO",
+   "cliente": "FRIOAIRE",
+   "campana": "GENERICO",
+   "ids": [
+    "xtn3i9170t2ad",
+    "x3xx2xhozt2ad"
+   ],
+   "detalle": "Salvador del Mundo: por spot $0.0201 → $0.0611 · San Benito: por spot $0.0201 → $0.0611"
+  },
+  {
+   "id": "xtchb1p9so44u",
+   "ts": "2026-09-07T23:34:37.806Z",
+   "visto": true,
+   "hecho": false,
+   "tipo": "valores",
+   "clave": "C|FRIOAIRE|GENERICO",
+   "cliente": "FRIOAIRE",
+   "campana": "GENERICO",
+   "ids": [
+    "xtn3i9170t2ad",
+    "x3xx2xhozt2ad"
+   ],
+   "detalle": "Total de la OP $3,300.00 → la suma de las pantallas"
+  },
+  {
+   "id": "xb8wqcxpvix5d",
+   "ts": "2026-09-07T23:30:35.473Z",
+   "visto": true,
+   "hecho": false,
+   "tipo": "valores",
+   "clave": "C|FRIOAIRE|GENERICO",
+   "cliente": "FRIOAIRE",
+   "campana": "GENERICO",
+   "ids": [
+    "xtn3i9170t2ad",
+    "x3xx2xhozt2ad"
+   ],
+   "detalle": "Salvador del Mundo: por spot $0.06 → $0.0201 · San Benito: por spot $0.06 → $0.0201 · Total de la OP — → $3,300.00"
+  },
+  {
+   "id": "x2whp3y2v5124",
+   "ts": "2026-08-31T22:54:05.980Z",
+   "visto": true,
+   "hecho": false,
+   "tipo": "valores",
+   "clave": "C|SIMAN|VARIAS",
+   "cliente": "SIMAN",
+   "campana": "VARIAS",
+   "ids": [
+    "x7oglvw4myl2p"
+   ],
+   "detalle": "Total de la OP — → $405.00"
+  },
+  {
+   "id": "x3kkq694fekr0",
+   "ts": "2026-08-31T22:33:31.788Z",
+   "visto": true,
+   "hecho": false,
+   "tipo": "valores",
+   "clave": "C|ALMACENES-VIDRI|",
+   "cliente": "ALMACENES VIDRI",
+   "campana": "",
+   "ids": [
+    "x6mqu414004ag"
+   ],
+   "detalle": "Panamericana: por spot $0.00 → $0.0481"
+  }
+ ],
+ "todo": [
+  {
+   "id": "x7gprsh9wd0wt",
+   "nombre": "ANIMACIONES BANCO AGRICOLA / ALIANZAS (JUGUETON-DIA DEL NIÑO)-SEPT",
+   "cliente": "BANCO AGRICOLA",
+   "odd": "ODD - D18092026 - 01",
+   "notas": "",
+   "estado": "ok",
+   "ts": "2026-09-18T19:46:26.144Z",
+   "inicio": "",
+   "fin": "",
+   "tsEstado": "2026-09-29T14:57:24.734Z",
+   "historial": [
+    {
+     "estado": "odd",
+     "ts": "2026-09-18T19:46:32.566Z"
+    },
+    {
+     "estado": "anim",
+     "ts": "2026-09-18T19:46:33.683Z"
+    },
+    {
+     "estado": "env",
+     "ts": "2026-09-29T14:57:14.871Z"
+    },
+    {
+     "estado": "ok",
+     "ts": "2026-09-29T14:57:24.734Z"
+    },
+    {
+     "estado": "ok",
+     "ts": "2026-10-02T14:18:59.630Z",
+     "auto": true
+    }
+   ],
+   "versionDe": {
+    "clave": "C|BANCO-AGRICOLA|",
+    "cliente": "BANCO AGRICOLA",
+    "campana": ""
+   },
+   "archivada": true,
+   "autoArch": "2026-10-02T14:18:59.630Z"
+  },
+  {
+   "id": "xgby1x04l7xzc",
+   "nombre": "BANCO AGRICOLA / ALIANZAS (FAUSTO-SEPTIEMBRE)",
+   "cliente": "BANCO AGRICOLA",
+   "odd": "ODD - D17092026 - 02",
+   "notas": "",
+   "estado": "ok",
+   "ts": "2026-09-17T22:42:46.344Z",
+   "inicio": "",
+   "fin": "",
+   "tsEstado": "2026-09-29T14:56:35.386Z",
+   "historial": [
+    {
+     "estado": "odd",
+     "ts": "2026-09-17T22:42:54.703Z"
+    },
+    {
+     "estado": "env",
+     "ts": "2026-09-17T22:42:59.138Z"
+    },
+    {
+     "estado": "ok",
+     "ts": "2026-09-29T14:56:35.386Z"
+    },
+    {
+     "estado": "ok",
+     "ts": "2026-10-02T14:18:59.630Z",
+     "auto": true
+    }
+   ],
+   "versionDe": {
+    "clave": "C|BANCO-AGRICOLA|",
+    "cliente": "BANCO AGRICOLA",
+    "campana": ""
+   },
+   "archivada": true,
+   "autoArch": "2026-10-02T14:18:59.630Z"
+  },
+  {
+   "id": "xt59qoo1ie6ia",
+   "nombre": "BANCO AGRICOLA / ALIANZAS (GENERICA DÍA DEL NIÑO)",
+   "cliente": "BANCO AGRICOLA",
+   "odd": "ODD - D17092026 - 01",
+   "notas": "",
+   "estado": "ok",
+   "ts": "2026-09-17T16:43:42.322Z",
+   "inicio": "",
+   "fin": "",
+   "tsEstado": "2026-09-29T14:56:44.639Z",
+   "historial": [
+    {
+     "estado": "odd",
+     "ts": "2026-09-17T16:43:51.091Z"
+    },
+    {
+     "estado": "anim",
+     "ts": "2026-09-17T16:43:52.707Z"
+    },
+    {
+     "estado": "env",
+     "ts": "2026-09-17T22:42:56.564Z"
+    },
+    {
+     "estado": "ok",
+     "ts": "2026-09-29T14:56:44.639Z"
+    },
+    {
+     "estado": "ok",
+     "ts": "2026-10-02T14:18:59.630Z",
+     "auto": true
+    }
+   ],
+   "versionDe": {
+    "clave": "C|BANCO-AGRICOLA|",
+    "cliente": "BANCO AGRICOLA",
+    "campana": ""
+   },
+   "archivada": true,
+   "autoArch": "2026-10-02T14:18:59.630Z"
+  },
+  {
+   "id": "x99rxds934wz7",
+   "nombre": "FESTIVAL DEL NIÑOS - 16 SEPT - 01 OCT",
+   "cliente": "SIMAN",
+   "odd": "ODD - D12092026 - 03",
+   "notas": "",
+   "estado": "ok",
+   "ts": "2026-09-12T18:06:07.604Z",
+   "inicio": "2026-09-16",
+   "fin": "2026-09-30",
+   "tsEstado": "2026-09-17T16:43:25.973Z",
+   "historial": [
+    {
+     "estado": "odd",
+     "ts": "2026-09-12T18:08:19.478Z"
+    },
+    {
+     "estado": "ok",
+     "ts": "2026-09-17T16:43:25.973Z"
+    },
+    {
+     "estado": "ok",
+     "ts": "2026-09-21T13:56:17.664Z",
+     "auto": true
+    }
+   ],
+   "versionDe": {
+    "clave": "C|SIMAN|VARIAS",
+    "cliente": "SIMAN",
+    "campana": "VARIAS"
+   },
+   "archivada": true,
+   "autoArch": "2026-09-21T13:56:17.664Z"
+  },
+  {
+   "id": "xebjp4hgpnc0f",
+   "nombre": "SIMAN - PANTALLA DIGITALES - APPLE WEEK - 14 - 20 SEPT",
+   "cliente": "SIMAN",
+   "odd": "ODD - D12092026 - 02",
+   "notas": "",
+   "estado": "ok",
+   "ts": "2026-09-12T17:24:27.663Z",
+   "inicio": "2026-09-14",
+   "fin": "2026-09-20",
+   "tsEstado": "2026-09-17T16:41:56.664Z",
+   "historial": [
+    {
+     "estado": "odd",
+     "ts": "2026-09-12T17:24:57.078Z"
+    },
+    {
+     "estado": "ok",
+     "ts": "2026-09-17T16:41:56.664Z"
+    },
+    {
+     "estado": "ok",
+     "ts": "2026-09-21T13:56:17.664Z",
+     "auto": true
+    }
+   ],
+   "versionDe": {
+    "clave": "C|SIMAN|VARIAS",
+    "cliente": "SIMAN",
+    "campana": "VARIAS"
+   },
+   "archivada": true,
+   "autoArch": "2026-09-21T13:56:17.664Z"
+  },
+  {
+   "id": "xizxncxpla2tb",
+   "nombre": "BANCO AGRICOLA / ALIANZAS (VIDALS SEPTIEMBRE)-SEP",
+   "cliente": "BANCO AGRICOLA",
+   "odd": "ODD - D12092026 - 01",
+   "notas": "",
+   "estado": "ok",
+   "ts": "2026-09-12T15:50:10.368Z",
+   "tsEstado": "2026-09-29T14:57:17.990Z",
+   "historial": [
+    {
+     "estado": "odd",
+     "ts": "2026-09-12T15:50:17.783Z"
+    },
+    {
+     "estado": "env",
+     "ts": "2026-09-12T17:25:01.604Z"
+    },
+    {
+     "estado": "ok",
+     "ts": "2026-09-29T14:57:17.990Z"
+    },
+    {
+     "estado": "ok",
+     "ts": "2026-10-02T14:18:59.630Z",
+     "auto": true
+    }
+   ],
+   "inicio": "",
+   "fin": "",
+   "versionDe": {
+    "clave": "C|BANCO-AGRICOLA|",
+    "cliente": "BANCO AGRICOLA",
+    "campana": ""
+   },
+   "archivada": true,
+   "autoArch": "2026-10-02T14:18:59.630Z"
+  },
+  {
+   "id": "xqwh6u6frqcj5",
+   "nombre": "BANCO AGRICOLA / ALIANZAS (XCLAIM-SEPTIEMBRE)-SEP",
+   "cliente": "BANCO AGRICOLA",
+   "odd": "ODD - D10092026 - 01",
+   "notas": "",
+   "estado": "ok",
+   "ts": "2026-09-10T21:07:24.785Z",
+   "tsEstado": "2026-09-17T16:42:37.311Z",
+   "historial": [
+    {
+     "estado": "odd",
+     "ts": "2026-09-10T21:07:31.216Z"
+    },
+    {
+     "estado": "env",
+     "ts": "2026-09-11T15:21:01.981Z"
+    },
+    {
+     "estado": "ok",
+     "ts": "2026-09-17T16:42:37.311Z"
+    },
+    {
+     "estado": "ok",
+     "ts": "2026-09-21T13:56:17.664Z",
+     "auto": true
+    }
+   ],
+   "inicio": "",
+   "fin": "",
+   "versionDe": {
+    "clave": "C|BANCO-AGRICOLA|",
+    "cliente": "BANCO AGRICOLA",
+    "campana": ""
+   },
+   "archivada": true,
+   "autoArch": "2026-09-21T13:56:17.664Z"
+  },
+  {
+   "id": "xahr5q0ifb5de",
+   "nombre": "Reserva Evento Greeicy Pepsi",
+   "cliente": "PEPSI",
+   "odd": "ODD - D08092026 - 02",
+   "notas": "",
+   "estado": "env",
+   "ts": "2026-09-08T13:52:20.978Z",
+   "tsEstado": "2026-09-29T14:57:12.422Z",
+   "historial": [
+    {
+     "estado": "odd",
+     "ts": "2026-09-08T13:52:22.922Z"
+    },
+    {
+     "estado": "anim",
+     "ts": "2026-09-08T16:54:20.406Z"
+    },
+    {
+     "estado": "odd",
+     "ts": "2026-09-08T16:54:24.133Z"
+    },
+    {
+     "estado": "env",
+     "ts": "2026-09-08T17:51:15.493Z"
+    },
+    {
+     "estado": "ok",
+     "ts": "2026-09-29T14:56:49.047Z"
+    },
+    {
+     "estado": "env",
+     "ts": "2026-09-29T14:57:12.422Z"
+    }
+   ],
+   "inicio": "",
+   "fin": ""
+  },
+  {
+   "id": "x0vyvwckaamar",
+   "nombre": "ALIANZAS (SEÑOR-GAUCHO SEPTIMBRE)-SEP 26",
+   "cliente": "BANCO AGRICOLA",
+   "odd": "ODD - D08092026 - 01",
+   "notas": "",
+   "estado": "ok",
+   "ts": "2026-09-08T13:51:56.259Z",
+   "tsEstado": "2026-09-11T23:59:38.844Z",
+   "historial": [
+    {
+     "estado": "odd",
+     "ts": "2026-09-08T13:52:03.434Z"
+    },
+    {
+     "estado": "env",
+     "ts": "2026-09-08T17:51:16.954Z"
+    },
+    {
+     "estado": "ok",
+     "ts": "2026-09-11T23:59:38.844Z"
+    },
+    {
+     "estado": "ok",
+     "ts": "2026-09-14T14:31:21.867Z",
+     "auto": true
+    }
+   ],
+   "versionDe": {
+    "clave": "C|BANCO-AGRICOLA|",
+    "cliente": "BANCO AGRICOLA",
+    "campana": ""
+   },
+   "inicio": "",
+   "fin": "",
+   "archivada": true,
+   "autoArch": "2026-09-14T14:31:21.867Z"
+  },
+  {
+   "id": "xf0gq3f74aiun",
+   "nombre": "COOP MOTOROLA - 10 - 30 SEPT",
+   "cliente": "SIMAN",
+   "odd": "ODD - D07092026 - 09",
+   "notas": "",
+   "estado": "ok",
+   "ts": "2026-09-07T22:28:04.463Z",
+   "tsEstado": "2026-09-10T21:05:43.175Z",
+   "historial": [
+    {
+     "estado": "odd",
+     "ts": "2026-09-07T22:28:12.120Z"
+    },
+    {
+     "estado": "env",
+     "ts": "2026-09-07T23:50:56.375Z"
+    },
+    {
+     "estado": "ok",
+     "ts": "2026-09-10T21:05:43.175Z"
+    },
+    {
+     "estado": "ok",
+     "ts": "2026-09-14T14:31:21.867Z",
+     "auto": true
+    }
+   ],
+   "versionDe": {
+    "clave": "C|SIMAN|VARIAS",
+    "cliente": "SIMAN",
+    "campana": "VARIAS"
+   },
+   "inicio": "",
+   "fin": "",
+   "archivada": true,
+   "autoArch": "2026-09-14T14:31:21.867Z"
+  },
+  {
+   "id": "x80b82l974tuv",
+   "nombre": "COOP CONVERSE MINIONS SEPT - 07 - 13 SEPT",
+   "cliente": "SIMAN",
+   "odd": "ODD - D07092026 - 08",
+   "notas": "",
+   "estado": "ok",
+   "ts": "2026-09-07T22:23:38.791Z",
+   "tsEstado": "2026-09-08T17:07:42.495Z",
+   "historial": [
+    {
+     "estado": "odd",
+     "ts": "2026-09-07T22:23:47.815Z"
+    },
+    {
+     "estado": "env",
+     "ts": "2026-09-07T22:54:27.534Z"
+    },
+    {
+     "estado": "ok",
+     "ts": "2026-09-08T17:07:42.495Z"
+    },
+    {
+     "estado": "ok",
+     "ts": "2026-09-12T17:24:23.683Z",
+     "auto": true
+    }
+   ],
+   "versionDe": {
+    "clave": "C|SIMAN|VARIAS",
+    "cliente": "SIMAN",
+    "campana": "VARIAS"
+   },
+   "archivada": true,
+   "autoArch": "2026-09-12T17:24:23.683Z",
+   "inicio": "",
+   "fin": ""
+  },
+  {
+   "id": "xd9gdtlje48a7",
+   "nombre": "FESTIVAL DE LÍNEA BLANCA - 14 - 30 SEPT",
+   "cliente": "SIMAN",
+   "odd": "ODD - D07092026 - 07",
+   "notas": "",
+   "estado": "ok",
+   "ts": "2026-09-07T22:23:10.831Z",
+   "tsEstado": "2026-09-17T16:42:53.262Z",
+   "historial": [
+    {
+     "estado": "odd",
+     "ts": "2026-09-07T22:23:17.504Z"
+    },
+    {
+     "estado": "anim",
+     "ts": "2026-09-08T00:08:51.314Z"
+    },
+    {
+     "estado": "env",
+     "ts": "2026-09-08T00:28:26.405Z"
+    },
+    {
+     "estado": "ok",
+     "ts": "2026-09-17T16:42:53.262Z"
+    },
+    {
+     "estado": "ok",
+     "ts": "2026-09-21T13:56:17.664Z",
+     "auto": true
+    }
+   ],
+   "inicio": "",
+   "fin": "",
+   "versionDe": {
+    "clave": "C|SIMAN|VARIAS",
+    "cliente": "SIMAN",
+    "campana": "VARIAS"
+   },
+   "archivada": true,
+   "autoArch": "2026-09-21T13:56:17.664Z"
+  },
+  {
+   "id": "x41fcew8ldm2m",
+   "nombre": "COOP LEVIS DAMAS - 08 - 16 SEPT",
+   "cliente": "SIMAN",
+   "odd": "ODD - D07092026 - 06",
+   "notas": "",
+   "estado": "ok",
+   "ts": "2026-09-07T21:34:29.374Z",
+   "tsEstado": "2026-09-08T18:18:06.851Z",
+   "historial": [
+    {
+     "estado": "odd",
+     "ts": "2026-09-07T21:34:34.422Z"
+    },
+    {
+     "estado": "env",
+     "ts": "2026-09-08T00:08:20.090Z"
+    },
+    {
+     "estado": "ok",
+     "ts": "2026-09-08T18:18:06.851Z"
+    },
+    {
+     "estado": "ok",
+     "ts": "2026-09-12T17:24:23.683Z",
+     "auto": true
+    }
+   ],
+   "versionDe": {
+    "clave": "C|SIMAN|VARIAS",
+    "cliente": "SIMAN",
+    "campana": "VARIAS"
+   },
+   "archivada": true,
+   "autoArch": "2026-09-12T17:24:23.683Z",
+   "inicio": "",
+   "fin": ""
+  },
+  {
+   "id": "x73evary3d8p5",
+   "nombre": "BENEFICIOS CDS - 07 - 26 SEPT",
+   "cliente": "SIMAN",
+   "odd": "ODD - D07092026 - 05",
+   "notas": "",
+   "estado": "ok",
+   "ts": "2026-09-07T21:34:12.043Z",
+   "tsEstado": "2026-09-08T21:27:43.396Z",
+   "historial": [
+    {
+     "estado": "odd",
+     "ts": "2026-09-07T21:34:19.087Z"
+    },
+    {
+     "estado": "anim",
+     "ts": "2026-09-07T22:54:33.232Z"
+    },
+    {
+     "estado": "env",
+     "ts": "2026-09-07T23:07:45.394Z"
+    },
+    {
+     "estado": "ok",
+     "ts": "2026-09-08T21:27:43.396Z"
+    },
+    {
+     "estado": "ok",
+     "ts": "2026-09-12T17:24:23.683Z",
+     "auto": true
+    }
+   ],
+   "versionDe": {
+    "clave": "C|SIMAN|VARIAS",
+    "cliente": "SIMAN",
+    "campana": "VARIAS"
+   },
+   "archivada": true,
+   "autoArch": "2026-09-12T17:24:23.683Z",
+   "inicio": "",
+   "fin": ""
+  },
+  {
+   "id": "xvvk326yjdtxy",
+   "nombre": "SIMAN - PANTALLAS INDEPENDENCIA - 01 SEPTIEMBRE 26",
+   "cliente": "SIMAN",
+   "odd": "ODD - D07092026 - 04",
+   "notas": "",
+   "estado": "ok",
+   "ts": "2026-09-07T19:42:41.110Z",
+   "tsEstado": "2026-09-07T22:37:45.404Z",
+   "historial": [
+    {
+     "estado": "odd",
+     "ts": "2026-09-07T19:42:49.772Z"
+    },
+    {
+     "estado": "anim",
+     "ts": "2026-09-07T19:42:51.184Z"
+    },
+    {
+     "estado": "env",
+     "ts": "2026-09-07T20:19:02.510Z"
+    },
+    {
+     "estado": "ok",
+     "ts": "2026-09-07T22:37:45.404Z"
+    },
+    {
+     "estado": "ok",
+     "ts": "2026-09-12T17:24:23.683Z",
+     "auto": true
+    }
+   ],
+   "versionDe": {
+    "clave": "C|SIMAN|VARIAS",
+    "cliente": "SIMAN",
+    "campana": "VARIAS"
+   },
+   "archivada": true,
+   "autoArch": "2026-09-12T17:24:23.683Z",
+   "inicio": "",
+   "fin": ""
+  },
+  {
+   "id": "x8ibk8yzabzc5",
+   "nombre": "ADAPTACIONES CASH (08 AL 30 SEP)",
+   "cliente": "LA CURACAO",
+   "odd": "ODD - D07092026 - 03",
+   "notas": "",
+   "estado": "ok",
+   "ts": "2026-09-07T17:21:16.709Z",
+   "tsEstado": "2026-09-07T22:22:10.548Z",
+   "historial": [
+    {
+     "estado": "odd",
+     "ts": "2026-09-07T17:21:25.876Z"
+    },
+    {
+     "estado": "anim",
+     "ts": "2026-09-07T20:19:04.497Z"
+    },
+    {
+     "estado": "env",
+     "ts": "2026-09-07T20:28:17.865Z"
+    },
+    {
+     "estado": "ok",
+     "ts": "2026-09-07T22:22:10.548Z"
+    },
+    {
+     "estado": "ok",
+     "ts": "2026-09-12T17:24:23.683Z",
+     "auto": true
+    }
+   ],
+   "versionDe": {
+    "clave": "C|LA-CURACAO|LA-CURACAO",
+    "cliente": "LA CURACAO",
+    "campana": "LA CURACAO"
+   },
+   "archivada": true,
+   "autoArch": "2026-09-12T17:24:23.683Z",
+   "inicio": "",
+   "fin": ""
+  },
+  {
+   "id": "xv7uy7yzy7m0l",
+   "nombre": "Chef Essence del 07 al 13 de Sep 26",
+   "cliente": "SIMAN",
+   "odd": "ODD - D07092026 - 02",
+   "notas": "",
+   "estado": "ok",
+   "ts": "2026-09-07T17:17:52.821Z",
+   "tsEstado": "2026-09-07T17:18:19.628Z",
+   "historial": [
+    {
+     "estado": "odd",
+     "ts": "2026-09-07T17:18:05.365Z"
+    },
+    {
+     "estado": "ok",
+     "ts": "2026-09-07T17:18:19.628Z"
+    },
+    {
+     "estado": "ok",
+     "ts": "2026-09-12T17:24:23.683Z",
+     "auto": true
+    }
+   ],
+   "versionDe": {
+    "clave": "C|SIMAN|VARIAS",
+    "cliente": "SIMAN",
+    "campana": "VARIAS"
+   },
+   "archivada": true,
+   "autoArch": "2026-09-12T17:24:23.683Z",
+   "inicio": "",
+   "fin": ""
+  },
+  {
+   "id": "xue1yns0q5zkk",
+   "nombre": "(GELU PERMANENTE)-SEPT 26",
+   "cliente": "BANCO AGRICOLA",
+   "odd": "ODD - D07092026 - 01",
+   "notas": "",
+   "estado": "ok",
+   "ts": "2026-09-07T17:16:37.077Z",
+   "tsEstado": "2026-09-08T17:12:04.856Z",
+   "historial": [
+    {
+     "estado": "odd",
+     "ts": "2026-09-07T17:17:16.605Z"
+    },
+    {
+     "estado": "anim",
+     "ts": "2026-09-07T17:19:53.354Z"
+    },
+    {
+     "estado": "env",
+     "ts": "2026-09-07T18:42:39.561Z"
+    },
+    {
+     "estado": "ok",
+     "ts": "2026-09-08T17:12:04.856Z"
+    },
+    {
+     "estado": "ok",
+     "ts": "2026-09-12T17:24:23.683Z",
+     "auto": true
+    }
+   ],
+   "versionDe": {
+    "clave": "C|BANCO-AGRICOLA|",
+    "cliente": "BANCO AGRICOLA",
+    "campana": ""
+   },
+   "archivada": true,
+   "autoArch": "2026-09-12T17:24:23.683Z",
+   "inicio": "",
+   "fin": ""
+  }
+ ],
+ "opNuevas": [
+  {
+   "id": "xjtw5sy6k6pjd",
+   "corr": "290926-01",
+   "rev": 1,
+   "ts": "2026-09-29T16:57:56.409Z",
+   "tsCambio": "2026-09-29T17:00:16.445Z",
+   "estado": "ingresada",
+   "autor": "Soporte Comercial",
+   "ejecutivo": "TEST",
+   "fechaIngreso": "2026-09-29",
+   "agencia": true,
+   "nombreAgencia": "TEST",
+   "marca": "PRUEBA",
+   "campana": "PRUEBA",
+   "formato": "Animado",
+   "inicio": "2026-09-29",
+   "fin": "2026-09-29",
+   "indicaciones": "NO HAY",
+   "enlaces": [],
+   "pantallas": [
+    {
+     "pid": "heroe",
+     "frec": 300,
+     "mes": 1,
+     "neg": "",
+     "spotMano": false,
+     "spot": 0.0033333333333333335
+    }
+   ],
+   "valorTotal": 1,
+   "valorMensual": 1,
+   "opId": "xkhr3zyib9pkp",
+   "tsIngreso": "2026-09-29T17:00:16.445Z"
+  }
+ ],
+ "opEstado": {
+  "xf5qvbryiwaz1": {
+   "id": "xf5qvbryiwaz1",
+   "revEstado": 1,
+   "tsEstado": "2026-09-29T18:07:32.379Z",
+   "estado": "ingresada",
+   "opId": "xnjefynlbo7pz",
+   "tsIngreso": "2026-09-29T18:07:32.379Z"
+  },
+  "xa0zij27s631f": {
+   "id": "xa0zij27s631f",
+   "revEstado": 1,
+   "tsEstado": "2026-09-29T18:27:33.787Z",
+   "estado": "ingresada",
+   "opId": "xi90subx9dyqf",
+   "tsIngreso": "2026-09-29T18:27:33.787Z"
+  },
+  "xbv6qczhsq0i2": {
+   "id": "xbv6qczhsq0i2",
+   "revEstado": 1,
+   "tsEstado": "2026-09-29T20:48:02.727Z",
+   "estado": "ingresada",
+   "opId": "xe33bostdemjo",
+   "tsIngreso": "2026-09-29T20:48:02.727Z"
+  },
+  "x743fds5nl3p6": {
+   "id": "x743fds5nl3p6",
+   "revEstado": 1,
+   "tsEstado": "2026-09-29T21:55:07.024Z",
+   "estado": "ingresada",
+   "opId": "xlbgjjffosvpo",
+   "tsIngreso": "2026-09-29T21:55:07.024Z"
+  },
+  "xnlwr3byg1xyt": {
+   "id": "xnlwr3byg1xyt",
+   "revEstado": 1,
+   "tsEstado": "2026-09-30T15:27:48.570Z",
+   "estado": "ingresada",
+   "opId": "xugl8uklvenh3",
+   "tsIngreso": "2026-09-30T15:27:48.570Z"
+  },
+  "xl2oq8dldku0t": {
+   "id": "xl2oq8dldku0t",
+   "revEstado": 1,
+   "tsEstado": "2026-09-30T16:54:11.952Z",
+   "estado": "ingresada",
+   "opId": "xlfhphkb3hqzw",
+   "tsIngreso": "2026-09-30T16:54:11.952Z"
+  },
+  "xbqiv6gbyy6sw": {
+   "id": "xbqiv6gbyy6sw",
+   "revEstado": 1,
+   "tsEstado": "2026-09-30T16:55:26.639Z",
+   "estado": "ingresada",
+   "opId": "xp9p7m9thjcmk",
+   "tsIngreso": "2026-09-30T16:55:26.639Z"
+  },
+  "xsk64s5lynf4k": {
+   "id": "xsk64s5lynf4k",
+   "revEstado": 1,
+   "tsEstado": "2026-10-01T11:36:06.122Z",
+   "estado": "ingresada",
+   "opId": "xasmoh9bikixn",
+   "tsIngreso": "2026-10-01T11:36:06.122Z"
+  },
+  "x6ue0rt94bwdj": {
+   "id": "x6ue0rt94bwdj",
+   "revEstado": 1,
+   "tsEstado": "2026-10-01T13:50:33.217Z",
+   "estado": "ingresada",
+   "opId": "xvw34nbqgdfjx",
+   "tsIngreso": "2026-10-01T13:50:33.217Z"
+  },
+  "xre9xnf0p9qr4": {
+   "id": "xre9xnf0p9qr4",
+   "revEstado": 1,
+   "tsEstado": "2026-10-02T00:14:56.955Z",
+   "estado": "ingresada",
+   "opId": "xv6d9k4rgoer0",
+   "tsIngreso": "2026-10-02T00:14:56.955Z"
+  },
+  "xjv4rku3w64wp": {
+   "id": "xjv4rku3w64wp",
+   "revEstado": 1,
+   "tsEstado": "2026-10-02T00:18:35.592Z",
+   "estado": "ingresada",
+   "opId": "xlt26dl4zt3gl",
+   "tsIngreso": "2026-10-02T00:18:35.592Z"
+  },
+  "xu9kl9d2g147e": {
+   "id": "xu9kl9d2g147e",
+   "revEstado": 1,
+   "tsEstado": "2026-10-02T21:53:03.832Z",
+   "estado": "ingresada",
+   "opId": "xorbt9zvc1snp",
+   "tsIngreso": "2026-10-02T21:53:03.832Z"
+  },
+  "xzq9hj4dllc8c": {
+   "id": "xzq9hj4dllc8c",
+   "revEstado": 1,
+   "tsEstado": "2026-10-05T16:13:17.720Z",
+   "estado": "ingresada",
+   "opId": "xyulejlqf8emp",
+   "tsIngreso": "2026-10-05T16:13:17.720Z"
+  },
+  "xayfq0ngtgqke": {
+   "id": "xayfq0ngtgqke",
+   "revEstado": 1,
+   "tsEstado": "2026-10-05T20:28:26.114Z",
+   "estado": "ingresada",
+   "opId": "xoijdqkr7cio0",
+   "tsIngreso": "2026-10-05T20:28:26.114Z"
+  }
+ }
+}

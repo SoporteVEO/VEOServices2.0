@@ -6,11 +6,11 @@ import {
   CheckCircle2,
   ClipboardList,
   Clock,
-  Loader2,
   Timer,
 } from "lucide-react";
 import { useMaintenanceOverview } from "@/api/maintenance/maintenance.get";
 import { Badge } from "@/components/primitives/ui/badge";
+import { Skeleton } from "@/components/primitives/ui/skeleton";
 import {
   formatMinutes,
   MAINTENANCE_STATUS_LABELS,
@@ -27,8 +27,41 @@ export function MaintenanceOverviewPanel() {
 
   if (isLoading) {
     return (
-      <div className="flex justify-center py-16 text-muted-foreground">
-        <Loader2 className="size-6 animate-spin" aria-hidden />
+      <div role="status" aria-label="Cargando" className="flex flex-col gap-6">
+        <section className="grid grid-cols-2 gap-3 lg:grid-cols-3 xl:grid-cols-6">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div
+              key={i}
+              className="flex min-w-0 flex-col gap-2 rounded-xl border bg-card p-3"
+            >
+              <Skeleton className="h-3 w-20" />
+              <Skeleton className="h-6 w-14" />
+            </div>
+          ))}
+        </section>
+        <section className="flex flex-col gap-3 rounded-xl border bg-card p-4">
+          <Skeleton className="h-4 w-24" />
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="flex items-center gap-3">
+              <Skeleton className="h-5.5 w-28" />
+              <Skeleton className="h-2 flex-1" />
+              <Skeleton className="h-3 w-16" />
+            </div>
+          ))}
+        </section>
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+          {Array.from({ length: 2 }).map((_, i) => (
+            <section
+              key={i}
+              className="flex flex-col gap-3 rounded-xl border bg-card p-4"
+            >
+              <Skeleton className="h-4 w-28" />
+              {Array.from({ length: 4 }).map((__, j) => (
+                <Skeleton key={j} className="h-4 w-full" />
+              ))}
+            </section>
+          ))}
+        </div>
       </div>
     );
   }
@@ -98,9 +131,9 @@ export function MaintenanceOverviewPanel() {
                 >
                   {MAINTENANCE_STATUS_LABELS[entry.status]}
                 </Badge>
-                <div className="h-2 flex-1 overflow-hidden rounded-full bg-muted">
+                <div className="h-2 flex-1 overflow-hidden bg-muted">
                   <div
-                    className="h-full rounded-full bg-primary"
+                    className="h-full bg-primary"
                     style={{ width: `${percent}%` }}
                   />
                 </div>

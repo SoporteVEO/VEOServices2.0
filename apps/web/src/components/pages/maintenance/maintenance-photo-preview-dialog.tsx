@@ -9,7 +9,6 @@ import {
   Download,
   ExternalLink,
   ImagePlus,
-  Loader2,
   StickyNote,
   User as UserIcon,
 } from "lucide-react";
@@ -166,8 +165,8 @@ function PreviewBody({
           <Button
             variant="outline"
             sizeVariant="lg"
-            icon={isDownloading ? Loader2 : Download}
-            iconClassName={isDownloading ? "animate-spin" : ""}
+            icon={Download}
+            loading={isDownloading}
             disabled={isDownloading}
             onClick={handleDownload}
             className="w-full justify-center"
@@ -196,8 +195,8 @@ function PreviewBody({
           ) : (
             <Button
               sizeVariant="lg"
-              icon={publish.isPending ? Loader2 : ImagePlus}
-              iconClassName={publish.isPending ? "animate-spin" : ""}
+              icon={ImagePlus}
+              loading={publish.isPending}
               disabled={publish.isPending}
               onClick={handlePublish}
               className="w-full justify-center"

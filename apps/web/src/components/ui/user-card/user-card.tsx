@@ -84,7 +84,7 @@ export function UserCard({
           type="button"
           aria-label={name}
           className={cn(
-            "flex w-full min-w-0 items-start gap-3 rounded-lg px-2 py-1.5 text-left text-sidebar-foreground outline-none ring-sidebar-ring transition-colors hover:bg-sidebar-accent/80 hover:text-sidebar-accent-foreground focus-visible:ring-2 data-[state=open]:bg-sidebar-accent/80",
+            "flex w-full min-w-0 items-center gap-3 px-2 py-2 text-left text-sidebar-foreground outline-none ring-sidebar-ring transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 data-[state=open]:bg-sidebar-accent",
             "group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:gap-0 group-data-[collapsible=icon]:px-0",
             className,
           )}
@@ -93,20 +93,20 @@ export function UserCard({
         >
           <Avatar className="size-9 shrink-0">
             {imageUrl ? <AvatarImage alt="" src={imageUrl} /> : null}
-            <AvatarFallback className="text-xs">{fallback}</AvatarFallback>
+            <AvatarFallback className="bg-veo-lime text-xs font-semibold text-veo-dark">{fallback}</AvatarFallback>
           </Avatar>
           <span className="min-w-0 flex-1 leading-none group-data-[collapsible=icon]:hidden">
-            <span className="flex items-center gap-1 font-semibold tracking-tight">
+            <span className="flex items-center gap-1 text-sm font-semibold tracking-tight">
               <span className="truncate">{name}</span>
               {verified ? (
                 <BadgeCheckIcon
-                  className="size-4 shrink-0 fill-blue-500 text-white"
+                  className="size-4 shrink-0 fill-veo-lime text-veo-dark"
                   aria-hidden
                 />
               ) : null}
             </span>
             {subtitle ? (
-              <span className="mt-1 block truncate text-xs text-muted-foreground">
+              <span className="mt-1 block truncate text-xs text-sidebar-muted-foreground">
                 {subtitle}
               </span>
             ) : null}

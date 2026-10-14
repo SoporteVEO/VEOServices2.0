@@ -1,0 +1,40 @@
+{
+ "id": "xf5qvbryiwaz1",
+ "corr": "290926-02",
+ "rev": 1,
+ "ts": "2026-09-29T17:45:50.209Z",
+ "tsCambio": "2026-09-29T17:45:50.209Z",
+ "autor": "Soporte Comercial",
+ "ejecutivo": "Marta Descamps",
+ "fechaIngreso": "2026-09-29",
+ "agencia": true,
+ "nombreAgencia": "LEMUSIMUN",
+ "marca": "ALMACENES VIDRI",
+ "campana": "PINTURAS",
+ "formato": "Animado",
+ "inicio": "2026-10-15",
+ "fin": "2026-11-14",
+ "indicaciones": "",
+ "enlaces": [],
+ "pantallas": [
+  {
+   "pid": "panam",
+   "frec": 450,
+   "mes": 575,
+   "neg": "",
+   "spotMano": false,
+   "spot": 0.04121863799283154
+  },
+  {
+   "pid": "benito",
+   "frec": 450,
+   "mes": 575,
+   "neg": "",
+   "spotMano": false,
+   "spot": 0.04121863799283154
+  }
+ ],
+ "valorTotal": 1150,
+ "valorMensual": 1150,
+ "archivo": "290926-02 ALMACENES VIDRI.json"
+}

@@ -1,7 +1,6 @@
 "use client";
 
 import { useForm } from "react-hook-form";
-import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import type { MeTeamMember } from "@/api/me/me.types";
 import { useUpdateMyTeamMember } from "@/api/me/me.mutations";
@@ -63,7 +62,7 @@ export function MeTeamMemberEmergencyCard({
           onSubmit={handleSubmit(onSubmit)}
           className="flex flex-col gap-4"
         >
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <div className="grid grid-cols-1 gap-4 @xl/main:grid-cols-3">
             <Input
               label="Nombre"
               {...register("emergencyContactName")}
@@ -82,8 +81,7 @@ export function MeTeamMemberEmergencyCard({
             <Button
               type="submit"
               disabled={mutation.isPending || !formState.isDirty}
-              icon={mutation.isPending ? Loader2 : undefined}
-              iconClassName={mutation.isPending ? "animate-spin" : undefined}
+              loading={mutation.isPending}
             >
               {mutation.isPending ? "Guardando..." : "Guardar"}
             </Button>

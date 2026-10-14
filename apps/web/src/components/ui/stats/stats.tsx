@@ -1,10 +1,6 @@
 "use client";
 
 import * as React from "react";
-import {
-  Card,
-  CardContent,
-} from "@/components/primitives/ui/card";
 import { cn } from "@/lib/utils";
 
 export type StatItem = {
@@ -24,30 +20,22 @@ export function Stats({ items, className, columnsClassName }: StatsProps) {
     <div className={cn("w-full", className)}>
       <ul
         className={cn(
-          "grid gap-3 sm:grid-cols-2 lg:grid-cols-3",
+          "grid grid-cols-[repeat(auto-fill,minmax(min(100%,13rem),1fr))] gap-3",
           columnsClassName,
         )}
       >
         {items.map((item, index) => (
-          <li key={`${item.label}-${index}`}>
-            <Card
-              size="sm"
-              className="border border-border/80 bg-accent/20 py-3 shadow-none ring-0"
-            >
-              <CardContent className="flex flex-col gap-1 px-4 py-0">
-                <p className="text-xs font-medium text-muted-foreground">
-                  {item.label}
-                </p>
-                <p className="text-xl font-semibold tabular-nums tracking-tight text-foreground">
-                  {item.value}
-                </p>
-                {item.description ? (
-                  <p className="text-xs text-muted-foreground">
-                    {item.description}
-                  </p>
-                ) : null}
-              </CardContent>
-            </Card>
+          <li
+            key={`${item.label}-${index}`}
+            className="flex min-w-0 flex-col gap-1.5 border border-border bg-card px-4 py-3.5"
+          >
+            <p className="eyebrow truncate">{item.label}</p>
+            <p className="font-heading text-2xl font-semibold tabular-nums tracking-tight text-foreground">
+              {item.value}
+            </p>
+            {item.description ? (
+              <p className="text-xs text-muted-foreground">{item.description}</p>
+            ) : null}
           </li>
         ))}
       </ul>

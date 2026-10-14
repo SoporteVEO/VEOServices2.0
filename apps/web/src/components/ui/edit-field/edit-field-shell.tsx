@@ -1,6 +1,6 @@
 "use client";
 
-import { Loader2, Pencil } from "lucide-react";
+import { Pencil } from "lucide-react";
 import {
   EditableCancel,
   EditableSubmit,
@@ -98,8 +98,7 @@ export function EditFieldToolbar({
           type="button"
           sizeVariant="sm"
           disabled={isPending}
-          icon={isPending ? Loader2 : undefined}
-          iconClassName={isPending ? "animate-spin" : undefined}
+          loading={isPending}
         >
           {submitLabel}
         </Button>

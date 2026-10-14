@@ -21,6 +21,11 @@ const nextConfig: NextConfig = {
     return [
       { source: "/mantenimiento", destination: "/portal", permanent: false },
       {
+        source: "/dashboard/digital-billboards/:path*",
+        destination: "/dashboard/pantallas",
+        permanent: true,
+      },
+      {
         source: "/mantenimiento/:jobId",
         destination: "/portal/mantenimiento/:jobId",
         permanent: false,

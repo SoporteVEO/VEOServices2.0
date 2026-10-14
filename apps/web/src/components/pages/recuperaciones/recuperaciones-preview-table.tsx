@@ -1,12 +1,13 @@
 "use client";
 
 import { useMemo } from "react";
-import { AlertTriangle, CheckCircle2, Loader2, XCircle } from "lucide-react";
+import { AlertTriangle, CheckCircle2, XCircle } from "lucide-react";
 import type {
   BriloBanco,
   BriloTipoAbono,
 } from "@/api/brilo-webapi/brilo-webapi.types";
 import { Checkbox } from "@/components/primitives/ui/checkbox";
+import { Skeleton } from "@/components/primitives/ui/skeleton";
 import { Status, StatusLabel } from "@/components/primitives/ui/status";
 import {
   Table,
@@ -272,7 +273,7 @@ function RecuperacionRowStatusBadge({ row }: { row: RecuperacionRowState }) {
   if (row.status === "submitting") {
     return (
       <Status variant="info">
-        <Loader2 className="size-3 animate-spin" />
+        <Skeleton className="size-3 shrink-0" />
         <StatusLabel>Enviando</StatusLabel>
       </Status>
     );

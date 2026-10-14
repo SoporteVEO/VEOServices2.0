@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
-import { Download, Loader2 } from "lucide-react";
+import { Download } from "lucide-react";
 import { toast } from "sonner";
 import { pdf } from "@react-pdf/renderer";
 import type { AvailableBillboardListing } from "@/api/billboards/billboards.get";
@@ -394,8 +394,8 @@ export function GenerateQuotationModal({
             <Button
               type="submit"
               disabled={isSubmitting || items.length === 0}
-              icon={isSubmitting ? Loader2 : Download}
-              iconClassName={isSubmitting ? "animate-spin" : undefined}
+              icon={Download}
+              loading={isSubmitting}
             >
               {isSubmitting ? "Generando..." : "Descargar"}
             </Button>

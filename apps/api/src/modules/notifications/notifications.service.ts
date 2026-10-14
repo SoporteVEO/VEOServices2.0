@@ -75,7 +75,14 @@ export class NotificationsService {
   }
 
   async createForSubRole(
-    subRole: 'HR' | 'USERS_MANAGEMENT' | 'PRODUCTION' | 'MANTENIMIENTO',
+    subRole:
+      | 'HR'
+      | 'USERS_MANAGEMENT'
+      | 'PRODUCTION'
+      | 'MANTENIMIENTO'
+      | 'PANTALLAS_PRODUCCION'
+      | 'PANTALLAS_COMERCIAL'
+      | 'DESARROLLADOR',
     description: string,
     priority: NotificationPriority = 'MEDIUM',
     excludeUserId?: string,

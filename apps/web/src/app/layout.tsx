@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Fraunces, JetBrains_Mono, Plus_Jakarta_Sans } from "next/font/google";
+import { Funnel_Display, Funnel_Sans, JetBrains_Mono } from "next/font/google";
 
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
@@ -9,13 +9,13 @@ import { BRAND_COLORS } from "@/lib/brand-colors";
 import { QueryProvider } from "@/lib/query-provider";
 import { cn } from "@/lib/utils";
 
-const plusJakarta = Plus_Jakarta_Sans({
-  subsets: ["latin"],
+const funnelSans = Funnel_Sans({
+  subsets: ["latin", "latin-ext"],
   variable: "--font-sans",
 });
 
-const fraunces = Fraunces({
-  subsets: ["latin"],
+const funnelDisplay = Funnel_Display({
+  subsets: ["latin", "latin-ext"],
   variable: "--font-heading",
 });
 
@@ -53,13 +53,13 @@ export default function RootLayout({
 }>) {
   return (
     <html
-      lang="en"
+      lang="es"
       suppressHydrationWarning
       className={cn(
         "h-full",
         "antialiased",
-        plusJakarta.variable,
-        fraunces.variable,
+        funnelSans.variable,
+        funnelDisplay.variable,
         jetbrainsMono.variable,
       )}
     >

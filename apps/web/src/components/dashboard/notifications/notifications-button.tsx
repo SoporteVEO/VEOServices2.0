@@ -5,7 +5,6 @@ import {
   Bell,
   BellOff,
   CheckCheck,
-  Loader2,
   SearchX,
   Volume2,
   VolumeX,
@@ -25,6 +24,7 @@ import {
 } from "@/components/primitives/ui/popover";
 import { ScrollArea } from "@/components/primitives/ui/scroll-area";
 import { Separator } from "@/components/primitives/ui/separator";
+import { Skeleton } from "@/components/primitives/ui/skeleton";
 import { cn } from "@/lib/utils";
 import {
   isNotificationSoundMuted,
@@ -125,7 +125,7 @@ export function NotificationsButton({ className }: NotificationsButtonProps) {
           {hasPending ? (
             <span
               aria-hidden
-              className="absolute -end-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-semibold leading-none text-primary-foreground ring-2 ring-background"
+              className="absolute -end-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center bg-primary px-1 text-[10px] font-semibold leading-none text-primary-foreground ring-2 ring-background"
             >
               {pendingCount > MAX_BADGE_COUNT
                 ? `${MAX_BADGE_COUNT}+`
@@ -171,14 +171,11 @@ export function NotificationsButton({ className }: NotificationsButtonProps) {
               size="sm"
               onClick={handleMarkAll}
               disabled={!hasPending || markAllViewedMutation.isPending}
+              loading={markAllViewedMutation.isPending}
               data-icon="inline-start"
               className="gap-1.5"
             >
-              {markAllViewedMutation.isPending ? (
-                <Loader2 className="size-3.5 animate-spin" />
-              ) : (
-                <CheckCheck className="size-3.5" />
-              )}
+              <CheckCheck className="size-3.5" />
               <span>Marcar todas</span>
             </Button>
           </div>
@@ -235,11 +232,21 @@ function NotificationsList({
 }: NotificationsListProps) {
   if (isLoading) {
     return (
-      <div className="flex flex-col items-center justify-center gap-2 px-4 py-10 text-center">
-        <Loader2 className="size-5 animate-spin text-muted-foreground" />
-        <p className="text-xs text-muted-foreground">
-          Cargando notificaciones...
-        </p>
+      <div
+        role="status"
+        aria-label="Cargando notificaciones..."
+        className="flex flex-col gap-1 p-2"
+      >
+        {["w-full", "w-4/5", "w-11/12"].map((width) => (
+          <div key={width} className="flex items-start gap-3 p-3">
+            <Skeleton className="ms-2 size-9 shrink-0" />
+            <div className="flex min-w-0 flex-1 flex-col gap-2">
+              <Skeleton className={cn("h-3.5", width)} />
+              <Skeleton className="h-3.5 w-2/3" />
+              <Skeleton className="h-2.5 w-32" />
+            </div>
+          </div>
+        ))}
       </div>
     );
   }
@@ -262,7 +269,7 @@ function NotificationsList({
     if (hasUnfilteredNotifications && searchQuery.length > 0) {
       return (
         <div className="flex flex-col items-center justify-center gap-3 px-4 py-10 text-center">
-          <div className="flex size-10 items-center justify-center rounded-full bg-muted">
+          <div className="flex size-10 items-center justify-center bg-muted">
             <SearchX className="size-5 text-muted-foreground" />
           </div>
           <div className="space-y-1">
@@ -281,7 +288,7 @@ function NotificationsList({
 
     return (
       <div className="flex flex-col items-center justify-center gap-2 px-4 py-10 text-center">
-        <div className="flex size-10 items-center justify-center rounded-full bg-muted">
+        <div className="flex size-10 items-center justify-center bg-muted">
           <Bell className="size-5 text-muted-foreground" />
         </div>
         <p className="text-sm font-medium">No tienes notificaciones</p>

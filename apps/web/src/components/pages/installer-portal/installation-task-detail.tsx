@@ -5,7 +5,6 @@ import {
   CalendarClock,
   Flame,
   HardHat,
-  Loader2,
   Ruler,
   Tag,
 } from "lucide-react";
@@ -18,6 +17,7 @@ import {
 } from "@/api/installations/installations.post";
 import type { InstallationTask } from "@/api/installations/installations.types";
 import { Badge } from "@/components/primitives/ui/badge";
+import { Skeleton } from "@/components/primitives/ui/skeleton";
 import { ProductionOrderStatusBadge } from "@/components/pages/production-orders-shared/production-order-status-badge";
 import { formatBriloShortDate, formatDimensions } from "@/lib/format";
 import { FieldOrderKindBadge } from "@/components/pages/field-portal/field-order-kind-badge";
@@ -33,8 +33,43 @@ export function InstallationTaskDetail({ itemId }: { itemId: string }) {
   if (isLoading) {
     return (
       <FieldPortalShell title="Cargando instalación…">
-        <div className="flex items-center justify-center py-20 text-muted-foreground">
-          <Loader2 className="size-6 animate-spin" aria-hidden />
+        <div role="status" aria-label="Cargando" className="flex flex-col gap-4">
+          <section className="flex flex-col gap-3 rounded-xl border bg-card p-4">
+            <div className="flex flex-wrap gap-2">
+              <Skeleton className="h-5.5 w-24" />
+              <Skeleton className="h-5.5 w-28" />
+              <Skeleton className="h-5.5 w-20" />
+            </div>
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="flex items-start gap-2">
+                  <Skeleton className="size-4 shrink-0" />
+                  <div className="flex flex-1 flex-col gap-1.5">
+                    <Skeleton className="h-2.5 w-24" />
+                    <Skeleton className="h-4 w-32" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+          <section className="flex flex-col gap-3 rounded-xl border bg-card p-4">
+            <Skeleton className="h-4 w-24" />
+            <Skeleton className="h-4 w-2/3" />
+            <Skeleton className="h-48 w-full" />
+          </section>
+          <section className="flex flex-col gap-3 rounded-xl border bg-card p-4">
+            <div className="flex items-start gap-3">
+              <Skeleton className="size-9 shrink-0" />
+              <div className="flex flex-1 flex-col gap-1.5">
+                <Skeleton className="h-4 w-40" />
+                <Skeleton className="h-3 w-3/4" />
+              </div>
+            </div>
+            <div className="flex flex-col gap-2 sm:flex-row">
+              <Skeleton className="h-11 flex-1" />
+              <Skeleton className="h-11 flex-1" />
+            </div>
+          </section>
         </div>
       </FieldPortalShell>
     );

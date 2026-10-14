@@ -1,0 +1,40 @@
+{
+ "id": "xre9xnf0p9qr4",
+ "corr": "011026-01",
+ "rev": 1,
+ "ts": "2026-10-01T22:39:33.701Z",
+ "tsCambio": "2026-10-01T22:39:33.701Z",
+ "autor": "Soporte Comercial",
+ "ejecutivo": "Marta Descamps",
+ "fechaIngreso": "2026-10-01",
+ "agencia": true,
+ "nombreAgencia": "LEMUSIMUN",
+ "marca": "MINED",
+ "campana": "MINED",
+ "formato": "Animado",
+ "inicio": "2026-10-01",
+ "fin": "2026-10-31",
+ "indicaciones": "",
+ "enlaces": [],
+ "pantallas": [
+  {
+   "pid": "sdm",
+   "frec": 450,
+   "mes": 705.88,
+   "neg": "",
+   "spotMano": false,
+   "spot": 0.050600716845878135
+  },
+  {
+   "pid": "benito",
+   "frec": 450,
+   "mes": 705.88,
+   "neg": "",
+   "spotMano": false,
+   "spot": 0.050600716845878135
+  }
+ ],
+ "valorTotal": 1411.76,
+ "valorMensual": 1411.76,
+ "archivo": "OPN 011026-01 MINED.json"
+}

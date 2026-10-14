@@ -110,16 +110,16 @@ export function ReportsAnalyticsCharts({
 }: ReportsAnalyticsChartsProps) {
   if (isLoading || !overview) {
     return (
-      <div className="grid gap-4 lg:grid-cols-3">
-        <Skeleton className="h-[320px] w-full lg:col-span-2" />
+      <div className="grid gap-4 @5xl/main:grid-cols-3">
+        <Skeleton className="h-[320px] w-full @5xl/main:col-span-2" />
         <Skeleton className="h-[320px] w-full" />
-        <Skeleton className="h-[320px] w-full lg:col-span-3" />
+        <Skeleton className="h-[320px] w-full @5xl/main:col-span-3" />
       </div>
     );
   }
 
   return (
-    <div className="grid gap-4 lg:grid-cols-3">
+    <div className="grid gap-4 @5xl/main:grid-cols-3">
       <DailyTrendCard data={overview.daily} />
       <TypeDonutCard overview={overview} />
       <ComplianceChartCard overview={overview} />
@@ -135,7 +135,7 @@ function DailyTrendCard({ data }: { data: ReportsAnalyticsTrendPoint[] }) {
   );
 
   return (
-    <Card size="sm" className="border-border/80 shadow-none lg:col-span-2">
+    <Card size="sm" className="border-border/80 shadow-none @5xl/main:col-span-2">
       <CardHeader>
         <div className="flex items-start justify-between gap-2">
           <div className="flex flex-col gap-0.5">
@@ -179,7 +179,7 @@ function MonthlyTrendCard({ data }: { data: ReportsAnalyticsTrendPoint[] }) {
   const year = data[0]?.key.slice(0, 4) ?? "";
 
   return (
-    <Card size="sm" className="border-border/80 shadow-none lg:col-span-3">
+    <Card size="sm" className="border-border/80 shadow-none @5xl/main:col-span-3">
       <CardHeader>
         <div className="flex items-start justify-between gap-2">
           <div className="flex flex-col gap-0.5">
@@ -285,7 +285,7 @@ function DonutLegend({
   return (
     <div className="flex flex-col items-center gap-0.5 rounded-md border bg-accent/10 px-2 py-1.5">
       <span className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
-        <span className={cn("size-2 rounded-full", colorClassName)} />
+        <span className={cn("size-2", colorClassName)} />
         {label}
       </span>
       <span className="text-sm font-semibold tabular-nums">
@@ -316,7 +316,7 @@ function ComplianceChartCard({
   }, [currentMonthCompliance]);
 
   return (
-    <Card size="sm" className="border-border/80 shadow-none lg:col-span-3">
+    <Card size="sm" className="border-border/80 shadow-none @5xl/main:col-span-3">
       <CardHeader>
         <div className="flex items-start justify-between gap-2">
           <div className="flex flex-col gap-0.5">

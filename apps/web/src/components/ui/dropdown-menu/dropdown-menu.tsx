@@ -46,7 +46,7 @@ function DropdownMenuContent({
   return (
     <DropdownMenuContentPrimitive
       className={cn(
-        "p-2 shadow-md transition-shadow duration-150 data-open:shadow-lg",
+        "p-1.5 shadow-float",
         className,
       )}
       {...props}
@@ -136,7 +136,7 @@ function DropdownMenuSubContent({
   return (
     <DropdownMenuSubContentPrimitive
       className={cn(
-        "p-2 shadow-md transition-shadow duration-150 data-open:shadow-lg",
+        "p-1.5 shadow-float",
         className,
       )}
       {...props}

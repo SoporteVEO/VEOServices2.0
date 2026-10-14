@@ -117,6 +117,24 @@ export const subRoleBadge: Record<SubRole, BadgeStyle> = {
     className:
       "border-amber-500/50 bg-amber-500/10 text-amber-700 dark:text-amber-400",
   },
+  PANTALLAS_PRODUCCION: {
+    label: "Pantallas · Producción",
+    variant: "outline",
+    className:
+      "border-sky-500/50 bg-sky-500/10 text-sky-700 dark:text-sky-400",
+  },
+  PANTALLAS_COMERCIAL: {
+    label: "Pantallas · Soporte Comercial",
+    variant: "outline",
+    className:
+      "border-cyan-500/50 bg-cyan-500/10 text-cyan-700 dark:text-cyan-400",
+  },
+  DESARROLLADOR: {
+    label: "Desarrollador",
+    variant: "outline",
+    className:
+      "border-lime-500/50 bg-lime-500/10 text-lime-700 dark:text-lime-400",
+  },
 };
 
 export const SUB_ROLE_OPTIONS: { value: SubRole; label: string; description: string }[] = [
@@ -141,5 +159,23 @@ export const SUB_ROLE_OPTIONS: { value: SubRole; label: string; description: str
     label: "Mantenimiento",
     description:
       "Acceso al módulo de mantenimiento para asignar y dar seguimiento a órdenes",
+  },
+  {
+    value: "PANTALLAS_PRODUCCION",
+    label: "Pantallas · Producción",
+    description:
+      "Administra las listas de reproducción: ingresa OP, edita campañas, sublistas y horarios",
+  },
+  {
+    value: "PANTALLAS_COMERCIAL",
+    label: "Pantallas · Soporte Comercial",
+    description:
+      "Consulta las pantallas, campañas y el Reporte OP sin modificar las listas",
+  },
+  {
+    value: "DESARROLLADOR",
+    label: "Desarrollador",
+    description:
+      "Acceso al módulo de Desarrollo: tickets de errores reportados por Nexo y revisión de sus aprendizajes",
   },
 ];

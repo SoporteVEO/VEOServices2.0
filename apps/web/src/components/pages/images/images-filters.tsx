@@ -220,7 +220,7 @@ export function ImagesFilters({
 
   return (
     <>
-      <div className="sticky top-0 z-30 -mx-4 -mt-4 flex items-center gap-2 border-b border-border/60 bg-background/95 px-4 py-2 supports-backdrop-filter:bg-background/80 supports-backdrop-filter:backdrop-blur lg:hidden">
+      <div className="sticky top-0 z-30 -mx-4 -mt-4 flex items-center gap-2 border-b border-border/60 bg-background/95 px-4 py-2 supports-backdrop-filter:bg-background/80 supports-backdrop-filter:backdrop-blur @5xl/main:hidden">
         <div className="min-w-0 flex-1">{searchInput}</div>
 
         <Sheet open={filtersOpen} onOpenChange={setFiltersOpen}>
@@ -233,7 +233,7 @@ export function ImagesFilters({
             >
               <SlidersHorizontal className="size-4" />
               {advancedCount > 0 ? (
-                <span className="absolute -top-1.5 -inset-e-1.5 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-semibold leading-none text-primary-foreground ring-2 ring-background">
+                <span className="absolute -top-1.5 -inset-e-1.5 inline-flex h-4 min-w-4 items-center justify-center bg-primary px-1 text-[10px] font-semibold leading-none text-primary-foreground ring-2 ring-background">
                   {advancedCount}
                 </span>
               ) : null}
@@ -305,18 +305,18 @@ export function ImagesFilters({
         {actions ? <div className="shrink-0">{actions}</div> : null}
       </div>
 
-      <div className="hidden flex-row items-center gap-2 lg:flex">
-        <div className="sm:w-56 md:w-full">{searchInput}</div>
+      <div className="hidden flex-row items-center gap-2 @5xl/main:flex">
+        <div className="@xl/main:w-56 @3xl/main:w-full">{searchInput}</div>
 
         {dateRangePicker}
 
-        <div className="sm:min-w-0 sm:shrink-0 sm:w-48 lg:w-fit">
+        <div className="@xl/main:min-w-0 @xl/main:shrink-0 @xl/main:w-48 @5xl/main:w-fit">
           {typeSelect}
         </div>
 
-        <div className="w-full sm:w-56">{uploaderCombobox}</div>
+        <div className="w-full @xl/main:w-56">{uploaderCombobox}</div>
 
-        <div className="w-full sm:w-44">{sortSelect}</div>
+        <div className="w-full @xl/main:w-44">{sortSelect}</div>
 
         {clearButton}
 
