@@ -17,7 +17,7 @@ import { crmKeys } from "@/api/crm/crm.get";
 import { Badge } from "@/components/primitives/ui/badge";
 import { Button } from "@/components/ui/button";
 import { CrmDealDrawer } from "@/components/pages/crm/deal/crm-deal-drawer";
-import { formatDateRange, formatMoney } from "@/lib/format";
+import { formatDateRange, formatMoney, parseYYYYMMDD } from "@/lib/format";
 import { AgentApprovalCard } from "./agent-approval-card";
 import { AgentUnauthorizedNote } from "./agent-unauthorized-note";
 
@@ -101,8 +101,8 @@ export function AgentOpportunityPart({
   const isNewClient = !client?.id;
   const contact = input?.contact;
   const codes = (input?.billboardCodes ?? []).filter(Boolean);
-  const from = input?.deal?.from;
-  const to = input?.deal?.to;
+  const from = parseYYYYMMDD(input?.deal?.from);
+  const to = parseYYYYMMDD(input?.deal?.to);
 
   return (
     <AgentApprovalCard
@@ -151,7 +151,7 @@ export function AgentOpportunityPart({
         <Row label="Etapa">{input?.stageName ?? "Negocio Potencial"}</Row>
         {from && to ? (
           <Row label="Campaña">
-            {formatDateRange(`${from}T00:00:00`, `${to}T00:00:00`)}
+            {formatDateRange(from, to)}
           </Row>
         ) : null}
         {codes.length > 0 ? (

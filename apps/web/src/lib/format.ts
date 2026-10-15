@@ -40,7 +40,10 @@ export function formatHumanDate(
 }
 
 export function formatDateRange(from: Date | string, to: Date | string) {
-  return `${format(new Date(from), "d MMM yyyy", { locale: es })} – ${format(new Date(to), "d MMM yyyy", { locale: es })}`;
+  const start = new Date(from);
+  const end = new Date(to);
+  if (isNaN(start.getTime()) || isNaN(end.getTime())) return "—";
+  return `${format(start, "d MMM yyyy", { locale: es })} – ${format(end, "d MMM yyyy", { locale: es })}`;
 }
 
 function capitalize(value: string): string {

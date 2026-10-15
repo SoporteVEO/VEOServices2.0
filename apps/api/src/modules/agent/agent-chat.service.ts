@@ -25,6 +25,7 @@ import {
   loadAgentModel,
 } from './agent-model.js';
 import { AGENT_SYSTEM_PROMPT, buildUserContext } from './agent-prompt.js';
+import { providerErrorReport, toUserError } from './agent-provider-errors.js';
 import { assertWithinRateLimit } from './agent-rate-limit.js';
 import { loadAgentSdk } from './agent-sdk.js';
 import type { AgentUser } from './agent-scopes.js';
@@ -91,22 +92,23 @@ export class AgentChatService {
       this.memory.buildContext(user.id, body.id, question),
     ]);
     let learningsSaved = 0;
+    const reportIssue = createIssueReporter({
+      issues: this.issues,
+      diagnostics,
+      user,
+      req,
+      threadId: body.id,
+      messageId: incoming.id,
+      model: `${provider}/${modelId}`,
+      conversation: history,
+    });
     const tools = {
       ...buildAgentTools({
         user,
         api: AgentApiClient.fromRequest(req, diagnostics),
         endpoints: this.endpoints,
         email: this.email,
-        reportIssue: createIssueReporter({
-          issues: this.issues,
-          diagnostics,
-          user,
-          req,
-          threadId: body.id,
-          messageId: incoming.id,
-          model: `${provider}/${modelId}`,
-          conversation: history,
-        }),
+        reportIssue,
         rememberLearning: async (content) => {
           if (learningsSaved >= MAX_LEARNINGS_PER_REQUEST) {
             return { saved: false };
@@ -151,7 +153,7 @@ export class AgentChatService {
           : [cachedSystemMessage(provider, buildUserContext(user))]),
       ],
       messages: await sdk.ai.convertToModelMessages(
-        inlineTextAttachments(messages),
+        inlineTextAttachments(dropPastReasoning(messages)),
         { tools },
       ),
       tools,
@@ -180,7 +182,19 @@ export class AgentChatService {
         });
       },
       onEnd: () => mcp.close(),
-      onError: ({ error }) => this.logger.error('[agent]', error),
+      onError: async ({ error }) => {
+        this.logger.error('[agent]', error);
+        const report = providerErrorReport(error, {
+          question,
+          threadId: body.id,
+        });
+        if (!report) return;
+        try {
+          await reportIssue(report);
+        } catch (reportError) {
+          this.logger.error('Failed to file agent provider error', reportError);
+        }
+      },
     });
 
     // Keeps the run going when the browser disconnects so the answer is still
@@ -263,29 +277,24 @@ function dropUnansweredSourceQuestions(messages: UIMessage[]): UIMessage[] {
   });
 }
 
+/**
+ * Claude signs thinking blocks against the exact conversation they were
+ * produced in, and stored history no longer matches byte for byte (jsonb
+ * reorders keys). Only the turn in progress needs its reasoning replayed.
+ */
+function dropPastReasoning(messages: UIMessage[]): UIMessage[] {
+  const lastUser = messages.findLastIndex((m) => m.role === 'user');
+  return messages.map((message, index) => {
+    if (message.role !== 'assistant' || index > lastUser) return message;
+    const parts = message.parts.filter((part) => part.type !== 'reasoning');
+    return parts.length === message.parts.length
+      ? message
+      : { ...message, parts };
+  });
+}
+
 function approvalSecret(): string | undefined {
   return (
     process.env.AGENT_TOOL_APPROVAL_SECRET || process.env.BETTER_AUTH_SECRET
   );
-}
-
-function toUserError(error: unknown): string {
-  const failure = error as {
-    statusCode?: number;
-    lastError?: { statusCode?: number };
-  } | null;
-  const status = failure?.statusCode ?? failure?.lastError?.statusCode;
-  if (status === 404) {
-    return 'El modelo de IA configurado no existe para el proveedor activo. Revisa AGENT_MODEL.';
-  }
-  if (status === 400 || status === 401 || status === 403) {
-    return 'La clave o configuración del proveedor de IA no es válida.';
-  }
-  if (status === 429) {
-    return 'Se alcanzó el límite de solicitudes del proveedor de IA. Espera un minuto e intenta de nuevo.';
-  }
-  if (status === 529 || status === 503) {
-    return 'El proveedor de IA no está disponible en este momento.';
-  }
-  return 'Ocurrió un error con Nexo. Intenta de nuevo.';
 }
