@@ -25,6 +25,7 @@ export type AgentScopeKey =
   | 'static_billboards'
   | 'images'
   | 'clients'
+  | 'crm'
   | 'hr'
   | 'production'
   | 'maintenance'
@@ -122,6 +123,15 @@ export const AGENT_SCOPES: AgentScope[] = [
     description: 'Registered clients.',
     allowedRoles: ['ADMIN', 'USER'],
     pathPrefixes: ['/clients'],
+  },
+  {
+    key: 'crm',
+    label: 'CRM (Ventas)',
+    description:
+      'Sales CRM: client accounts, contacts, deals and pipeline, tasks, activities, renewals, OOH inventory holds and email templates (plantillas).',
+    allowedRoles: [],
+    requiredSubRoles: ['VENTAS'],
+    pathPrefixes: ['/crm'],
   },
   {
     key: 'hr',

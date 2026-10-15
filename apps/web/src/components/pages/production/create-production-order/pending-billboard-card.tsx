@@ -1,25 +1,24 @@
 "use client";
 
 import { Trash2 } from "lucide-react";
-import type { ProductionDocumentKind } from "@/api/production-orders/production-orders.types";
 import { Badge } from "@/components/primitives/ui/badge";
 import { Button } from "@/components/ui/button";
 import { formatDimensions } from "@/lib/format";
-import { PendingDocumentInput } from "./pending-document-input";
+import { PendingArtInput } from "./pending-art-input";
 import type { PendingBillboard } from "./pending-billboard";
 
 type Props = {
   entry: PendingBillboard;
   disabled?: boolean;
   onRemove: () => void;
-  onDocumentChange: (kind: ProductionDocumentKind, file: File | null) => void;
+  onArtChange: (file: File | null) => void;
 };
 
 export function PendingBillboardCard({
   entry,
   disabled,
   onRemove,
-  onDocumentChange,
+  onArtChange,
 }: Props) {
   const { billboard } = entry;
   const location =
@@ -54,20 +53,11 @@ export function PendingBillboardCard({
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-        <PendingDocumentInput
-          title="Orden de producción"
-          file={entry.productionDocument}
-          disabled={disabled}
-          onChange={(file) => onDocumentChange("PRODUCTION", file)}
-        />
-        <PendingDocumentInput
-          title="Orden de diseño"
-          file={entry.designDocument}
-          disabled={disabled}
-          onChange={(file) => onDocumentChange("DESIGN", file)}
-        />
-      </div>
+      <PendingArtInput
+        file={entry.art}
+        disabled={disabled}
+        onChange={onArtChange}
+      />
     </div>
   );
 }

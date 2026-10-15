@@ -21,8 +21,8 @@ import {
 } from "@/components/ui/drawer";
 import { DetailPanelSkeleton } from "@/components/ui/skeletons";
 import { formatBriloShortDate, formatDimensions } from "@/lib/format";
-import { ProductionOrderDocumentPreviewButton } from "@/components/pages/production-orders-shared/production-order-document-preview";
-import { ProductionOrderDocumentSlot } from "@/components/pages/production-orders-shared/production-order-document-slot";
+import { ProductionOrderArtSlot } from "@/components/pages/production-orders-shared/production-order-art-slot";
+import { ProductionOrderLegacyDocuments } from "@/components/pages/production-orders-shared/production-order-legacy-documents";
 import { ProductionOrderStatusBadge } from "@/components/pages/production-orders-shared/production-order-status-badge";
 import {
   formatCreatorName,
@@ -182,8 +182,8 @@ function DrawerContentInner({
               </h3>
               <p className="pt-1 text-xs text-muted-foreground">
                 {order.isManual
-                  ? "Actualiza el estado por valla y carga sus documentos."
-                  : "Actualiza el estado por valla y consulta los documentos cargados por el vendedor."}
+                  ? "Actualiza el estado por valla y carga su arte."
+                  : "Actualiza el estado por valla y consulta el arte cargado por el vendedor."}
               </p>
             </header>
 
@@ -193,7 +193,7 @@ function DrawerContentInner({
                   key={item.id}
                   item={item}
                   campaignLabel={campaignLabel}
-                  canEditDocuments={order.isManual}
+                  canEditArt={order.isManual}
                 />
               ))}
             </div>
@@ -215,11 +215,11 @@ function DrawerContentInner({
 function ItemCard({
   item,
   campaignLabel,
-  canEditDocuments,
+  canEditArt,
 }: {
   item: ProductionOrderItem;
   campaignLabel: string;
-  canEditDocuments: boolean;
+  canEditArt: boolean;
 }) {
   const location =
     [item.address, item.cityName, item.departmentName]
@@ -248,37 +248,12 @@ function ItemCard({
         </div>
       </div>
 
-      {canEditDocuments ? (
-        <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
-          <ProductionOrderDocumentSlot
-            itemId={item.id}
-            kind="PRODUCTION"
-            title="Orden de producción"
-            hasDocument={item.hasProductionDocument}
-          />
-          <ProductionOrderDocumentSlot
-            itemId={item.id}
-            kind="DESIGN"
-            title="Orden de diseño"
-            hasDocument={item.hasDesignDocument}
-          />
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
-          <DocumentCard
-            title="Orden de producción"
-            available={item.hasProductionDocument}
-            itemId={item.id}
-            kind="PRODUCTION"
-          />
-          <DocumentCard
-            title="Orden de diseño"
-            available={item.hasDesignDocument}
-            itemId={item.id}
-            kind="DESIGN"
-          />
-        </div>
-      )}
+      <ProductionOrderArtSlot
+        item={item}
+        readOnly={!canEditArt}
+        emptyReadOnlyHint="Aún no ha sido cargado por el vendedor."
+      />
+      <ProductionOrderLegacyDocuments item={item} />
 
       <Separator />
 
@@ -319,46 +294,6 @@ function ItemCard({
           ) : null}
         </div>
       </div>
-    </div>
-  );
-}
-
-function DocumentCard({
-  title,
-  available,
-  itemId,
-  kind,
-}: {
-  title: string;
-  available: boolean;
-  itemId: string;
-  kind: "PRODUCTION" | "DESIGN";
-}) {
-  return (
-    <div className="flex flex-col gap-2 rounded-md border bg-accent/10 p-3">
-      <div className="flex items-center justify-between gap-2">
-        <p className="min-w-0 flex-1 truncate text-xs font-medium">{title}</p>
-        {available ? (
-          <span className="bg-emerald-500/15 px-1.5 py-0.5 text-[10px] font-medium text-emerald-700 dark:text-emerald-400">
-            Cargado
-          </span>
-        ) : (
-          <span className="bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
-            Sin cargar
-          </span>
-        )}
-      </div>
-      {available ? (
-        <ProductionOrderDocumentPreviewButton
-          itemId={itemId}
-          kind={kind}
-          label="Ver PDF"
-        />
-      ) : (
-        <p className="text-[11px] text-muted-foreground">
-          Aún no ha sido cargado por el vendedor.
-        </p>
-      )}
     </div>
   );
 }

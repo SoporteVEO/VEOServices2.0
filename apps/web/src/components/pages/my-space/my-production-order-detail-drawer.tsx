@@ -23,7 +23,8 @@ import {
 } from "@/components/ui/drawer";
 import { DetailPanelSkeleton } from "@/components/ui/skeletons";
 import { formatBriloShortDate, formatDimensions } from "@/lib/format";
-import { ProductionOrderDocumentSlot } from "@/components/pages/production-orders-shared/production-order-document-slot";
+import { ProductionOrderArtSlot } from "@/components/pages/production-orders-shared/production-order-art-slot";
+import { ProductionOrderLegacyDocuments } from "@/components/pages/production-orders-shared/production-order-legacy-documents";
 import { ProductionOrderStatusBadge } from "@/components/pages/production-orders-shared/production-order-status-badge";
 import { sortProductionOrderItems } from "@/components/pages/production-orders-shared/production-order-utils";
 
@@ -166,8 +167,8 @@ function DrawerContentInner({
                   Vallas estáticas
                 </h3>
                 <p className="pt-1 text-xs text-muted-foreground">
-                  Carga la orden de producción y la orden de diseño para cada
-                  valla. El estado lo actualiza el equipo de producción.
+                  Carga el arte de cada valla. El estado lo actualiza el equipo
+                  de producción.
                 </p>
               </div>
             </header>
@@ -221,22 +222,8 @@ function ItemCard({
         <ProductionOrderStatusBadge status={item.status} />
       </div>
 
-      <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
-        <ProductionOrderDocumentSlot
-          itemId={item.id}
-          kind="PRODUCTION"
-          title="Orden de producción"
-          hasDocument={item.hasProductionDocument}
-          readOnly={readOnly}
-        />
-        <ProductionOrderDocumentSlot
-          itemId={item.id}
-          kind="DESIGN"
-          title="Orden de diseño"
-          hasDocument={item.hasDesignDocument}
-          readOnly={readOnly}
-        />
-      </div>
+      <ProductionOrderArtSlot item={item} readOnly={readOnly} />
+      <ProductionOrderLegacyDocuments item={item} />
     </div>
   );
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { FileText, Presentation } from "lucide-react";
+import { FileText } from "lucide-react";
 import { toast } from "sonner";
 import { getAvailableBillboardsForReport } from "@/api/billboards/billboards.get";
 import type { AgentReportOutput } from "@/api/agent/agent.types";
@@ -9,9 +9,9 @@ import { Badge } from "@/components/primitives/ui/badge";
 import { Button } from "@/components/ui/button";
 import { formatDateRange } from "@/lib/format";
 import {
-  generateBillboardReport,
+  generateAvailabilityReport,
   type ReportProgress,
-} from "@/lib/generate-billboard-report";
+} from "@/components/pages/static-billboards/availability-report/generate-availability-report";
 import { AgentPartFrame } from "./agent-part-frame";
 
 const VISIBLE_CODES = 12;
@@ -32,10 +32,9 @@ export function AgentReportCard({ report }: { report: AgentReportOutput }) {
         toast.warning("No hay vallas disponibles para generar el reporte.");
         return;
       }
-      await generateBillboardReport({
+      await generateAvailabilityReport({
         billboards,
         dateFrom: report.from,
-        dateTo: report.to,
         onProgress: setProgress,
       });
       toast.success("Reporte generado correctamente.");
@@ -53,7 +52,7 @@ export function AgentReportCard({ report }: { report: AgentReportOutput }) {
 
   return (
     <AgentPartFrame
-      icon={Presentation}
+      icon={FileText}
       title="Reporte de vallas estáticas disponibles"
       description={`${formatDateRange(report.from, report.to)} · ${report.count} ${report.count === 1 ? "valla" : "vallas"}`}
     >

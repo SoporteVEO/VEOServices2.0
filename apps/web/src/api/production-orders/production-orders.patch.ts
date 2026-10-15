@@ -1,63 +1,63 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiFetch } from "@/lib/api";
 import { patchProductionOrderWithUpdatedItem } from "@/components/pages/production-orders-shared/production-order-utils";
+import { uploadBlobToPresignedUrl } from "@/lib/upload-blob-to-presigned-url";
 import type {
   PaginatedProductionOrders,
-  ProductionDocumentKind,
   ProductionOrder,
   ProductionOrderItem,
   ProductionOrderStatus,
 } from "./production-orders.types";
 
-function documentPath(kind: ProductionDocumentKind, itemId: string): string {
-  return kind === "PRODUCTION"
-    ? `/production-orders/items/${itemId}/production-document`
-    : `/production-orders/items/${itemId}/design-document`;
-}
-
-export async function uploadProductionOrderDocument(input: {
+/** Uploads the file straight to S3, then links it to the billboard. */
+export async function uploadProductionOrderArt(input: {
   itemId: string;
-  kind: ProductionDocumentKind;
-  pdfBase64: string;
+  file: File;
 }): Promise<ProductionOrderItem> {
+  const { itemId, file } = input;
+  const { key, url } = await apiFetch<{ key: string; url: string }>(
+    `/production-orders/items/${itemId}/art/upload-url`,
+    { method: "POST", body: JSON.stringify({ mimeType: file.type }) },
+  );
+  await uploadBlobToPresignedUrl({ url, blob: file, contentType: file.type });
+
   const response = await apiFetch<{ data: ProductionOrderItem }>(
-    documentPath(input.kind, input.itemId),
+    `/production-orders/items/${itemId}/art`,
     {
       method: "PATCH",
-      body: JSON.stringify({ pdfBase64: input.pdfBase64 }),
+      body: JSON.stringify({
+        fileKey: key,
+        fileName: file.name,
+        mimeType: file.type,
+      }),
     },
   );
   return response.data;
 }
 
-export function useUploadProductionOrderDocument() {
+export function useUploadProductionOrderArt() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: uploadProductionOrderDocument,
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ["production-orders"] });
-    },
+    mutationFn: uploadProductionOrderArt,
+    onSuccess: (updatedItem) => applyItemToCaches(queryClient, updatedItem),
   });
 }
 
-export async function deleteProductionOrderDocument(input: {
-  itemId: string;
-  kind: ProductionDocumentKind;
-}): Promise<ProductionOrderItem> {
+export async function deleteProductionOrderArt(
+  itemId: string,
+): Promise<ProductionOrderItem> {
   const response = await apiFetch<{ data: ProductionOrderItem }>(
-    documentPath(input.kind, input.itemId),
+    `/production-orders/items/${itemId}/art`,
     { method: "DELETE" },
   );
   return response.data;
 }
 
-export function useDeleteProductionOrderDocument() {
+export function useDeleteProductionOrderArt() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: deleteProductionOrderDocument,
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ["production-orders"] });
-    },
+    mutationFn: deleteProductionOrderArt,
+    onSuccess: (updatedItem) => applyItemToCaches(queryClient, updatedItem),
   });
 }
 

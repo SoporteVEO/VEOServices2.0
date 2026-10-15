@@ -81,10 +81,17 @@ export class S3StorageService {
   async getSignedUrl(
     key: string,
     expiresIn: number = DEFAULT_SIGNED_URL_EXPIRES,
+    downloadFileName?: string,
   ): Promise<string> {
     return getSignedUrl(
       this.client,
-      new GetObjectCommand({ Bucket: this.bucket, Key: key }),
+      new GetObjectCommand({
+        Bucket: this.bucket,
+        Key: key,
+        ResponseContentDisposition: downloadFileName
+          ? attachmentDisposition(downloadFileName)
+          : undefined,
+      }),
       { expiresIn },
     );
   }
@@ -139,4 +146,11 @@ export class S3StorageService {
       this.logger.warn(`Failed to delete S3 object ${key}: ${String(err)}`);
     }
   }
+}
+
+function attachmentDisposition(fileName: string): string {
+  const asciiName = fileName
+    .replace(/[^\x20-\x7e]/g, '_')
+    .replace(/["\\]/g, '');
+  return `attachment; filename="${asciiName}"; filename*=UTF-8''${encodeURIComponent(fileName)}`;
 }

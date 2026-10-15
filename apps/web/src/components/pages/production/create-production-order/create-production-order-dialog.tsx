@@ -23,11 +23,10 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { PendingBillboardCard } from "./pending-billboard-card";
 import {
-  countPendingDocuments,
+  countPendingArts,
   toCreateItemInput,
   toPendingBillboard,
-  uploadPendingDocuments,
-  withDocument,
+  uploadPendingArts,
   type PendingBillboard,
 } from "./pending-billboard";
 
@@ -121,15 +120,15 @@ function CreateProductionOrderForm({
         items: entries.map(toCreateItemInput),
       });
 
-      const failed = await uploadPendingDocuments(order, entries, (done, total) =>
-        setProgressLabel(`Subiendo documentos (${done + 1}/${total})…`),
+      const failed = await uploadPendingArts(order, entries, (done, total) =>
+        setProgressLabel(`Subiendo artes (${done + 1}/${total})…`),
       );
 
       await invalidateProductionOrders();
 
       if (failed > 0) {
         toast.warning(
-          `Orden ${order.orderNumber} creada, pero ${failed} documento${failed === 1 ? "" : "s"} no se pudo cargar. Puedes reintentarlo desde el detalle.`,
+          `Orden ${order.orderNumber} creada, pero ${failed} arte${failed === 1 ? "" : "s"} no se pudo cargar. Puedes reintentarlo desde el detalle.`,
         );
       } else {
         toast.success(`Orden ${order.orderNumber} creada.`);
@@ -145,7 +144,7 @@ function CreateProductionOrderForm({
     }
   }
 
-  const documentsCount = countPendingDocuments(entries);
+  const artsCount = countPendingArts(entries);
 
   return (
     <form onSubmit={(event) => void handleSubmit(event)} className="contents">
@@ -153,7 +152,7 @@ function CreateProductionOrderForm({
         <DialogTitle>Nueva orden de producción</DialogTitle>
         <DialogDescription>
           Crea una orden que no proviene de una cotización. Selecciona las
-          vallas estáticas y, si ya los tienes, carga sus documentos.
+          vallas estáticas y, si ya lo tienes, carga el arte de cada una.
         </DialogDescription>
       </DialogHeader>
 
@@ -225,10 +224,11 @@ function CreateProductionOrderForm({
                       ),
                     )
                   }
-                  onDocumentChange={(kind, file) =>
-                    updateEntry(entry.billboard.billboardId, (e) =>
-                      withDocument(e, kind, file),
-                    )
+                  onArtChange={(file) =>
+                    updateEntry(entry.billboard.billboardId, (e) => ({
+                      ...e,
+                      art: file,
+                    }))
                   }
                 />
               ))}
@@ -240,7 +240,7 @@ function CreateProductionOrderForm({
       <DialogFooter className="items-center border-t pt-4 sm:justify-between">
         <p className="text-xs text-muted-foreground">
           {progressLabel ??
-            `${documentsCount} documento${documentsCount === 1 ? "" : "s"} por cargar`}
+            `${artsCount} arte${artsCount === 1 ? "" : "s"} por cargar`}
         </p>
         <div className="flex gap-2">
           <Button

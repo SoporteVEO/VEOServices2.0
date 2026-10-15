@@ -10,6 +10,10 @@ import { AgentIssuesService } from '../development/agent-issues.service.js';
 import { AgentLearningsService } from '../development/agent-learnings.service.js';
 import { EmailService } from '../email/email.service.js';
 import { AgentApiClient } from './agent-api-client.js';
+import {
+  assertValidAttachments,
+  inlineTextAttachments,
+} from './agent-attachments.js';
 import { AgentDiagnostics, describeError } from './agent-diagnostics.js';
 import { createIssueReporter } from './agent-issue-reporter.js';
 import { AgentEndpointsService } from './agent-endpoints.service.js';
@@ -28,7 +32,7 @@ import { AgentThreadsService } from './agent-threads.service.js';
 import type { AgentChatBody } from './dto/agent-chat.schema.js';
 import { buildAgentTools, loadBriloMcpTools } from './tools/index.js';
 
-const MAX_STEPS = Number(process.env.AGENT_MAX_STEPS) || 12;
+const MAX_STEPS = Number(process.env.AGENT_MAX_STEPS) || 16;
 const MAX_OUTPUT_TOKENS = Number(process.env.AGENT_MAX_OUTPUT_TOKENS) || 8000;
 const MAX_LEARNINGS_PER_REQUEST = 3;
 
@@ -74,6 +78,7 @@ export class AgentChatService {
       loadAgentModel(),
     ]);
     const incoming = body.message as unknown as UIMessage;
+    assertValidAttachments(incoming);
     const stored = await this.threads.open(user.id, body.id, incoming);
     const history = dropUnansweredSourceQuestions(
       mergeIncoming(stored, incoming),
@@ -145,10 +150,14 @@ export class AgentChatService {
             ]
           : [cachedSystemMessage(provider, buildUserContext(user))]),
       ],
-      messages: await sdk.ai.convertToModelMessages(messages, { tools }),
+      messages: await sdk.ai.convertToModelMessages(
+        inlineTextAttachments(messages),
+        { tools },
+      ),
       tools,
       toolApproval: {
         send_email: 'user-approval',
+        register_crm_opportunity: 'user-approval',
         call_api: ({ method }) =>
           method === 'GET' ? undefined : 'user-approval',
       },

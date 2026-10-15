@@ -19,9 +19,9 @@ import {
   useMoveCrmDeal,
 } from "@/api/crm/crm.mutations";
 import type { CrmDealDetail } from "@/api/crm/crm.types";
+import { AskNexoButton } from "@/components/dashboard/agent/ask-nexo-button";
 import { Badge } from "@/components/primitives/ui/badge";
 import { Button as PrimitiveButton } from "@/components/primitives/ui/button";
-import { ScrollArea } from "@/components/primitives/ui/scroll-area";
 import { Skeleton } from "@/components/primitives/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
@@ -38,12 +38,15 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { CrmDrawerPanel } from "../shared/crm-drawer-panel";
+import { AGENT_NAME } from "@/lib/agent-brand";
 import { formatMoney } from "@/lib/format";
 import { CrmActivityComposer } from "../activity/crm-activity-composer";
 import { CrmActivityTimeline } from "../activity/crm-activity-timeline";
 import { DEAL_STATUS_LABELS, DEAL_STATUS_STYLES } from "../crm-const";
 import { clientLabel, errorMessage } from "../crm-format";
+import { dealProposalPrompt } from "../crm-nexo-prompts";
 import { CrmMessageThread } from "../messages/crm-message-thread";
 import { CrmDealFormDialog } from "../pipeline/crm-deal-form-dialog";
 import { CrmLostReasonDialog } from "../pipeline/crm-lost-reason-dialog";
@@ -181,7 +184,7 @@ function DealDrawerContent({
 
   return (
     <>
-      <DrawerHeader className="shrink-0 gap-3 border-b">
+      <DrawerHeader className="shrink-0 gap-4 border-b md:gap-4">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0 flex-1 space-y-1">
             <div className="flex min-w-0 flex-wrap items-center gap-2">
@@ -203,11 +206,20 @@ function DealDrawerContent({
           <div className="flex shrink-0 items-center gap-1.5">
             <CrmUserAvatar user={deal.owner} size="default" />
             {deal.status === "OPEN" ? (
+              <AskNexoButton
+                sizeVariant="sm"
+                label="Propuesta"
+                hint={`${AGENT_NAME} investiga la marca y arma una propuesta con las vallas ideales`}
+                prompt={dealProposalPrompt(deal)}
+                onAsk={onClose}
+              />
+            ) : null}
+            {deal.status === "OPEN" ? (
               <>
                 <Button
                   sizeVariant="sm"
                   icon={Trophy}
-                  className="bg-success text-white hover:bg-success/90"
+                  className="bg-success text-background hover:bg-success/85 dark:hover:bg-success/85"
                   disabled={busy}
                   onClick={() => handleStatus("WON")}
                 >
@@ -215,7 +227,7 @@ function DealDrawerContent({
                 </Button>
                 <Button
                   sizeVariant="sm"
-                  variant="outline"
+                  variant="destructive"
                   icon={XCircle}
                   disabled={busy}
                   onClick={() => setLostOpen(true)}
@@ -301,19 +313,19 @@ function DealDrawerContent({
           ) : null}
         </TabsList>
 
-        <TabPanel value="resumen">
+        <CrmDrawerPanel value="resumen">
           <CrmDealSummaryTab deal={deal} />
-        </TabPanel>
-        <TabPanel value="inventario">
+        </CrmDrawerPanel>
+        <CrmDrawerPanel value="inventario">
           <CrmDealInventoryTab deal={deal} />
-        </TabPanel>
-        <TabPanel value="actividad">
+        </CrmDrawerPanel>
+        <CrmDrawerPanel value="actividad">
           <div className="flex flex-col gap-5 p-4">
             <CrmActivityComposer context={context} />
             <CrmActivityTimeline context={context} />
           </div>
-        </TabPanel>
-        <TabPanel value="tareas">
+        </CrmDrawerPanel>
+        <CrmDrawerPanel value="tareas">
           <div className="flex flex-col gap-3 p-4">
             <div className="flex justify-end">
               <Button sizeVariant="sm" icon={Plus} onClick={() => setTaskOpen(true)}>
@@ -338,8 +350,8 @@ function DealDrawerContent({
               />
             </details>
           </div>
-        </TabPanel>
-        <TabPanel value="mensajes">
+        </CrmDrawerPanel>
+        <CrmDrawerPanel value="mensajes">
           <div className="p-4">
             <CrmMessageThread
               context={context}
@@ -349,14 +361,14 @@ function DealDrawerContent({
               }}
             />
           </div>
-        </TabPanel>
-        <TabPanel value="cotizaciones">
+        </CrmDrawerPanel>
+        <CrmDrawerPanel value="cotizaciones">
           <CrmDealOffersTab deal={deal} />
-        </TabPanel>
+        </CrmDrawerPanel>
         {deal.offers.length > 0 ? (
-          <TabPanel value="ejecucion">
+          <CrmDrawerPanel value="ejecucion">
             <CrmDealExecutionTab dealId={deal.id} />
-          </TabPanel>
+          </CrmDrawerPanel>
         ) : null}
       </Tabs>
 
@@ -381,14 +393,6 @@ function DealDrawerContent({
   );
 }
 
-function TabPanel({ value, children }: { value: string; children: React.ReactNode }) {
-  return (
-    <TabsContent value={value} className="min-h-0 flex-1 data-[state=inactive]:hidden">
-      <ScrollArea className="h-full">{children}</ScrollArea>
-    </TabsContent>
-  );
-}
-
 function CloseButton({ onClose }: { onClose: () => void }) {
   return (
     <PrimitiveButton variant="ghost" size="icon-sm" onClick={onClose} aria-label="Cerrar">
@@ -400,7 +404,7 @@ function CloseButton({ onClose }: { onClose: () => void }) {
 function DealDrawerSkeleton({ onClose }: { onClose: () => void }) {
   return (
     <>
-      <DrawerHeader className="shrink-0 gap-3 border-b">
+      <DrawerHeader className="shrink-0 gap-4 border-b md:gap-4">
         <div className="flex items-start justify-between gap-3">
           <div className="flex-1 space-y-2">
             <Skeleton className="h-5 w-56" />

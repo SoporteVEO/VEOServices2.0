@@ -9,6 +9,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { AskNexoButton } from "@/components/dashboard/agent/ask-nexo-button";
+import { AGENT_NAME } from "@/lib/agent-brand";
 
 import { OffersAnalyticsReport } from "./offers-analytics-report";
 import { PrintingAnalyticsReport } from "./printing-analytics-report";
@@ -46,29 +48,38 @@ const ANALYTICS_TABS = [
 
 export function AnalyticsPageTabs() {
   const [tab, setTab] = useState<string>(ANALYTICS_TABS[0].value);
+  const tabLabel = ANALYTICS_TABS.find((item) => item.value === tab)?.label;
 
   return (
     <Tabs value={tab} onValueChange={setTab}>
-      <Select value={tab} onValueChange={setTab}>
-        <SelectTrigger className="w-full @md/main:w-80 @5xl/main:hidden">
-          <SelectValue />
-        </SelectTrigger>
-        <SelectContent>
-          {ANALYTICS_TABS.map(({ value, label }) => (
-            <SelectItem key={value} value={value}>
-              {label}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <Select value={tab} onValueChange={setTab}>
+          <SelectTrigger className="w-full @md/main:w-80 @5xl/main:hidden">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {ANALYTICS_TABS.map(({ value, label }) => (
+              <SelectItem key={value} value={value}>
+                {label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
 
-      <TabsList className="hidden @5xl/main:inline-flex">
-        {ANALYTICS_TABS.map(({ value, label }) => (
-          <TabsTrigger key={value} value={value}>
-            {label}
-          </TabsTrigger>
-        ))}
-      </TabsList>
+        <TabsList className="hidden @5xl/main:inline-flex">
+          {ANALYTICS_TABS.map(({ value, label }) => (
+            <TabsTrigger key={value} value={value}>
+              {label}
+            </TabsTrigger>
+          ))}
+        </TabsList>
+        <AskNexoButton
+          label={`Analizar con ${AGENT_NAME}`}
+          hint={`${AGENT_NAME} cruza los datos y te arma la tabla o gráfico que necesitas`}
+          prompt={`Hola ${AGENT_NAME}, ayúdame a analizar "${tabLabel}": `}
+          send={false}
+        />
+      </div>
 
       {ANALYTICS_TABS.map(({ value, Report }) => (
         <TabsContent key={value} value={value}>

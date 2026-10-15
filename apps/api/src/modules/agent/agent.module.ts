@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { DiscoveryModule } from '@nestjs/core';
 import { DevelopmentModule } from '../development/development.module.js';
 import { AgentChatService } from './agent-chat.service.js';
+import { AgentComposeService } from './agent-compose.service.js';
 import { AgentEndpointsService } from './agent-endpoints.service.js';
 import { AgentFeedbackService } from './agent-feedback.service.js';
 import { AgentMemoryService } from './agent-memory.service.js';
@@ -13,6 +14,7 @@ import { AgentController } from './agent.controller.js';
   controllers: [AgentController],
   providers: [
     AgentChatService,
+    AgentComposeService,
     AgentThreadsService,
     AgentEndpointsService,
     AgentFeedbackService,

@@ -1,5 +1,5 @@
-import { ClientsSection } from "@/components/pages/clients";
+import { redirect } from "next/navigation";
 
 export default function ClientsPage() {
-  return <ClientsSection />;
+  redirect("/dashboard/crm/clientes");
 }

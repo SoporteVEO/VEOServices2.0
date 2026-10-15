@@ -180,6 +180,134 @@ export interface AgentIssueReportOutput {
   title: string;
 }
 
+export interface AgentResearchOutput {
+  ok: true;
+  company: string;
+  focus: string | null;
+  researchedAt: string;
+  summary: string;
+  sources: { title: string; url: string }[];
+}
+
+export interface AgentInventoryBillboard {
+  code: string | null;
+  address: string | null;
+  reference: string | null;
+  city: string | null;
+  department: string | null;
+  size: string | null;
+  monthlyPrice: number | null;
+  available: boolean;
+  monthsWithoutPurchase: number | null;
+  lat: number | null;
+  lng: number | null;
+}
+
+export interface AgentInventoryInput {
+  from: string;
+  to: string;
+  department?: string;
+  city?: string;
+  keywords?: string[];
+  maxPrice?: number;
+  includeOccupied?: boolean;
+  limit?: number;
+}
+
+export interface AgentInventoryOutput {
+  ok: true;
+  from: string;
+  to: string;
+  inventorySize: number;
+  matched: number;
+  billboards: AgentInventoryBillboard[];
+  note?: string;
+}
+
+export interface AgentProposalInput {
+  company: string;
+  contact?: { name?: string; role?: string; email?: string };
+  objective: string;
+  from: string;
+  to: string;
+  brandSummary: string;
+  audience?: string;
+  strategy: string[];
+  billboards: { code: string; reason: string }[];
+}
+
+export interface AgentProposalOutput {
+  ok: true;
+  company: string;
+  from: string;
+  to: string;
+  billboardIds: number[];
+  included: {
+    code: string;
+    billboardId: number;
+    city: string | null;
+    monthlyPrice: number | null;
+  }[];
+  occupiedCodes: string[];
+  missingCodes: string[];
+  monthlyInvestment: number;
+  preparedBy: string;
+  preparedByEmail: string;
+  createdAt: string;
+}
+
+export interface AgentTemplateDraftInput {
+  name: string;
+  subject: string;
+  category?: string;
+  body: string;
+}
+
+export interface AgentOpportunityInput {
+  client: {
+    id?: string;
+    name: string;
+    company?: string;
+    email?: string;
+    type?: "DIRECT" | "AGENCY";
+  };
+  contact?: {
+    firstName: string;
+    lastName?: string;
+    email?: string;
+    phone?: string;
+    jobTitle?: string;
+  };
+  deal: {
+    title: string;
+    description?: string;
+    brand?: string;
+    industry?: string;
+    from: string;
+    to: string;
+    targetZones?: string[];
+  };
+  billboardCodes?: string[];
+  hold?: boolean;
+  stageName?: string;
+}
+
+export interface AgentOpportunityOutput {
+  ok: true;
+  deal: {
+    id: string;
+    title: string;
+    pipeline: string;
+    stage: string;
+    value: number;
+  };
+  client: { id: string; name: string; created: boolean };
+  contact: { id: string; name: string; created: boolean } | null;
+  sitesAdded: number;
+  sitesHeld: number;
+  warnings: string[];
+}
+
 type ToolResult<T> = T | AgentUnauthorized | AgentToolError;
 
 export type AgentUITools = {
@@ -223,7 +351,47 @@ export type AgentUITools = {
     input: { topic: string };
     output: { source: AgentDataSource };
   };
+  search_academy: {
+    input: { query: string };
+    output: { results: { slug: string; title: string; url: string }[] };
+  };
+  get_academy_article: {
+    input: { slug: string };
+    output: { ok: true; title: string; url: string } | AgentToolError;
+  };
+  research_company: {
+    input: { company: string; focus?: string };
+    output: ToolResult<AgentResearchOutput>;
+  };
+  search_billboard_inventory: {
+    input: AgentInventoryInput;
+    output: ToolResult<AgentInventoryOutput>;
+  };
+  create_client_proposal: {
+    input: AgentProposalInput;
+    output: ToolResult<AgentProposalOutput>;
+  };
+  draft_crm_template: {
+    input: AgentTemplateDraftInput;
+    output: { ok: true } | AgentUnauthorized;
+  };
+  register_crm_opportunity: {
+    input: AgentOpportunityInput;
+    output: ToolResult<AgentOpportunityOutput>;
+  };
 };
+
+export interface AgentComposeRequest {
+  kind: "crm_template" | "crm_email";
+  instruction: string;
+  current?: { subject: string; body: string };
+  context?: Record<string, string>;
+}
+
+export interface AgentComposeDraft {
+  subject: string;
+  body: string;
+}
 
 export type AgentDataSource = "VEO" | "BRILO";
 

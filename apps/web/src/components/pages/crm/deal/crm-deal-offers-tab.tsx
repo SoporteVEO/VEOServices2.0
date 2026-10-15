@@ -16,6 +16,7 @@ import { cn } from "@/lib/utils";
 import { OFFER_STATUS_LABELS, OFFER_STATUS_STYLES } from "../crm-const";
 import { errorMessage } from "../crm-format";
 import { EmptyList, ListSkeleton } from "../dashboard/crm-dashboard-lists";
+import { CrmDealCreateOfferButton } from "./crm-deal-create-offer-button";
 
 export function CrmDealOffersTab({ deal }: { deal: CrmDealDetail }) {
   const [search, setSearch] = useState("");
@@ -62,14 +63,17 @@ export function CrmDealOffersTab({ deal }: { deal: CrmDealDetail }) {
             {deal.offers.length} · {formatMoney(linkedTotal)}
           </p>
         </div>
-        <Button
-          sizeVariant="sm"
-          variant={picking ? "secondary" : "outline"}
-          icon={Link2}
-          onClick={() => setPicking((prev) => !prev)}
-        >
-          {picking ? "Cerrar" : "Vincular cotización"}
-        </Button>
+        <div className="flex flex-wrap items-center gap-2">
+          <Button
+            sizeVariant="sm"
+            variant={picking ? "secondary" : "outline"}
+            icon={Link2}
+            onClick={() => setPicking((prev) => !prev)}
+          >
+            {picking ? "Cerrar" : "Vincular cotización"}
+          </Button>
+          {deal.status === "OPEN" ? <CrmDealCreateOfferButton deal={deal} /> : null}
+        </div>
       </div>
 
       {deal.offers.length === 0 ? (

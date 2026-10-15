@@ -7,6 +7,7 @@ interface AgentChatActions {
   threadId: string;
   respondToApproval: (id: string, approved: boolean) => void;
   chooseDataSource: (toolCallId: string, source: AgentDataSource) => void;
+  sendText: (text: string) => void;
   isBusy: boolean;
 }
 

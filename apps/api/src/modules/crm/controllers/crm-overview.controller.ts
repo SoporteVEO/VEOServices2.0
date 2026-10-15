@@ -41,8 +41,9 @@ export class CrmOverviewController {
     @Query('page') page?: string,
     @Query('pageSize') pageSize?: string,
     @Query('withOpenDeals') withOpenDeals?: string,
+    @Query('type') type?: string,
   ) {
-    return this.clients.list({ search, page, pageSize, withOpenDeals });
+    return this.clients.list({ search, page, pageSize, withOpenDeals, type });
   }
 
   @Get('clients/:id/summary')

@@ -1,5 +1,5 @@
 import { Logger } from '@nestjs/common';
-import type { LanguageModel, SystemModelMessage } from 'ai' with {
+import type { LanguageModel, SystemModelMessage, ToolSet } from 'ai' with {
   'resolution-mode': 'import',
 };
 
@@ -90,6 +90,32 @@ export async function loadAgentModel(): Promise<{
           : undefined,
       });
       return { model: anthropic(modelId), provider, modelId };
+    }
+  }
+}
+
+/** Provider-executed web search, keyed by the tool name each provider requires. */
+export async function loadWebSearchTools(
+  provider: AgentProvider,
+): Promise<ToolSet> {
+  switch (provider) {
+    case 'google': {
+      const { google } = await import('@ai-sdk/google');
+      return { google_search: google.tools.googleSearch({}) };
+    }
+    case 'anthropic': {
+      const { anthropic } = await import('@ai-sdk/anthropic');
+      return {
+        web_search: anthropic.tools.webSearch_20250305({
+          maxUses: 5,
+          userLocation: {
+            type: 'approximate',
+            city: 'San Salvador',
+            region: 'San Salvador',
+            timezone: 'America/El_Salvador',
+          },
+        }),
+      };
     }
   }
 }

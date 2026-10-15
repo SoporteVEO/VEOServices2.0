@@ -119,7 +119,7 @@ export function CrmDealExecutionTab({ dealId }: { dealId: string }) {
                             ? `Programada ${shortDate(item.scheduledInstallationAt)}`
                             : "Sin programar",
                         item.installerName,
-                        item.hasDesign ? null : "Sin diseño",
+                        item.hasArt ? null : "Sin arte",
                       ]
                         .filter(Boolean)
                         .join(" · ")}

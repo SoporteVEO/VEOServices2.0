@@ -1,5 +1,2 @@
-export * from "./clients-section";
-export * from "./clients-table";
-export * from "./client-detail-drawer";
-export * from "./clients-columns";
+export * from "./client-info-panel";
 export * from "./const";

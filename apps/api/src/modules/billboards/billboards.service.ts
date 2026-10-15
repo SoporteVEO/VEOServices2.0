@@ -743,7 +743,8 @@ export class BillboardsService {
   /**
    * When `billboardIds` is given the result is narrowed to those billboards.
    * The narrowing happens after the cache so building a report for a handful of
-   * zones costs no extra round trip to Brilo.
+   * zones costs no extra round trip to Brilo. S3 photos are signed per request
+   * because signed URLs expire and must not live in the cache.
    */
   async getAvailableBillboardsForReport(
     from: Date,
@@ -756,10 +757,21 @@ export class BillboardsService {
     );
 
     const { billboardIds } = options;
-    if (!billboardIds?.length) return all;
+    const wanted = billboardIds?.length ? new Set(billboardIds) : null;
+    const scoped = wanted ? all.filter((b) => wanted.has(b.billboardId)) : all;
 
-    const wanted = new Set(billboardIds);
-    return all.filter((b) => wanted.has(b.billboardId));
+    const s3ImageUrlsByCode = await this.getMonthlyS3ImageUrlsByCode(
+      scoped
+        .map((b) => b.billboardCode)
+        .filter((c): c is string => Boolean(c)),
+    );
+
+    return scoped.map((b) => ({
+      ...b,
+      s3ImageUrl: b.billboardCode
+        ? (s3ImageUrlsByCode.get(b.billboardCode) ?? null)
+        : null,
+    }));
   }
 
   async getAvailableBillboardsByState(

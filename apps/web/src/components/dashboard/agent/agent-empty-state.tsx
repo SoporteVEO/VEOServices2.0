@@ -10,6 +10,15 @@ import { NexoAvatar } from "./nexo-avatar";
 
 const SUGGESTIONS: { scope: string; prompt: string }[] = [
   {
+    scope: "crm",
+    prompt:
+      "Genera una propuesta para Coca-Cola con las vallas que más le convienen para un nuevo negocio en San Salvador",
+  },
+  {
+    scope: "crm",
+    prompt: "Crea una plantilla de seguimiento para clientes que no respondieron la cotización",
+  },
+  {
     scope: "static_billboards",
     prompt:
       "Genérame el reporte de vallas estáticas disponibles para el mes de noviembre",
@@ -72,7 +81,7 @@ export function AgentEmptyState({
         <p className="font-heading text-lg font-semibold">{AGENT_GREETING}</p>
         <p className="text-sm text-muted-foreground">
           Puedo consultar datos del sistema y generar reportes, tablas,
-          gráficos, Excel y PDF por ti.
+          gráficos, Excel y PDF por ti. También puedes adjuntarme archivos.
         </p>
       </div>
       {capabilities && !capabilities.enabled ? (

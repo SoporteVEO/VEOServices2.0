@@ -2,6 +2,8 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import type { Prisma } from '@prisma/client';
 import type { UIMessage } from 'ai' with { 'resolution-mode': 'import' };
 import { PrismaService } from '../prisma/prisma.service.js';
+import { attachmentNames } from './agent-attachments.js';
+import { clipText } from './agent-message-text.js';
 
 const THREAD_LIST_LIMIT = 50;
 const TITLE_MAX_LENGTH = 80;
@@ -123,7 +125,12 @@ function titleFrom(message: UIMessage): string {
     .join(' ')
     .replace(/\s+/g, ' ')
     .trim();
-  if (!text) return 'Nueva conversación';
+  if (!text) {
+    const files = attachmentNames(message);
+    return files.length
+      ? clipText(files.join(', '), TITLE_MAX_LENGTH)
+      : 'Nueva conversación';
+  }
   return text.length > TITLE_MAX_LENGTH
     ? `${text.slice(0, TITLE_MAX_LENGTH - 1)}…`
     : text;

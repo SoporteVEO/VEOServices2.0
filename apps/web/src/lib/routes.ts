@@ -11,7 +11,6 @@ import {
   SquareChartGantt,
   BookUser,
   ChartArea,
-  UserRoundSearch,
   House,
   Banknote,
   Factory,
@@ -28,6 +27,7 @@ import {
   ListTodo,
   MailPlus,
   Settings,
+  BookOpen,
 } from "lucide-react";
 import {
   IMAGES_MODULE_FIELD_ROLES,
@@ -71,6 +71,7 @@ export const NAV_GROUPS: NavGroup[] = [
     items: [
       { title: "Dashboard", href: "/dashboard", icon: LayoutDashboard, allowedRoles: ["ADMIN"], },
       { title: "Mi Espacio", href: "/dashboard/my-space", icon: House, allowedRoles: ["USER", "ADMIN"], },
+      { title: "Veo Academy", href: "/dashboard/academy", icon: BookOpen, allowedRoles: ["USER", "ADMIN"], },
     ],
   },
   {
@@ -102,12 +103,6 @@ export const NAV_GROUPS: NavGroup[] = [
         icon: Monitor,
       },
       IMAGES_NAV_ITEM,
-      {
-        title: "Clientes",
-        href: "/dashboard/clients",
-        icon: UserRoundSearch,
-        allowedRoles: ["ADMIN", "USER"],
-      },
       {
         title: "Recursos Humanos",
         href: "/dashboard/rh",

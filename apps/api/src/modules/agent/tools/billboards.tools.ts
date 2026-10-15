@@ -35,7 +35,7 @@ export function buildBillboardTools(ctx: AgentToolContext) {
   return {
     generate_static_billboards_report: defineTool({
       description:
-        'Prepares the static billboard availability report (the same PowerPoint deck as the "Generar reporte" button in the Vallas estáticas module). The chat shows a download button. If the user does not mention specific billboards, the report covers all billboards available in the range.',
+        'Prepares the static billboard availability report (the same PDF document as the "Generar reporte" button in the Vallas estáticas module). The chat shows a download button. If the user does not mention specific billboards, the report covers all billboards available in the range.',
       inputSchema: z.object({
         from: isoDate.describe('Start date (YYYY-MM-DD)'),
         to: isoDate.describe('End date (YYYY-MM-DD)'),

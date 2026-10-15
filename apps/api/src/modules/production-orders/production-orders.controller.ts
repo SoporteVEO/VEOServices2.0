@@ -15,7 +15,10 @@ import { resolveTargetUserId } from '../auth/view-as.helper.js';
 import { CreateProductionOrderDto } from './dto/create-production-order.dto.js';
 import { UpdateProductionOrderItemAssignmentDto } from './dto/update-production-order-item-assignment.dto.js';
 import { UpdateProductionOrderItemStatusDto } from './dto/update-production-order-item-status.dto.js';
-import { UploadProductionOrderDocumentDto } from './dto/upload-production-order-document.dto.js';
+import {
+  AttachProductionOrderArtDto,
+  CreateProductionOrderArtUploadDto,
+} from './dto/production-order-art.dto.js';
 import {
   type DocumentActor,
   ProductionDocumentKind,
@@ -140,60 +143,54 @@ export class ProductionOrdersController {
     return { data };
   }
 
-  @Patch('items/:itemId/production-document')
-  async uploadProductionDocument(
+  @Post('items/:itemId/art/upload-url')
+  async createArtUploadUrl(
     @Param('itemId') itemId: string,
-    @Body() dto: UploadProductionOrderDocumentDto,
+    @Body() dto: CreateProductionOrderArtUploadDto,
     @CurrentUser() user: AuthUser,
   ) {
-    const data = await this.service.uploadDocument(
+    return this.service.createArtUploadUrl(
       toDocumentActor(user),
       itemId,
-      'PRODUCTION',
-      dto.pdfBase64,
+      dto.mimeType,
+    );
+  }
+
+  @Patch('items/:itemId/art')
+  async attachArt(
+    @Param('itemId') itemId: string,
+    @Body() dto: AttachProductionOrderArtDto,
+    @CurrentUser() user: AuthUser,
+  ) {
+    const data = await this.service.attachArt(
+      toDocumentActor(user),
+      itemId,
+      dto,
     );
     return { data };
   }
 
-  @Delete('items/:itemId/production-document')
-  async deleteProductionDocument(
+  @Delete('items/:itemId/art')
+  async deleteArt(
     @Param('itemId') itemId: string,
     @CurrentUser() user: AuthUser,
   ) {
-    const data = await this.service.deleteDocument(
-      toDocumentActor(user),
-      itemId,
-      'PRODUCTION',
-    );
+    const data = await this.service.deleteArt(toDocumentActor(user), itemId);
     return { data };
   }
 
-  @Patch('items/:itemId/design-document')
-  async uploadDesignDocument(
-    @Param('itemId') itemId: string,
-    @Body() dto: UploadProductionOrderDocumentDto,
-    @CurrentUser() user: AuthUser,
-  ) {
-    const data = await this.service.uploadDocument(
-      toDocumentActor(user),
-      itemId,
-      'DESIGN',
-      dto.pdfBase64,
-    );
-    return { data };
-  }
-
-  @Delete('items/:itemId/design-document')
-  async deleteDesignDocument(
+  @Get('items/:itemId/art/url')
+  async getArtUrl(
     @Param('itemId') itemId: string,
     @CurrentUser() user: AuthUser,
+    @Query('download') download?: string,
   ) {
-    const data = await this.service.deleteDocument(
-      toDocumentActor(user),
-      itemId,
-      'DESIGN',
-    );
-    return { data };
+    const isProductionUser = hasProductionSubRole(user);
+    return this.service.getArtUrl(itemId, {
+      userId: user.id,
+      requireOwnership: !isProductionUser,
+      download: download === 'true',
+    });
   }
 
   @Get('items/:itemId/production-document/download-url')

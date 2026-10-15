@@ -30,5 +30,18 @@ export const agentFeedbackBodySchema = z.object({
   comment: z.string().max(1000).optional(),
 });
 
+export const agentComposeBodySchema = z.object({
+  kind: z.enum(['crm_template', 'crm_email']),
+  instruction: z.string().trim().min(3).max(1500),
+  current: z
+    .object({
+      subject: z.string().max(200).default(''),
+      body: z.string().max(20000).default(''),
+    })
+    .default({ subject: '', body: '' }),
+  context: z.record(z.string().max(80), z.string().max(2000)).optional(),
+});
+
 export type AgentChatBody = z.infer<typeof agentChatBodySchema>;
+export type AgentComposeBody = z.infer<typeof agentComposeBodySchema>;
 export type AgentFeedbackBody = z.infer<typeof agentFeedbackBodySchema>;

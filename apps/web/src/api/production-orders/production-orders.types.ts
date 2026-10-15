@@ -4,7 +4,14 @@ export type ProductionOrderStatus =
   | "COMPLETED"
   | "CANCELLED";
 
+/** Deprecated documents, only downloadable on older orders. */
 export type ProductionDocumentKind = "PRODUCTION" | "DESIGN";
+
+export interface ProductionOrderArt {
+  fileName: string;
+  mimeType: string;
+  uploadedAt: string;
+}
 
 export interface InstallerSummary {
   id: string;
@@ -26,6 +33,7 @@ export interface ProductionOrderItem {
   width: number | null;
   height: number | null;
   quantity: number;
+  art: ProductionOrderArt | null;
   hasProductionDocument: boolean;
   hasDesignDocument: boolean;
   assignedInstaller: InstallerSummary | null;

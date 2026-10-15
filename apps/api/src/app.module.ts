@@ -30,6 +30,7 @@ import { BriloWebapiModule } from './modules/brilo-webapi/brilo-webapi.module.js
 import { AgentModule } from './modules/agent/agent.module.js';
 import { DevelopmentModule } from './modules/development/development.module.js';
 import { CrmModule } from './modules/crm/crm.module.js';
+import { AcademyModule } from './modules/academy/academy.module.js';
 
 @Module({
   imports: [
@@ -64,6 +65,7 @@ import { CrmModule } from './modules/crm/crm.module.js';
     AgentModule,
     DevelopmentModule,
     CrmModule,
+    AcademyModule,
   ],
 })
 export class AppModule {}

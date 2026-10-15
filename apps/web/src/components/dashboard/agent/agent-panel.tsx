@@ -34,9 +34,16 @@ function readStoredWidth() {
 }
 
 export function AgentPanel() {
-  const { open, setOpen, session, startNewChat, selectThread, handleDeleted } =
-    useAgentPanel();
-  const [view, setView] = useState<"chat" | "history">("chat");
+  const {
+    open,
+    setOpen,
+    view,
+    setView,
+    session,
+    startNewChat,
+    selectThread,
+    handleDeleted,
+  } = useAgentPanel();
   const [width, setWidth] = useState(readStoredWidth);
   const [resizing, setResizing] = useState(false);
   const dragStart = useRef<{ x: number; width: number } | null>(null);
@@ -128,10 +135,7 @@ export function AgentPanel() {
           side="bottom"
           label="Nueva conversación"
           icon={SquarePen}
-          onClick={() => {
-            startNewChat();
-            setView("chat");
-          }}
+          onClick={startNewChat}
         />
         <AgentIconButton
           side="bottom"
@@ -145,10 +149,7 @@ export function AgentPanel() {
         <div className="min-h-0 flex-1 overflow-y-auto">
           <AgentThreadList
             activeId={session.id}
-            onSelect={(id) => {
-              selectThread(id);
-              setView("chat");
-            }}
+            onSelect={selectThread}
             onDeleted={handleDeleted}
           />
         </div>

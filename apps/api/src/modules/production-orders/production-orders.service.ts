@@ -21,15 +21,27 @@ import {
 import { NotificationsService } from '../notifications/notifications.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { PushService } from '../push/push.service.js';
-import { S3StorageService } from '../s3-images/s3-storage.service.js';
-
-const PRODUCTION_DOCS_FOLDER = 'production-orders';
+import {
+  S3StorageService,
+  type PresignedPutResult,
+} from '../s3-images/s3-storage.service.js';
+import {
+  MAX_PRODUCTION_ART_BYTES,
+  PRODUCTION_ART_EXTENSIONS,
+  PRODUCTION_ART_FOLDER,
+} from './production-order-art.js';
 
 export type ProductionDocumentKind = 'PRODUCTION' | 'DESIGN';
 
 export interface DocumentActor {
   userId: string;
   isProductionUser: boolean;
+}
+
+export interface ProductionOrderArtDto {
+  fileName: string;
+  mimeType: string;
+  uploadedAt: string;
 }
 
 export interface InstallerSummaryDto {
@@ -52,6 +64,7 @@ export interface ProductionOrderItemDto {
   width: number | null;
   height: number | null;
   quantity: number;
+  art: ProductionOrderArtDto | null;
   hasProductionDocument: boolean;
   hasDesignDocument: boolean;
   assignedInstaller: InstallerSummaryDto | null;
@@ -127,18 +140,6 @@ function clampPage(value: number | undefined): number {
 function clampPageSize(value: number | undefined): number {
   if (!value || !Number.isFinite(value)) return DEFAULT_PAGE_SIZE;
   return Math.min(Math.max(Math.floor(value), 1), MAX_PAGE_SIZE);
-}
-
-function decodeBase64Pdf(base64: string): Buffer {
-  const normalized = base64.includes(',') ? base64.split(',')[1] : base64;
-  if (!normalized) {
-    throw new BadRequestException('El PDF está vacío o es inválido');
-  }
-  const buffer = Buffer.from(normalized, 'base64');
-  if (buffer.length < 4 || buffer.subarray(0, 4).toString('ascii') !== '%PDF') {
-    throw new BadRequestException('El archivo no es un PDF válido');
-  }
-  return buffer;
 }
 
 const STATUS_PRIORITY: ProductionOrderStatus[] = [
@@ -337,7 +338,7 @@ export class ProductionOrdersService {
 
   /**
    * Production orders that do not come from an offer, e.g. a reprint or an
-   * internal campaign. Documents are uploaded afterwards through the regular
+   * internal campaign. Art is uploaded afterwards through the regular
    * per-item endpoints, since the creator owns the order.
    */
   async createManual(
@@ -421,7 +422,7 @@ export class ProductionOrdersService {
   }
 
   /**
-   * Removes the production order (and its uploaded documents from S3)
+   * Removes the production order (and its uploaded files from S3)
    * when an offer moves away from ACCEPTED. Called from the offers
    * service so both flows stay in sync.
    */
@@ -437,6 +438,7 @@ export class ProductionOrdersService {
           select: {
             productionDocumentS3Key: true,
             designDocumentS3Key: true,
+            artS3Key: true,
             vulcanizadoImageS3Key: true,
           },
         },
@@ -448,6 +450,7 @@ export class ProductionOrdersService {
       [
         item.productionDocumentS3Key,
         item.designDocumentS3Key,
+        item.artS3Key,
         item.vulcanizadoImageS3Key,
       ].filter((v): v is string => Boolean(v)),
     );
@@ -545,89 +548,111 @@ export class ProductionOrdersService {
   }
 
   /**
-   * The order's creator uploads the production/design documents. On manual
-   * orders the whole production team may do so too, since there is no
-   * salesperson behind them.
+   * The order's creator uploads the art of each billboard. On manual orders
+   * the whole production team may do so too, since there is no salesperson
+   * behind them. The file goes straight to S3 so its size is not bound by
+   * the API body limit; `attachArt` then links it to the item.
    */
-  async uploadDocument(
+  async createArtUploadUrl(
     actor: DocumentActor,
     itemId: string,
-    kind: ProductionDocumentKind,
-    pdfBase64: string,
-  ): Promise<ProductionOrderItemDto> {
-    const item = await this.findItemEditableBy(itemId, actor);
-
-    const buffer = decodeBase64Pdf(pdfBase64);
-    const upload = await this.storage.uploadBuffer({
-      buffer,
-      mimeType: 'application/pdf',
-      extension: 'pdf',
-      folder: PRODUCTION_DOCS_FOLDER,
+    mimeType: string,
+  ): Promise<PresignedPutResult> {
+    await this.findItemEditableBy(itemId, actor);
+    return this.storage.getPresignedPutUrl({
+      extension: PRODUCTION_ART_EXTENSIONS[mimeType],
+      mimeType,
+      folder: PRODUCTION_ART_FOLDER,
     });
-
-    const previousKey = pickDocumentKey(item, kind);
-
-    try {
-      const updated = await this.prisma.productionOrderItem.update({
-        where: { id: itemId },
-        data: buildDocumentUpdate(kind, upload.key),
-        include: ITEM_INCLUDE,
-      });
-
-      if (previousKey && previousKey !== upload.key) {
-        void this.storage.deleteByKey(previousKey);
-      }
-
-      return this.mapItemToDto(updated);
-    } catch (e) {
-      await this.storage.deleteByKey(upload.key);
-      throw e;
-    }
   }
 
-  async deleteDocument(
+  async attachArt(
     actor: DocumentActor,
     itemId: string,
-    kind: ProductionDocumentKind,
+    input: { fileKey: string; fileName: string; mimeType: string },
   ): Promise<ProductionOrderItemDto> {
     const item = await this.findItemEditableBy(itemId, actor);
-    const key = pickDocumentKey(item, kind);
-    if (!key) {
-      throw new NotFoundException('El documento no existe');
+
+    let size: number;
+    try {
+      size = await this.storage.getObjectSize(input.fileKey);
+    } catch {
+      throw new BadRequestException('No se encontró el archivo del arte');
+    }
+    if (size <= 0 || size > MAX_PRODUCTION_ART_BYTES) {
+      void this.storage.deleteByKey(input.fileKey);
+      throw new BadRequestException(
+        `El arte debe pesar menos de ${MAX_PRODUCTION_ART_BYTES / (1024 * 1024)}MB`,
+      );
     }
 
     const updated = await this.prisma.productionOrderItem.update({
       where: { id: itemId },
-      data: buildDocumentUpdate(kind, null),
+      data: {
+        artS3Key: input.fileKey,
+        artFileName: input.fileName.trim(),
+        artMimeType: input.mimeType,
+        artUploadedAt: new Date(),
+      },
       include: ITEM_INCLUDE,
     });
 
-    void this.storage.deleteByKey(key);
+    if (item.artS3Key && item.artS3Key !== input.fileKey) {
+      void this.storage.deleteByKey(item.artS3Key);
+    }
 
     return this.mapItemToDto(updated);
   }
 
+  async deleteArt(
+    actor: DocumentActor,
+    itemId: string,
+  ): Promise<ProductionOrderItemDto> {
+    const item = await this.findItemEditableBy(itemId, actor);
+    if (!item.artS3Key) {
+      throw new NotFoundException('El arte no existe');
+    }
+
+    const updated = await this.prisma.productionOrderItem.update({
+      where: { id: itemId },
+      data: {
+        artS3Key: null,
+        artFileName: null,
+        artMimeType: null,
+        artUploadedAt: null,
+      },
+      include: ITEM_INCLUDE,
+    });
+
+    void this.storage.deleteByKey(item.artS3Key);
+
+    return this.mapItemToDto(updated);
+  }
+
+  async getArtUrl(
+    itemId: string,
+    options: { userId?: string; requireOwnership: boolean; download: boolean },
+  ): Promise<{ url: string }> {
+    const item = await this.findItemForDownload(itemId, options);
+    if (!item.artS3Key) {
+      throw new NotFoundException('El arte no está disponible');
+    }
+
+    const url = await this.storage.getSignedUrl(
+      item.artS3Key,
+      undefined,
+      options.download ? (item.artFileName ?? undefined) : undefined,
+    );
+    return { url };
+  }
+
+  /** Read-only access to the deprecated production/design PDFs. */
   async getDocumentDownloadUrl(
     itemId: string,
     kind: ProductionDocumentKind,
     options: { userId?: string; requireOwnership: boolean },
   ): Promise<{ url: string }> {
-    const item = await this.prisma.productionOrderItem.findUnique({
-      where: { id: itemId },
-      select: {
-        productionDocumentS3Key: true,
-        designDocumentS3Key: true,
-        productionOrder: { select: { createdByUserId: true } },
-      },
-    });
-    if (!item) throw new NotFoundException('Orden de producción no encontrada');
-
-    if (options.requireOwnership && options.userId) {
-      if (item.productionOrder.createdByUserId !== options.userId) {
-        throw new NotFoundException('Orden de producción no encontrada');
-      }
-    }
-
+    const item = await this.findItemForDownload(itemId, options);
     const key =
       kind === 'PRODUCTION'
         ? item.productionDocumentS3Key
@@ -638,6 +663,31 @@ export class ProductionOrdersService {
 
     const url = await this.storage.getSignedUrl(key);
     return { url };
+  }
+
+  private async findItemForDownload(
+    itemId: string,
+    options: { userId?: string; requireOwnership: boolean },
+  ) {
+    const item = await this.prisma.productionOrderItem.findUnique({
+      where: { id: itemId },
+      select: {
+        productionDocumentS3Key: true,
+        designDocumentS3Key: true,
+        artS3Key: true,
+        artFileName: true,
+        productionOrder: { select: { createdByUserId: true } },
+      },
+    });
+    if (!item) throw new NotFoundException('Orden de producción no encontrada');
+
+    if (
+      options.requireOwnership &&
+      item.productionOrder.createdByUserId !== options.userId
+    ) {
+      throw new NotFoundException('Orden de producción no encontrada');
+    }
+    return item;
   }
 
   /**
@@ -866,6 +916,14 @@ export class ProductionOrdersService {
       width: item.width,
       height: item.height,
       quantity: item.quantity,
+      art:
+        item.artS3Key && item.artFileName && item.artMimeType
+          ? {
+              fileName: item.artFileName,
+              mimeType: item.artMimeType,
+              uploadedAt: (item.artUploadedAt ?? item.updatedAt).toISOString(),
+            }
+          : null,
       hasProductionDocument: !!item.productionDocumentS3Key,
       hasDesignDocument: !!item.designDocumentS3Key,
       assignedInstaller: item.assignedInstaller,
@@ -881,18 +939,6 @@ export class ProductionOrdersService {
   }
 }
 
-function pickDocumentKey(
-  item: {
-    productionDocumentS3Key: string | null;
-    designDocumentS3Key: string | null;
-  },
-  kind: ProductionDocumentKind,
-): string | null {
-  return kind === 'PRODUCTION'
-    ? item.productionDocumentS3Key
-    : item.designDocumentS3Key;
-}
-
 function parseOptionalDate(value: string | null): Date | null {
   if (value === null || value.trim() === '') return null;
   const parsed = new Date(value);
@@ -900,13 +946,4 @@ function parseOptionalDate(value: string | null): Date | null {
     throw new BadRequestException('La fecha de instalación no es válida');
   }
   return parsed;
-}
-
-function buildDocumentUpdate(
-  kind: ProductionDocumentKind,
-  key: string | null,
-): Prisma.ProductionOrderItemUpdateInput {
-  return kind === 'PRODUCTION'
-    ? { productionDocumentS3Key: key }
-    : { designDocumentS3Key: key };
 }

@@ -107,6 +107,31 @@ export function useAssignableInstallers(enabled = true) {
   });
 }
 
+export async function getProductionOrderArtUrl(
+  itemId: string,
+  options: { download?: boolean } = {},
+): Promise<string> {
+  const response = await apiFetch<{ url: string }>(
+    `/production-orders/items/${itemId}/art/url`,
+    { query: options.download ? { download: "true" } : {} },
+  );
+  return response.url;
+}
+
+/** `uploadedAt` is part of the key so a replaced art fetches a fresh URL. */
+export function useProductionOrderArtUrl(
+  itemId: string,
+  uploadedAt: string | null,
+) {
+  return useQuery({
+    queryKey: ["production-orders", "art-url", itemId, uploadedAt],
+    queryFn: () => getProductionOrderArtUrl(itemId),
+    enabled: !!uploadedAt,
+    staleTime: 30 * 60 * 1000,
+    gcTime: GC_TIME,
+  });
+}
+
 export async function getProductionOrderDocumentUrl(
   itemId: string,
   kind: ProductionDocumentKind,

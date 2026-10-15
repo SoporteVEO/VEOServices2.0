@@ -142,7 +142,7 @@ export interface CrmExecutionStaticItem {
   address: string | null;
   cityName: string | null;
   status: "RECEIVED" | "IN_PRODUCTION" | "COMPLETED" | "CANCELLED";
-  hasDesign: boolean;
+  hasArt: boolean;
   scheduledInstallationAt: string | null;
   installedAt: string | null;
   installerName: string | null;

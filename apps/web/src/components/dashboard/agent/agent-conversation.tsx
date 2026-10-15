@@ -8,6 +8,8 @@ import { AgentChat } from "./agent-chat";
 export interface AgentSession {
   id: string;
   isNew: boolean;
+  /** Prefills the composer of a new conversation without sending it. */
+  draft?: string;
 }
 
 export function AgentConversation({ session }: { session: AgentSession }) {
@@ -40,6 +42,7 @@ export function AgentConversation({ session }: { session: AgentSession }) {
       key={session.id}
       threadId={session.id}
       initialMessages={data?.messages ?? []}
+      draft={session.draft}
     />
   );
 }

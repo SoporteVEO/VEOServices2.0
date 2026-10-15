@@ -2,6 +2,32 @@ import { EMAIL_COLORS } from '../email/brand-colors.js';
 
 export type TemplateVariables = Record<string, string>;
 
+/** Every key `buildTemplateVariables` can fill. */
+export const TEMPLATE_VARIABLE_KEYS = [
+  'contacto.nombre',
+  'contacto.apellido',
+  'contacto.nombre_completo',
+  'contacto.cargo',
+  'contacto.correo',
+  'cliente.nombre',
+  'cliente.empresa',
+  'cliente.correo',
+  'negocio.titulo',
+  'negocio.valor',
+  'negocio.etapa',
+  'negocio.cierre',
+  'campana.marca',
+  'campana.medio',
+  'campana.inicio',
+  'campana.fin',
+  'campana.total_sitios',
+  'campana.sitios',
+  'asesor.nombre',
+  'asesor.nombre_completo',
+  'asesor.correo',
+  'fecha.hoy',
+] as const;
+
 export interface TemplateContext {
   client?: { name: string; company: string | null; email: string } | null;
   contact?: {

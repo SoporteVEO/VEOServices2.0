@@ -27,7 +27,6 @@ import {
 } from "@/components/ui/drawer";
 import { ImagePreviewDialog } from "@/components/pages/images/image-preview-dialog";
 import { formatShortDate } from "@/lib/format";
-import type { ContractReportProgress } from "@/lib/generate-contract-report";
 import { cn } from "@/lib/utils";
 import {
   buildContractReport,
@@ -36,6 +35,7 @@ import {
   formatReportProgress,
   sendContractReport,
 } from "./contract-report-actions";
+import type { ContractReportProgress } from "./pdf/generate-contract-report";
 import { SendReportDialog } from "./send-report-dialog";
 import { ContractReportsSendedSection } from "./contract-reports-sended-section";
 import { formatMonthLabel, startOfMonth } from "./report-period";

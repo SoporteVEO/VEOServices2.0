@@ -4,12 +4,14 @@ import { useState } from "react";
 import { Building2, Mail, Phone, Plus, X } from "lucide-react";
 import { useCrmClientSummary, useCrmContacts } from "@/api/crm/crm.get";
 import type { CrmClientSummary } from "@/api/crm/crm.types";
+import { ClientContractsHistory } from "@/components/pages/clients/client-contracts-history";
+import { ClientInfoPanel } from "@/components/pages/clients/client-info-panel";
 import { getClientInitials } from "@/components/pages/clients/client-initials";
 import { ClientTypeBadge } from "@/components/pages/clients/client-type-badge";
+import { AskNexoButton } from "@/components/dashboard/agent/ask-nexo-button";
 import { Avatar, AvatarFallback } from "@/components/primitives/ui/avatar";
 import { Badge } from "@/components/primitives/ui/badge";
 import { Button as PrimitiveButton } from "@/components/primitives/ui/button";
-import { ScrollArea } from "@/components/primitives/ui/scroll-area";
 import { Skeleton } from "@/components/primitives/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import {
@@ -19,13 +21,15 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from "@/components/ui/drawer";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { AGENT_NAME } from "@/lib/agent-brand";
 import { formatDate, formatMoney } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { CrmActivityComposer } from "../activity/crm-activity-composer";
 import { CrmActivityTimeline } from "../activity/crm-activity-timeline";
 import { OFFER_STATUS_LABELS, OFFER_STATUS_STYLES } from "../crm-const";
 import { personName, timeAgo } from "../crm-format";
+import { clientProposalDraft, clientResearchPrompt } from "../crm-nexo-prompts";
 import { CrmContactDrawer } from "../contacts/crm-contact-drawer";
 import { CrmContactFormDialog } from "../contacts/crm-contact-form-dialog";
 import { EmptyList, ListSkeleton } from "../dashboard/crm-dashboard-lists";
@@ -33,6 +37,7 @@ import { CrmDealDrawer } from "../deal/crm-deal-drawer";
 import { CrmMessageThread } from "../messages/crm-message-thread";
 import { CrmDealFormDialog } from "../pipeline/crm-deal-form-dialog";
 import { CrmDealList } from "../shared/crm-deal-list";
+import { CrmDrawerPanel } from "../shared/crm-drawer-panel";
 
 interface Props {
   clientId: string | null;
@@ -111,7 +116,7 @@ function ClientDrawerContent({
 
   return (
     <>
-      <DrawerHeader className="shrink-0 gap-3 border-b">
+      <DrawerHeader className="shrink-0 gap-4 border-b md:gap-4">
         <div className="flex items-start justify-between gap-3">
           <div className="flex min-w-0 flex-1 items-center gap-3">
             <Avatar size="lg">
@@ -147,6 +152,21 @@ function ClientDrawerContent({
             </div>
           </div>
           <div className="flex shrink-0 items-center gap-1.5">
+            <AskNexoButton
+              sizeVariant="sm"
+              label="Investigar"
+              hint={`${AGENT_NAME} investiga la marca y te sugiere oportunidades`}
+              prompt={clientResearchPrompt(summary)}
+              onAsk={onClose}
+            />
+            <AskNexoButton
+              sizeVariant="sm"
+              label="Propuesta"
+              hint={`${AGENT_NAME} arma una propuesta con las vallas ideales; tú completas el objetivo`}
+              prompt={clientProposalDraft(summary)}
+              send={false}
+              onAsk={onClose}
+            />
             <Button sizeVariant="sm" icon={Plus} onClick={() => setDealOpen(true)}>
               Negocio
             </Button>
@@ -175,8 +195,10 @@ function ClientDrawerContent({
           <TabsTrigger value="actividad">Actividad</TabsTrigger>
           <TabsTrigger value="mensajes">Mensajes</TabsTrigger>
           <TabsTrigger value="cotizaciones">Cotizaciones</TabsTrigger>
+          <TabsTrigger value="contratos">Contratos</TabsTrigger>
+          <TabsTrigger value="informacion">Información</TabsTrigger>
         </TabsList>
-        <Panel value="negocios">
+        <CrmDrawerPanel value="negocios">
           <div className="p-4">
             <CrmDealList
               query={context}
@@ -184,8 +206,8 @@ function ClientDrawerContent({
               emptyMessage="Este cliente aún no tiene negocios."
             />
           </div>
-        </Panel>
-        <Panel value="contactos">
+        </CrmDrawerPanel>
+        <CrmDrawerPanel value="contactos">
           <div className="flex flex-col gap-3 p-4">
             <div className="flex justify-end">
               <Button sizeVariant="sm" icon={Plus} onClick={() => setContactOpen(true)}>
@@ -194,22 +216,22 @@ function ClientDrawerContent({
             </div>
             <ClientContacts clientId={client.id} onOpen={setSelectedContactId} />
           </div>
-        </Panel>
-        <Panel value="actividad">
+        </CrmDrawerPanel>
+        <CrmDrawerPanel value="actividad">
           <div className="flex flex-col gap-5 p-4">
             <CrmActivityComposer context={context} />
             <CrmActivityTimeline context={context} showDeal />
           </div>
-        </Panel>
-        <Panel value="mensajes">
+        </CrmDrawerPanel>
+        <CrmDrawerPanel value="mensajes">
           <div className="p-4">
             <CrmMessageThread
               context={context}
               recipient={{ email: client.email, whatsapp: client.contact }}
             />
           </div>
-        </Panel>
-        <Panel value="cotizaciones">
+        </CrmDrawerPanel>
+        <CrmDrawerPanel value="cotizaciones">
           <div className="p-4">
             {offers.length === 0 ? (
               <EmptyList message="Este cliente no tiene cotizaciones." />
@@ -245,7 +267,15 @@ function ClientDrawerContent({
               </ul>
             )}
           </div>
-        </Panel>
+        </CrmDrawerPanel>
+        <CrmDrawerPanel value="contratos">
+          <div className="p-4">
+            <ClientContractsHistory clientId={client.id} />
+          </div>
+        </CrmDrawerPanel>
+        <CrmDrawerPanel value="informacion">
+          <ClientInfoPanel clientId={client.id} />
+        </CrmDrawerPanel>
       </Tabs>
 
       <CrmDealFormDialog
@@ -323,14 +353,6 @@ function Stat({ label, value, hint }: { label: string; value: string; hint?: str
       <span className="truncate text-sm font-semibold tabular-nums">{value}</span>
       {hint ? <span className="truncate text-[11px] text-muted-foreground">{hint}</span> : null}
     </div>
-  );
-}
-
-function Panel({ value, children }: { value: string; children: React.ReactNode }) {
-  return (
-    <TabsContent value={value} className="min-h-0 flex-1 data-[state=inactive]:hidden">
-      <ScrollArea className="h-full">{children}</ScrollArea>
-    </TabsContent>
   );
 }
 

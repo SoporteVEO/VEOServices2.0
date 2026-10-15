@@ -38,7 +38,7 @@ export function buildReportTools(ctx: AgentToolContext) {
   return {
     generate_monthly_report: defineTool({
       description:
-        'Prepares the monthly billboard report of a contract, the exact PowerPoint of the Reportes module ("Generar reporte"): cover, one slide per billboard of the contract with its most recent photo of the month, and closing slides. Use it for "reporte mensual", "reporte de vallas", "reporte del contrato X" or "reporte de la valla X". Search by contract number, client name or billboard code. The chat shows one card per matching contract with buttons to download it or send it to the client; never write those buttons or links in your reply. The report always has one photo per billboard; if the user asks for several photos, say so. Never build this report with create_pdf_document.',
+        'Prepares the monthly billboard report of a contract, the exact PDF of the Reportes module ("Generar reporte"): cover, summary, one page per billboard of the contract with its most recent photo of the month, and closing pages about VEO. Use it for "reporte mensual", "reporte de vallas", "reporte del contrato X" or "reporte de la valla X". Search by contract number, client name or billboard code. The chat shows one card per matching contract with buttons to download it or send it to the client; never write those buttons or links in your reply. The report always has one photo per billboard; if the user asks for several photos, say so. Never build this report with create_pdf_document.',
       inputSchema: z.object({
         month: z
           .string()

@@ -7,9 +7,9 @@ import { Button } from "@/components/ui/button";
 import type { AvailableBillboardListing } from "@/api/billboards/billboards.get";
 import { getAvailableBillboardsForReport } from "@/api/billboards/billboards.get";
 import {
-  generateBillboardReport,
+  generateAvailabilityReport,
   type ReportProgress,
-} from "@/lib/generate-billboard-report";
+} from "./availability-report/generate-availability-report";
 
 interface GenerateReportButtonProps {
   from: string;
@@ -63,10 +63,9 @@ export function GenerateReportButton({
         );
       }
 
-      await generateBillboardReport({
+      await generateAvailabilityReport({
         billboards,
         dateFrom: from,
-        dateTo: to,
         onProgress: setProgress,
       });
 

@@ -8,6 +8,7 @@ import {
   GenerateReportButton,
   ExportStaticBillboardsExcelButton,
   GenerateQuotationButton,
+  AskNexoProposalButton,
 } from "@/components/pages/static-billboards";
 import { DateRangePicker } from "@/components/ui/date-range-picker";
 import { Switch } from "@/components/primitives/ui/switch";
@@ -98,6 +99,11 @@ export default function StaticBillboardsPage() {
               to={toStr}
               selectedRows={selectedRows}
               visibleRows={filtered}
+            />
+            <AskNexoProposalButton
+              from={fromStr}
+              to={toStr}
+              selectedRows={selectedRows}
             />
           </>
         )}

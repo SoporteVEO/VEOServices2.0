@@ -63,6 +63,7 @@ export class CrmClientsService {
     page?: string;
     pageSize?: string;
     withOpenDeals?: string;
+    type?: string;
   }): Promise<PaginatedCrmClients> {
     const page = Math.max(Number(params.page) || 1, 1);
     const pageSize = Math.min(Math.max(Number(params.pageSize) || 25, 1), 100);
@@ -82,6 +83,8 @@ export class CrmClientsService {
     }
     if (params.withOpenDeals === 'true')
       where.crmDeals = { some: { status: 'OPEN' } };
+    if (params.type === 'DIRECT' || params.type === 'AGENCY')
+      where.type = params.type;
 
     const [rows, total] = await Promise.all([
       this.prisma.client.findMany({

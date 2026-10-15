@@ -7,6 +7,7 @@ import {
   useUpdateCrmTemplate,
 } from "@/api/crm/crm.mutations";
 import type { CrmTemplate } from "@/api/crm/crm.types";
+import { NexoWriteButton } from "@/components/dashboard/agent/nexo-write-button";
 import { Label } from "@/components/primitives/ui/label";
 import { Switch } from "@/components/primitives/ui/switch";
 import { Button } from "@/components/ui/button";
@@ -37,6 +38,12 @@ Quedo atento a tus comentarios.
 
 Saludos,
 {{asesor.nombre_completo}}`;
+
+const TEMPLATE_SUGGESTIONS = [
+  "Primer contacto con una marca nueva",
+  "Seguimiento a una cotización enviada",
+  "Recordatorio de renovación de contrato",
+];
 
 type Props = {
   open: boolean;
@@ -175,6 +182,18 @@ export function CrmTemplateEditorDialog({ open, onOpenChange, template }: Props)
                 value={form.body}
                 onChange={(body) => patch({ body })}
                 previewVariables={SAMPLE_VARIABLES}
+                actions={
+                  <NexoWriteButton
+                    kind="crm_template"
+                    current={{
+                      subject: form.subject,
+                      body: form.body === STARTER_BODY ? "" : form.body,
+                    }}
+                    context={form.category.trim() ? { categoria: form.category.trim() } : undefined}
+                    suggestions={TEMPLATE_SUGGESTIONS}
+                    onApply={({ subject, body }) => patch({ subject, body })}
+                  />
+                }
                 className="flex-1"
                 editorClassName="min-h-[26rem]"
               />

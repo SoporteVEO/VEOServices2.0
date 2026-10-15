@@ -291,9 +291,8 @@ WHERE maecon.mconId IN (__IDS__)
 ORDER BY maecon.mconId, detcon.dconFechaHasta ASC
 `;
 
-const REPORT_FILE_MIME_TYPE =
-  'application/vnd.openxmlformats-officedocument.presentationml.presentation';
-const REPORT_FILE_EXTENSION = 'pptx';
+const REPORT_FILE_MIME_TYPE = 'application/pdf';
+const REPORT_FILE_EXTENSION = 'pdf';
 
 // Resend caps the total email size (HTML + attachments after base64 encoding)
 // at 40MB. Base64 inflates payloads ~33%, so we keep raw attachments below
@@ -1208,7 +1207,7 @@ function buildMaintenanceReportEmailHtml(params: {
         fileSizeMB: params.fileSizeMB,
       })
     : `<p style="margin:0 0 8px;font-size:14px;line-height:1.6;">
-                  El archivo está adjunto a este correo en formato PowerPoint (.pptx).
+                  El archivo está adjunto a este correo en formato PDF.
                 </p>`;
 
   return `<!doctype html>
@@ -1291,7 +1290,7 @@ function buildDownloadLinkSection(params: {
                   <tr>
                     <td style="background:${EMAIL_COLORS.lime};border-radius:8px;">
                       <a href="${escapeHtmlAttr(params.downloadUrl)}" style="display:inline-block;padding:12px 24px;font-size:14px;font-weight:bold;color:${EMAIL_COLORS.dark};text-decoration:none;">
-                        Descargar reporte (.pptx)
+                        Descargar reporte (PDF)
                       </a>
                     </td>
                   </tr>

@@ -21,12 +21,14 @@ import {
 } from '../auth/decorators.js';
 import { IMAGES_MODULE_ROLES } from '../auth/field-roles.js';
 import { AgentChatService } from './agent-chat.service.js';
+import { AgentComposeService } from './agent-compose.service.js';
 import { AgentFeedbackService } from './agent-feedback.service.js';
 import { isAgentConfigured } from './agent-model.js';
 import { partitionScopes, toAgentUser } from './agent-scopes.js';
 import { AgentThreadsService } from './agent-threads.service.js';
 import {
   agentChatBodySchema,
+  agentComposeBodySchema,
   agentFeedbackBodySchema,
   messageIdSchema,
   renameThreadSchema,
@@ -39,6 +41,7 @@ import {
 export class AgentController {
   constructor(
     private readonly chat: AgentChatService,
+    private readonly composer: AgentComposeService,
     private readonly threads: AgentThreadsService,
     private readonly feedback: AgentFeedbackService,
   ) {}
@@ -56,6 +59,19 @@ export class AgentController {
       toAgentUser(rawUser),
       parse(agentChatBodySchema, body),
     );
+  }
+
+  @Post('compose')
+  @HttpCode(200)
+  async compose(
+    @CurrentUser() rawUser: Record<string, unknown>,
+    @Body() body: unknown,
+  ) {
+    const data = await this.composer.compose(
+      toAgentUser(rawUser),
+      parse(agentComposeBodySchema, body),
+    );
+    return { data };
   }
 
   @Get('capabilities')

@@ -1,32 +1,19 @@
 import type { AvailableBillboardListing } from "@/api/billboards/billboards.get";
-import { uploadProductionOrderDocument } from "@/api/production-orders/production-orders.patch";
+import { uploadProductionOrderArt } from "@/api/production-orders/production-orders.patch";
 import type {
   CreateProductionOrderItemInput,
-  ProductionDocumentKind,
   ProductionOrder,
 } from "@/api/production-orders/production-orders.types";
-import { fileToBase64 } from "@/components/pages/production-orders-shared/production-order-pdf";
 
 export interface PendingBillboard {
   billboard: AvailableBillboardListing;
-  productionDocument: File | null;
-  designDocument: File | null;
+  art: File | null;
 }
 
 export function toPendingBillboard(
   billboard: AvailableBillboardListing,
 ): PendingBillboard {
-  return { billboard, productionDocument: null, designDocument: null };
-}
-
-export function withDocument(
-  entry: PendingBillboard,
-  kind: ProductionDocumentKind,
-  file: File | null,
-): PendingBillboard {
-  return kind === "PRODUCTION"
-    ? { ...entry, productionDocument: file }
-    : { ...entry, designDocument: file };
+  return { billboard, art: null };
 }
 
 export function toCreateItemInput({
@@ -45,7 +32,6 @@ export function toCreateItemInput({
 
 interface PendingUpload {
   itemId: string;
-  kind: ProductionDocumentKind;
   file: File;
 }
 
@@ -59,32 +45,20 @@ function collectUploads(
 
   return entries.flatMap((entry) => {
     const itemId = itemIdByBillboard.get(entry.billboard.billboardId);
-    if (!itemId) return [];
-    const uploads: PendingUpload[] = [];
-    if (entry.productionDocument) {
-      uploads.push({ itemId, kind: "PRODUCTION", file: entry.productionDocument });
-    }
-    if (entry.designDocument) {
-      uploads.push({ itemId, kind: "DESIGN", file: entry.designDocument });
-    }
-    return uploads;
+    return itemId && entry.art ? [{ itemId, file: entry.art }] : [];
   });
 }
 
-export function countPendingDocuments(entries: PendingBillboard[]): number {
-  return entries.reduce(
-    (total, entry) =>
-      total + Number(!!entry.productionDocument) + Number(!!entry.designDocument),
-    0,
-  );
+export function countPendingArts(entries: PendingBillboard[]): number {
+  return entries.filter((entry) => entry.art).length;
 }
 
 /**
- * Uploads one PDF at a time so a large batch never exceeds the API body limit.
- * Resolves with the number of files that failed; the order is already created
- * by then, so failures can be retried from the detail drawer.
+ * Uploads one art at a time. Resolves with the number of files that failed;
+ * the order is already created by then, so failures can be retried from the
+ * detail drawer.
  */
-export async function uploadPendingDocuments(
+export async function uploadPendingArts(
   order: ProductionOrder,
   entries: PendingBillboard[],
   onProgress: (done: number, total: number) => void,
@@ -95,12 +69,7 @@ export async function uploadPendingDocuments(
   for (const [index, upload] of uploads.entries()) {
     onProgress(index, uploads.length);
     try {
-      const pdfBase64 = await fileToBase64(upload.file);
-      await uploadProductionOrderDocument({
-        itemId: upload.itemId,
-        kind: upload.kind,
-        pdfBase64,
-      });
+      await uploadProductionOrderArt(upload);
     } catch {
       failed += 1;
     }

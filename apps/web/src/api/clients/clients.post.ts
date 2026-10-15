@@ -22,6 +22,7 @@ export function useCreateClient(options?: {
     mutationFn: createClient,
     onSuccess: async (created) => {
       await queryClient.invalidateQueries({ queryKey: ["clients"] });
+      void queryClient.invalidateQueries({ queryKey: ["crm"] });
       options?.onSuccess?.(created);
     },
     onError: (err) => {

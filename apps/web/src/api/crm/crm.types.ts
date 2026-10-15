@@ -561,6 +561,7 @@ export interface CrmClientsQuery {
   page?: number;
   pageSize?: number;
   withOpenDeals?: boolean;
+  type?: ClientType;
 }
 
 export interface CrmClientSummary {

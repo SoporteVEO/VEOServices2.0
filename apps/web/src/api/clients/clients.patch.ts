@@ -27,6 +27,7 @@ export function useUpdateClient(options?: {
     onSuccess: async (updated) => {
       await queryClient.invalidateQueries({ queryKey: ["clients"] });
       queryClient.setQueryData(["clients", updated.id], updated);
+      void queryClient.invalidateQueries({ queryKey: ["crm"] });
       options?.onSuccess?.(updated);
     },
     onError: (err) => {

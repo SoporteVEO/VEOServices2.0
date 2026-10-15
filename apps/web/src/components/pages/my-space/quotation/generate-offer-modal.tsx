@@ -71,6 +71,26 @@ function emptyFormValues(): QuotationCustomerFormValues {
   };
 }
 
+function clientFormValues(client: Client) {
+  return {
+    clientId: client.id,
+    customerName: client.name,
+    customerCompany: client.company ?? "",
+    customerEmail: client.email,
+    customerBillingEmail: client.billingEmail ?? "",
+    customerContact: client.contact ?? "",
+  };
+}
+
+function initialFormValues(
+  offer: OfferDetail | undefined,
+  client: Client | undefined,
+): QuotationCustomerFormValues {
+  if (offer) return formValuesFromOffer(offer);
+  if (client) return { ...emptyFormValues(), ...clientFormValues(client) };
+  return emptyFormValues();
+}
+
 function formValuesFromOffer(
   offer: OfferDetail,
 ): QuotationCustomerFormValues {
@@ -141,12 +161,15 @@ function offerItemToInput(item: OfferItem): OfferItemInput {
 export interface GenerateOfferModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSuccess?: () => void;
+  onSuccess?: (saved: { id: string; offerNumber: string }) => void;
   /**
    * When provided, the modal edits that offer instead of creating one. Mount
    * it fresh (conditionally or with a `key`) so the form seeds from the offer.
    */
   offer?: OfferDetail;
+  /** Prefills a new offer; like `offer`, only read on mount. */
+  initialClient?: Client;
+  initialItems?: OfferItem[];
 }
 
 export function GenerateOfferModal({
@@ -154,6 +177,8 @@ export function GenerateOfferModal({
   onOpenChange,
   onSuccess,
   offer,
+  initialClient,
+  initialItems,
 }: GenerateOfferModalProps) {
   const isEditing = Boolean(offer);
   const profileQuery = useMyProfile();
@@ -162,10 +187,12 @@ export function GenerateOfferModal({
   const editMutation = useEditOffer();
   const attachPdfMutation = useAttachOfferPdf();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [selectedClient, setSelectedClient] = useState<Client | null>(null);
+  const [selectedClient, setSelectedClient] = useState<Client | null>(
+    initialClient ?? null,
+  );
 
   const [seededItems] = useState(() =>
-    offer ? offerDetailItemsToOfferItems(offer.items) : [],
+    offer ? offerDetailItemsToOfferItems(offer.items) : (initialItems ?? []),
   );
   const [staticItems, setStaticItems] = useState<StaticOfferItem[]>(
     () =>
@@ -205,7 +232,7 @@ export function GenerateOfferModal({
   const totals = useMemo(() => computeOfferTotals(allItems), [allItems]);
 
   const form = useForm<QuotationCustomerFormValues>({
-    defaultValues: offer ? formValuesFromOffer(offer) : emptyFormValues(),
+    defaultValues: initialFormValues(offer, initialClient),
   });
 
   function handleSelectClient(client: Client | null) {
@@ -214,12 +241,9 @@ export function GenerateOfferModal({
       form.setValue("clientId", null);
       return;
     }
-    form.setValue("clientId", client.id);
-    form.setValue("customerName", client.name);
-    form.setValue("customerCompany", client.company ?? "");
-    form.setValue("customerEmail", client.email);
-    form.setValue("customerBillingEmail", client.billingEmail ?? "");
-    form.setValue("customerContact", client.contact ?? "");
+    for (const [key, value] of Object.entries(clientFormValues(client))) {
+      form.setValue(key as keyof ReturnType<typeof clientFormValues>, value);
+    }
   }
 
   function resetState() {
@@ -324,7 +348,7 @@ export function GenerateOfferModal({
       );
       onOpenChange(false);
       if (!isEditing) resetState();
-      onSuccess?.();
+      onSuccess?.(saved);
     } catch (err) {
       console.error("Error saving offer:", err);
       const message =

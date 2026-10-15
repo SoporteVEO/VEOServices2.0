@@ -37,6 +37,7 @@ interface MarkdownEditorProps {
   showVariables?: boolean;
   defaultMode?: ViewMode;
   compact?: boolean;
+  actions?: React.ReactNode;
   className?: string;
   editorClassName?: string;
 }
@@ -50,6 +51,7 @@ export function MarkdownEditor({
   showVariables = true,
   defaultMode = "split",
   compact = false,
+  actions,
   className,
   editorClassName,
 }: MarkdownEditorProps) {
@@ -97,33 +99,36 @@ export function MarkdownEditor({
         ) : (
           <span />
         )}
-        <ToggleGroup
-          type="single"
-          variant="outline"
-          size="sm"
-          spacing={0}
-          value={mode}
-          onValueChange={(next) => {
-            if (next) setMode(next as ViewMode);
-          }}
-        >
-          <ToggleGroupItem value="write" aria-label="Editor" className="gap-1 px-2.5 text-xs">
-            <PencilLine className="size-3.5" />
-            Editar
-          </ToggleGroupItem>
-          <ToggleGroupItem
-            value="split"
-            aria-label="Dividir"
-            className="hidden gap-1 px-2.5 text-xs md:inline-flex"
+        <div className="flex items-center gap-2">
+          {actions}
+          <ToggleGroup
+            type="single"
+            variant="outline"
+            size="sm"
+            spacing={0}
+            value={mode}
+            onValueChange={(next) => {
+              if (next) setMode(next as ViewMode);
+            }}
           >
-            <Columns2 className="size-3.5" />
-            Dividir
-          </ToggleGroupItem>
-          <ToggleGroupItem value="preview" aria-label="Vista previa" className="gap-1 px-2.5 text-xs">
-            <Eye className="size-3.5" />
-            Vista previa
-          </ToggleGroupItem>
-        </ToggleGroup>
+            <ToggleGroupItem value="write" aria-label="Editor" className="gap-1 px-2.5 text-xs">
+              <PencilLine className="size-3.5" />
+              Editar
+            </ToggleGroupItem>
+            <ToggleGroupItem
+              value="split"
+              aria-label="Dividir"
+              className="hidden gap-1 px-2.5 text-xs md:inline-flex"
+            >
+              <Columns2 className="size-3.5" />
+              Dividir
+            </ToggleGroupItem>
+            <ToggleGroupItem value="preview" aria-label="Vista previa" className="gap-1 px-2.5 text-xs">
+              <Eye className="size-3.5" />
+              Vista previa
+            </ToggleGroupItem>
+          </ToggleGroup>
+        </div>
       </div>
 
       <div

@@ -1,7 +1,9 @@
 "use client";
 
+import type { FileUIPart } from "ai";
 import type { AgentUIMessage } from "@/api/agent/agent.types";
 import { cn } from "@/lib/utils";
+import { AgentAttachmentList } from "./agent-attachment-list";
 import { AgentMarkdown } from "./agent-markdown";
 import { AgentMessageFeedback } from "./agent-message-feedback";
 import { NexoAvatar } from "./nexo-avatar";
@@ -11,11 +13,17 @@ function UserMessage({ message }: { message: AgentUIMessage }) {
   const text = message.parts
     .map((part) => (part.type === "text" ? part.text : ""))
     .join("");
+  const files = message.parts.filter(
+    (part): part is FileUIPart => part.type === "file",
+  );
   return (
-    <div className="flex justify-end">
-      <p className="max-w-[85%] whitespace-pre-wrap border-r-2 border-veo-lime bg-primary px-3.5 py-2 text-sm leading-relaxed text-primary-foreground">
-        {text}
-      </p>
+    <div className="flex flex-col items-end gap-1.5">
+      <AgentAttachmentList files={files} className="max-w-[85%] justify-end" />
+      {text ? (
+        <p className="max-w-[85%] whitespace-pre-wrap border-r-2 border-veo-lime bg-primary px-3.5 py-2 text-sm leading-relaxed text-primary-foreground">
+          {text}
+        </p>
+      ) : null}
     </div>
   );
 }

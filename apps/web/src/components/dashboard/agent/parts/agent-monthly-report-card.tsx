@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { Download, Presentation, Send } from "lucide-react";
+import { Download, FileText, Send } from "lucide-react";
 import { toast } from "sonner";
 import {
   getActiveContracts,
@@ -26,7 +26,7 @@ import {
   startOfNextMonth,
 } from "@/components/pages/reports/report-period";
 import { SendReportDialog } from "@/components/pages/reports/send-report-dialog";
-import type { ContractReportProgress } from "@/lib/generate-contract-report";
+import type { ContractReportProgress } from "@/components/pages/reports/pdf/generate-contract-report";
 import { downloadBlob } from "@/lib/pdf-download";
 import { AgentPartFrame } from "./agent-part-frame";
 
@@ -43,7 +43,7 @@ export function AgentMonthlyReportCard({
   if (report.contracts.length === 0) {
     return (
       <AgentPartFrame
-        icon={Presentation}
+        icon={FileText}
         title="Reporte mensual de vallas"
         description={`${periodLabel} · sin contratos activos para “${report.search}”`}
       />
@@ -52,7 +52,7 @@ export function AgentMonthlyReportCard({
 
   return (
     <AgentPartFrame
-      icon={Presentation}
+      icon={FileText}
       title="Reporte mensual de vallas"
       description={`${periodLabel} · ${report.total} ${report.total === 1 ? "contrato" : "contratos"}`}
     >

@@ -20,19 +20,23 @@ export const CRM_CLIENTS_COLUMNS: ColumnDef<CrmClientRow>[] = [
   {
     accessorKey: "name",
     header: "Cliente",
-    cell: ({ row }) => (
-      <div className="flex min-w-0 items-center gap-2">
-        <Avatar size="sm">
-          <AvatarFallback>{getClientInitials(row.original)}</AvatarFallback>
-        </Avatar>
-        <div className="min-w-0">
-          <p className="truncate font-medium">{row.original.name}</p>
-          {row.original.company ? (
-            <p className="truncate text-xs text-muted-foreground">{row.original.company}</p>
-          ) : null}
+    cell: ({ row }) => {
+      const { name, company, email } = row.original;
+      const title = company?.trim() || name;
+      return (
+        <div className="flex min-w-0 items-center gap-2">
+          <Avatar size="sm">
+            <AvatarFallback>{getClientInitials({ name: title, email })}</AvatarFallback>
+          </Avatar>
+          <div className="min-w-0">
+            <p className="truncate font-medium">{title}</p>
+            {title !== name ? (
+              <p className="truncate text-xs text-muted-foreground">{name}</p>
+            ) : null}
+          </div>
         </div>
-      </div>
-    ),
+      );
+    },
   },
   {
     accessorKey: "type",

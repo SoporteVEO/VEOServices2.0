@@ -2,6 +2,8 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { api, toClientError } from "@/lib/api";
 import { AGENT_QUERY_KEYS } from "./agent.get";
 import type {
+  AgentComposeDraft,
+  AgentComposeRequest,
   AgentFeedbackRating,
   AgentFeedbackReason,
   AgentMessageFeedback,
@@ -29,6 +31,22 @@ export function useRenameAgentThread() {
     },
     onSuccess: () =>
       qc.invalidateQueries({ queryKey: AGENT_QUERY_KEYS.threads }),
+  });
+}
+
+export function useAgentCompose() {
+  return useMutation({
+    mutationFn: async (input: AgentComposeRequest) => {
+      try {
+        const response = await api.post<{ data: AgentComposeDraft }>(
+          "/agent/compose",
+          input,
+        );
+        return response.data.data;
+      } catch (error) {
+        throw toClientError(error, "Nexo no pudo redactar el texto");
+      }
+    },
   });
 }
 

@@ -10,7 +10,12 @@ import {
   useCrmTemplates,
 } from "@/api/crm/crm.get";
 import { useSendCrmEmail } from "@/api/crm/crm.mutations";
-import type { CrmContextQuery, CrmMessage } from "@/api/crm/crm.types";
+import type {
+  CrmContextQuery,
+  CrmMessage,
+  CrmTemplateVariables,
+} from "@/api/crm/crm.types";
+import { NexoWriteButton } from "@/components/dashboard/agent/nexo-write-button";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -57,6 +62,25 @@ function splitEmails(value: string): string[] {
     .split(/[,;\s]+/)
     .map((email) => email.trim())
     .filter(Boolean);
+}
+
+const EMAIL_SUGGESTIONS = [
+  "Envía la propuesta y pide una reunión",
+  "Seguimiento amable a la cotización",
+];
+
+const REPLY_SUGGESTIONS = ["Responde agradeciendo y propone siguiente paso"];
+
+function composeContext(
+  variables: CrmTemplateVariables,
+  replyTo?: CrmMessage | null,
+): Record<string, string> {
+  const context = Object.fromEntries(
+    Object.entries(variables).filter(([, value]) => value.trim()),
+  );
+  if (replyTo?.subject) context["respuesta.asunto"] = replyTo.subject;
+  if (replyTo?.body) context["respuesta.mensaje"] = replyTo.body.slice(0, 2000);
+  return context;
 }
 
 function replySubject(subject: string | null): string {
@@ -234,6 +258,17 @@ export function CrmEmailComposeDialog({
             value={form.body}
             onChange={(body) => patch({ body })}
             previewVariables={variables}
+            actions={
+              <NexoWriteButton
+                kind="crm_email"
+                current={{ subject: form.subject, body: form.body }}
+                context={composeContext(variables, replyTo)}
+                suggestions={replyTo ? REPLY_SUGGESTIONS : EMAIL_SUGGESTIONS}
+                onApply={({ subject, body }) =>
+                  patch({ subject: replyTo ? form.subject : subject, body })
+                }
+              />
+            }
             editorClassName="min-h-80"
           />
           {gmail?.signature ? (

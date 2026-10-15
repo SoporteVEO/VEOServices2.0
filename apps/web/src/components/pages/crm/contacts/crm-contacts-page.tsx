@@ -28,7 +28,7 @@ export function CrmContactsPage() {
   });
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col">
+    <div className="flex h-[calc(100vh-6rem)] min-h-0 flex-col">
       <DataTable
         className="min-h-0 flex-1"
         columns={CRM_CONTACTS_COLUMNS}

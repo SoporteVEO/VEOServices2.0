@@ -4,6 +4,7 @@ import { Skeleton } from "@/components/primitives/ui/skeleton";
 import {
   isToolError,
   isUnauthorized,
+  type AgentInventoryInput,
   type AgentMessagePart,
 } from "@/api/agent/agent.types";
 import { AgentApiCallPart } from "./agent-api-call-part";
@@ -13,8 +14,12 @@ import { AgentEmailPart } from "./agent-email-part";
 import { AgentFileCard } from "./agent-file-card";
 import { AgentImageGallery } from "./agent-image-gallery";
 import { AgentMonthlyReportCard } from "./agent-monthly-report-card";
+import { AgentOpportunityPart } from "./agent-opportunity-part";
+import { AgentProposalCard } from "./agent-proposal-card";
 import { AgentReportCard } from "./agent-report-card";
+import { AgentResearchCard } from "./agent-research-card";
 import { AgentTable } from "./agent-table";
+import { AgentTemplateDraftCard } from "./agent-template-draft-card";
 import { AgentTicketCard } from "./agent-ticket-card";
 import { AgentToolStatus } from "./agent-tool-status";
 import { AgentUnauthorizedNote } from "./agent-unauthorized-note";
@@ -28,7 +33,32 @@ const TOOL_LABELS: Record<string, string> = {
   run_query: "Consultando el ERP",
   report_issue: "Reportando el problema al equipo de desarrollo",
   remember_learning: "Aprendiendo de tu corrección",
+  search_academy: "Buscando en VEO Academy",
+  get_academy_article: "Leyendo guía de VEO Academy",
+  research_company: "Investigando la marca en la web",
+  search_billboard_inventory: "Buscando espacios disponibles",
+  create_client_proposal: "Preparando la propuesta",
+  draft_crm_template: "Redactando plantilla",
+  register_crm_opportunity: "Registrando en el CRM",
 };
+
+function inventoryDetail(
+  input:
+    | (Pick<AgentInventoryInput, "city" | "department"> & {
+        keywords?: (string | undefined)[];
+      })
+    | undefined,
+  output: unknown,
+) {
+  const place = [input?.city, input?.department, ...(input?.keywords ?? [])]
+    .filter(Boolean)
+    .join(", ");
+  const matched =
+    typeof output === "object" && output !== null && "matched" in output
+      ? `${(output as { matched: number }).matched} coincidencias`
+      : null;
+  return [place, matched].filter(Boolean).join(" · ") || undefined;
+}
 
 function BuildingPlaceholder({ label }: { label: string }) {
   return (
@@ -163,6 +193,111 @@ export function AgentToolPart({ part }: { part: AgentMessagePart }) {
           input={part.input?.content}
           output={part.state === "output-available" ? part.output : undefined}
           errorText={part.state === "output-error" ? part.errorText : undefined}
+        />
+      );
+
+    case "tool-search_academy":
+      return (
+        <AgentToolStatus
+          label={TOOL_LABELS.search_academy}
+          detail={part.input?.query}
+          state={part.state}
+          output={part.state === "output-available" ? part.output : undefined}
+        />
+      );
+
+    case "tool-get_academy_article":
+      return (
+        <AgentToolStatus
+          label={TOOL_LABELS.get_academy_article}
+          detail={part.input?.slug}
+          state={part.state}
+          errorText={part.state === "output-error" ? part.errorText : undefined}
+        />
+      );
+
+    case "tool-research_company": {
+      if (part.state === "output-available" && part.output.ok === true) {
+        return <AgentResearchCard research={part.output} />;
+      }
+      if (part.state === "output-available" && isUnauthorized(part.output)) {
+        return <AgentUnauthorizedNote message={part.output.message} />;
+      }
+      return (
+        <AgentToolStatus
+          label={TOOL_LABELS.research_company}
+          detail={part.input?.company}
+          state={part.state}
+          output={part.state === "output-available" ? part.output : undefined}
+          errorText={part.state === "output-error" ? part.errorText : undefined}
+        />
+      );
+    }
+
+    case "tool-search_billboard_inventory": {
+      const output =
+        part.state === "output-available" ? part.output : undefined;
+      if (isUnauthorized(output))
+        return <AgentUnauthorizedNote message={output.message} />;
+      return (
+        <AgentToolStatus
+          label={TOOL_LABELS.search_billboard_inventory}
+          detail={inventoryDetail(part.input, output)}
+          state={part.state}
+          output={output}
+          errorText={
+            part.state === "output-error"
+              ? part.errorText
+              : toolErrorText(output)
+          }
+        />
+      );
+    }
+
+    case "tool-create_client_proposal": {
+      if (part.state === "input-streaming" || !part.input) {
+        return <BuildingPlaceholder label="Preparando propuesta…" />;
+      }
+      if (part.state === "output-available" && part.output.ok === true) {
+        return <AgentProposalCard input={part.input} output={part.output} />;
+      }
+      if (part.state === "output-available" && isUnauthorized(part.output)) {
+        return <AgentUnauthorizedNote message={part.output.message} />;
+      }
+      return (
+        <AgentToolStatus
+          label={TOOL_LABELS.create_client_proposal}
+          detail={part.input.company}
+          state={part.state}
+          output={part.state === "output-available" ? part.output : undefined}
+          errorText={
+            part.state === "output-error"
+              ? part.errorText
+              : part.state === "output-available"
+                ? toolErrorText(part.output)
+                : undefined
+          }
+        />
+      );
+    }
+
+    case "tool-draft_crm_template": {
+      if (part.state === "input-streaming" || !part.input) {
+        return <BuildingPlaceholder label="Redactando plantilla…" />;
+      }
+      if (part.state === "output-available" && isUnauthorized(part.output)) {
+        return <AgentUnauthorizedNote message={part.output.message} />;
+      }
+      return <AgentTemplateDraftCard draft={part.input} />;
+    }
+
+    case "tool-register_crm_opportunity":
+      return (
+        <AgentOpportunityPart
+          state={part.state}
+          input={part.input}
+          output={part.state === "output-available" ? part.output : undefined}
+          approvalId={"approval" in part ? part.approval?.id : undefined}
         />
       );
 

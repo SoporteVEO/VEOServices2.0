@@ -2,15 +2,15 @@
 
 import { useChat } from "@ai-sdk/react";
 import { useQueryClient } from "@tanstack/react-query";
+import type { FileUIPart } from "ai";
 import { CircleAlert, RotateCcw } from "lucide-react";
-import { toast } from "sonner";
-import { AGENT_QUERY_KEYS } from "@/api/agent/agent.get";
 import type {
   AgentDataSource,
   AgentUIMessage,
 } from "@/api/agent/agent.types";
 import { Button } from "@/components/ui/button";
 import { getAgentChat, getAgentErrorMessage } from "@/lib/agent-chat";
+import { agentChatCallbacks } from "./agent-chat-callbacks";
 import { AgentChatActionsContext } from "./agent-chat-context";
 import { AgentComposer } from "./agent-composer";
 import { AgentEmptyState } from "./agent-empty-state";
@@ -19,22 +19,19 @@ import { AgentMessage, AgentThinking } from "./agent-message";
 interface AgentChatProps {
   threadId: string;
   initialMessages: AgentUIMessage[];
+  draft?: string;
 }
 
-export function AgentChat({ threadId, initialMessages }: AgentChatProps) {
+const FILES_ONLY_PROMPT = "Revisa los archivos adjuntos.";
+
+export function AgentChat({ threadId, initialMessages, draft }: AgentChatProps) {
   const queryClient = useQueryClient();
 
-  const chat = getAgentChat(threadId, initialMessages, {
-    onFinish: (id) => {
-      void queryClient.invalidateQueries({
-        queryKey: AGENT_QUERY_KEYS.threads,
-      });
-      queryClient.removeQueries({ queryKey: AGENT_QUERY_KEYS.thread(id) });
-    },
-    onError: (error) => {
-      toast.error(getAgentErrorMessage(error));
-    },
-  });
+  const chat = getAgentChat(
+    threadId,
+    initialMessages,
+    agentChatCallbacks(queryClient),
+  );
 
   const {
     messages,
@@ -53,8 +50,11 @@ export function AgentChat({ threadId, initialMessages }: AgentChatProps) {
     status === "submitted" ||
     (status === "streaming" && last?.role !== "assistant");
 
-  function send(text: string) {
-    void sendMessage({ text });
+  function send(text: string, files: FileUIPart[] = []) {
+    void sendMessage({
+      text: text || FILES_ONLY_PROMPT,
+      ...(files.length > 0 && { files }),
+    });
   }
 
   const streamingId =
@@ -73,6 +73,7 @@ export function AgentChat({ threadId, initialMessages }: AgentChatProps) {
         output: { source },
       });
     },
+    sendText: (text: string) => send(text),
   };
 
   return (
@@ -80,7 +81,7 @@ export function AgentChat({ threadId, initialMessages }: AgentChatProps) {
       <div className="flex min-h-0 flex-1 flex-col">
         {messages.length === 0 ? (
           <div className="flex min-h-0 flex-1 overflow-y-auto">
-            <AgentEmptyState onPick={send} />
+            <AgentEmptyState onPick={(prompt) => send(prompt)} />
           </div>
         ) : (
           <div className="flex min-h-0 flex-1 flex-col-reverse overflow-y-auto">
@@ -114,6 +115,7 @@ export function AgentChat({ threadId, initialMessages }: AgentChatProps) {
         )}
         <AgentComposer
           isBusy={isBusy}
+          initialText={draft}
           onSend={send}
           onStop={() => void stop()}
         />

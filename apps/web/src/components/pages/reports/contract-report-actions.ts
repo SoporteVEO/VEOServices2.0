@@ -3,17 +3,15 @@ import {
   createReportUploadUrl,
   sendMaintenanceReport,
 } from "@/api/contracts/contracts.post";
+import { uploadBlobToPresignedUrl } from "@/lib/upload-blob-to-presigned-url";
 import {
+  CONTRACT_REPORT_MIME_TYPE,
   generateContractReport,
   type ContractReportProgress,
   type ContractReportResult,
-} from "@/lib/generate-contract-report";
-import { uploadBlobToPresignedUrl } from "@/lib/upload-blob-to-presigned-url";
+} from "./pdf/generate-contract-report";
 import { endOfMonth } from "./report-period";
 import { BILLBOARD_REPORT_CONFIG } from "./report-types";
-
-const REPORT_FILE_MIME_TYPE =
-  "application/vnd.openxmlformats-officedocument.presentationml.presentation";
 
 /** Selected image per billboard, keyed by `contractDetailSourceId`. */
 export type ReportImageSelection = Record<number, string | null>;
@@ -71,7 +69,6 @@ export function buildContractReport({
     dateFrom: month,
     dateTo: endOfMonth(month),
     billboards,
-    coverTitle: BILLBOARD_REPORT_CONFIG.coverTitle,
     fileNamePrefix: BILLBOARD_REPORT_CONFIG.fileNamePrefix,
     onProgress,
   });
@@ -96,7 +93,7 @@ export async function sendContractReport({
   await uploadBlobToPresignedUrl({
     url,
     blob: report.blob,
-    contentType: REPORT_FILE_MIME_TYPE,
+    contentType: CONTRACT_REPORT_MIME_TYPE,
   });
 
   onProgress?.({ stage: "Enviando email", current: 0, total: 1 });

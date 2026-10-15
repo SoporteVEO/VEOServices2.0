@@ -5,6 +5,9 @@ import { ExternalLink } from "lucide-react";
 import { useCrmDeal } from "@/api/crm/crm.get";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { AskNexoButton } from "@/components/dashboard/agent/ask-nexo-button";
+import { AGENT_NAME } from "@/lib/agent-brand";
+import { dealProposalPrompt } from "../crm-nexo-prompts";
 import { CrmDealDrawer } from "../deal/crm-deal-drawer";
 import { CrmDealCombobox } from "../shared/crm-deal-combobox";
 import { CrmInventoryFilters } from "./crm-inventory-filters";
@@ -58,6 +61,14 @@ export function CrmAvailabilityPage() {
               >
                 Abrir negocio
               </Button>
+            ) : null}
+            {targetDeal ? (
+              <AskNexoButton
+                sizeVariant="sm"
+                label="Sugerir sitios"
+                hint={`${AGENT_NAME} elige las vallas ideales para este negocio y arma la propuesta`}
+                prompt={dealProposalPrompt(targetDeal)}
+              />
             ) : null}
             {targetDeal?.industry ? (
               <span className="pb-2 text-xs text-muted-foreground">

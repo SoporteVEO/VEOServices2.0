@@ -1,3 +1,4 @@
+import Link from "next/link";
 import ReactMarkdown, { type Components } from "react-markdown";
 import remarkGfm from "remark-gfm";
 
@@ -23,16 +24,24 @@ const components: Components = {
   strong: ({ children }) => (
     <strong className="font-semibold">{children}</strong>
   ),
-  a: ({ children, href }) => (
-    <a
-      href={href}
-      target="_blank"
-      rel="noreferrer"
-      className="font-medium underline underline-offset-2"
-    >
-      {children}
-    </a>
-  ),
+  a: ({ children, href }) =>
+    href?.startsWith("/") && !href.startsWith("//") ? (
+      <Link
+        href={href}
+        className="font-medium text-info underline underline-offset-2"
+      >
+        {children}
+      </Link>
+    ) : (
+      <a
+        href={href}
+        target="_blank"
+        rel="noreferrer"
+        className="font-medium underline underline-offset-2"
+      >
+        {children}
+      </a>
+    ),
   code: ({ children }) => (
     <code className="rounded bg-muted px-1 py-0.5 font-mono text-[0.85em]">
       {children}

@@ -8,7 +8,6 @@ import { useDeleteCrmContact } from "@/api/crm/crm.mutations";
 import type { CrmContact } from "@/api/crm/crm.types";
 import { Avatar, AvatarFallback } from "@/components/primitives/ui/avatar";
 import { Button as PrimitiveButton } from "@/components/primitives/ui/button";
-import { ScrollArea } from "@/components/primitives/ui/scroll-area";
 import { Skeleton } from "@/components/primitives/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
@@ -19,13 +18,14 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from "@/components/ui/drawer";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CrmActivityComposer } from "../activity/crm-activity-composer";
 import { CrmActivityTimeline } from "../activity/crm-activity-timeline";
 import { clientLabel, errorMessage, personInitials, personName } from "../crm-format";
 import { CrmDealDrawer } from "../deal/crm-deal-drawer";
 import { CrmMessageThread } from "../messages/crm-message-thread";
 import { CrmDealList } from "../shared/crm-deal-list";
+import { CrmDrawerPanel } from "../shared/crm-drawer-panel";
 import { CrmTaskFormDialog } from "../tasks/crm-task-form-dialog";
 import { CrmTaskList } from "../tasks/crm-task-list";
 import { CrmContactFormDialog } from "./crm-contact-form-dialog";
@@ -183,13 +183,13 @@ function ContactDrawerContent({
           <TabsTrigger value="negocios">Negocios</TabsTrigger>
           <TabsTrigger value="tareas">Tareas</TabsTrigger>
         </TabsList>
-        <Panel value="actividad">
+        <CrmDrawerPanel value="actividad">
           <div className="flex flex-col gap-5 p-4">
             <CrmActivityComposer context={context} />
             <CrmActivityTimeline context={context} showDeal />
           </div>
-        </Panel>
-        <Panel value="mensajes">
+        </CrmDrawerPanel>
+        <CrmDrawerPanel value="mensajes">
           <div className="p-4">
             <CrmMessageThread
               context={context}
@@ -199,8 +199,8 @@ function ContactDrawerContent({
               }}
             />
           </div>
-        </Panel>
-        <Panel value="negocios">
+        </CrmDrawerPanel>
+        <CrmDrawerPanel value="negocios">
           <div className="p-4">
             <CrmDealList
               query={{ contactId: contact.id }}
@@ -208,8 +208,8 @@ function ContactDrawerContent({
               emptyMessage="Este contacto no tiene negocios."
             />
           </div>
-        </Panel>
-        <Panel value="tareas">
+        </CrmDrawerPanel>
+        <CrmDrawerPanel value="tareas">
           <div className="flex flex-col gap-3 p-4">
             <div className="flex justify-end">
               <Button sizeVariant="sm" icon={Plus} onClick={() => setTaskOpen(true)}>
@@ -223,7 +223,7 @@ function ContactDrawerContent({
               onOpenDeal={setSelectedDealId}
             />
           </div>
-        </Panel>
+        </CrmDrawerPanel>
       </Tabs>
 
       <CrmContactFormDialog open={editOpen} onOpenChange={setEditOpen} contact={contact} />
@@ -247,14 +247,6 @@ function ContactDrawerContent({
         }}
       />
     </>
-  );
-}
-
-function Panel({ value, children }: { value: string; children: React.ReactNode }) {
-  return (
-    <TabsContent value={value} className="min-h-0 flex-1 data-[state=inactive]:hidden">
-      <ScrollArea className="h-full">{children}</ScrollArea>
-    </TabsContent>
   );
 }
 

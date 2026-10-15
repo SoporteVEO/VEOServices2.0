@@ -19,7 +19,7 @@ export const CONTRACT_REPORT_TYPES: ContractReportType[] = [
 export const REPORT_UPLOAD_FOLDER = 'reports/contracts';
 
 const REPORT_FILE_KEY_REGEX = new RegExp(
-  `^${REPORT_UPLOAD_FOLDER}/[A-Za-z0-9._-]+\\.pptx$`,
+  `^${REPORT_UPLOAD_FOLDER}/[A-Za-z0-9._-]+\\.pdf$`,
 );
 
 export class SendMaintenanceReportDto {

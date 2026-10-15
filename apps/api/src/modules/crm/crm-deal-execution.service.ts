@@ -15,7 +15,7 @@ export interface CrmExecutionStaticItem {
   address: string | null;
   cityName: string | null;
   status: ProductionOrderStatus;
-  hasDesign: boolean;
+  hasArt: boolean;
   scheduledInstallationAt: string | null;
   installedAt: string | null;
   installerName: string | null;
@@ -80,7 +80,7 @@ export class CrmDealExecutionService {
                         address: true,
                         cityName: true,
                         status: true,
-                        designDocumentS3Key: true,
+                        artS3Key: true,
                         scheduledInstallationAt: true,
                         installedAt: true,
                         assignedInstaller: {
@@ -131,7 +131,7 @@ export class CrmDealExecutionService {
         address: item.address,
         cityName: item.cityName,
         status: item.status,
-        hasDesign: !!item.designDocumentS3Key,
+        hasArt: !!item.artS3Key,
         scheduledInstallationAt:
           item.scheduledInstallationAt?.toISOString() ?? null,
         installedAt: item.installedAt?.toISOString() ?? null,

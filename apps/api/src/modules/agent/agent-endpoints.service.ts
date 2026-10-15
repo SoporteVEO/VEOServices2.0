@@ -57,6 +57,8 @@ const HTTP_METHODS: Partial<Record<RequestMethod, HttpMethod>> = {
   [RequestMethod.DELETE]: 'DELETE',
 };
 
+const WEBHOOK_PATH = /\/webhooks?(\/|$)/;
+
 @Injectable()
 export class AgentEndpointsService implements OnModuleInit {
   private endpoints: AgentEndpoint[] = [];
@@ -119,7 +121,7 @@ export class AgentEndpointsService implements OnModuleInit {
         );
         const path = joinPaths(controllerPath, methodPath);
         const scope = findScopeForPath(path);
-        if (!scope) continue;
+        if (!scope || WEBHOOK_PATH.test(path)) continue;
 
         const { query, body } = this.readArgs(metatype, methodName);
         result.push({
