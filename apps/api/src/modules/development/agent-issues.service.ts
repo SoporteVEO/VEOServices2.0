@@ -96,6 +96,7 @@ export class AgentIssuesService {
         DEVELOPER_SUB_ROLE,
         `Nexo reportó el ticket ${ticket}: ${issue.title}`,
         NOTIFICATION_PRIORITY[issue.severity],
+        { href: '/dashboard/desarrollo' },
       );
     } catch (error) {
       this.logger.error(`Failed to notify developers of ${ticket}`, error);

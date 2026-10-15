@@ -67,7 +67,7 @@ Con las fotos listas, [envía el reporte al cliente](academy:enviar-reporte).`,
       'enviar mensual',
     ],
     modules: [
-      { label: 'Abrir Reportes', href: '/dashboard/reports' },
+      { label: 'Abrir Testigos', href: '/dashboard/reports' },
       { label: 'Abrir Mis contratos', href: '/dashboard/my-space/contracts' },
     ],
     related: ['subir-fotos', 'contratos-por-vencer', 'despues-de-la-venta'],
@@ -79,7 +79,7 @@ Las fotos del mes ya deben estar subidas con el código de valla correcto. Ver [
 
 ## Paso a paso
 
-1. Abre **Reportes**.
+1. Abre **Testigos**.
 2. En **Mes del reporte**, elige el mes.
 3. Busca el contrato en la tabla. Verás el **Contrato**, la persona de **Atención**, el **Cliente**, las **Vallas**, cuántas **Imágenes** hay, los **Reportes enviados** y el **Vencimiento**.
 4. Haz clic en la fila del contrato. Se abre el panel con sus vallas y fotos.
@@ -88,7 +88,7 @@ Las fotos del mes ya deben estar subidas con el código de valla correcto. Ver [
 7. En la ventana **Enviar reporte por email**, revisa el **Correo del destinatario**.
 8. Haz clic en **Enviar reporte**.
 
-[Abrir Reportes](app:/dashboard/reports)
+[Abrir Testigos](app:/dashboard/reports)
 
 ## Qué recibe el cliente
 

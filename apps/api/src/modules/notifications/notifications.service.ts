@@ -14,6 +14,7 @@ const NOTIFICATION_SELECT = {
   status: true,
   description: true,
   priority: true,
+  href: true,
   createdAt: true,
   updatedAt: true,
 } as const;
@@ -24,6 +25,7 @@ type NotificationRow = {
   status: UserNotificationStatus;
   description: string;
   priority: NotificationPriority;
+  href: string | null;
   createdAt: Date;
   updatedAt: Date;
 };
@@ -32,6 +34,7 @@ export interface CreateNotificationInput {
   userId: string;
   description: string;
   priority?: NotificationPriority;
+  href?: string;
 }
 
 @Injectable()
@@ -45,6 +48,7 @@ export class NotificationsService {
       status: row.status,
       description: row.description,
       priority: row.priority,
+      href: row.href,
       createdAt: row.createdAt.toISOString(),
       updatedAt: row.updatedAt.toISOString(),
     };
@@ -56,6 +60,7 @@ export class NotificationsService {
         userId: input.userId,
         description: input.description,
         priority: input.priority ?? 'MEDIUM',
+        href: input.href,
       },
       select: NOTIFICATION_SELECT,
     });
@@ -69,6 +74,7 @@ export class NotificationsService {
         userId: i.userId,
         description: i.description,
         priority: i.priority ?? 'MEDIUM',
+        href: i.href,
       })),
     });
     return { count: result.count };
@@ -86,8 +92,9 @@ export class NotificationsService {
       | 'VENTAS',
     description: string,
     priority: NotificationPriority = 'MEDIUM',
-    excludeUserId?: string,
+    options: { excludeUserId?: string; href?: string } = {},
   ) {
+    const { excludeUserId, href } = options;
     const users = await this.prisma.user.findMany({
       where: {
         disabled: false,
@@ -99,10 +106,24 @@ export class NotificationsService {
     if (users.length === 0) return { count: 0, userIds: [] };
 
     await this.createMany(
-      users.map((u) => ({ userId: u.id, description, priority })),
+      users.map((u) => ({ userId: u.id, description, priority, href })),
     );
 
     return { count: users.length, userIds: users.map((u) => u.id) };
+  }
+
+  async createForAllUsers(
+    description: string,
+    priority: NotificationPriority = 'MEDIUM',
+    href?: string,
+  ) {
+    const users = await this.prisma.user.findMany({
+      where: { disabled: false },
+      select: { id: true },
+    });
+    return this.createMany(
+      users.map((u) => ({ userId: u.id, description, priority, href })),
+    );
   }
 
   async findActiveByUser(userId: string) {

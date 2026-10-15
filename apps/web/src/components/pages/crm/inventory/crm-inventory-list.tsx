@@ -1,9 +1,7 @@
 "use client";
 
-import { format } from "date-fns";
-import { es } from "date-fns/locale";
-import { AlertTriangle, ExternalLink } from "lucide-react";
-import type { InventoryHold, InventoryItem, InventoryState } from "@/api/crm/crm-ooh.types";
+import { AlertTriangle, ExternalLink, MapPin } from "lucide-react";
+import type { InventoryItem, InventoryState } from "@/api/crm/crm-ooh.types";
 import { Badge } from "@/components/primitives/ui/badge";
 import { Checkbox } from "@/components/primitives/ui/checkbox";
 import { Input } from "@/components/primitives/ui/input";
@@ -15,14 +13,12 @@ import {
 } from "@/components/primitives/ui/tooltip";
 import { formatMoney } from "@/lib/format";
 import { cn } from "@/lib/utils";
-import { calendarDate } from "../crm-format";
-import {
-  INVENTORY_STATE_LABELS,
-  INVENTORY_STATE_STYLES,
-  SITE_KIND_ICONS,
-} from "../crm-ooh-const";
+import { INVENTORY_STATE_LABELS, INVENTORY_STATE_STYLES } from "../crm-ooh-const";
 import { mapsLink, sizeLabel } from "../crm-ooh-format";
+import { CrmInventoryHolds } from "./crm-inventory-holds";
+import { formatLabel, inventoryRowId, isMappable } from "./inventory-format";
 import type { InventorySelection } from "./inventory-state";
+import { OohFormatIcon } from "./ooh-format-icon";
 
 const STATE_ORDER: InventoryState[] = ["AVAILABLE", "HELD", "BOOKED", "CONTRACTED", "FULL"];
 
@@ -34,6 +30,8 @@ interface Props {
   selection: InventorySelection;
   onToggle: (item: InventoryItem) => void;
   onSpotsChange: (key: string, spotsPerDay: number) => void;
+  activeKey?: string | null;
+  onLocate?: (item: InventoryItem) => void;
 }
 
 export function CrmInventoryList({
@@ -44,6 +42,8 @@ export function CrmInventoryList({
   selection,
   onToggle,
   onSpotsChange,
+  activeKey,
+  onLocate,
 }: Props) {
   if (isLoading) {
     return (
@@ -77,9 +77,11 @@ export function CrmInventoryList({
             <InventoryRow
               key={item.key}
               item={item}
+              active={item.key === activeKey}
               selectedSpots={selection[item.key]?.spotsPerDay}
               onToggle={() => onToggle(item)}
               onSpotsChange={(spots) => onSpotsChange(item.key, spots)}
+              onLocate={onLocate && isMappable(item) ? () => onLocate(item) : undefined}
             />
           ))}
         </ul>
@@ -95,26 +97,31 @@ export function CrmInventoryList({
 
 function InventoryRow({
   item,
+  active,
   selectedSpots,
   onToggle,
   onSpotsChange,
+  onLocate,
 }: {
   item: InventoryItem;
+  active: boolean;
   selectedSpots: number | undefined;
   onToggle: () => void;
   onSpotsChange: (spots: number) => void;
+  onLocate?: () => void;
 }) {
   const selected = selectedSpots !== undefined;
-  const Icon = SITE_KIND_ICONS[item.kind];
   const location = [item.cityName, item.departmentName].filter(Boolean).join(", ");
   const size = sizeLabel(item.width, item.height);
   const maps = mapsLink(item.latitude, item.longitude);
 
   return (
     <li
+      id={inventoryRowId(item.key)}
       className={cn(
         "flex items-start gap-3 p-3 text-sm transition-colors",
         selected && "bg-accent/40",
+        active && "bg-primary/5 shadow-[inset_3px_0_0_var(--primary)]",
         item.inDeal && "opacity-60",
       )}
     >
@@ -125,24 +132,35 @@ function InventoryRow({
         onCheckedChange={onToggle}
         aria-label={`Seleccionar ${item.code}`}
       />
-      <Icon className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
+      <OohFormatIcon item={item} size={22} className="-mt-0.5" />
       <div className="flex min-w-0 flex-1 flex-col gap-1">
         <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
           <span className="font-semibold tabular-nums">{item.code}</span>
           <span className="truncate text-muted-foreground">{item.label}</span>
+          {onLocate ? (
+            <button
+              type="button"
+              onClick={onLocate}
+              className="cursor-pointer text-muted-foreground hover:text-foreground"
+              aria-label="Ubicar en el mapa"
+            >
+              <MapPin className="size-3" />
+            </button>
+          ) : null}
           {maps ? (
             <a
               href={maps}
               target="_blank"
               rel="noreferrer"
               className="text-muted-foreground hover:text-foreground"
-              aria-label="Ver en mapa"
+              aria-label="Abrir en Google Maps"
             >
               <ExternalLink className="size-3" />
             </a>
           ) : null}
         </div>
         <div className="flex flex-wrap gap-x-3 text-xs text-muted-foreground">
+          <span>{formatLabel(item)}</span>
           {location ? <span>{location}</span> : null}
           {size ? <span>{size}</span> : null}
           {item.kind === "DIGITAL" && item.capacity != null ? (
@@ -152,7 +170,7 @@ function InventoryRow({
           ) : null}
           {item.inDeal ? <span className="font-medium text-foreground">Ya en el negocio</span> : null}
         </div>
-        {item.holds.length > 0 ? <HoldsLine holds={item.holds} /> : null}
+        {item.holds.length > 0 ? <CrmInventoryHolds holds={item.holds} /> : null}
       </div>
       <div className="flex shrink-0 flex-col items-end gap-1">
         <div className="flex items-center gap-1.5">
@@ -191,26 +209,5 @@ function InventoryRow({
         ) : null}
       </div>
     </li>
-  );
-}
-
-function HoldsLine({ holds }: { holds: InventoryHold[] }) {
-  return (
-    <div className="flex flex-col gap-0.5 text-[11px]">
-      {holds.slice(0, 3).map((hold) => (
-        <span key={hold.siteId} className="truncate text-violet-700 dark:text-violet-300">
-          {hold.status === "BOOKED" ? "Vendida" : `${hold.rank}ª opción`} · {hold.dealTitle} (
-          {hold.ownerName})
-          {hold.holdUntil && hold.status === "HELD"
-            ? ` · hasta ${format(new Date(hold.holdUntil), "d MMM", { locale: es })}`
-            : ""}
-          {hold.spotsPerDay ? ` · ${hold.spotsPerDay} spots` : ""}
-          {` · ${format(calendarDate(hold.startDate), "d MMM", { locale: es })}–${format(calendarDate(hold.endDate), "d MMM", { locale: es })}`}
-        </span>
-      ))}
-      {holds.length > 3 ? (
-        <span className="text-muted-foreground">+{holds.length - 3} más</span>
-      ) : null}
-    </div>
   );
 }

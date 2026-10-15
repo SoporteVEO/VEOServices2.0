@@ -59,6 +59,7 @@ model User {
   crmMessages           CrmMessage[]
   crmConnections        CrmChannelConnection[]
   crmDealSites          CrmDealSite[]          @relation("CrmDealSiteCreatedBy")
+  patchNotesCreated     PatchNote[]            @relation("PatchNoteCreatedBy")
 
   @@map("users")
 }
@@ -272,6 +273,8 @@ model Notification {
   status      UserNotificationStatus @default(PENDING)
   description String
   priority    NotificationPriority   @default(MEDIUM)
+  /// In-app path the notification opens when clicked.
+  href        String?
   createdAt   DateTime               @default(now())
   updatedAt   DateTime               @updatedAt
   user        User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -279,6 +282,21 @@ model Notification {
   @@index([userId, status])
   @@index([userId, createdAt])
   @@map("notifications")
+}
+
+/// Release notes shown in "Actualizaciones". `body` is markdown.
+model PatchNote {
+  id          String   @id @default(uuid())
+  version     String   @unique
+  title       String
+  body        String
+  createdById String?  @map("created_by_id")
+  createdBy   User?    @relation("PatchNoteCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@index([createdAt])
+  @@map("patch_notes")
 }
 
 /// Web Push endpoint of one installed browser/PWA. The endpoint is unique per

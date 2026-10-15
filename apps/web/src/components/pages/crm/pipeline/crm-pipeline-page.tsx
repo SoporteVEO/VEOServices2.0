@@ -15,13 +15,13 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
-import { formatMoney } from "@/lib/format";
 import { MEDIA_TYPE_LABELS, MEDIA_TYPE_ORDER } from "../crm-ooh-const";
 import { CrmDealDrawer } from "../deal/crm-deal-drawer";
 import { CrmOwnerSelect } from "../shared/crm-owner-select";
 import { CrmPipelineSelect } from "../shared/crm-pipeline-select";
 import { CrmDealFormDialog } from "./crm-deal-form-dialog";
 import { CrmKanbanBoard } from "./crm-kanban-board";
+import { CrmPipelineKpis } from "./crm-pipeline-kpis";
 
 const OWNER_FILTERS = [
   { value: "all", label: "Todo el equipo" },
@@ -45,13 +45,6 @@ export function CrmPipelinePage() {
     search: debouncedSearch || undefined,
   });
 
-  const openDeals = board?.deals.filter((deal) => deal.status === "OPEN") ?? [];
-  const openValue = openDeals.reduce((sum, deal) => sum + deal.value, 0);
-  const weighted = openDeals.reduce(
-    (sum, deal) => sum + (deal.value * deal.stage.probability) / 100,
-    0,
-  );
-
   function openCreate(stageId: string | null) {
     setCreateStageId(stageId);
     setCreateOpen(true);
@@ -59,23 +52,24 @@ export function CrmPipelinePage() {
 
   return (
     <section className="flex min-h-0 flex-1 flex-col gap-3">
-      <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+        <div className="grid min-w-0 gap-2 sm:grid-cols-2 lg:flex lg:flex-1 lg:flex-wrap lg:items-center">
           <CrmPipelineSelect
             value={pipelineId ?? board?.pipeline.id ?? null}
             onChange={setPipelineId}
+            className="w-full lg:w-56"
           />
           <CrmOwnerSelect
             value={owner}
             onChange={setOwner}
-            className="w-48"
+            className="w-full lg:w-48"
             extraOptions={OWNER_FILTERS}
           />
           <Select
             value={mediaType}
             onValueChange={(value) => setMediaType(value as CrmMediaType | "all")}
           >
-            <SelectTrigger className="w-40">
+            <SelectTrigger className="w-full lg:w-40">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -87,7 +81,7 @@ export function CrmPipelinePage() {
               ))}
             </SelectContent>
           </Select>
-          <div className="w-full sm:w-64">
+          <div className="w-full lg:w-64">
             <Input
               isSearch
               placeholder="Buscar negocio, cliente, marca..."
@@ -96,34 +90,16 @@ export function CrmPipelinePage() {
             />
           </div>
         </div>
-        <div className="flex items-center gap-4">
-          {board ? (
-            <div className="flex gap-4 text-xs text-muted-foreground">
-              <span>
-                <span className="font-semibold text-foreground tabular-nums">
-                  {openDeals.length}
-                </span>{" "}
-                abiertos
-              </span>
-              <span>
-                <span className="font-semibold text-foreground tabular-nums">
-                  {formatMoney(openValue)}
-                </span>{" "}
-                en pipeline
-              </span>
-              <span className="hidden sm:inline">
-                <span className="font-semibold text-foreground tabular-nums">
-                  {formatMoney(weighted)}
-                </span>{" "}
-                ponderado
-              </span>
-            </div>
-          ) : null}
-          <Button icon={Plus} onClick={() => openCreate(null)}>
-            Nuevo negocio
-          </Button>
-        </div>
+        <Button
+          icon={Plus}
+          className="w-full shrink-0 sm:w-auto sm:self-end lg:self-auto"
+          onClick={() => openCreate(null)}
+        >
+          Nuevo negocio
+        </Button>
       </div>
+
+      <CrmPipelineKpis board={board} />
 
       {isLoading || !board ? (
         <div className="flex min-h-0 flex-1 gap-3 overflow-hidden">

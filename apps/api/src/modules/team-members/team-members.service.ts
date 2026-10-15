@@ -210,6 +210,7 @@ export class TeamMembersService {
           userId: member.userId,
           description: 'Recursos humanos te dejó un comentario en tu perfil.',
           priority: 'MEDIUM',
+          href: '/dashboard/me',
         });
       } catch (err) {
         this.logger.warn(

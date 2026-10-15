@@ -550,6 +550,7 @@ export class CrmMessagesService {
       userId: owner.userId,
       description: `Nuevo WhatsApp de ${sender}: ${text.slice(0, 120)}`,
       priority: 'MEDIUM',
+      href: deal ? '/dashboard/crm/pipeline' : '/dashboard/crm/contactos',
     });
   }
 

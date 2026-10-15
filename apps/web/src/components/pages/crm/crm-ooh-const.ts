@@ -66,6 +66,14 @@ export const INVENTORY_STATE_STYLES: Record<InventoryState, string> = {
   FULL: "border-red-500/50 bg-red-500/10 text-red-700 dark:text-red-400",
 };
 
+export const INVENTORY_STATE_MARKER_STYLES: Record<InventoryState, string> = {
+  AVAILABLE: "text-emerald-500",
+  HELD: "text-violet-500",
+  BOOKED: "text-amber-500",
+  CONTRACTED: "text-red-500",
+  FULL: "text-red-500",
+};
+
 /** Competitive categories; spelling must match across deals for separation warnings. */
 export const OOH_INDUSTRIES = [
   "Automotriz",

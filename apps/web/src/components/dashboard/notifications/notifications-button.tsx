@@ -99,6 +99,11 @@ export function NotificationsButton({ className }: NotificationsButtonProps) {
     updateStatusMutation.mutate({ id, status: "VIEWED" });
   }
 
+  function handleOpenNotification(id: string) {
+    handleViewNotification(id);
+    handleOpenChange(false);
+  }
+
   function handleDeleteNotification(id: string) {
     deleteMutation.mutate(id);
   }
@@ -197,6 +202,7 @@ export function NotificationsButton({ className }: NotificationsButtonProps) {
           hasUnfilteredNotifications={hasNotifications}
           searchQuery={searchQuery.trim()}
           onView={handleViewNotification}
+          onOpen={handleOpenNotification}
           onDelete={handleDeleteNotification}
           onClearSearch={() => setSearchQuery("")}
           onRetry={() => refetch()}
@@ -214,6 +220,7 @@ type NotificationsListProps = {
   hasUnfilteredNotifications: boolean;
   searchQuery: string;
   onView: (id: string) => void;
+  onOpen: (id: string) => void;
   onDelete: (id: string) => void;
   onClearSearch: () => void;
   onRetry: () => void;
@@ -226,6 +233,7 @@ function NotificationsList({
   hasUnfilteredNotifications,
   searchQuery,
   onView,
+  onOpen,
   onDelete,
   onClearSearch,
   onRetry,
@@ -307,6 +315,7 @@ function NotificationsList({
             key={notification.id}
             notification={notification}
             onView={onView}
+            onOpen={onOpen}
             onDelete={onDelete}
           />
         ))}

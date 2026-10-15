@@ -101,7 +101,7 @@ Márcala como **Rechazada**. Se desvincula el contrato, se elimina la orden de p
 
 ## Reportes y fotos
 
-### El contrato no aparece en Reportes
+### El contrato no aparece en Testigos
 Revisa el **Mes del reporte** y que el contrato esté posteado en Brilo y vigente en ese mes.
 
 ### No aparecen las fotos de una valla en el reporte

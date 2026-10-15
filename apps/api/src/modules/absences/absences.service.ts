@@ -172,6 +172,7 @@ export class AbsencesService {
         'HR',
         `${fullName} ha enviado una nueva solicitud de incapacidad`,
         'HIGH',
+        { href: '/dashboard/rh' },
       );
       this.logger.log(
         `Created ${result.count} HR notification(s) for absence ${absence.id}`,

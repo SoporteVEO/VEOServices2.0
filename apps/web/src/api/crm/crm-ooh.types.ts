@@ -32,6 +32,8 @@ export interface InventoryItem {
   longitude: number | null;
   width: number | null;
   height: number | null;
+  formatCode: string | null;
+  structureName: string | null;
   rate: number;
   state: InventoryState;
   capacity: number | null;

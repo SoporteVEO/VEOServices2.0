@@ -18,6 +18,7 @@ import {
 import { BrandLogo } from "@/components/ui/brand-logo";
 import { UserCard } from "@/components/ui/user-card";
 import { AppSidebarSubmenu } from "./app-sidebar-submenu";
+import { AppSidebarVersion } from "./app-sidebar-version";
 import {
   NAV_GROUPS,
   filterNavGroupsByAccess,
@@ -29,6 +30,7 @@ import {
   type UserRole,
 } from "@/api/users/users.types";
 import { authClient, clearAuthToken } from "@/lib/auth-client";
+import { cn } from "@/lib/utils";
 import {
   FIELD_PORTAL_BASE,
   FIELD_PORTAL_ICON,
@@ -109,10 +111,13 @@ export function AppSidebar() {
         </Link>
       </SidebarHeader>
       <SidebarContent className="py-2">
-        {visibleGroups.map((group) => (
+        {visibleGroups.map((group, index) => (
           <SidebarGroup
             key={group.label || group.items[0]?.href}
-            className="py-1.5"
+            className={cn(
+              "py-1.5",
+              index === visibleGroups.length - 1 && "mt-auto",
+            )}
           >
             {group.label ? (
               <SidebarGroupLabel>{group.label}</SidebarGroupLabel>
@@ -151,6 +156,7 @@ export function AppSidebar() {
         ))}
       </SidebarContent>
       <SidebarFooter className="border-t border-sidebar-border p-2">
+        <AppSidebarVersion />
         <UserCard
           name={userName}
           subtitle={userEmail}

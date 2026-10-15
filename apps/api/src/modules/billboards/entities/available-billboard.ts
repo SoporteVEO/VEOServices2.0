@@ -38,7 +38,11 @@ export interface BillboardLocation {
 export type AvailableBillboardListing = Omit<
   AvailableBillboard,
   'imageId' | 'imageDate' | 'imageNotes' | 's3ImageUrl'
->;
+> & {
+  /** Brilo face type code (`TiposCaras.ticaCodigo`), e.g. VS, MV, TR. */
+  formatCode: string | null;
+  structureName: string | null;
+};
 
 /** Extended billboard data used for report generation (includes impression price). */
 export interface AvailableBillboardReport extends AvailableBillboard {

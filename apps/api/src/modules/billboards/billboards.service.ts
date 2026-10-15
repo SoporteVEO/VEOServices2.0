@@ -63,6 +63,8 @@ interface BriloBillboardListingRow {
   Latitud: number | null;
   Longitud: number | null;
   Precio: number | null;
+  TipoCaraCodigo: string | null;
+  Estructura: string | null;
   UltimaFechaContrato: Date | null;
   IsOccupied?: number | boolean | null;
 }
@@ -237,6 +239,9 @@ SELECT
 
     ISNULL(prca_def.prcaPrecioMax, prca_def.Precio) AS [Precio],
 
+    tica.ticaCodigo     AS [TipoCaraCodigo],
+    ties.tiesNombre     AS [Estructura],
+
     last_contract.dconFechaHasta AS [UltimaFechaContrato]
 
 FROM olVallas.dbo.Caras AS car WITH (NOLOCK)
@@ -249,6 +254,10 @@ LEFT JOIN olComun.dbo.MuniCondados AS muni WITH (NOLOCK)
     ON siti.muniId = muni.muniId
 LEFT JOIN olComun.dbo.Calles AS calle WITH (NOLOCK)
     ON siti.callId = calle.callId
+LEFT JOIN olVallas.dbo.TiposCaras AS tica WITH (NOLOCK)
+    ON car.ticaId = tica.ticaId
+LEFT JOIN olVallas.dbo.TiposEstructuras AS ties WITH (NOLOCK)
+    ON siti.tiesId = ties.tiesId
 
 LEFT JOIN (
     SELECT
@@ -312,6 +321,9 @@ SELECT
 
     ISNULL(prca_def.prcaPrecioMax, prca_def.Precio) AS [Precio],
 
+    tica.ticaCodigo     AS [TipoCaraCodigo],
+    ties.tiesNombre     AS [Estructura],
+
     last_contract.dconFechaHasta AS [UltimaFechaContrato],
 
     CASE WHEN EXISTS (
@@ -336,6 +348,10 @@ LEFT JOIN olComun.dbo.MuniCondados AS muni WITH (NOLOCK)
     ON siti.muniId = muni.muniId
 LEFT JOIN olComun.dbo.Calles AS calle WITH (NOLOCK)
     ON siti.callId = calle.callId
+LEFT JOIN olVallas.dbo.TiposCaras AS tica WITH (NOLOCK)
+    ON car.ticaId = tica.ticaId
+LEFT JOIN olVallas.dbo.TiposEstructuras AS ties WITH (NOLOCK)
+    ON siti.tiesId = ties.tiesId
 
 LEFT JOIN (
     SELECT
@@ -994,6 +1010,8 @@ export class BillboardsService {
         latitude: r.Latitud ?? null,
         longitude: r.Longitud ?? null,
         price: r.Precio ?? null,
+        formatCode: r.TipoCaraCodigo?.trim() || null,
+        structureName: r.Estructura?.trim() || null,
         monthsWithoutPurchase,
         isAvailable,
       };

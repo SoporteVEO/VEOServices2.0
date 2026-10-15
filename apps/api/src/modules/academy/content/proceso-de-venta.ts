@@ -278,7 +278,7 @@ Crea el contrato en Brilo con:
 - **Caras y fechas**: las vallas (caras) contratadas con sus fechas de inicio y fin.
 - **Atención a**: la persona de contacto del cliente.
 
-> **Importante:** el contrato debe quedar **posteado** y **no anulado**. Si no está posteado, no aparecerá en VEO Services al aceptar la cotización ni en Reportes.
+> **Importante:** el contrato debe quedar **posteado** y **no anulado**. Si no está posteado, no aparecerá en VEO Services al aceptar la cotización ni en Testigos.
 
 ## Qué datos salen de la cotización
 

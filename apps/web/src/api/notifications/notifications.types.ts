@@ -8,6 +8,7 @@ export type Notification = {
   status: UserNotificationStatus;
   description: string;
   priority: NotificationPriority;
+  href: string | null;
   createdAt: string;
   updatedAt: string;
 };

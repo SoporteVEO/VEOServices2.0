@@ -324,7 +324,7 @@ export class ProductionOrdersService {
         'PRODUCTION',
         description,
         'HIGH',
-        meta.excludeUserId,
+        { excludeUserId: meta.excludeUserId, href: '/dashboard/production' },
       );
       this.logger.log(
         `Created ${result.count} PRODUCTION notification(s) for order ${meta.orderNumber}`,

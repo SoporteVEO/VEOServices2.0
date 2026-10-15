@@ -63,10 +63,10 @@ Tu escritorio personal: tus cotizaciones, contratos, órdenes y facturas como ve
 ### VEO Academy
 Estas guías.
 
-### Reportes
+### Testigos
 Contratos activos del mes, con las fotos de cada valla, para generar y enviar el reporte al cliente. Ver [Enviar reportes a clientes](academy:enviar-reporte).
 
-[Abrir Reportes](app:/dashboard/reports)
+[Abrir Testigos](app:/dashboard/reports)
 
 ### Contratos
 Lista de contratos de Brilo que **vencen en los próximos 15 días** y el historial de avisos de vencimiento enviados. Ver [Contratos por vencer](academy:contratos-por-vencer).

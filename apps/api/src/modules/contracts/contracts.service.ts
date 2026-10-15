@@ -1050,6 +1050,7 @@ export class ContractsService {
         userId: input.userId,
         description: `Tu reporte del contrato ${input.contractNumber} se ha enviado correctamente al correo ${input.email}`,
         priority: 'LOW',
+        href: '/dashboard/contracts',
       });
     } catch (err) {
       this.logger.warn(

@@ -28,6 +28,7 @@ import {
   MailPlus,
   Settings,
   BookOpen,
+  Megaphone,
 } from "lucide-react";
 import {
   IMAGES_MODULE_FIELD_ROLES,
@@ -88,7 +89,7 @@ export const NAV_GROUPS: NavGroup[] = [
   {
     label: "Módulos",
     items: [
-      { title: "Reportes", href: "/dashboard/reports", icon: SquareChartGantt },
+      { title: "Testigos", href: "/dashboard/reports", icon: SquareChartGantt },
       { title: "Contratos", href: "/dashboard/contracts", icon: FileText },
       {
         title: "Pantallas",
@@ -261,6 +262,17 @@ export const NAV_GROUPS: NavGroup[] = [
         icon: Users,
         allowedRoles: [],
         requiredSubRoles: ["USERS_MANAGEMENT"],
+      },
+    ],
+  },
+  {
+    label: "",
+    items: [
+      {
+        title: "Actualizaciones",
+        href: "/dashboard/actualizaciones",
+        icon: Megaphone,
+        allowedRoles: ["ADMIN", "USER", "LIMITED", ...IMAGES_MODULE_FIELD_ROLES],
       },
     ],
   },

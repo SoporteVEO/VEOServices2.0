@@ -26,7 +26,7 @@ export function initialInventoryFilters(flight?: {
   const to = flight?.campaignEnd ? calendarDate(flight.campaignEnd) : addDays(from, 29);
   const kind =
     flight?.mediaType === "STATIC" || flight?.mediaType === "DIGITAL" ? flight.mediaType : ALL;
-  return { from, to, kind, department: ALL, search: "", onlyAvailable: false };
+  return { from, to, kind, department: ALL, search: "", onlyAvailable: true };
 }
 
 export function inventoryQuery(

@@ -31,6 +31,7 @@ import { AgentModule } from './modules/agent/agent.module.js';
 import { DevelopmentModule } from './modules/development/development.module.js';
 import { CrmModule } from './modules/crm/crm.module.js';
 import { AcademyModule } from './modules/academy/academy.module.js';
+import { PatchNotesModule } from './modules/patch-notes/patch-notes.module.js';
 
 @Module({
   imports: [
@@ -66,6 +67,7 @@ import { AcademyModule } from './modules/academy/academy.module.js';
     DevelopmentModule,
     CrmModule,
     AcademyModule,
+    PatchNotesModule,
   ],
 })
 export class AppModule {}

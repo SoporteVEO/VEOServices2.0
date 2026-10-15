@@ -29,7 +29,10 @@ export interface AvailableBillboard {
 export type AvailableBillboardListing = Omit<
   AvailableBillboard,
   "imageId" | "imageDate" | "imageNotes" | "s3ImageUrl"
->;
+> & {
+  formatCode: string | null;
+  structureName: string | null;
+};
 
 export interface AvailableBillboardReport extends AvailableBillboard {
   impressionPrice: number | null;

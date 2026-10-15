@@ -47,6 +47,8 @@ export interface InventoryItem {
   longitude: number | null;
   width: number | null;
   height: number | null;
+  formatCode: string | null;
+  structureName: string | null;
   rate: number;
   state: InventoryState;
   capacity: number | null;
@@ -279,6 +281,8 @@ export class CrmInventoryService {
       longitude: row.longitude,
       width: row.width,
       height: row.height,
+      formatCode: row.formatCode,
+      structureName: row.structureName,
       rate: row.price ?? 0,
       state: row.isAvailable ? 'AVAILABLE' : 'CONTRACTED',
       capacity: null,
@@ -323,6 +327,8 @@ export class CrmInventoryService {
         longitude: screen.longitude,
         width: null,
         height: null,
+        formatCode: null,
+        structureName: null,
         rate: screen.price,
         state: 'AVAILABLE',
         capacity: slot?.capacity ?? null,
