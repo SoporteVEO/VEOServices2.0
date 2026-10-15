@@ -8,7 +8,9 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
+import { ClientType } from '@prisma/client';
 import { AllowLimited } from '../auth/decorators.js';
+import { ClientContractsService } from './client-contracts.service.js';
 import { ClientsService } from './clients.service.js';
 import { CreateClientDto } from './dto/create-client.dto.js';
 import { UpdateClientDto } from './dto/update-client.dto.js';
@@ -25,20 +27,36 @@ function parsePositiveInt(
   return Math.floor(parsed);
 }
 
+function parseClientType(value: string | undefined): ClientType | undefined {
+  const trimmed = value?.trim();
+  if (!trimmed) return undefined;
+  if (!Object.values(ClientType).includes(trimmed as ClientType)) {
+    throw new BadRequestException(
+      `type debe ser uno de: ${Object.values(ClientType).join(', ')}`,
+    );
+  }
+  return trimmed as ClientType;
+}
+
 @AllowLimited()
 @Controller('clients')
 export class ClientsController {
-  constructor(private readonly service: ClientsService) {}
+  constructor(
+    private readonly service: ClientsService,
+    private readonly contractsService: ClientContractsService,
+  ) {}
 
   @Get()
   async list(
     @Query('search') search?: string,
+    @Query('type') typeRaw?: string,
     @Query('cursor') cursor?: string,
     @Query('limit') limitRaw?: string,
   ) {
     const limit = parsePositiveInt(limitRaw, 'limit');
     return this.service.list({
       search: search?.trim() || undefined,
+      type: parseClientType(typeRaw),
       cursor: cursor?.trim() || undefined,
       limit,
     });
@@ -47,6 +65,7 @@ export class ClientsController {
   @Get('page')
   async listPage(
     @Query('search') search?: string,
+    @Query('type') typeRaw?: string,
     @Query('page') pageRaw?: string,
     @Query('pageSize') pageSizeRaw?: string,
   ) {
@@ -54,6 +73,7 @@ export class ClientsController {
     const pageSize = parsePositiveInt(pageSizeRaw, 'pageSize');
     return this.service.listPage({
       search: search?.trim() || undefined,
+      type: parseClientType(typeRaw),
       page,
       pageSize,
     });
@@ -63,6 +83,12 @@ export class ClientsController {
   async findOne(@Param('id') id: string) {
     const client = await this.service.findById(id);
     return { data: client };
+  }
+
+  @Get(':id/contracts')
+  async listContracts(@Param('id') id: string) {
+    const contracts = await this.contractsService.listByClient(id);
+    return { data: contracts };
   }
 
   @Post()

@@ -2,6 +2,7 @@
 
 import { useMemo, useRef, useState } from "react";
 import { getClient, useClientsInfinite, type Client } from "@/api/clients/clients.get";
+import { ClientFormDialog } from "@/components/pages/clients/client-form-dialog";
 import { Combobox, type ComboboxOption } from "@/components/ui/combobox";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
 
@@ -17,11 +18,13 @@ export interface ClientComboboxProps {
   label?: string;
   required?: boolean;
   triggerClassName?: string;
+  allowCreate?: boolean;
 }
 
 function buildClientLabel(client: Client): string {
   const parts = [client.name];
   if (client.company) parts.push(`(${client.company})`);
+  if (client.type === "AGENCY") parts.push("· Agencia");
   return parts.join(" ");
 }
 
@@ -32,8 +35,10 @@ export function ClientCombobox({
   label,
   required = false,
   triggerClassName,
+  allowCreate = false,
 }: ClientComboboxProps) {
   const [search, setSearch] = useState("");
+  const [createOpen, setCreateOpen] = useState(false);
   const debouncedSearch = useDebouncedValue(search.trim(), 250);
   const [lastSelected, setLastSelected] = useState<Client | null>(
     defaultSelectedClient ?? null,
@@ -99,6 +104,12 @@ export function ClientCombobox({
       });
   }
 
+  function handleCreated(client: Client) {
+    clientsByIdRef.current.set(client.id, client);
+    setLastSelected(client);
+    onChange(client);
+  }
+
   function handleOpenChange(open: boolean) {
     if (open && search !== "") {
       setSearch("");
@@ -110,23 +121,34 @@ export function ClientCombobox({
     : "Aún no hay clientes registrados.";
 
   return (
-    <Combobox
-      label={label}
-      placeholder="Buscar cliente..."
-      emptyLabel={emptyLabel}
-      options={options}
-      value={value}
-      isLoading={query.isLoading}
-      onChange={handleChange}
-      onSearch={setSearch}
-      onOpenChange={handleOpenChange}
-      manualFilter
-      hasMore={query.hasNextPage ?? false}
-      isLoadingMore={query.isFetchingNextPage}
-      onLoadMore={query.fetchNextPage}
-      selectedOption={selectedOption}
-      triggerClassName={triggerClassName}
-      required={required}
-    />
+    <>
+      <Combobox
+        label={label}
+        placeholder="Buscar cliente..."
+        emptyLabel={emptyLabel}
+        options={options}
+        value={value}
+        isLoading={query.isLoading}
+        onChange={handleChange}
+        onSearch={setSearch}
+        onOpenChange={handleOpenChange}
+        manualFilter
+        hasMore={query.hasNextPage ?? false}
+        isLoadingMore={query.isFetchingNextPage}
+        onLoadMore={query.fetchNextPage}
+        selectedOption={selectedOption}
+        triggerClassName={triggerClassName}
+        required={required}
+        addLabel={allowCreate ? "+ Crear nuevo cliente" : undefined}
+        onAdd={() => setCreateOpen(true)}
+      />
+      {allowCreate ? (
+        <ClientFormDialog
+          open={createOpen}
+          onOpenChange={setCreateOpen}
+          onCreated={handleCreated}
+        />
+      ) : null}
+    </>
   );
 }

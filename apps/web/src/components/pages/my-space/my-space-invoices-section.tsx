@@ -24,7 +24,6 @@ export function MySpaceInvoicesSection() {
       </header>
       <SalesByCostCenterReport
         useReportQuery={useMySalesByCostCenterReport}
-        showHeader={false}
         viewAsUserId={viewAsUserId}
       />
     </section>

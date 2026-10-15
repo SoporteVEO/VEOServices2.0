@@ -3,13 +3,14 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import type { Prisma } from '@prisma/client';
+import type { ClientType, Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { CreateClientDto } from './dto/create-client.dto.js';
 import { UpdateClientDto } from './dto/update-client.dto.js';
 
 export interface ClientListItem {
   id: string;
+  type: ClientType;
   name: string;
   company: string | null;
   email: string;
@@ -21,12 +22,14 @@ export interface ClientListItem {
 
 export interface ListClientsFilters {
   search?: string;
+  type?: ClientType;
   cursor?: string;
   limit?: number;
 }
 
 export interface ListClientsPageFilters {
   search?: string;
+  type?: ClientType;
   page?: number;
   pageSize?: number;
 }
@@ -60,19 +63,22 @@ function normalizeEmail(email: string): string {
   return email.trim().toLowerCase();
 }
 
-function buildSearchWhere(
+function buildWhere(
   search: string | undefined,
+  type: ClientType | undefined,
 ): Prisma.ClientWhereInput {
-  if (!search) return {};
-  return {
-    OR: [
+  const where: Prisma.ClientWhereInput = {};
+  if (type) where.type = type;
+  if (search) {
+    where.OR = [
       { name: { contains: search, mode: 'insensitive' } },
       { company: { contains: search, mode: 'insensitive' } },
       { email: { contains: search, mode: 'insensitive' } },
       { billingEmail: { contains: search, mode: 'insensitive' } },
       { contact: { contains: search, mode: 'insensitive' } },
-    ],
-  };
+    ];
+  }
+  return where;
 }
 
 @Injectable()
@@ -81,7 +87,7 @@ export class ClientsService {
 
   async list(filters: ListClientsFilters = {}): Promise<PaginatedClients> {
     const limit = clampLimit(filters.limit);
-    const where = buildSearchWhere(filters.search?.trim());
+    const where = buildWhere(filters.search?.trim(), filters.type);
 
     const rows = await this.prisma.client.findMany({
       where,
@@ -106,7 +112,7 @@ export class ClientsService {
   ): Promise<PaginatedClientsPage> {
     const page = clampPage(filters.page);
     const pageSize = clampLimit(filters.pageSize);
-    const where = buildSearchWhere(filters.search?.trim());
+    const where = buildWhere(filters.search?.trim(), filters.type);
 
     const [rows, total] = await Promise.all([
       this.prisma.client.findMany({
@@ -137,6 +143,10 @@ export class ClientsService {
     if (!existing) throw new NotFoundException('Cliente no encontrado');
 
     const data: Prisma.ClientUpdateInput = {};
+
+    if (dto.type !== undefined && dto.type !== existing.type) {
+      data.type = dto.type;
+    }
 
     if (dto.name !== undefined) {
       const trimmed = dto.name.trim();
@@ -195,6 +205,9 @@ export class ClientsService {
 
     if (existing) {
       const updates: Prisma.ClientUpdateInput = {};
+      if (dto.type && dto.type !== existing.type) {
+        updates.type = dto.type;
+      }
       if (dto.name?.trim() && existing.name !== dto.name.trim()) {
         updates.name = dto.name.trim();
       }
@@ -222,8 +235,27 @@ export class ClientsService {
       return this.toListItem(updated);
     }
 
+    return this.insert(dto, email);
+  }
+
+  async create(dto: CreateClientDto): Promise<ClientListItem> {
+    const email = normalizeEmail(dto.email);
+    const existing = await this.prisma.client.findUnique({ where: { email } });
+    if (existing) {
+      throw new ConflictException(
+        'Ya existe un cliente con ese correo electrónico',
+      );
+    }
+    return this.insert(dto, email);
+  }
+
+  private async insert(
+    dto: CreateClientDto,
+    email: string,
+  ): Promise<ClientListItem> {
     const created = await this.prisma.client.create({
       data: {
+        type: dto.type ?? 'DIRECT',
         name: dto.name.trim(),
         company: dto.company?.trim() || null,
         email,
@@ -236,12 +268,9 @@ export class ClientsService {
     return this.toListItem(created);
   }
 
-  async create(dto: CreateClientDto): Promise<ClientListItem> {
-    return this.upsertByEmail(dto);
-  }
-
   private toListItem(row: {
     id: string;
+    type: ClientType;
     name: string;
     company: string | null;
     email: string;
@@ -252,6 +281,7 @@ export class ClientsService {
   }): ClientListItem {
     return {
       id: row.id,
+      type: row.type,
       name: row.name,
       company: row.company,
       email: row.email,

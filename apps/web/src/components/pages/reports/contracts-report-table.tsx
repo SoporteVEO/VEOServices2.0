@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import type { ColumnDef } from "@tanstack/react-table";
 import { Image as ImageIcon, Mail, Monitor } from "lucide-react";
 import { Badge } from "@/components/primitives/ui/badge";
@@ -19,9 +19,13 @@ const DEFAULT_PAGE_SIZE = 25;
 interface ContractsReportTableProps {
   /** First day of the month being reported on. */
   month: Date;
+  sideButtons?: ReactNode;
 }
 
-export function ContractsReportTable({ month }: ContractsReportTableProps) {
+export function ContractsReportTable({
+  month,
+  sideButtons,
+}: ContractsReportTableProps) {
   const [search, setSearch] = useState("");
   const [pageIndex, setPageIndex] = useState(0);
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
@@ -130,7 +134,7 @@ export function ContractsReportTable({ month }: ContractsReportTableProps) {
   }
 
   return (
-    <div className="flex h-[calc(100vh-9rem)] min-h-0 flex-col gap-4">
+    <div className="flex h-[calc(100vh-6.5rem)] min-h-0 flex-col gap-4">
       <DataTable
         className="min-h-0 flex-1"
         columns={columns}
@@ -139,6 +143,7 @@ export function ContractsReportTable({ month }: ContractsReportTableProps) {
         searchValue={search}
         onSearchChange={handleSearchChange}
         searchPlaceholder="Buscar por contrato, cliente, valla..."
+        sideButtons={sideButtons}
         onRowClick={setSelected}
         emptyMessage="No hay contratos activos."
         manualPagination={{

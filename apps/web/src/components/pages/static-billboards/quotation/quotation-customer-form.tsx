@@ -2,7 +2,6 @@
 
 import { Controller, type UseFormReturn } from "react-hook-form";
 import type { Client } from "@/api/clients/clients.get";
-import { Input } from "@/components/ui/input";
 import { DatePicker } from "@/components/ui/date-picker";
 import { Label } from "@/components/primitives/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -35,59 +34,19 @@ export function QuotationCustomerForm({
 
   return (
     <section className="space-y-4">
-      <div className="flex flex-col gap-2">
-        <Label className="text-xs font-medium text-muted-foreground">
-          Cliente registrado
-        </Label>
-        <ClientCombobox
-          value={clientId}
-          defaultSelectedClient={defaultSelectedClient}
-          onChange={onSelectClient}
-        />
-      </div>
-
       <div className="grid gap-4 sm:grid-cols-2">
-        <Input
-          label="Nombre"
-          required
-          placeholder="Persona de contacto"
-          aria-invalid={!!formState.errors.customerName}
-          {...register("customerName", { required: true })}
-        />
-        <Input
-          label="Empresa"
-          placeholder="Razón social"
-          {...register("customerCompany")}
-        />
-        <Input
-          label="Correo cliente"
-          type="email"
-          placeholder="cliente@ejemplo.com"
-          {...register("customerEmail", {
-            pattern: {
-              value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-              message: "Correo no válido",
-            },
-          })}
-          aria-invalid={!!formState.errors.customerEmail}
-        />
-        <Input
-          label="Correo Facturacion"
-          type="email"
-          placeholder="facturacion@ejemplo.com"
-          {...register("customerBillingEmail", {
-            pattern: {
-              value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-              message: "Correo no válido",
-            },
-          })}
-          aria-invalid={!!formState.errors.customerBillingEmail}
-        />
-        <Input
-          label="Contacto"
-          placeholder="Teléfono o cargo"
-          {...register("customerContact")}
-        />
+        <div className="flex flex-col gap-2">
+          <Label className="text-xs font-medium text-muted-foreground">
+            Cliente
+            <span className="-ml-1 text-red-500">*</span>
+          </Label>
+          <ClientCombobox
+            value={clientId}
+            defaultSelectedClient={defaultSelectedClient}
+            onChange={onSelectClient}
+            allowCreate
+          />
+        </div>
         <Controller
           control={control}
           name="validUntil"
@@ -104,20 +63,21 @@ export function QuotationCustomerForm({
             />
           )}
         />
-        <div className="flex w-full flex-col gap-2 sm:col-span-2">
-          <Label
-            htmlFor="specialConditions"
-            className="text-xs font-medium text-muted-foreground"
-          >
-            Condiciones especiales
-          </Label>
-          <Textarea
-            id="specialConditions"
-            rows={3}
-            placeholder="Términos, descuentos, observaciones..."
-            {...register("specialConditions")}
-          />
-        </div>
+      </div>
+
+      <div className="flex w-full flex-col gap-2">
+        <Label
+          htmlFor="specialConditions"
+          className="text-xs font-medium text-muted-foreground"
+        >
+          Condiciones especiales
+        </Label>
+        <Textarea
+          id="specialConditions"
+          rows={3}
+          placeholder="Términos, descuentos, observaciones..."
+          {...register("specialConditions")}
+        />
       </div>
     </section>
   );

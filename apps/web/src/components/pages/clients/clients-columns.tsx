@@ -1,10 +1,12 @@
 "use client";
 
 import type { ColumnDef } from "@tanstack/react-table";
-import { Building2, Mail, Phone, User } from "lucide-react";
+import { Building2, Mail, Phone } from "lucide-react";
 
 import type { Client } from "@/api/clients/clients.types";
-import { formatShortDate } from "@/lib/format";
+import { Avatar, AvatarFallback } from "@/components/primitives/ui/avatar";
+import { getClientInitials } from "./client-initials";
+import { ClientTypeBadge } from "./client-type-badge";
 
 export const CLIENTS_COLUMNS: ColumnDef<Client>[] = [
   {
@@ -12,12 +14,19 @@ export const CLIENTS_COLUMNS: ColumnDef<Client>[] = [
     header: "Nombre",
     cell: ({ row }) => (
       <div className="flex min-w-0 items-center gap-2">
-        <span className="flex size-7 shrink-0 items-center justify-center rounded-md bg-muted text-muted-foreground">
-          <User className="size-3.5" />
-        </span>
+        <Avatar size="sm">
+          <AvatarFallback>
+            {getClientInitials(row.original)}
+          </AvatarFallback>
+        </Avatar>
         <span className="truncate font-medium">{row.original.name}</span>
       </div>
     ),
+  },
+  {
+    accessorKey: "type",
+    header: "Tipo",
+    cell: ({ row }) => <ClientTypeBadge type={row.original.type} />,
   },
   {
     accessorKey: "company",
@@ -53,7 +62,7 @@ export const CLIENTS_COLUMNS: ColumnDef<Client>[] = [
   },
   {
     accessorKey: "contact",
-    header: "Contacto",
+    header: "Teléfono",
     cell: ({ row }) => {
       const contact = row.original.contact;
       if (!contact) {
@@ -69,14 +78,5 @@ export const CLIENTS_COLUMNS: ColumnDef<Client>[] = [
         </div>
       );
     },
-  },
-  {
-    accessorKey: "createdAt",
-    header: "Registrado",
-    cell: ({ row }) => (
-      <span className="text-sm text-muted-foreground tabular-nums">
-        {formatShortDate(new Date(row.original.createdAt))}
-      </span>
-    ),
   },
 ];

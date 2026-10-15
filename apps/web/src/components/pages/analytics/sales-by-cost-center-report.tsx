@@ -36,11 +36,6 @@ type SalesReportQueryHook = (
   "data" | "isLoading" | "isFetching" | "isError"
 >;
 
-const DEFAULT_TITLE =
-  "Facturación por Centro de Costos, Sub Centro y Tipo de Venta";
-const DEFAULT_DESCRIPTION =
-  "Reporte de facturación (CCF, FCF, NDC) con Monto con IVA más Impuestos, agrupado por Centro de Costos (Detalle), Sub Centro de Costos (Detalle) y Tipo de Venta.";
-
 function defaultRange(): { from: Date; to: Date } {
   const previousMonth = subMonths(new Date(), 1);
   return { from: startOfMonth(previousMonth), to: endOfMonth(previousMonth) };
@@ -94,17 +89,11 @@ function filterReport(
 
 export interface SalesByCostCenterReportProps {
   useReportQuery?: SalesReportQueryHook;
-  title?: string;
-  description?: string;
-  showHeader?: boolean;
   viewAsUserId?: string | null;
 }
 
 export function SalesByCostCenterReport({
   useReportQuery = useSalesByCostCenterReport,
-  title = DEFAULT_TITLE,
-  description = DEFAULT_DESCRIPTION,
-  showHeader = true,
   viewAsUserId,
 }: SalesByCostCenterReportProps = {}) {
   const [range, setRange] = useState(defaultRange);
@@ -187,12 +176,6 @@ export function SalesByCostCenterReport({
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-3 @xl/main:flex-row @xl/main:flex-wrap @xl/main:items-center justify-between">
-        {showHeader ? (
-          <div>
-            <h2 className="text-lg font-semibold">{title}</h2>
-            <p className="text-sm text-muted-foreground">{description}</p>
-          </div>
-        ) : null}
         <div className="flex flex-wrap items-center justify-end gap-2 @xl/main:ml-auto">
           <Combobox
             triggerClassName="w-64"

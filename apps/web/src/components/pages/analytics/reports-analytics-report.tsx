@@ -35,16 +35,7 @@ export function ReportsAnalyticsReport() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex flex-col gap-3 @xl/main:flex-row @xl/main:flex-wrap @xl/main:items-end @xl/main:justify-between">
-        <div className="flex flex-col gap-1">
-          <h2 className="text-lg font-semibold tracking-tight">
-            Resumen de reportes enviados
-          </h2>
-          <p className="text-sm text-muted-foreground">
-            Métricas de reportes mensuales, de instalación y de mantenimiento
-            enviados desde la plataforma.
-          </p>
-        </div>
+      <div className="flex flex-col gap-3 @xl/main:flex-row @xl/main:flex-wrap @xl/main:items-end @xl/main:justify-end">
         <div className="flex flex-col gap-2 @xl/main:flex-row @xl/main:items-center">
           <AnalyticsUserFilter
             value={userId}

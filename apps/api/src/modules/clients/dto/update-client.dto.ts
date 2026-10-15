@@ -1,5 +1,7 @@
+import { ClientType } from '@prisma/client';
 import {
   IsEmail,
+  IsEnum,
   IsOptional,
   IsString,
   MinLength,
@@ -7,6 +9,10 @@ import {
 } from 'class-validator';
 
 export class UpdateClientDto {
+  @IsOptional()
+  @IsEnum(ClientType)
+  type?: ClientType;
+
   @IsOptional()
   @IsString()
   @MinLength(1)

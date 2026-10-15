@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 interface UseIntersectionObserverOptions {
   enabled?: boolean;
@@ -6,12 +6,16 @@ interface UseIntersectionObserverOptions {
   threshold?: number | number[];
 }
 
+/**
+ * Returns a callback ref so the observer attaches whenever the target mounts,
+ * including targets rendered after `enabled` flips (e.g. inside portals).
+ */
 export function useIntersectionObserver<T extends Element>(
   callback: () => void,
   options: UseIntersectionObserverOptions = {},
 ) {
   const { enabled = true, rootMargin = "200px", threshold = 0 } = options;
-  const ref = useRef<T>(null);
+  const [target, setTarget] = useState<T | null>(null);
   const callbackRef = useRef(callback);
 
   useEffect(() => {
@@ -19,9 +23,9 @@ export function useIntersectionObserver<T extends Element>(
   }, [callback]);
 
   useEffect(() => {
-    if (!enabled) return;
-    const target = ref.current;
-    if (!target || typeof IntersectionObserver === "undefined") return;
+    if (!enabled || !target || typeof IntersectionObserver === "undefined") {
+      return;
+    }
 
     const observer = new IntersectionObserver(
       (entries) => {
@@ -34,7 +38,7 @@ export function useIntersectionObserver<T extends Element>(
 
     observer.observe(target);
     return () => observer.disconnect();
-  }, [enabled, rootMargin, threshold]);
+  }, [enabled, target, rootMargin, threshold]);
 
-  return ref;
+  return useCallback((node: T | null) => setTarget(node), []);
 }

@@ -212,7 +212,7 @@ export function Combobox({
                 onValueChange={(v: string) => onSearch?.(v)}
               />
             )}
-            <CommandList>
+            <CommandList className="max-h-[min(18rem,calc(var(--radix-popover-content-available-height)-3rem))]">
               <CommandEmpty>
                 {isLoading ? (
                   <div

@@ -51,7 +51,7 @@ export function ReportMonthSelector({ value, onChange }: Props) {
         value={selectedKey}
         onValueChange={(key) => onChange(monthFromKey(key))}
       >
-        <SelectTrigger className="h-8 w-45" aria-label="Mes del reporte">
+        <SelectTrigger className="h-9 w-45" aria-label="Mes del reporte">
           <SelectValue />
         </SelectTrigger>
         <SelectContent>

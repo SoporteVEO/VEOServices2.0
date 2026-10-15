@@ -82,7 +82,8 @@ export class NotificationsService {
       | 'MANTENIMIENTO'
       | 'PANTALLAS_PRODUCCION'
       | 'PANTALLAS_COMERCIAL'
-      | 'DESARROLLADOR',
+      | 'DESARROLLADOR'
+      | 'VENTAS',
     description: string,
     priority: NotificationPriority = 'MEDIUM',
     excludeUserId?: string,

@@ -55,7 +55,8 @@ export type SubRole =
   | "MANTENIMIENTO"
   | "PANTALLAS_PRODUCCION"
   | "PANTALLAS_COMERCIAL"
-  | "DESARROLLADOR";
+  | "DESARROLLADOR"
+  | "VENTAS";
 
 export type User = {
   id: string;

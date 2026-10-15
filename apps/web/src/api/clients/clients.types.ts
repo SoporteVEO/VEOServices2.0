@@ -1,5 +1,8 @@
+export type ClientType = "DIRECT" | "AGENCY";
+
 export interface Client {
   id: string;
+  type: ClientType;
   name: string;
   company: string | null;
   email: string;
@@ -7,6 +10,23 @@ export interface Client {
   contact: string | null;
   createdAt: string;
   updatedAt: string;
+}
+
+export type ClientContractStatus = "ACTIVE" | "UPCOMING" | "FINISHED";
+
+export interface ClientContract {
+  contractSourceId: number;
+  contractNumber: string;
+  description: string | null;
+  brand: string | null;
+  customerName: string | null;
+  executiveName: string | null;
+  agencyName: string | null;
+  signedAt: string | null;
+  startDate: string;
+  endDate: string;
+  totalBillboards: number;
+  status: ClientContractStatus;
 }
 
 export interface PaginatedClients {
@@ -22,6 +42,7 @@ export interface PaginatedClientsPage {
 }
 
 export interface CreateClientInput {
+  type?: ClientType;
   name: string;
   company?: string | null;
   email: string;
@@ -30,6 +51,7 @@ export interface CreateClientInput {
 }
 
 export interface UpdateClientInput {
+  type?: ClientType;
   name?: string;
   company?: string | null;
   email?: string;

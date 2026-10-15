@@ -50,6 +50,15 @@ function corsMiddleware(req: Request, res: Response, next: NextFunction) {
   next();
 }
 
+/** Signed webhooks are verified against the exact bytes Meta sent. */
+function captureWebhookRawBody(
+  req: Request & { rawBody?: Buffer },
+  _res: Response,
+  buf: Buffer,
+) {
+  if (req.url?.includes('/crm/whatsapp/webhook')) req.rawBody = buf;
+}
+
 export async function createApp(expressInstance?: Express) {
   const app = expressInstance
     ? await NestFactory.create<NestExpressApplication>(
@@ -73,7 +82,7 @@ export async function createApp(expressInstance?: Express) {
     toNodeHandler(auth as Parameters<typeof toNodeHandler>[0]),
   );
 
-  app.use(json({ limit: BODY_LIMIT }));
+  app.use(json({ limit: BODY_LIMIT, verify: captureWebhookRawBody }));
   app.use(urlencoded({ extended: true, limit: BODY_LIMIT }));
 
   app.enableVersioning({

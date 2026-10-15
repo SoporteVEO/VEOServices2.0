@@ -8,48 +8,57 @@ datasource db {
 }
 
 model User {
-  id                    String                @id
-  publicId              String                @unique @default(uuid()) @map("public_id")
-  firstName             String                @map("first_name")
-  lastName              String?               @map("last_name")
-  email                 String                @unique
-  role                  Role                  @default(USER)
-  subRoles              SubRole[]             @default([]) @map("sub_roles")
-  disabled              Boolean               @default(false)
-  lastLoginAt           DateTime?             @map("last_login_at")
-  createdAt             DateTime              @default(now())
-  updatedAt             DateTime              @updatedAt
-  emailVerified         Boolean               @default(false)
+  id                    String                 @id
+  publicId              String                 @unique @default(uuid()) @map("public_id")
+  firstName             String                 @map("first_name")
+  lastName              String?                @map("last_name")
+  email                 String                 @unique
+  role                  Role                   @default(USER)
+  subRoles              SubRole[]              @default([]) @map("sub_roles")
+  disabled              Boolean                @default(false)
+  lastLoginAt           DateTime?              @map("last_login_at")
+  createdAt             DateTime               @default(now())
+  updatedAt             DateTime               @updatedAt
+  emailVerified         Boolean                @default(false)
   image                 String?
   accounts              Account[]
   sessions              Session[]
   s3Images              S3Image[]
-  teamMember            TeamMember?           @relation("TeamMemberUser")
-  teamMembersAsBoss     TeamMember[]          @relation("TeamMemberDirectBoss")
+  teamMember            TeamMember?            @relation("TeamMemberUser")
+  teamMembersAsBoss     TeamMember[]           @relation("TeamMemberDirectBoss")
   absences              Absence[]
   notifications         Notification[]
   metrics               UserMetrics?
   metricsDays           UserMetricsDay[]
   offersCreated         OfferCreated[]
-  installationsAssigned ProductionOrderItem[] @relation("ProductionOrderInstaller")
-  vulcanizadosAssigned  ProductionOrderItem[] @relation("ProductionOrderVulcanizador")
-  fleetVehiclesCreated  FleetVehicle[]        @relation("FleetVehicleCreatedBy")
-  fleetServicesCreated  FleetMaintenance[]    @relation("FleetMaintenanceCreatedBy")
-  printJobsCreated      PrintJob[]            @relation("PrintJobCreatedBy")
-  maintenanceAssigned   MaintenanceJob[]      @relation("MaintenanceAssignee")
-  maintenanceCreated    MaintenanceJob[]      @relation("MaintenanceCreatedBy")
-  maintenancePhotos     MaintenancePhoto[]    @relation("MaintenancePhotoUploader")
-  maintenanceEvents     MaintenanceEvent[]    @relation("MaintenanceEventActor")
-  offerEvents           OfferEvent[]          @relation("OfferEventActor")
-  productionOrders      ProductionOrder[]     @relation("ProductionOrderCreatedBy")
+  installationsAssigned ProductionOrderItem[]  @relation("ProductionOrderInstaller")
+  vulcanizadosAssigned  ProductionOrderItem[]  @relation("ProductionOrderVulcanizador")
+  fleetVehiclesCreated  FleetVehicle[]         @relation("FleetVehicleCreatedBy")
+  fleetServicesCreated  FleetMaintenance[]     @relation("FleetMaintenanceCreatedBy")
+  printJobsCreated      PrintJob[]             @relation("PrintJobCreatedBy")
+  maintenanceAssigned   MaintenanceJob[]       @relation("MaintenanceAssignee")
+  maintenanceCreated    MaintenanceJob[]       @relation("MaintenanceCreatedBy")
+  maintenancePhotos     MaintenancePhoto[]     @relation("MaintenancePhotoUploader")
+  maintenanceEvents     MaintenanceEvent[]     @relation("MaintenanceEventActor")
+  offerEvents           OfferEvent[]           @relation("OfferEventActor")
+  productionOrders      ProductionOrder[]      @relation("ProductionOrderCreatedBy")
   pushSubscriptions     PushSubscription[]
   agentThreads          AgentThread[]
-  agentIssuesReported   AgentIssue[]          @relation("AgentIssueReporter")
-  agentIssuesResolved   AgentIssue[]          @relation("AgentIssueResolver")
-  agentFeedback         AgentFeedback[]       @relation("AgentFeedbackAuthor")
-  agentFeedbackReviewed AgentFeedback[]       @relation("AgentFeedbackReviewer")
-  learningsProposed     AgentLearning[]       @relation("AgentLearningProposer")
-  learningsReviewed     AgentLearning[]       @relation("AgentLearningReviewer")
+  agentIssuesReported   AgentIssue[]           @relation("AgentIssueReporter")
+  agentIssuesResolved   AgentIssue[]           @relation("AgentIssueResolver")
+  agentFeedback         AgentFeedback[]        @relation("AgentFeedbackAuthor")
+  agentFeedbackReviewed AgentFeedback[]        @relation("AgentFeedbackReviewer")
+  learningsProposed     AgentLearning[]        @relation("AgentLearningProposer")
+  learningsReviewed     AgentLearning[]        @relation("AgentLearningReviewer")
+  crmDealsOwned         CrmDeal[]              @relation("CrmDealOwner")
+  crmDealsCreated       CrmDeal[]              @relation("CrmDealCreatedBy")
+  crmActivities         CrmActivity[]          @relation("CrmActivityActor")
+  crmTasksAssigned      CrmTask[]              @relation("CrmTaskAssignee")
+  crmTasksCreated       CrmTask[]              @relation("CrmTaskCreatedBy")
+  crmEmailTemplates     CrmEmailTemplate[]
+  crmMessages           CrmMessage[]
+  crmConnections        CrmChannelConnection[]
+  crmDealSites          CrmDealSite[]          @relation("CrmDealSiteCreatedBy")
 
   @@map("users")
 }
@@ -469,6 +478,7 @@ model DigitalBillboard {
   offerItems    OfferCreatedItem[]
   image         Image?                    @relation(fields: [imageId], references: [id])
   purchaseItems PurchaseItem[]
+  crmDealSites  CrmDealSite[]
 
   @@map("digital_billboards")
 }
@@ -620,6 +630,7 @@ enum SubRole {
   PANTALLAS_PRODUCCION
   PANTALLAS_COMERCIAL
   DESARROLLADOR
+  VENTAS
 }
 
 enum AgentIssueStatus {
@@ -758,19 +769,31 @@ model ReportSended {
   @@map("report_sended")
 }
 
+enum ClientType {
+  DIRECT
+  AGENCY
+}
+
 model Client {
-  id           String         @id @default(uuid())
-  name         String
-  company      String?
-  email        String         @unique
-  billingEmail String?        @map("billing_email")
-  contact      String?
-  createdAt    DateTime       @default(now())
-  updatedAt    DateTime       @updatedAt
-  offers       OfferCreated[]
+  id            String         @id @default(uuid())
+  type          ClientType     @default(DIRECT)
+  name          String
+  company       String?
+  email         String         @unique
+  billingEmail  String?        @map("billing_email")
+  contact       String?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  offers        OfferCreated[]
+  crmDeals      CrmDeal[]
+  crmContacts   CrmContact[]
+  crmActivities CrmActivity[]
+  crmTasks      CrmTask[]
+  crmMessages   CrmMessage[]
 
   @@index([company])
   @@index([name])
+  @@index([type])
   @@map("clients")
 }
 
@@ -817,6 +840,7 @@ model OfferCreated {
   items              OfferCreatedItem[]
   productionOrder    ProductionOrder?
   events             OfferEvent[]
+  crmDealLink        CrmDealOffer?
 
   @@index([createdAt])
   @@index([createdByUserId])
@@ -1214,4 +1238,426 @@ model FleetMaintenance {
   @@index([vehicleId, performedAt])
   @@index([performedAt])
   @@map("fleet_maintenances")
+}
+
+enum CrmStageKind {
+  OPEN
+  WON
+  LOST
+}
+
+enum CrmDealStatus {
+  OPEN
+  WON
+  LOST
+}
+
+enum CrmPriority {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+enum CrmDealSource {
+  REFERRAL
+  WEBSITE
+  COLD_CALL
+  EVENT
+  SOCIAL_MEDIA
+  EXISTING_CLIENT
+  AGENCY
+  OFFER
+  RENEWAL
+  WEB_SHOP
+  OTHER
+}
+
+enum CrmMediaType {
+  STATIC
+  DIGITAL
+  MIXED
+}
+
+enum CrmSiteKind {
+  STATIC
+  DIGITAL
+}
+
+/// PROPOSED: on the proposal only. HELD: reserved until `holdUntil`.
+/// BOOKED: the deal was won. RELEASED: the hold was dropped or the deal lost.
+enum CrmSiteStatus {
+  PROPOSED
+  HELD
+  BOOKED
+  RELEASED
+}
+
+enum CrmActivityType {
+  NOTE
+  CALL
+  MEETING
+  EMAIL
+  WHATSAPP
+  TASK_COMPLETED
+  STAGE_CHANGED
+  DEAL_CREATED
+  DEAL_WON
+  DEAL_LOST
+  DEAL_REOPENED
+  OFFER_LINKED
+  INVENTORY_CHANGED
+}
+
+enum CrmTaskType {
+  CALL
+  EMAIL
+  WHATSAPP
+  MEETING
+  FOLLOW_UP
+  OTHER
+}
+
+enum CrmChannel {
+  EMAIL
+  WHATSAPP
+}
+
+enum CrmMessageDirection {
+  OUTBOUND
+  INBOUND
+}
+
+enum CrmMessageStatus {
+  SENT
+  DELIVERED
+  READ
+  FAILED
+  RECEIVED
+}
+
+enum CrmConnectionProvider {
+  GMAIL
+  WHATSAPP
+}
+
+enum CrmConnectionStatus {
+  ACTIVE
+  ERROR
+}
+
+/// A sales funnel. Deals move through its stages left to right; WON and LOST
+/// stages close the deal.
+model CrmPipeline {
+  id          String     @id @default(uuid())
+  name        String
+  description String?
+  isDefault   Boolean    @default(false) @map("is_default")
+  position    Int        @default(0)
+  archived    Boolean    @default(false)
+  createdAt   DateTime   @default(now()) @map("created_at")
+  updatedAt   DateTime   @updatedAt @map("updated_at")
+  stages      CrmStage[]
+  deals       CrmDeal[]
+
+  @@index([archived, position])
+  @@map("crm_pipelines")
+}
+
+model CrmStage {
+  id          String       @id @default(uuid())
+  pipelineId  String       @map("pipeline_id")
+  pipeline    CrmPipeline  @relation(fields: [pipelineId], references: [id], onDelete: Cascade)
+  name        String
+  color       String?
+  position    Int          @default(0)
+  /// Win likelihood (0-100) used for the weighted forecast.
+  probability Int          @default(0)
+  kind        CrmStageKind @default(OPEN)
+  /// Days without activity after which an open deal is flagged as stale.
+  rottingDays Int?         @map("rotting_days")
+  createdAt   DateTime     @default(now()) @map("created_at")
+  updatedAt   DateTime     @updatedAt @map("updated_at")
+  deals       CrmDeal[]
+
+  @@index([pipelineId, position])
+  @@map("crm_stages")
+}
+
+model CrmDeal {
+  id                  String         @id @default(uuid())
+  title               String
+  pipelineId          String         @map("pipeline_id")
+  pipeline            CrmPipeline    @relation(fields: [pipelineId], references: [id], onDelete: Cascade)
+  stageId             String         @map("stage_id")
+  stage               CrmStage       @relation(fields: [stageId], references: [id], onDelete: Restrict)
+  clientId            String?        @map("client_id")
+  client              Client?        @relation(fields: [clientId], references: [id], onDelete: SetNull)
+  contactId           String?        @map("contact_id")
+  contact             CrmContact?    @relation(fields: [contactId], references: [id], onDelete: SetNull)
+  ownerId             String         @map("owner_id")
+  owner               User           @relation("CrmDealOwner", fields: [ownerId], references: [id])
+  value               Float          @default(0)
+  expectedCloseDate   DateTime?      @map("expected_close_date") @db.Date
+  status              CrmDealStatus  @default(OPEN)
+  priority            CrmPriority    @default(MEDIUM)
+  source              CrmDealSource?
+  tags                String[]       @default([])
+  description         String?
+  /// Campaign brief: the flight being sold, separate from the closing date.
+  mediaType           CrmMediaType?  @map("media_type")
+  brand               String?
+  /// Competitive category, used to warn about rival brands on the same face.
+  industry            String?
+  campaignStart       DateTime?      @map("campaign_start") @db.Date
+  campaignEnd         DateTime?      @map("campaign_end") @db.Date
+  targetZones         String[]       @default([]) @map("target_zones")
+  agencyCommissionPct Float?         @map("agency_commission_pct")
+  /// `STATIC:<contract number>` or `DIGITAL:<order group>` of the contract being renewed.
+  renewalOf           String?        @map("renewal_of")
+  lostReason          String?        @map("lost_reason")
+  wonAt               DateTime?      @map("won_at")
+  lostAt              DateTime?      @map("lost_at")
+  /// Sort key inside a kanban column; fractional so a drop never renumbers.
+  position            Float          @default(0)
+  stageChangedAt      DateTime       @default(now()) @map("stage_changed_at")
+  lastActivityAt      DateTime       @default(now()) @map("last_activity_at")
+  createdById         String?        @map("created_by_id")
+  createdBy           User?          @relation("CrmDealCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  createdAt           DateTime       @default(now()) @map("created_at")
+  updatedAt           DateTime       @updatedAt @map("updated_at")
+  offers              CrmDealOffer[]
+  activities          CrmActivity[]
+  tasks               CrmTask[]
+  messages            CrmMessage[]
+  sites               CrmDealSite[]
+
+  @@index([pipelineId, stageId, position])
+  @@index([ownerId, status])
+  @@index([clientId])
+  @@index([contactId])
+  @@index([status, wonAt])
+  @@index([renewalOf])
+  @@map("crm_deals")
+}
+
+/// A billboard face or screen proposed or reserved for a deal. Location data
+/// is copied so the proposal still reads correctly if the inventory changes.
+model CrmDealSite {
+  id                 String            @id @default(uuid())
+  dealId             String            @map("deal_id")
+  deal               CrmDeal           @relation(fields: [dealId], references: [id], onDelete: Cascade)
+  kind               CrmSiteKind
+  /// Brilo `caraId` for static faces.
+  billboardId        Int?              @map("billboard_id")
+  digitalBillboardId String?           @map("digital_billboard_id")
+  digitalBillboard   DigitalBillboard? @relation(fields: [digitalBillboardId], references: [id], onDelete: SetNull)
+  code               String
+  label              String
+  cityName           String?           @map("city_name")
+  departmentName     String?           @map("department_name")
+  latitude           Float?
+  longitude          Float?
+  width              Float?
+  height             Float?
+  startDate          DateTime          @map("start_date") @db.Date
+  endDate            DateTime          @map("end_date") @db.Date
+  spotsPerDay        Int?              @map("spots_per_day")
+  /// Monthly rate; the site total is prorated over the flight.
+  rate               Float             @default(0)
+  status             CrmSiteStatus     @default(PROPOSED)
+  /// When the hold was placed; earlier holds on the same face rank first.
+  heldAt             DateTime?         @map("held_at")
+  holdUntil          DateTime?         @map("hold_until")
+  createdById        String?           @map("created_by_id")
+  createdBy          User?             @relation("CrmDealSiteCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  createdAt          DateTime          @default(now()) @map("created_at")
+  updatedAt          DateTime          @updatedAt @map("updated_at")
+
+  @@index([dealId])
+  @@index([billboardId, startDate, endDate])
+  @@index([digitalBillboardId, startDate, endDate])
+  @@index([status, holdUntil])
+  @@map("crm_deal_sites")
+}
+
+/// Cotizaciones attached to a deal. An offer belongs to at most one deal.
+model CrmDealOffer {
+  id        String       @id @default(uuid())
+  dealId    String       @map("deal_id")
+  deal      CrmDeal      @relation(fields: [dealId], references: [id], onDelete: Cascade)
+  offerId   String       @unique @map("offer_id")
+  offer     OfferCreated @relation(fields: [offerId], references: [id], onDelete: Cascade)
+  createdAt DateTime     @default(now()) @map("created_at")
+
+  @@index([dealId])
+  @@map("crm_deal_offers")
+}
+
+/// A person the sales team talks to. Usually works for a `Client`, but leads
+/// may exist before the company is registered as one.
+model CrmContact {
+  id         String        @id @default(uuid())
+  clientId   String?       @map("client_id")
+  client     Client?       @relation(fields: [clientId], references: [id], onDelete: SetNull)
+  firstName  String        @map("first_name")
+  lastName   String?       @map("last_name")
+  email      String?
+  phone      String?
+  /// Digits only, with country code, as WhatsApp expects it.
+  whatsapp   String?
+  jobTitle   String?       @map("job_title")
+  notes      String?
+  isPrimary  Boolean       @default(false) @map("is_primary")
+  createdAt  DateTime      @default(now()) @map("created_at")
+  updatedAt  DateTime      @updatedAt @map("updated_at")
+  deals      CrmDeal[]
+  activities CrmActivity[]
+  tasks      CrmTask[]
+  messages   CrmMessage[]
+
+  @@index([clientId])
+  @@index([email])
+  @@index([whatsapp])
+  @@map("crm_contacts")
+}
+
+/// Append-only timeline shared by deals, clients and contacts.
+model CrmActivity {
+  id              String          @id @default(uuid())
+  type            CrmActivityType
+  subject         String?
+  body            String?
+  occurredAt      DateTime        @default(now()) @map("occurred_at")
+  durationMinutes Int?            @map("duration_minutes")
+  dealId          String?         @map("deal_id")
+  deal            CrmDeal?        @relation(fields: [dealId], references: [id], onDelete: Cascade)
+  clientId        String?         @map("client_id")
+  client          Client?         @relation(fields: [clientId], references: [id], onDelete: SetNull)
+  contactId       String?         @map("contact_id")
+  contact         CrmContact?     @relation(fields: [contactId], references: [id], onDelete: SetNull)
+  actorId         String?         @map("actor_id")
+  actor           User?           @relation("CrmActivityActor", fields: [actorId], references: [id], onDelete: SetNull)
+  metadata        Json?
+  createdAt       DateTime        @default(now()) @map("created_at")
+
+  @@index([dealId, occurredAt])
+  @@index([clientId, occurredAt])
+  @@index([contactId, occurredAt])
+  @@index([actorId, occurredAt])
+  @@index([type, occurredAt])
+  @@map("crm_activities")
+}
+
+model CrmTask {
+  id          String      @id @default(uuid())
+  title       String
+  description String?
+  type        CrmTaskType @default(FOLLOW_UP)
+  priority    CrmPriority @default(MEDIUM)
+  dueAt       DateTime    @map("due_at")
+  completedAt DateTime?   @map("completed_at")
+  assigneeId  String      @map("assignee_id")
+  assignee    User        @relation("CrmTaskAssignee", fields: [assigneeId], references: [id], onDelete: Cascade)
+  createdById String?     @map("created_by_id")
+  createdBy   User?       @relation("CrmTaskCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  dealId      String?     @map("deal_id")
+  deal        CrmDeal?    @relation(fields: [dealId], references: [id], onDelete: Cascade)
+  clientId    String?     @map("client_id")
+  client      Client?     @relation(fields: [clientId], references: [id], onDelete: SetNull)
+  contactId   String?     @map("contact_id")
+  contact     CrmContact? @relation(fields: [contactId], references: [id], onDelete: SetNull)
+  createdAt   DateTime    @default(now()) @map("created_at")
+  updatedAt   DateTime    @updatedAt @map("updated_at")
+
+  @@index([assigneeId, completedAt, dueAt])
+  @@index([dealId])
+  @@index([clientId])
+  @@map("crm_tasks")
+}
+
+/// Markdown body with `{{variable}}` placeholders, rendered to HTML on send.
+model CrmEmailTemplate {
+  id         String       @id @default(uuid())
+  name       String
+  subject    String
+  body       String
+  category   String?
+  isShared   Boolean      @default(false) @map("is_shared")
+  usageCount Int          @default(0) @map("usage_count")
+  ownerId    String       @map("owner_id")
+  owner      User         @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  createdAt  DateTime     @default(now()) @map("created_at")
+  updatedAt  DateTime     @updatedAt @map("updated_at")
+  messages   CrmMessage[]
+
+  @@index([ownerId])
+  @@index([isShared])
+  @@map("crm_email_templates")
+}
+
+/// Every email or WhatsApp sent from (or received into) the CRM.
+model CrmMessage {
+  id          String              @id @default(uuid())
+  channel     CrmChannel
+  direction   CrmMessageDirection
+  status      CrmMessageStatus
+  userId      String?             @map("user_id")
+  user        User?               @relation(fields: [userId], references: [id], onDelete: SetNull)
+  toAddress   String              @map("to_address")
+  fromAddress String?             @map("from_address")
+  cc          String?
+  subject     String?
+  body        String
+  bodyHtml    String?             @map("body_html")
+  /// Gmail message id or WhatsApp `wamid`.
+  externalId  String?             @map("external_id")
+  threadId    String?             @map("thread_id")
+  error       String?
+  dealId      String?             @map("deal_id")
+  deal        CrmDeal?            @relation(fields: [dealId], references: [id], onDelete: SetNull)
+  clientId    String?             @map("client_id")
+  client      Client?             @relation(fields: [clientId], references: [id], onDelete: SetNull)
+  contactId   String?             @map("contact_id")
+  contact     CrmContact?         @relation(fields: [contactId], references: [id], onDelete: SetNull)
+  templateId  String?             @map("template_id")
+  template    CrmEmailTemplate?   @relation(fields: [templateId], references: [id], onDelete: SetNull)
+  metadata    Json?
+  sentAt      DateTime            @default(now()) @map("sent_at")
+  deliveredAt DateTime?           @map("delivered_at")
+  readAt      DateTime?           @map("read_at")
+  createdAt   DateTime            @default(now()) @map("created_at")
+
+  @@unique([channel, externalId])
+  @@index([dealId, sentAt])
+  @@index([clientId, sentAt])
+  @@index([contactId, sentAt])
+  @@index([userId, sentAt])
+  @@index([threadId])
+  @@map("crm_messages")
+}
+
+/// A user's own Gmail or WhatsApp Business account. Tokens are encrypted at
+/// rest with `CRM_TOKEN_ENCRYPTION_KEY`.
+model CrmChannelConnection {
+  id                String                @id @default(uuid())
+  userId            String                @map("user_id")
+  user              User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  provider          CrmConnectionProvider
+  status            CrmConnectionStatus   @default(ACTIVE)
+  /// Gmail address or WhatsApp display number.
+  accountLabel      String                @map("account_label")
+  accessToken       String                @map("access_token")
+  refreshToken      String?               @map("refresh_token")
+  tokenExpiresAt    DateTime?             @map("token_expires_at")
+  scope             String?
+  /// WhatsApp phone number id, used to route webhook events to the user.
+  externalAccountId String?               @map("external_account_id")
+  metadata          Json?
+  lastError         String?               @map("last_error")
+  createdAt         DateTime              @default(now()) @map("created_at")
+  updatedAt         DateTime              @updatedAt @map("updated_at")
+
+  @@unique([userId, provider])
+  @@index([provider, externalAccountId])
+  @@map("crm_channel_connections")
 }

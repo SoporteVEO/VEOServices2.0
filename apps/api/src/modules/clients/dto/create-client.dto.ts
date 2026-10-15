@@ -1,6 +1,17 @@
-import { IsEmail, IsOptional, IsString, MinLength } from 'class-validator';
+import { ClientType } from '@prisma/client';
+import {
+  IsEmail,
+  IsEnum,
+  IsOptional,
+  IsString,
+  MinLength,
+} from 'class-validator';
 
 export class CreateClientDto {
+  @IsOptional()
+  @IsEnum(ClientType)
+  type?: ClientType;
+
   @IsString()
   @MinLength(1)
   name!: string;

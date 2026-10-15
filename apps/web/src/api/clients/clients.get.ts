@@ -6,23 +6,29 @@ import {
 import { apiFetch } from "@/lib/api";
 import type {
   Client,
+  ClientContract,
+  ClientType,
   PaginatedClients,
   PaginatedClientsPage,
 } from "./clients.types";
 
 export type {
   Client,
+  ClientContract,
+  ClientType,
   PaginatedClients,
   PaginatedClientsPage,
 } from "./clients.types";
 
 export interface ListClientsQuery {
   search?: string;
+  type?: ClientType;
   limit?: number;
 }
 
 export interface ListClientsPageQuery {
   search?: string;
+  type?: ClientType;
   page?: number;
   pageSize?: number;
 }
@@ -33,6 +39,7 @@ function buildCursorParams(
 ): Record<string, string> {
   const params: Record<string, string> = {};
   if (query.search) params.search = query.search;
+  if (query.type) params.type = query.type;
   if (query.limit) params.limit = String(query.limit);
   if (cursor) params.cursor = cursor;
   return params;
@@ -63,6 +70,7 @@ export async function getClientsPaginated(
 ): Promise<PaginatedClientsPage> {
   const params: Record<string, string> = {};
   if (query.search) params.search = query.search;
+  if (query.type) params.type = query.type;
   if (query.page) params.page = String(query.page);
   if (query.pageSize) params.pageSize = String(query.pageSize);
   return apiFetch<PaginatedClientsPage>("/clients/page", {
@@ -77,6 +85,7 @@ export function useClientsPaginated(query: ListClientsPageQuery = {}) {
       "clients",
       "page",
       query.search ?? "",
+      query.type ?? "ALL",
       query.page ?? 1,
       query.pageSize ?? null,
     ],
@@ -94,6 +103,23 @@ export function useClient(id: string | null) {
   return useQuery({
     queryKey: ["clients", id],
     queryFn: () => getClient(id as string),
+    enabled: !!id,
+  });
+}
+
+export async function getClientContracts(
+  id: string,
+): Promise<ClientContract[]> {
+  const response = await apiFetch<{ data: ClientContract[] }>(
+    `/clients/${id}/contracts`,
+  );
+  return response.data;
+}
+
+export function useClientContracts(id: string | null) {
+  return useQuery({
+    queryKey: ["clients", id, "contracts"],
+    queryFn: () => getClientContracts(id as string),
     enabled: !!id,
   });
 }

@@ -217,16 +217,12 @@ export function GenerateQuotationModal({
 
   function handleSelectClient(client: Client | null) {
     setSelectedClient(client);
-    if (!client) {
-      form.setValue("clientId", null);
-      return;
-    }
-    form.setValue("clientId", client.id);
-    form.setValue("customerName", client.name);
-    form.setValue("customerCompany", client.company ?? "");
-    form.setValue("customerEmail", client.email);
-    form.setValue("customerBillingEmail", client.billingEmail ?? "");
-    form.setValue("customerContact", client.contact ?? "");
+    form.setValue("clientId", client?.id ?? null);
+    form.setValue("customerName", client?.name ?? "");
+    form.setValue("customerCompany", client?.company ?? "");
+    form.setValue("customerEmail", client?.email ?? "");
+    form.setValue("customerBillingEmail", client?.billingEmail ?? "");
+    form.setValue("customerContact", client?.contact ?? "");
   }
 
   function handleClose(nextOpen: boolean) {
@@ -239,6 +235,10 @@ export function GenerateQuotationModal({
   }
 
   async function onSubmit(values: QuotationCustomerFormValues) {
+    if (!values.clientId) {
+      toast.warning("Selecciona un cliente para la cotización.");
+      return;
+    }
     if (items.length === 0) {
       toast.warning("Agrega al menos una valla a la cotización.");
       return;
@@ -356,7 +356,7 @@ export function GenerateQuotationModal({
         <DialogHeader>
           <DialogTitle>Generar Cotización</DialogTitle>
           <DialogDescription>
-            Selecciona o registra un cliente, revisa los precios y duración por
+            Selecciona o crea un cliente, revisa los precios y duración por
             valla, y descarga la cotización en PDF.
           </DialogDescription>
         </DialogHeader>

@@ -25,21 +25,16 @@ import {
   DrawerTitle,
 } from "@/components/ui/drawer";
 import { TextEditField } from "@/components/ui/edit-field";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { formatLongDate } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+import { ClientContractsHistory } from "./client-contracts-history";
+import { getClientInitials } from "./client-initials";
+import { ClientTypeBadge } from "./client-type-badge";
+import { ClientTypeToggleField } from "./client-type-toggle-field";
 
-function getInitials(client: Client): string {
-  const source = client.name?.trim() || client.email;
-  if (!source) return "?";
-  const parts = source
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((p) => p[0]);
-  return parts.join("").slice(0, 2).toUpperCase() || source[0]!.toUpperCase();
-}
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 interface ClientDetailDrawerProps {
   clientId: string | null;
@@ -127,7 +122,7 @@ function ClientDetailContent({
 }) {
   const updateMutation = useUpdateClient();
   const isPending = updateMutation.isPending;
-  const initials = getInitials(client);
+  const initials = getClientInitials(client);
 
   const update = useMemo(() => {
     return (input: UpdateClientInput) =>
@@ -159,9 +154,12 @@ function ClientDetailContent({
               </AvatarFallback>
             </Avatar>
             <div className="min-w-0 flex-1 space-y-1">
-              <DrawerTitle className="truncate text-base font-semibold">
-                {client.name}
-              </DrawerTitle>
+              <div className="flex min-w-0 items-center gap-2">
+                <DrawerTitle className="truncate text-base font-semibold">
+                  {client.name}
+                </DrawerTitle>
+                <ClientTypeBadge type={client.type} />
+              </div>
               <DrawerDescription className="flex items-center gap-1.5 text-xs">
                 <Mail className="size-3 shrink-0" aria-hidden />
                 <span className="truncate">{client.email}</span>
@@ -185,79 +183,129 @@ function ClientDetailContent({
         </div>
       </DrawerHeader>
 
-      <ScrollArea className="min-h-0 flex-1">
-        <div className="flex flex-col gap-4 p-4">
-          <Card>
-            <CardHeader>
-              <CardTitleWithInfo info="Datos generales del cliente. Toca cualquier campo para editarlo en línea.">
-                Información general
-              </CardTitleWithInfo>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <TextEditField
-                  label="Nombre"
-                  required
-                  initialValue={client.name}
-                  isPending={isPending}
-                  onSubmit={(v) => update({ name: v ?? "" })}
-                />
-                <TextEditField
-                  label="Empresa"
-                  initialValue={client.company}
-                  emptyText="Sin empresa"
-                  isPending={isPending}
-                  onSubmit={(v) => update({ company: v })}
-                />
-              </div>
-              <TextEditField
-                label="Persona de contacto"
-                initialValue={client.contact}
-                emptyText="Sin contacto registrado"
-                isPending={isPending}
-                onSubmit={(v) => update({ contact: v })}
-              />
-            </CardContent>
-          </Card>
+      <Tabs
+        defaultValue="general"
+        className="flex min-h-0 flex-1 flex-col overflow-hidden"
+      >
+        <TabsList className="mx-4 mt-3 self-start">
+          <TabsTrigger value="general">Información</TabsTrigger>
+          <TabsTrigger value="historial">Historial</TabsTrigger>
+        </TabsList>
 
-          <Card>
-            <CardHeader>
-              <CardTitleWithInfo info="Correos asociados al cliente. El correo principal es la clave única en el sistema.">
-                Correos electrónicos
-              </CardTitleWithInfo>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <TextEditField
-                label="Correo principal"
-                required
-                type="email"
-                initialValue={client.email}
-                isPending={isPending}
-                validate={(v) =>
-                  EMAIL_RE.test(v) ? null : "Correo electrónico no válido"
-                }
-                onSubmit={(v) => update({ email: v ?? "" })}
-              />
-              <TextEditField
-                label="Correo de facturación"
-                type="email"
-                initialValue={client.billingEmail}
-                emptyText="Usar correo principal"
-                isPending={isPending}
-                validate={(v) =>
-                  v.length === 0 || EMAIL_RE.test(v)
-                    ? null
-                    : "Correo electrónico no válido"
-                }
-                onSubmit={(v) => update({ billingEmail: v })}
-              />
-            </CardContent>
-          </Card>
+        <TabsContent
+          value="general"
+          className="min-h-0 flex-1 data-[state=inactive]:hidden"
+        >
+          <ScrollArea className="h-full">
+            <ClientGeneralTab
+              client={client}
+              isPending={isPending}
+              update={update}
+            />
+          </ScrollArea>
+        </TabsContent>
 
-          <ClientMetadata client={client} />
-        </div>
-      </ScrollArea>
+        <TabsContent
+          value="historial"
+          className="min-h-0 flex-1 data-[state=inactive]:hidden"
+        >
+          <ScrollArea className="h-full">
+            <div className="p-4">
+              <ClientContractsHistory clientId={client.id} />
+            </div>
+          </ScrollArea>
+        </TabsContent>
+      </Tabs>
     </>
+  );
+}
+
+function ClientGeneralTab({
+  client,
+  isPending,
+  update,
+}: {
+  client: Client;
+  isPending: boolean;
+  update: (input: UpdateClientInput) => Promise<void>;
+}) {
+  return (
+    <div className="flex flex-col gap-4 p-4">
+      <Card>
+        <CardHeader>
+          <CardTitleWithInfo info="Datos generales del cliente. Toca cualquier campo para editarlo en línea.">
+            Información general
+          </CardTitleWithInfo>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <ClientTypeToggleField
+            value={client.type}
+            isPending={isPending}
+            onChange={(type) => void update({ type }).catch(() => {})}
+          />
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <TextEditField
+              label="Nombre"
+              required
+              initialValue={client.name}
+              isPending={isPending}
+              onSubmit={(v) => update({ name: v ?? "" })}
+            />
+            <TextEditField
+              label="Empresa"
+              initialValue={client.company}
+              emptyText="Sin empresa"
+              isPending={isPending}
+              onSubmit={(v) => update({ company: v })}
+            />
+          </div>
+          <TextEditField
+            label="Teléfono"
+            type="tel"
+            initialValue={client.contact}
+            emptyText="Sin teléfono registrado"
+            isPending={isPending}
+            onSubmit={(v) => update({ contact: v })}
+          />
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitleWithInfo info="Correos asociados al cliente. El correo principal es la clave única en el sistema.">
+            Correos electrónicos
+          </CardTitleWithInfo>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <TextEditField
+            label="Correo principal"
+            required
+            type="email"
+            initialValue={client.email}
+            isPending={isPending}
+            validate={(v) =>
+              EMAIL_RE.test(v) ? null : "Correo electrónico no válido"
+            }
+            onSubmit={(v) => update({ email: v ?? "" })}
+          />
+          <TextEditField
+            label="Correo de facturación"
+            type="email"
+            initialValue={client.billingEmail}
+            emptyText="Usar correo principal"
+            isPending={isPending}
+            validate={(v) =>
+              v.length === 0 || EMAIL_RE.test(v)
+                ? null
+                : "Correo electrónico no válido"
+            }
+            onSubmit={(v) => update({ billingEmail: v })}
+          />
+        </CardContent>
+      </Card>
+
+      <ClientMetadata client={client} />
+    </div>
   );
 }
 

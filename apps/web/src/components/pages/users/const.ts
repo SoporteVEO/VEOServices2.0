@@ -135,6 +135,12 @@ export const subRoleBadge: Record<SubRole, BadgeStyle> = {
     className:
       "border-lime-500/50 bg-lime-500/10 text-lime-700 dark:text-lime-400",
   },
+  VENTAS: {
+    label: "Ventas",
+    variant: "outline",
+    className:
+      "border-rose-500/50 bg-rose-500/10 text-rose-700 dark:text-rose-400",
+  },
 };
 
 export const SUB_ROLE_OPTIONS: { value: SubRole; label: string; description: string }[] = [
@@ -177,5 +183,11 @@ export const SUB_ROLE_OPTIONS: { value: SubRole; label: string; description: str
     label: "Desarrollador",
     description:
       "Acceso al módulo de Desarrollo: tickets de errores reportados por Nexo y revisión de sus aprendizajes",
+  },
+  {
+    value: "VENTAS",
+    label: "Ventas",
+    description:
+      "Acceso al CRM: pipelines, negocios, contactos, tareas, plantillas de correo y envío por Gmail y WhatsApp",
   },
 ];
