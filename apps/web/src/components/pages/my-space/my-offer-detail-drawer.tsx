@@ -47,7 +47,9 @@ import {
 } from "@/components/ui/select";
 import { formatBriloShortDate, formatMoney } from "@/lib/format";
 import { GenerateOfferModal } from "./quotation/generate-offer-modal";
+import { AcceptOfferModal } from "./accept-offer-modal";
 import { BriloContractCombobox } from "./brilo-contract-combobox";
+import { BriloSyncNotice } from "./brilo-sync-notice";
 import { MyOfferDetailSkeleton } from "./my-offer-detail-skeleton";
 import { MyOfferDownloadButton } from "./my-offer-download-button";
 import { MyOfferHistory } from "./my-offer-history";
@@ -104,6 +106,7 @@ function MyOfferDetailDrawerBody({
   const { data: offer, isLoading, isError } = useOffer(offerId, {
     viewAsUserId,
   });
+  const [acceptOpen, setAcceptOpen] = useState(false);
 
   if (isLoading) {
     return <MyOfferDetailSkeleton />;
@@ -123,21 +126,32 @@ function MyOfferDetailDrawerBody({
   }
 
   return (
-    <MyOfferDetailContent
-      offer={offer}
-      onClose={onClose}
-      readOnly={Boolean(viewAsUserId)}
-    />
+    <>
+      <MyOfferDetailContent
+        key={offer.status}
+        offer={offer}
+        onClose={onClose}
+        onRequestAccept={() => setAcceptOpen(true)}
+        readOnly={Boolean(viewAsUserId)}
+      />
+      <AcceptOfferModal
+        offer={offer}
+        open={acceptOpen}
+        onOpenChange={setAcceptOpen}
+      />
+    </>
   );
 }
 
 function MyOfferDetailContent({
   offer,
   onClose,
+  onRequestAccept,
   readOnly,
 }: {
   offer: OfferDetail;
   onClose: () => void;
+  onRequestAccept: () => void;
   readOnly: boolean;
 }) {
   const updateMutation = useUpdateOffer();
@@ -156,6 +170,10 @@ function MyOfferDetailContent({
   }, [status, linkedContract, offer]);
 
   function handleStatusChange(next: OfferStatus) {
+    if (next === "ACCEPTED" && offer.status !== "ACCEPTED") {
+      onRequestAccept();
+      return;
+    }
     setStatus(next);
     if (next !== "ACCEPTED") {
       setLinkedContract(null);
@@ -312,10 +330,13 @@ function MyOfferDetailContent({
             description={
               readOnly
                 ? "Estás revisando esta cotización en modo lectura."
-                : "Actualiza el estado y vincula el contrato de Brilo correspondiente."
+                : "Actualiza el estado. Al aceptarla se crean la cotización y el contrato en Brilo para las vallas estáticas."
             }
           >
             <div className="flex flex-col gap-3">
+              {offer.status === "ACCEPTED" ? (
+                <BriloSyncNotice offer={offer} readOnly={readOnly} />
+              ) : null}
               <div className="space-y-1.5">
                 <Label htmlFor="offer-status">Estado</Label>
                 <Select

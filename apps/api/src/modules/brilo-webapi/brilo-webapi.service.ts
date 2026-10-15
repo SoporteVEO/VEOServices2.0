@@ -7,6 +7,10 @@ import {
 import type {
   BriloAbonoFacturaInput,
   BriloAbonoFacturaResponse,
+  BriloContratoInput,
+  BriloContratoResponse,
+  BriloCotizacionInput,
+  BriloCotizacionResponse,
 } from './brilo-webapi.types.js';
 
 interface BriloErrorBody {
@@ -137,6 +141,26 @@ export class BriloWebapiService {
     return raw;
   }
 
+  async createCotizacion(
+    input: BriloCotizacionInput,
+  ): Promise<BriloCotizacionResponse> {
+    const raw = await this.request<unknown>('/Vallas/Cotizaciones', {
+      method: 'POST',
+      body: JSON.stringify(input),
+    });
+    return unwrapSingle<BriloCotizacionResponse>(raw);
+  }
+
+  async createContrato(
+    input: BriloContratoInput,
+  ): Promise<BriloContratoResponse> {
+    const raw = await this.request<unknown>('/Vallas/Contratos', {
+      method: 'POST',
+      body: JSON.stringify(input),
+    });
+    return unwrapSingle<BriloContratoResponse>(raw);
+  }
+
   private buildAbonoFacturaBody(
     input: BriloAbonoFacturaInput,
   ): Record<string, unknown> {
@@ -154,4 +178,25 @@ export class BriloWebapiService {
     if (typeof input.bcoId === 'number') body.bcoId = input.bcoId;
     return body;
   }
+}
+
+/**
+ * The Vallas write endpoints document their response as the saved model, but
+ * Brilo is inconsistent about wrapping it in an array or a `data` envelope and
+ * about key casing, so all of those shapes are normalized to camelCase keys.
+ */
+function unwrapSingle<T>(raw: unknown): T {
+  let value = raw;
+  if (value && typeof value === 'object' && !Array.isArray(value)) {
+    const envelope = value as Record<string, unknown>;
+    value = envelope.data ?? envelope.Data ?? value;
+  }
+  if (Array.isArray(value)) value = value[0];
+  if (!value || typeof value !== 'object') return {} as T;
+
+  const normalized: Record<string, unknown> = {};
+  for (const [key, val] of Object.entries(value as Record<string, unknown>)) {
+    normalized[key.charAt(0).toLowerCase() + key.slice(1)] = val;
+  }
+  return normalized as T;
 }

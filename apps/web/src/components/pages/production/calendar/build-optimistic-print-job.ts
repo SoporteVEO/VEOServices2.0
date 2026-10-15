@@ -10,22 +10,28 @@ import type {
  * A provisional bar rendered the instant a backlog card is dropped, so the
  * calendar never waits on the round trip. The phase mix mirrors how the server
  * schedules a job - print time derived from the machine's throughput, set up
- * and cooldown from its defaults - so the bar keeps its length once the real
- * job arrives.
+ * and cooldown from its defaults, or the fixed minutes of a color test - so
+ * the bar keeps its length once the real job arrives.
  */
 export function buildOptimisticPrintJob(
   item: PrintBacklogItem,
   machine: PrintingMachine,
   startAt: Date,
 ): PrintJob {
-  const { setupMinutes, printMinutes, cooldownMinutes } = computeJobMinutes(
-    item.areaM2,
-    machine,
-  );
+  const { setupMinutes, printMinutes, cooldownMinutes } =
+    item.kind === "COLOR_TEST"
+      ? {
+          setupMinutes: 0,
+          printMinutes: item.durationMinutes ?? 0,
+          cooldownMinutes: 0,
+        }
+      : computeJobMinutes(item.areaM2, machine);
   const plannedTotalMinutes = setupMinutes + printMinutes + cooldownMinutes;
 
   return {
     id: `optimistic:${item.id}`,
+    kind: item.kind,
+    colorTestId: item.colorTestId,
     machineId: machine.id,
     machineName: machine.name,
     status: "SCHEDULED",
@@ -46,10 +52,10 @@ export function buildOptimisticPrintJob(
     actualCooldownMinutes: null,
     actualTotalMinutes: null,
     startDelayMinutes: null,
-    notes: null,
+    notes: item.notes,
     updatedAt: new Date().toISOString(),
     item: {
-      id: item.id,
+      id: item.productionOrderItemId,
       productionOrderId: item.productionOrderId,
       status: item.status,
       billboardCode: item.billboardCode,

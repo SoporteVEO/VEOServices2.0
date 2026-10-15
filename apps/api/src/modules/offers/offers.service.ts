@@ -6,6 +6,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import {
+  BriloSyncStatus,
   DigitalCampaignArt,
   DigitalCampaignDeal,
   OfferEventType,
@@ -26,6 +27,7 @@ import {
 } from '../production-orders/production-orders.service.js';
 import { S3StorageService } from '../s3-images/s3-storage.service.js';
 import { ClientsService } from '../clients/clients.service.js';
+import { AcceptOfferDto } from './dto/accept-offer.dto.js';
 import { CreateOfferDto, CreateOfferItemDto } from './dto/create-offer.dto.js';
 import { EditOfferDto } from './dto/edit-offer.dto.js';
 import type { ListBriloContractsFilters } from './dto/list-brilo-contracts-query.dto.js';
@@ -38,6 +40,12 @@ import {
   type BriloContractWithClientRow,
   type OfferContractData,
 } from './offer-contract.js';
+import { briloStaticItems } from './offer-brilo-documents.js';
+import {
+  OfferBriloSyncService,
+  type BriloAcceptContext,
+  type PaginatedBriloClients,
+} from './offer-brilo-sync.service.js';
 import {
   buildEditMessage,
   diffHeader,
@@ -53,6 +61,15 @@ const CONTRACT_PDF_FOLDER = 'contracts';
 const DEFAULT_PAGE_SIZE = 25;
 const MAX_PAGE_SIZE = 100;
 const BRILO_CONTRACTS_PAGE_SIZE = 30;
+
+const CLEARED_BRILO_LINK = {
+  briloMconId: null,
+  briloMcotId: null,
+  briloCliId: null,
+  briloEjecId: null,
+  briloSyncStatus: null,
+  briloSyncError: null,
+} satisfies Prisma.OfferCreatedUpdateInput;
 
 const BRILO_CONTRACTS_PAGE_SQL = `
 SELECT
@@ -111,6 +128,9 @@ export interface OfferListItem {
   advisorFullName: string | null;
   status: OfferStatus;
   briloMconId: number | null;
+  briloMcotId: number | null;
+  briloSyncStatus: BriloSyncStatus | null;
+  briloSyncError: string | null;
   subtotalImpression: number;
   ivaImpression: number;
   totalImpression: number;
@@ -282,6 +302,7 @@ export class OffersService {
     private readonly brilo: BriloDatabaseService,
     private readonly productionOrders: ProductionOrdersService,
     private readonly pantallasPlacement: PantallasPlacementService,
+    private readonly briloSync: OfferBriloSyncService,
   ) {}
 
   async create(
@@ -847,6 +868,15 @@ export class OffersService {
   ): Promise<OfferDetail> {
     const existing = await this.findOwnedOffer(id, userId);
 
+    if (
+      dto.status === OfferStatus.ACCEPTED &&
+      existing.status !== OfferStatus.ACCEPTED
+    ) {
+      throw new BadRequestException(
+        'Usa la acción «Aceptada» para aceptar la cotización y generar sus documentos en Brilo',
+      );
+    }
+
     if (dto.status === OfferStatus.ACCEPTED) {
       if (!dto.briloMconId) {
         throw new BadRequestException(
@@ -863,10 +893,9 @@ export class OffersService {
       await this.prisma.$transaction(async (tx) => {
         await tx.offerCreated.update({
           where: { id },
-          data: {
-            status: dto.status,
-            briloMconId: willBeAccepted ? dto.briloMconId! : null,
-          },
+          data: willBeAccepted
+            ? { status: dto.status, briloMconId: dto.briloMconId! }
+            : { status: dto.status, ...CLEARED_BRILO_LINK },
         });
 
         let productionOrderMeta: ProductionOrderNotificationMeta | null = null;
@@ -1047,7 +1076,7 @@ export class OffersService {
         where: { id },
         data: {
           status: OfferStatus.DECLINED,
-          briloMconId: null,
+          ...CLEARED_BRILO_LINK,
         },
         include: this.offerListInclude(),
       });
@@ -1071,30 +1100,72 @@ export class OffersService {
     return this.mapToListItem(updated);
   }
 
+  /**
+   * Offers with static billboards get their Brilo cotización and posted
+   * contrato created here, then linked automatically. Offers without static
+   * billboards keep linking an existing Brilo contract by hand.
+   */
   async acceptOffer(
     id: string,
     userId: string,
-    briloMconId: number,
+    dto: AcceptOfferDto,
   ): Promise<OfferListItem> {
     const offer = await this.findOwnedOffer(id, userId);
-    if (offer.status !== OfferStatus.PENDING) {
-      throw new BadRequestException(
-        'Solo se pueden aceptar cotizaciones pendientes',
-      );
+    if (offer.status === OfferStatus.ACCEPTED) {
+      throw new BadRequestException('La cotización ya está aceptada');
     }
 
-    await this.assertBriloContractExists(briloMconId);
+    const items = await this.prisma.offerCreatedItem.findMany({
+      where: { offerId: id },
+      select: { itemType: true, billboardId: true },
+    });
+    const createsBriloDocuments = briloStaticItems(items).length > 0;
 
-    const { row: updated, productionOrderMeta } =
-      await this.prisma.$transaction(async (tx) => {
-        const row = await tx.offerCreated.update({
-          where: { id },
-          data: {
-            status: OfferStatus.ACCEPTED,
-            briloMconId,
-          },
-          include: this.offerListInclude(),
-        });
+    let acceptData: Prisma.OfferCreatedUpdateInput;
+    let message: string;
+    let changes: OfferChangeSet;
+
+    if (createsBriloDocuments) {
+      if (!dto.briloCliId || !dto.briloEjecId) {
+        throw new BadRequestException(
+          'Selecciona el cliente y el ejecutivo de Brilo para generar la cotización y el contrato',
+        );
+      }
+      await this.briloSync.assertCanCreateDocuments(
+        dto.briloCliId,
+        dto.briloEjecId,
+      );
+      acceptData = {
+        status: OfferStatus.ACCEPTED,
+        ...CLEARED_BRILO_LINK,
+        briloCliId: dto.briloCliId,
+        briloEjecId: dto.briloEjecId,
+        briloSyncStatus: BriloSyncStatus.PENDING,
+      };
+      message = 'Cotización aceptada; generando cotización y contrato en Brilo';
+      changes = { status: { from: offer.status, to: OfferStatus.ACCEPTED } };
+    } else {
+      if (!dto.briloMconId) {
+        throw new BadRequestException(
+          'Debes vincular un contrato de Brilo para marcar la cotización como aceptada',
+        );
+      }
+      await this.assertBriloContractExists(dto.briloMconId);
+      acceptData = {
+        status: OfferStatus.ACCEPTED,
+        ...CLEARED_BRILO_LINK,
+        briloMconId: dto.briloMconId,
+      };
+      message = `Cotización aceptada y vinculada al contrato Brilo #${dto.briloMconId}`;
+      changes = {
+        status: { from: offer.status, to: OfferStatus.ACCEPTED },
+        briloMconId: { from: null, to: dto.briloMconId },
+      };
+    }
+
+    const { productionOrderMeta } = await this.prisma.$transaction(
+      async (tx) => {
+        await tx.offerCreated.update({ where: { id }, data: acceptData });
 
         await this.registerDigitalCampaignsForOffer(tx, id);
         const result = await this.productionOrders.createForAcceptedOffer(
@@ -1105,19 +1176,16 @@ export class OffersService {
         await this.recordEvent(tx, {
           offerId: id,
           type: OfferEventType.ACCEPTED,
-          message: `CotizaciÃ³n aceptada y vinculada al contrato Brilo #${briloMconId}`,
-          changes: {
-            status: { from: offer.status, to: OfferStatus.ACCEPTED },
-            briloMconId: { from: null, to: briloMconId },
-          },
+          message,
+          changes,
           actorUserId: userId,
         });
 
         return {
-          row,
           productionOrderMeta: result.created ? result.meta : null,
         };
-      });
+      },
+    );
 
     if (productionOrderMeta) {
       void this.productionOrders.notifyProductionUsersOfNewOrder(
@@ -1125,7 +1193,59 @@ export class OffersService {
       );
     }
 
-    return this.mapToListItem(updated);
+    if (createsBriloDocuments) {
+      await this.briloSync.sync(id, userId);
+    }
+
+    return this.findListItem(id);
+  }
+
+  /** Retries the Brilo documents of an accepted offer whose sync did not finish. */
+  async retryBriloSync(id: string, userId: string): Promise<OfferListItem> {
+    await this.findOwnedOffer(id, userId);
+    const offer = await this.prisma.offerCreated.findUniqueOrThrow({
+      where: { id },
+      select: { status: true, briloSyncStatus: true, briloMconId: true },
+    });
+    const retryable =
+      offer.briloSyncStatus === BriloSyncStatus.FAILED ||
+      offer.briloSyncStatus === BriloSyncStatus.PENDING;
+    if (
+      offer.status !== OfferStatus.ACCEPTED ||
+      !retryable ||
+      offer.briloMconId
+    ) {
+      throw new BadRequestException(
+        'Esta cotización no tiene una sincronización con Brilo pendiente',
+      );
+    }
+
+    await this.briloSync.sync(id, userId);
+    return this.findListItem(id);
+  }
+
+  async getBriloAcceptContext(
+    id: string,
+    userId: string,
+  ): Promise<BriloAcceptContext> {
+    await this.findOwnedOffer(id, userId);
+    return this.briloSync.getAcceptContext(id);
+  }
+
+  searchBriloClients(filters: {
+    search?: string;
+    page?: number;
+    pageSize?: number;
+  }): Promise<PaginatedBriloClients> {
+    return this.briloSync.searchClients(filters);
+  }
+
+  private async findListItem(id: string): Promise<OfferListItem> {
+    const row = await this.prisma.offerCreated.findUniqueOrThrow({
+      where: { id },
+      include: this.offerListInclude(),
+    });
+    return this.mapToListItem(row);
   }
 
   async getDownloadUrl(
@@ -1602,6 +1722,9 @@ export class OffersService {
       advisorFullName: string | null;
       status: OfferStatus;
       briloMconId: number | null;
+      briloMcotId: number | null;
+      briloSyncStatus: BriloSyncStatus | null;
+      briloSyncError: string | null;
       subtotalImpression: number;
       ivaImpression: number;
       totalImpression: number;
@@ -1683,6 +1806,9 @@ export class OffersService {
     advisorFullName: string | null;
     status: OfferStatus;
     briloMconId: number | null;
+    briloMcotId: number | null;
+    briloSyncStatus: BriloSyncStatus | null;
+    briloSyncError: string | null;
     subtotalImpression: number;
     ivaImpression: number;
     totalImpression: number;
@@ -1713,6 +1839,9 @@ export class OffersService {
       advisorFullName: row.advisorFullName,
       status: row.status,
       briloMconId: row.briloMconId,
+      briloMcotId: row.briloMcotId,
+      briloSyncStatus: row.briloSyncStatus,
+      briloSyncError: row.briloSyncError,
       subtotalImpression: row.subtotalImpression,
       ivaImpression: row.ivaImpression,
       totalImpression: row.totalImpression,

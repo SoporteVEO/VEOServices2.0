@@ -44,6 +44,11 @@ export const PHASE_SWATCHES: Record<PrintPhase, string> = {
   COOLDOWN: "bg-slate-400",
 };
 
+export const COLOR_TEST_LABEL = "Prueba de color";
+export const COLOR_TEST_FILL = "bg-fuchsia-500/90";
+export const COLOR_TEST_SWATCH = "bg-fuchsia-500";
+export const DEFAULT_COLOR_TEST_MINUTES = 30;
+
 export const PRINT_JOB_STATUS_LABELS: Record<PrintJobStatus, string> = {
   SCHEDULED: "Agendado",
   SETUP: "En set up",
@@ -178,5 +183,6 @@ export function isJobLocked(status: PrintJobStatus): boolean {
 }
 
 export function jobTitle(job: PrintJob): string {
-  return job.item.billboardCode ?? job.order.offerNumber;
+  const label = job.item.billboardCode ?? job.order.offerNumber;
+  return job.kind === "COLOR_TEST" ? `Prueba · ${label}` : label;
 }

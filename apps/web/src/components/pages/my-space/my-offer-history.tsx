@@ -13,9 +13,12 @@ const EVENT_LABELS: Record<OfferEventType, string> = {
   UPDATED: "Datos actualizados",
   ITEMS_UPDATED: "Ítems actualizados",
   PDF_ATTACHED: "PDF regenerado",
+  CONTRACT_GENERATED: "Contrato generado",
   ACCEPTED: "Aceptada",
   DECLINED: "Rechazada",
   REOPENED: "Reabierta",
+  BRILO_SYNCED: "Documentos creados en Brilo",
+  BRILO_SYNC_FAILED: "Error al crear en Brilo",
 };
 
 const EVENT_DOT: Record<OfferEventType, string> = {
@@ -23,9 +26,12 @@ const EVENT_DOT: Record<OfferEventType, string> = {
   UPDATED: "bg-amber-500",
   ITEMS_UPDATED: "bg-amber-500",
   PDF_ATTACHED: "bg-slate-400",
+  CONTRACT_GENERATED: "bg-slate-400",
   ACCEPTED: "bg-emerald-500",
   DECLINED: "bg-red-500",
   REOPENED: "bg-violet-500",
+  BRILO_SYNCED: "bg-emerald-500",
+  BRILO_SYNC_FAILED: "bg-red-500",
 };
 
 const MONEY_FIELDS = new Set([

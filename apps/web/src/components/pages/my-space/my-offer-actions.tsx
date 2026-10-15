@@ -15,6 +15,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { AcceptOfferModal } from "./accept-offer-modal";
+import { BriloRetryButton, needsBriloRetry } from "./brilo-sync-notice";
 import { ContractDownloadButton } from "./contract/contract-download-button";
 import { MyOfferDownloadButton } from "./my-offer-download-button";
 import { useMySpaceViewAs } from "./my-space-view-as-context";
@@ -81,8 +82,13 @@ export function MyOfferActions({ offer }: MyOfferActionsProps) {
             Aceptada
           </Button>
         ) : null}
+        {!readOnly && needsBriloRetry(offer) ? (
+          <BriloRetryButton offer={offer} />
+        ) : null}
         <MyOfferDownloadButton offer={offer} />
-        {isAccepted ? <ContractDownloadButton offerId={offer.id} /> : null}
+        {isAccepted && offer.briloMconId ? (
+          <ContractDownloadButton offerId={offer.id} />
+        ) : null}
       </div>
 
       <AcceptOfferModal
@@ -107,7 +113,8 @@ export function MyOfferActions({ offer }: MyOfferActionsProps) {
             <DialogDescription>
               Esta cotización ya fue aceptada y vinculada a un contrato de
               Brilo. Si la rechazas se desvinculará el contrato y se eliminarán
-              los registros de uso de pantallas asociados.
+              los registros de uso de pantallas asociados. El contrato seguirá
+              posteado en Brilo: anúlalo allí para detener la facturación.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>

@@ -14,6 +14,8 @@ export type PrintJobAction =
 
 export type PrintJobPhase = "SETUP" | "PRINTING" | "COOLDOWN";
 
+export type PrintJobKind = "PRODUCTION" | "COLOR_TEST";
+
 export interface PrintingMachine {
   id: string;
   name: string;
@@ -48,6 +50,8 @@ export interface PrintJobOrder {
 
 export interface PrintJob {
   id: string;
+  kind: PrintJobKind;
+  colorTestId: string | null;
   machineId: string;
   machineName: string;
   status: PrintJobStatus;
@@ -75,8 +79,18 @@ export interface PrintJob {
   createdBy: { id: string; firstName: string; lastName: string | null } | null;
 }
 
+/**
+ * A card in the "Sin agendar" panel. `id` is the order item for a production
+ * print and the color test for a color test.
+ */
 export interface PrintBacklogItem {
   id: string;
+  kind: PrintJobKind;
+  productionOrderItemId: string;
+  colorTestId: string | null;
+  /** Fixed slot length of a color test; production prints derive theirs. */
+  durationMinutes: number | null;
+  notes: string | null;
   productionOrderId: string;
   status: "RECEIVED" | "IN_PRODUCTION" | "COMPLETED" | "CANCELLED";
   billboardCode: string | null;
@@ -90,5 +104,13 @@ export interface PrintBacklogItem {
   customerName: string;
   customerCompany: string | null;
   areaM2: number;
+  createdAt: string;
+}
+
+export interface PrintColorTest {
+  id: string;
+  productionOrderItemId: string;
+  durationMinutes: number;
+  notes: string | null;
   createdAt: string;
 }

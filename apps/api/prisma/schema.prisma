@@ -8,58 +8,59 @@ datasource db {
 }
 
 model User {
-  id                    String                 @id
-  publicId              String                 @unique @default(uuid()) @map("public_id")
-  firstName             String                 @map("first_name")
-  lastName              String?                @map("last_name")
-  email                 String                 @unique
-  role                  Role                   @default(USER)
-  subRoles              SubRole[]              @default([]) @map("sub_roles")
-  disabled              Boolean                @default(false)
-  lastLoginAt           DateTime?              @map("last_login_at")
-  createdAt             DateTime               @default(now())
-  updatedAt             DateTime               @updatedAt
-  emailVerified         Boolean                @default(false)
-  image                 String?
-  accounts              Account[]
-  sessions              Session[]
-  s3Images              S3Image[]
-  teamMember            TeamMember?            @relation("TeamMemberUser")
-  teamMembersAsBoss     TeamMember[]           @relation("TeamMemberDirectBoss")
-  absences              Absence[]
-  notifications         Notification[]
-  metrics               UserMetrics?
-  metricsDays           UserMetricsDay[]
-  offersCreated         OfferCreated[]
-  installationsAssigned ProductionOrderItem[]  @relation("ProductionOrderInstaller")
-  vulcanizadosAssigned  ProductionOrderItem[]  @relation("ProductionOrderVulcanizador")
-  fleetVehiclesCreated  FleetVehicle[]         @relation("FleetVehicleCreatedBy")
-  fleetServicesCreated  FleetMaintenance[]     @relation("FleetMaintenanceCreatedBy")
-  printJobsCreated      PrintJob[]             @relation("PrintJobCreatedBy")
-  maintenanceAssigned   MaintenanceJob[]       @relation("MaintenanceAssignee")
-  maintenanceCreated    MaintenanceJob[]       @relation("MaintenanceCreatedBy")
-  maintenancePhotos     MaintenancePhoto[]     @relation("MaintenancePhotoUploader")
-  maintenanceEvents     MaintenanceEvent[]     @relation("MaintenanceEventActor")
-  offerEvents           OfferEvent[]           @relation("OfferEventActor")
-  productionOrders      ProductionOrder[]      @relation("ProductionOrderCreatedBy")
-  pushSubscriptions     PushSubscription[]
-  agentThreads          AgentThread[]
-  agentIssuesReported   AgentIssue[]           @relation("AgentIssueReporter")
-  agentIssuesResolved   AgentIssue[]           @relation("AgentIssueResolver")
-  agentFeedback         AgentFeedback[]        @relation("AgentFeedbackAuthor")
-  agentFeedbackReviewed AgentFeedback[]        @relation("AgentFeedbackReviewer")
-  learningsProposed     AgentLearning[]        @relation("AgentLearningProposer")
-  learningsReviewed     AgentLearning[]        @relation("AgentLearningReviewer")
-  crmDealsOwned         CrmDeal[]              @relation("CrmDealOwner")
-  crmDealsCreated       CrmDeal[]              @relation("CrmDealCreatedBy")
-  crmActivities         CrmActivity[]          @relation("CrmActivityActor")
-  crmTasksAssigned      CrmTask[]              @relation("CrmTaskAssignee")
-  crmTasksCreated       CrmTask[]              @relation("CrmTaskCreatedBy")
-  crmEmailTemplates     CrmEmailTemplate[]
-  crmMessages           CrmMessage[]
-  crmConnections        CrmChannelConnection[]
-  crmDealSites          CrmDealSite[]          @relation("CrmDealSiteCreatedBy")
-  patchNotesCreated     PatchNote[]            @relation("PatchNoteCreatedBy")
+  id                     String                 @id
+  publicId               String                 @unique @default(uuid()) @map("public_id")
+  firstName              String                 @map("first_name")
+  lastName               String?                @map("last_name")
+  email                  String                 @unique
+  role                   Role                   @default(USER)
+  subRoles               SubRole[]              @default([]) @map("sub_roles")
+  disabled               Boolean                @default(false)
+  lastLoginAt            DateTime?              @map("last_login_at")
+  createdAt              DateTime               @default(now())
+  updatedAt              DateTime               @updatedAt
+  emailVerified          Boolean                @default(false)
+  image                  String?
+  accounts               Account[]
+  sessions               Session[]
+  s3Images               S3Image[]
+  teamMember             TeamMember?            @relation("TeamMemberUser")
+  teamMembersAsBoss      TeamMember[]           @relation("TeamMemberDirectBoss")
+  absences               Absence[]
+  notifications          Notification[]
+  metrics                UserMetrics?
+  metricsDays            UserMetricsDay[]
+  offersCreated          OfferCreated[]
+  installationsAssigned  ProductionOrderItem[]  @relation("ProductionOrderInstaller")
+  vulcanizadosAssigned   ProductionOrderItem[]  @relation("ProductionOrderVulcanizador")
+  fleetVehiclesCreated   FleetVehicle[]         @relation("FleetVehicleCreatedBy")
+  fleetServicesCreated   FleetMaintenance[]     @relation("FleetMaintenanceCreatedBy")
+  printJobsCreated       PrintJob[]             @relation("PrintJobCreatedBy")
+  printColorTestsCreated PrintColorTest[]       @relation("PrintColorTestCreatedBy")
+  maintenanceAssigned    MaintenanceJob[]       @relation("MaintenanceAssignee")
+  maintenanceCreated     MaintenanceJob[]       @relation("MaintenanceCreatedBy")
+  maintenancePhotos      MaintenancePhoto[]     @relation("MaintenancePhotoUploader")
+  maintenanceEvents      MaintenanceEvent[]     @relation("MaintenanceEventActor")
+  offerEvents            OfferEvent[]           @relation("OfferEventActor")
+  productionOrders       ProductionOrder[]      @relation("ProductionOrderCreatedBy")
+  pushSubscriptions      PushSubscription[]
+  agentThreads           AgentThread[]
+  agentIssuesReported    AgentIssue[]           @relation("AgentIssueReporter")
+  agentIssuesResolved    AgentIssue[]           @relation("AgentIssueResolver")
+  agentFeedback          AgentFeedback[]        @relation("AgentFeedbackAuthor")
+  agentFeedbackReviewed  AgentFeedback[]        @relation("AgentFeedbackReviewer")
+  learningsProposed      AgentLearning[]        @relation("AgentLearningProposer")
+  learningsReviewed      AgentLearning[]        @relation("AgentLearningReviewer")
+  crmDealsOwned          CrmDeal[]              @relation("CrmDealOwner")
+  crmDealsCreated        CrmDeal[]              @relation("CrmDealCreatedBy")
+  crmActivities          CrmActivity[]          @relation("CrmActivityActor")
+  crmTasksAssigned       CrmTask[]              @relation("CrmTaskAssignee")
+  crmTasksCreated        CrmTask[]              @relation("CrmTaskCreatedBy")
+  crmEmailTemplates      CrmEmailTemplate[]
+  crmMessages            CrmMessage[]
+  crmConnections         CrmChannelConnection[]
+  crmDealSites           CrmDealSite[]          @relation("CrmDealSiteCreatedBy")
+  patchNotesCreated      PatchNote[]            @relation("PatchNoteCreatedBy")
 
   @@map("users")
 }
@@ -821,6 +822,12 @@ enum OfferStatus {
   ACCEPTED
 }
 
+enum BriloSyncStatus {
+  PENDING
+  SYNCED
+  FAILED
+}
+
 enum OfferItemType {
   STATIC_BILLBOARD
   DIGITAL_BILLBOARD
@@ -842,6 +849,12 @@ model OfferCreated {
   advisorFullName    String?            @map("advisor_full_name")
   status             OfferStatus        @default(PENDING)
   briloMconId        Int?               @map("brilo_mcon_id")
+  /// Brilo cotización created from the static lines when the offer is accepted.
+  briloMcotId        Int?               @map("brilo_mcot_id")
+  briloCliId         Int?               @map("brilo_cli_id")
+  briloEjecId        Int?               @map("brilo_ejec_id")
+  briloSyncStatus    BriloSyncStatus?   @map("brilo_sync_status")
+  briloSyncError     String?            @map("brilo_sync_error")
   subtotalImpression Float              @map("subtotal_impression")
   ivaImpression      Float              @map("iva_impression")
   totalImpression    Float              @map("total_impression")
@@ -876,6 +889,8 @@ enum OfferEventType {
   ACCEPTED
   DECLINED
   REOPENED
+  BRILO_SYNCED
+  BRILO_SYNC_FAILED
 }
 
 /// Append-only audit trail for offers. Powers the "Historial" tab and answers
@@ -968,6 +983,29 @@ enum PrintJobStatus {
   CANCELLED
 }
 
+enum PrintJobKind {
+  PRODUCTION
+  COLOR_TEST
+}
+
+/// A color test requested for a billboard before its real print. It waits in
+/// the backlog until dropped on a machine, which creates a `COLOR_TEST` job.
+model PrintColorTest {
+  id                    String              @id @default(uuid())
+  productionOrderItemId String              @map("production_order_item_id")
+  productionOrderItem   ProductionOrderItem @relation(fields: [productionOrderItemId], references: [id], onDelete: Cascade)
+  durationMinutes       Int                 @map("duration_minutes")
+  notes                 String?
+  createdByUserId       String?             @map("created_by_user_id")
+  createdBy             User?               @relation("PrintColorTestCreatedBy", fields: [createdByUserId], references: [id], onDelete: SetNull)
+  printJobs             PrintJob[]
+  createdAt             DateTime            @default(now())
+  updatedAt             DateTime            @updatedAt
+
+  @@index([productionOrderItemId])
+  @@map("print_color_tests")
+}
+
 /// One pass of a static billboard through a printing machine. Planned minutes
 /// and area are frozen at scheduling time; the `*StartedAt` columns are stamped
 /// as the operator advances the job so analytics can compare planned versus
@@ -979,6 +1017,9 @@ model PrintJob {
   productionOrderItemId String              @map("production_order_item_id")
   productionOrderItem   ProductionOrderItem @relation(fields: [productionOrderItemId], references: [id], onDelete: Cascade)
   status                PrintJobStatus      @default(SCHEDULED)
+  kind                  PrintJobKind        @default(PRODUCTION)
+  colorTestId           String?             @map("color_test_id")
+  colorTest             PrintColorTest?     @relation(fields: [colorTestId], references: [id], onDelete: Cascade)
 
   scheduledStartAt DateTime @map("scheduled_start_at")
   setupMinutes     Int      @map("setup_minutes")
@@ -1004,6 +1045,7 @@ model PrintJob {
 
   @@index([machineId, scheduledStartAt])
   @@index([productionOrderItemId])
+  @@index([colorTestId])
   @@index([status])
   @@index([scheduledStartAt])
   @@map("print_jobs")
@@ -1065,6 +1107,7 @@ model ProductionOrderItem {
   vulcanizadoImageS3Key   String?               @map("vulcanizado_image_s3_key")
   installationImages      S3Image[]
   printJobs               PrintJob[]
+  colorTests              PrintColorTest[]
   createdAt               DateTime              @default(now())
   updatedAt               DateTime              @updatedAt
 

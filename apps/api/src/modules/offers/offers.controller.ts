@@ -134,6 +134,41 @@ export class OffersController {
     });
   }
 
+  @Get('brilo-clients')
+  async listBriloClients(
+    @Query('search') search?: string,
+    @Query('page') pageStr?: string,
+    @Query('pageSize') pageSizeStr?: string,
+  ) {
+    const page = pageStr ? Number(pageStr) : undefined;
+    const pageSize = pageSizeStr ? Number(pageSizeStr) : undefined;
+    if (pageStr != null && (!Number.isFinite(page) || (page ?? 0) < 1)) {
+      throw new BadRequestException('page debe ser un entero positivo');
+    }
+    if (
+      pageSizeStr != null &&
+      (!Number.isFinite(pageSize) || (pageSize ?? 0) < 1)
+    ) {
+      throw new BadRequestException('pageSize debe ser un entero positivo');
+    }
+
+    return this.service.searchBriloClients({
+      search: search?.trim() || undefined,
+      page,
+      pageSize,
+    });
+  }
+
+  /** Brilo client and executive suggestions shown before accepting an offer. */
+  @Get(':id/brilo-accept-context')
+  async getBriloAcceptContext(
+    @Param('id') id: string,
+    @CurrentUser() user: AuthUser,
+  ) {
+    const data = await this.service.getBriloAcceptContext(id, user.id);
+    return { data };
+  }
+
   @Get(':id/download-url')
   async getDownloadUrl(
     @Param('id') id: string,
@@ -230,11 +265,13 @@ export class OffersController {
     @Body() dto: AcceptOfferDto,
     @CurrentUser() user: AuthUser,
   ) {
-    const updated = await this.service.acceptOffer(
-      id,
-      user.id,
-      dto.briloMconId,
-    );
+    const updated = await this.service.acceptOffer(id, user.id, dto);
+    return { data: updated };
+  }
+
+  @Post(':id/brilo-sync')
+  async retryBriloSync(@Param('id') id: string, @CurrentUser() user: AuthUser) {
+    const updated = await this.service.retryBriloSync(id, user.id);
     return { data: updated };
   }
 }

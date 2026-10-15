@@ -2,7 +2,7 @@
 
 import { useCallback, useMemo, useRef, useState } from "react";
 import { addDays } from "date-fns";
-import { Settings2 } from "lucide-react";
+import { Palette, Settings2 } from "lucide-react";
 import { toast } from "sonner";
 import {
   usePrintBacklog,
@@ -10,6 +10,7 @@ import {
   usePrintingMachines,
 } from "@/api/printing/printing.get";
 import {
+  useDeletePrintColorTest,
   useSchedulePrintJob,
   useUpdatePrintJob,
 } from "@/api/printing/printing.mutations";
@@ -22,6 +23,7 @@ import { Button } from "@/components/ui/button";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import { cn } from "@/lib/utils";
 import { buildOptimisticPrintJob } from "./build-optimistic-print-job";
+import { CreateColorTestDialog } from "./create-color-test-dialog";
 import { PrintJobDialog } from "./print-job-dialog";
 import { PrintingBacklogPanel } from "./printing-backlog-panel";
 import { PrintingSettingsDialog } from "./printing-settings-dialog";
@@ -32,6 +34,8 @@ import {
   type PrintJobReschedule,
 } from "./printing-gantt";
 import {
+  COLOR_TEST_LABEL,
+  COLOR_TEST_SWATCH,
   DAYS_VISIBLE,
   PHASE_LABELS,
   PHASE_SWATCHES,
@@ -56,6 +60,7 @@ export function ProductionCalendar() {
   } | null>(null);
   const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [colorTestOpen, setColorTestOpen] = useState(false);
 
   const ganttApi = useRef<GanttApi<PrintJob> | null>(null);
 
@@ -73,6 +78,7 @@ export function ProductionCalendar() {
 
   const schedule = useSchedulePrintJob();
   const update = useUpdatePrintJob();
+  const deleteColorTest = useDeletePrintColorTest();
 
   const activeMachines = machines ?? [];
 
@@ -98,11 +104,28 @@ export function ProductionCalendar() {
     setBacklogDrag({
       item,
       preview: {
-        label: item.billboardCode ?? "Valla",
+        label:
+          item.kind === "COLOR_TEST"
+            ? `Prueba · ${item.billboardCode ?? "Valla"}`
+            : (item.billboardCode ?? "Valla"),
         areaM2: item.areaM2,
+        fixedMinutes: item.kind === "COLOR_TEST" ? item.durationMinutes : null,
       },
     });
   }, []);
+
+  async function handleDeleteColorTest(item: PrintBacklogItem) {
+    try {
+      await deleteColorTest.mutateAsync(item.id);
+      toast.success("Prueba de color eliminada.");
+    } catch (err) {
+      toast.error(
+        err instanceof Error
+          ? err.message
+          : "No se pudo eliminar la prueba de color.",
+      );
+    }
+  }
 
   const handleBacklogDragEnd = useCallback(() => setBacklogDrag(null), []);
 
@@ -120,7 +143,9 @@ export function ProductionCalendar() {
         // No print time is sent: the server derives it from the target
         // machine's throughput, which is the only authority on duration.
         input: {
-          productionOrderItemId: current.item.id,
+          ...(current.item.kind === "COLOR_TEST"
+            ? { colorTestId: current.item.id }
+            : { productionOrderItemId: current.item.id }),
           machineId: drop.machineId,
           scheduledStartAt: drop.startAt.toISOString(),
         },
@@ -176,6 +201,7 @@ export function ProductionCalendar() {
         draggingItemId={backlogDrag?.item.id ?? null}
         onDragStart={handleBacklogDragStart}
         onDragEnd={handleBacklogDragEnd}
+        onDeleteColorTest={handleDeleteColorTest}
       />
 
       <div className="flex min-h-0 min-w-0 flex-1 flex-col">
@@ -188,6 +214,14 @@ export function ProductionCalendar() {
           toolbar={
             <>
               <PhaseLegend />
+              <Button
+                variant="outline"
+                sizeVariant="sm"
+                icon={Palette}
+                onClick={() => setColorTestOpen(true)}
+              >
+                Prueba de color
+              </Button>
               <Button
                 variant="outline"
                 sizeVariant="sm"
@@ -222,6 +256,11 @@ export function ProductionCalendar() {
         open={settingsOpen}
         onOpenChange={setSettingsOpen}
       />
+
+      <CreateColorTestDialog
+        open={colorTestOpen}
+        onOpenChange={setColorTestOpen}
+      />
     </div>
   );
 }
@@ -243,6 +282,13 @@ function PhaseLegend() {
           </span>
         ),
       )}
+      <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+        <span
+          className={cn("size-2.5 rounded-sm", COLOR_TEST_SWATCH)}
+          aria-hidden
+        />
+        {COLOR_TEST_LABEL}
+      </span>
     </div>
   );
 }

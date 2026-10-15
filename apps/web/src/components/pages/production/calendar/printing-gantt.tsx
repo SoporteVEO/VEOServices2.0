@@ -64,11 +64,13 @@ export type PrintJobDrop = {
 /**
  * A backlog card mid-flight. Only the panel's area travels with it: how long
  * it takes is a property of whichever press it ends up over, so the duration
- * is resolved during the drag rather than baked in here.
+ * is resolved during the drag rather than baked in here. Color tests are the
+ * exception and carry their fixed length in `fixedMinutes`.
  */
 export type BacklogDrag = {
   label: string;
   areaM2: number;
+  fixedMinutes: number | null;
 };
 
 /** Where a dragged backlog card would land, and whether the day allows it. */
@@ -200,7 +202,14 @@ export function PrintingGantt({
       return;
     }
 
-    const phases = computeJobMinutes(backlogDrag.areaM2, machine);
+    const phases =
+      backlogDrag.fixedMinutes !== null
+        ? {
+            setupMinutes: 0,
+            printMinutes: backlogDrag.fixedMinutes,
+            cooldownMinutes: 0,
+          }
+        : computeJobMinutes(backlogDrag.areaM2, machine);
     const totalMinutes =
       phases.setupMinutes + phases.printMinutes + phases.cooldownMinutes;
     const box = surfaceGhostBox(surface, target, totalMinutes);

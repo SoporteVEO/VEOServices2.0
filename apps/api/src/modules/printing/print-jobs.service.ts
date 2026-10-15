@@ -4,6 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import {
+  PrintJobKind,
   PrintJobStatus,
   ProductionOrderStatus,
   type Prisma,
@@ -40,6 +41,8 @@ export interface PrintJobOrderDto {
 
 export interface PrintJobDto {
   id: string;
+  kind: PrintJobKind;
+  colorTestId: string | null;
   machineId: string;
   machineName: string;
   status: PrintJobStatus;
@@ -67,8 +70,18 @@ export interface PrintJobDto {
   createdBy: { id: string; firstName: string; lastName: string | null } | null;
 }
 
+/**
+ * A card in the "Sin agendar" panel. `id` is the order item for a production
+ * print and the color test for a color test, so both kinds can share a list.
+ */
 export interface PrintBacklogItemDto {
   id: string;
+  kind: PrintJobKind;
+  productionOrderItemId: string;
+  colorTestId: string | null;
+  /** Fixed slot length of a color test; production prints derive theirs. */
+  durationMinutes: number | null;
+  notes: string | null;
   productionOrderId: string;
   status: ProductionOrderStatus;
   billboardCode: string | null;
@@ -90,8 +103,10 @@ export interface PrintBacklogItemDto {
   createdAt: string;
 }
 
+/** Exactly one of `productionOrderItemId` or `colorTestId` is expected. */
 export interface SchedulePrintJobInput {
-  productionOrderItemId: string;
+  productionOrderItemId?: string;
+  colorTestId?: string;
   machineId: string;
   scheduledStartAt: string;
   setupMinutes?: number;
@@ -118,7 +133,7 @@ const ACTIVE_STATUSES: PrintJobStatus[] = [
 ];
 
 /** Statuses that block re-scheduling the same billboard twice. */
-const OCCUPYING_STATUSES: PrintJobStatus[] = [
+export const OCCUPYING_STATUSES: PrintJobStatus[] = [
   ...ACTIVE_STATUSES,
   PrintJobStatus.COMPLETED,
 ];
@@ -156,6 +171,87 @@ const JOB_INCLUDE = {
 
 type PrintJobRow = Prisma.PrintJobGetPayload<{ include: typeof JOB_INCLUDE }>;
 
+const BACKLOG_ITEM_SELECT = {
+  id: true,
+  status: true,
+  productionOrderId: true,
+  createdAt: true,
+  billboardCode: true,
+  address: true,
+  cityName: true,
+  departmentName: true,
+  width: true,
+  height: true,
+  quantity: true,
+  productionOrder: {
+    select: {
+      orderNumber: true,
+      customerName: true,
+      customerCompany: true,
+    },
+  },
+} satisfies Prisma.ProductionOrderItemSelect;
+
+type BacklogItemRow = Prisma.ProductionOrderItemGetPayload<{
+  select: typeof BACKLOG_ITEM_SELECT;
+}>;
+
+/** What a scheduling request resolves to before it is placed on a machine. */
+interface ScheduleTarget {
+  kind: PrintJobKind;
+  productionOrderItemId: string;
+  colorTestId: string | null;
+  areaM2: number;
+  /** Set when the slot length is fixed instead of derived from the area. */
+  fixedPrintMinutes: number | null;
+  notes: string | null;
+}
+
+function buildItemSearch(
+  search: string | undefined,
+): Prisma.ProductionOrderItemWhereInput {
+  if (!search) return {};
+  return {
+    OR: [
+      { billboardCode: { contains: search, mode: 'insensitive' } },
+      {
+        productionOrder: {
+          OR: [
+            { orderNumber: { contains: search, mode: 'insensitive' } },
+            { customerName: { contains: search, mode: 'insensitive' } },
+            { customerCompany: { contains: search, mode: 'insensitive' } },
+          ],
+        },
+      },
+    ],
+  };
+}
+
+function mapBacklogItem(row: BacklogItemRow): PrintBacklogItemDto {
+  return {
+    id: row.id,
+    kind: PrintJobKind.PRODUCTION,
+    productionOrderItemId: row.id,
+    colorTestId: null,
+    durationMinutes: null,
+    notes: null,
+    productionOrderId: row.productionOrderId,
+    status: row.status,
+    billboardCode: row.billboardCode,
+    address: row.address,
+    cityName: row.cityName,
+    departmentName: row.departmentName,
+    width: row.width,
+    height: row.height,
+    quantity: row.quantity,
+    offerNumber: row.productionOrder.orderNumber,
+    customerName: row.productionOrder.customerName,
+    customerCompany: row.productionOrder.customerCompany,
+    areaM2: computeAreaM2(row),
+    createdAt: row.createdAt.toISOString(),
+  };
+}
+
 @Injectable()
 export class PrintJobsService {
   constructor(private readonly prisma: PrismaService) {}
@@ -189,119 +285,72 @@ export class PrintJobsService {
   }
 
   /**
-   * Static billboards that are waiting for press time: not cancelled and
-   * without a job that already occupies (or occupied) a slot.
+   * Work waiting for press time: static billboards that are not cancelled
+   * and have no production job occupying (or having occupied) a slot, plus
+   * color tests that were requested but not placed yet.
    */
   async listBacklog(
     filters: { search?: string } = {},
   ): Promise<PrintBacklogItemDto[]> {
-    const search = filters.search?.trim();
+    const itemSearch = buildItemSearch(filters.search?.trim());
 
-    const rows = await this.prisma.productionOrderItem.findMany({
-      where: {
-        status: { not: ProductionOrderStatus.CANCELLED },
-        printJobs: { none: { status: { in: OCCUPYING_STATUSES } } },
-        ...(search
-          ? {
-              OR: [
-                { billboardCode: { contains: search, mode: 'insensitive' } },
-                {
-                  productionOrder: {
-                    OR: [
-                      {
-                        orderNumber: { contains: search, mode: 'insensitive' },
-                      },
-                      {
-                        customerName: { contains: search, mode: 'insensitive' },
-                      },
-                      {
-                        customerCompany: {
-                          contains: search,
-                          mode: 'insensitive',
-                        },
-                      },
-                    ],
-                  },
-                },
-              ],
-            }
-          : {}),
-      },
-      orderBy: [{ createdAt: 'asc' }, { id: 'asc' }],
-      select: {
-        id: true,
-        status: true,
-        productionOrderId: true,
-        createdAt: true,
-        billboardCode: true,
-        address: true,
-        cityName: true,
-        departmentName: true,
-        width: true,
-        height: true,
-        quantity: true,
-        productionOrder: {
-          select: {
-            orderNumber: true,
-            customerName: true,
-            customerCompany: true,
+    const [items, colorTests] = await Promise.all([
+      this.prisma.productionOrderItem.findMany({
+        where: {
+          status: { not: ProductionOrderStatus.CANCELLED },
+          printJobs: {
+            none: {
+              kind: PrintJobKind.PRODUCTION,
+              status: { in: OCCUPYING_STATUSES },
+            },
+          },
+          ...itemSearch,
+        },
+        orderBy: [{ createdAt: 'asc' }, { id: 'asc' }],
+        select: BACKLOG_ITEM_SELECT,
+      }),
+      this.prisma.printColorTest.findMany({
+        where: {
+          printJobs: { none: { status: { in: OCCUPYING_STATUSES } } },
+          productionOrderItem: {
+            status: { not: ProductionOrderStatus.CANCELLED },
+            ...itemSearch,
           },
         },
-      },
-    });
+        orderBy: [{ createdAt: 'asc' }, { id: 'asc' }],
+        select: {
+          id: true,
+          durationMinutes: true,
+          notes: true,
+          createdAt: true,
+          productionOrderItem: { select: BACKLOG_ITEM_SELECT },
+        },
+      }),
+    ]);
 
-    return rows.map((row) => ({
-      id: row.id,
-      productionOrderId: row.productionOrderId,
-      status: row.status,
-      billboardCode: row.billboardCode,
-      address: row.address,
-      cityName: row.cityName,
-      departmentName: row.departmentName,
-      width: row.width,
-      height: row.height,
-      quantity: row.quantity,
-      offerNumber: row.productionOrder.orderNumber,
-      customerName: row.productionOrder.customerName,
-      customerCompany: row.productionOrder.customerCompany,
-      areaM2: computeAreaM2(row),
-      createdAt: row.createdAt.toISOString(),
-    }));
+    // A color test has to run before its billboard, so tests lead the list.
+    return [
+      ...colorTests.map((test) => ({
+        ...mapBacklogItem(test.productionOrderItem),
+        id: test.id,
+        kind: PrintJobKind.COLOR_TEST,
+        colorTestId: test.id,
+        durationMinutes: test.durationMinutes,
+        notes: test.notes,
+        areaM2: 0,
+        createdAt: test.createdAt.toISOString(),
+      })),
+      ...items.map(mapBacklogItem),
+    ];
   }
 
   async schedule(
     input: SchedulePrintJobInput,
     userId: string,
   ): Promise<PrintJobDto> {
-    const item = await this.prisma.productionOrderItem.findUnique({
-      where: { id: input.productionOrderItemId },
-      select: {
-        id: true,
-        status: true,
-        width: true,
-        height: true,
-        quantity: true,
-      },
-    });
-    if (!item) {
-      throw new NotFoundException('Valla de producción no encontrada');
-    }
-    if (item.status === ProductionOrderStatus.CANCELLED) {
-      throw new BadRequestException('No se puede agendar una valla cancelada');
-    }
-
-    const alreadyScheduled = await this.prisma.printJob.findFirst({
-      where: {
-        productionOrderItemId: item.id,
-        status: { in: OCCUPYING_STATUSES },
-      },
-      select: { id: true },
-    });
-    if (alreadyScheduled) {
-      throw new BadRequestException(
-        'Esta valla ya está agendada en el calendario de impresión',
-      );
-    }
+    const target = input.colorTestId
+      ? await this.resolveColorTestTarget(input.colorTestId)
+      : await this.resolveProductionTarget(input.productionOrderItemId);
 
     const machine = await this.findMachineOrThrow(input.machineId);
     const scheduledStartAt = parseDate(
@@ -309,11 +358,15 @@ export class PrintJobsService {
       'La fecha de inicio no es válida',
     );
 
-    const areaM2 = computeAreaM2(item);
-    const setupMinutes = input.setupMinutes ?? machine.setupMinutes;
-    const cooldownMinutes = input.cooldownMinutes ?? machine.cooldownMinutes;
+    const { areaM2 } = target;
+    const isColorTest = target.kind === PrintJobKind.COLOR_TEST;
+    const setupMinutes =
+      input.setupMinutes ?? (isColorTest ? 0 : machine.setupMinutes);
+    const cooldownMinutes =
+      input.cooldownMinutes ?? (isColorTest ? 0 : machine.cooldownMinutes);
     const printMinutes =
       input.printMinutes ??
+      target.fixedPrintMinutes ??
       computePrintMinutes(
         areaM2,
         effectivePrintSpeed(machine.printSpeedM2PerHour),
@@ -334,20 +387,114 @@ export class PrintJobsService {
 
     const created = await this.prisma.printJob.create({
       data: {
+        kind: target.kind,
+        colorTestId: target.colorTestId,
         machineId: machine.id,
-        productionOrderItemId: item.id,
+        productionOrderItemId: target.productionOrderItemId,
         scheduledStartAt,
         setupMinutes,
         printMinutes,
         cooldownMinutes,
         areaM2,
-        notes: input.notes?.trim() || null,
+        notes: input.notes?.trim() || target.notes,
         createdByUserId: userId,
       },
       include: JOB_INCLUDE,
     });
 
     return this.mapJob(created);
+  }
+
+  private async resolveProductionTarget(
+    productionOrderItemId: string | undefined,
+  ): Promise<ScheduleTarget> {
+    if (!productionOrderItemId) {
+      throw new BadRequestException(
+        'Indica la valla o la prueba de color a agendar',
+      );
+    }
+    const item = await this.prisma.productionOrderItem.findUnique({
+      where: { id: productionOrderItemId },
+      select: {
+        id: true,
+        status: true,
+        width: true,
+        height: true,
+        quantity: true,
+      },
+    });
+    if (!item) {
+      throw new NotFoundException('Valla de producción no encontrada');
+    }
+    if (item.status === ProductionOrderStatus.CANCELLED) {
+      throw new BadRequestException('No se puede agendar una valla cancelada');
+    }
+
+    const alreadyScheduled = await this.prisma.printJob.findFirst({
+      where: {
+        productionOrderItemId: item.id,
+        kind: PrintJobKind.PRODUCTION,
+        status: { in: OCCUPYING_STATUSES },
+      },
+      select: { id: true },
+    });
+    if (alreadyScheduled) {
+      throw new BadRequestException(
+        'Esta valla ya está agendada en el calendario de impresión',
+      );
+    }
+
+    return {
+      kind: PrintJobKind.PRODUCTION,
+      productionOrderItemId: item.id,
+      colorTestId: null,
+      areaM2: computeAreaM2(item),
+      fixedPrintMinutes: null,
+      notes: null,
+    };
+  }
+
+  /**
+   * A color test is a short sample run: it books the minutes requested for it
+   * and consumes no measurable area against the machine's daily capacity.
+   */
+  private async resolveColorTestTarget(
+    colorTestId: string,
+  ): Promise<ScheduleTarget> {
+    const test = await this.prisma.printColorTest.findUnique({
+      where: { id: colorTestId },
+      select: {
+        id: true,
+        durationMinutes: true,
+        notes: true,
+        productionOrderItem: { select: { id: true, status: true } },
+        printJobs: {
+          where: { status: { in: OCCUPYING_STATUSES } },
+          select: { id: true },
+          take: 1,
+        },
+      },
+    });
+    if (!test) throw new NotFoundException('Prueba de color no encontrada');
+    if (test.productionOrderItem.status === ProductionOrderStatus.CANCELLED) {
+      throw new BadRequestException(
+        'No se puede agendar una prueba de color de una valla cancelada',
+      );
+    }
+    if (test.printJobs.length > 0) {
+      throw new BadRequestException(
+        'Esta prueba de color ya está agendada en el calendario de impresión',
+      );
+    }
+
+    return {
+      kind: PrintJobKind.COLOR_TEST,
+      productionOrderItemId: test.productionOrderItem.id,
+      colorTestId: test.id,
+      areaM2: 0,
+      fixedPrintMinutes: test.durationMinutes,
+      notes: test.notes,
+    };
   }
 
   async update(
@@ -358,6 +505,7 @@ export class PrintJobsService {
       where: { id: jobId },
       select: {
         id: true,
+        kind: true,
         machineId: true,
         status: true,
         scheduledStartAt: true,
@@ -398,7 +546,7 @@ export class PrintJobsService {
     // (a resize, or a manual override in the job dialog).
     const printMinutes =
       input.printMinutes ??
-      (movedMachine
+      (movedMachine && job.kind === PrintJobKind.PRODUCTION
         ? computePrintMinutes(
             job.areaM2,
             effectivePrintSpeed(machine.printSpeedM2PerHour),
@@ -449,6 +597,7 @@ export class PrintJobsService {
       where: { id: jobId },
       select: {
         id: true,
+        kind: true,
         status: true,
         productionOrderItemId: true,
         setupStartedAt: true,
@@ -520,7 +669,9 @@ export class PrintJobsService {
       include: JOB_INCLUDE,
     });
 
-    await this.syncItemStatus(job.productionOrderItemId);
+    if (job.kind === PrintJobKind.PRODUCTION) {
+      await this.syncItemStatus(job.productionOrderItemId);
+    }
 
     return this.mapJob(
       await this.prisma.printJob.findUniqueOrThrow({
@@ -580,7 +731,10 @@ export class PrintJobsService {
       select: {
         id: true,
         status: true,
-        printJobs: { select: { status: true } },
+        printJobs: {
+          where: { kind: PrintJobKind.PRODUCTION },
+          select: { status: true },
+        },
       },
     });
     if (!item) return;
@@ -728,6 +882,8 @@ export class PrintJobsService {
 
     return {
       id: row.id,
+      kind: row.kind,
+      colorTestId: row.colorTestId,
       machineId: row.machineId,
       machineName: row.machine.name,
       status: row.status,

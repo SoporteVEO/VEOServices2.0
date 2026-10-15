@@ -48,3 +48,74 @@ export interface BriloAbonoFacturaResponse {
   valor_Abono?: number;
   concepto?: string;
 }
+
+/** Line of POST /api/Vallas/Cotizaciones (DetCotizacionesExtendedModel). */
+export interface BriloCotizacionDetalleInput {
+  dcotId: number;
+  mcotId: number;
+  caraId: number;
+  dcotCostoArrendamiento: number;
+  dcotCostoImpresion: number | null;
+  dcotFechaDesde: string | null;
+  dcotFechaHasta: string | null;
+  dcotAceptada: boolean;
+  dcotEsCircuito: boolean;
+  dcotConsolidaPorSitio: boolean;
+}
+
+/** Body of POST /api/Vallas/Cotizaciones (MaeCotizacionesExtendedModel). */
+export interface BriloCotizacionInput {
+  mcotId: number;
+  cliId: number;
+  ejecId: number;
+  mcotFechaRegistro: string;
+  mcotEstado: number;
+  mcotFechaAceptacion: string | null;
+  mcotIncAgencia: boolean;
+  mcotConsolidarPrecio: boolean;
+  mcotObservaciones: string | null;
+  mcotAtencionA: string | null;
+  detalles: BriloCotizacionDetalleInput[];
+}
+
+export interface BriloCotizacionResponse {
+  mcotId?: number;
+  mcotNumero?: string | null;
+}
+
+/** Line of POST /api/Vallas/Contratos (DetContratosExtendedModel). */
+export interface BriloContratoDetalleInput {
+  dconId: number;
+  mconId: number;
+  caraId: number;
+  dconCostoArrendamiento: number;
+  dconCostoImpresion: number | null;
+  dconFechaDesde: string | null;
+  dconFechaHasta: string | null;
+  dconConsolidaPorSitio: boolean;
+}
+
+/** Body of POST /api/Vallas/Contratos (MaeContratosExtendedModel). */
+export interface BriloContratoInput {
+  mconId: number;
+  mcotId: number;
+  cliId: number;
+  ejecId: number;
+  mconFecha: string;
+  mconFechaInicio: string | null;
+  mconFechaFin: string | null;
+  mconPosteado: boolean;
+  mconAnulado: boolean;
+  mconRequiereInstalacion: boolean;
+  mconObservaciones: string | null;
+  mconAtencionA: string | null;
+  mconFrecuenciaCuotas: number;
+  mconPeriodicidadCuotas: string;
+  mconFecCuotaInicial: string;
+  detalles: BriloContratoDetalleInput[];
+}
+
+export interface BriloContratoResponse {
+  mconId?: number;
+  mconCodigo?: string | null;
+}

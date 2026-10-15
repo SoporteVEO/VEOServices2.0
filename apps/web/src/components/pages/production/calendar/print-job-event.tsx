@@ -3,6 +3,7 @@
 import type { PrintJob } from "@/api/printing/printing.types";
 import { cn } from "@/lib/utils";
 import {
+  COLOR_TEST_FILL,
   PHASE_FILLS,
   formatClock,
   formatMinutes,
@@ -40,7 +41,12 @@ export function PrintJobEvent({
       {segments.map((segment) => (
         <span
           key={segment.phase}
-          className={cn("h-full", PHASE_FILLS[segment.phase])}
+          className={cn(
+            "h-full",
+            job.kind === "COLOR_TEST"
+              ? COLOR_TEST_FILL
+              : PHASE_FILLS[segment.phase],
+          )}
           style={{
             width: `${(segment.minutes / job.plannedTotalMinutes) * 100}%`,
           }}

@@ -21,8 +21,13 @@ const PRINT_JOB_ACTIONS: PrintJobAction[] = [
 ];
 
 export class CreatePrintJobDto {
+  @ValidateIf((dto: CreatePrintJobDto) => !dto.colorTestId)
   @IsString()
-  productionOrderItemId!: string;
+  productionOrderItemId?: string;
+
+  @IsOptional()
+  @IsString()
+  colorTestId?: string;
 
   @IsString()
   machineId!: string;

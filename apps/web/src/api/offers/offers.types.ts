@@ -64,6 +64,47 @@ export interface BriloContractsQuery {
   pageSize?: number;
 }
 
+export type BriloSyncStatus = "PENDING" | "SYNCED" | "FAILED";
+
+export interface BriloClientOption {
+  cliId: number;
+  cliNumero: string | null;
+  name: string;
+  commercialName: string | null;
+  nit: string | null;
+  email: string | null;
+}
+
+export interface PaginatedBriloClients {
+  data: BriloClientOption[];
+  total: number;
+  page: number;
+  pageSize: number;
+}
+
+export type BriloClientsQuery = BriloContractsQuery;
+
+export interface BriloExecutiveOption {
+  ejecId: number;
+  ejecCodigo: string | null;
+  ejecNombre: string;
+}
+
+export interface BriloAcceptContext {
+  /** False when the offer has no static billboards, so nothing goes to Brilo. */
+  requiresBriloDocuments: boolean;
+  staticItemCount: number;
+  customerEmail: string | null;
+  clientMatches: BriloClientOption[];
+  advisorFullName: string | null;
+  executives: BriloExecutiveOption[];
+  executiveMatchIds: number[];
+}
+
+export type AcceptOfferInput =
+  | { briloCliId: number; briloEjecId: number }
+  | { briloMconId: number };
+
 export interface OfferDetailItem {
   id: string;
   itemType: OfferItemType;
@@ -90,9 +131,12 @@ export type OfferEventType =
   | "UPDATED"
   | "ITEMS_UPDATED"
   | "PDF_ATTACHED"
+  | "CONTRACT_GENERATED"
   | "ACCEPTED"
   | "DECLINED"
-  | "REOPENED";
+  | "REOPENED"
+  | "BRILO_SYNCED"
+  | "BRILO_SYNC_FAILED";
 
 export interface OfferChange {
   from: unknown;
@@ -199,6 +243,9 @@ export interface OfferListItem {
   advisorFullName: string | null;
   status: OfferStatus;
   briloMconId: number | null;
+  briloMcotId: number | null;
+  briloSyncStatus: BriloSyncStatus | null;
+  briloSyncError: string | null;
   subtotalImpression: number;
   ivaImpression: number;
   totalImpression: number;

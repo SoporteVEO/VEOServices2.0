@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiFetch } from "@/lib/api";
 import type {
+  AcceptOfferInput,
   EditOfferInput,
   OfferDetail,
   OfferListItem,
@@ -102,13 +103,13 @@ export async function attachOfferContractPdf(
 
 export async function acceptOffer(
   id: string,
-  briloMconId: number,
+  input: AcceptOfferInput,
 ): Promise<OfferListItem> {
   const response = await apiFetch<{ data: OfferListItem }>(
     `/offers/${id}/accept`,
     {
       method: "PATCH",
-      body: JSON.stringify({ briloMconId }),
+      body: JSON.stringify(input),
     },
   );
   return response.data;
@@ -143,13 +144,8 @@ export function useAcceptOffer(options?: {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({
-      id,
-      briloMconId,
-    }: {
-      id: string;
-      briloMconId: number;
-    }) => acceptOffer(id, briloMconId),
+    mutationFn: ({ id, input }: { id: string; input: AcceptOfferInput }) =>
+      acceptOffer(id, input),
     onSuccess: async (updated) => {
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ["offers"] }),

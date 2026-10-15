@@ -10,6 +10,7 @@ import {
   Query,
 } from '@nestjs/common';
 import { CurrentUser, RequiredSubRoles } from '../auth/decorators.js';
+import { CreatePrintColorTestDto } from './dto/print-color-test.dto.js';
 import {
   AdvancePrintJobDto,
   CreatePrintJobDto,
@@ -20,6 +21,7 @@ import {
   CreatePrintingMachineDto,
   UpdatePrintingMachineDto,
 } from './dto/printing-machine.dto.js';
+import { PrintColorTestsService } from './print-color-tests.service.js';
 import { PrintJobsService } from './print-jobs.service.js';
 import { PrintingMachinesService } from './printing-machines.service.js';
 
@@ -35,6 +37,7 @@ export class PrintingController {
   constructor(
     private readonly machines: PrintingMachinesService,
     private readonly jobs: PrintJobsService,
+    private readonly colorTests: PrintColorTestsService,
   ) {}
 
   @Get('machines')
@@ -81,6 +84,21 @@ export class PrintingController {
       search: search?.trim() || undefined,
     });
     return { data };
+  }
+
+  @Post('color-tests')
+  async createColorTest(
+    @Body() dto: CreatePrintColorTestDto,
+    @CurrentUser() user: AuthUser,
+  ) {
+    const data = await this.colorTests.create(dto, user.id);
+    return { data };
+  }
+
+  @Delete('color-tests/:id')
+  async deleteColorTest(@Param('id') id: string) {
+    await this.colorTests.remove(id);
+    return { data: { id } };
   }
 
   @Post('jobs')

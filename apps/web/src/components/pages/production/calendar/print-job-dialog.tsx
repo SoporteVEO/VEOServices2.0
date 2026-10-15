@@ -48,6 +48,8 @@ import {
 import { TimePicker } from "@/components/ui/time-picker";
 import { cn } from "@/lib/utils";
 import {
+  COLOR_TEST_LABEL,
+  COLOR_TEST_SWATCH,
   PHASE_LABELS,
   PHASE_SWATCHES,
   PRINT_JOB_STATUS_LABELS,
@@ -91,6 +93,14 @@ const NEXT_ACTION: Partial<
   COOLDOWN: { action: "COMPLETE", label: "Finalizar", icon: CheckCircle2 },
 };
 
+/** A color test is a single run, so it skips set up and cooldown. */
+const COLOR_TEST_NEXT_ACTION: typeof NEXT_ACTION = {
+  SCHEDULED: { action: "START_PRINT", label: "Iniciar prueba", icon: Play },
+  SETUP: { action: "START_PRINT", label: "Iniciar prueba", icon: Play },
+  PRINTING: { action: "COMPLETE", label: "Finalizar prueba", icon: CheckCircle2 },
+  COOLDOWN: { action: "COMPLETE", label: "Finalizar prueba", icon: CheckCircle2 },
+};
+
 export function PrintJobDialog({
   job,
   machines,
@@ -129,7 +139,10 @@ export function PrintJobDialog({
   if (!job) return null;
 
   const locked = isJobLocked(job.status);
-  const next = NEXT_ACTION[job.status];
+  const isColorTest = job.kind === "COLOR_TEST";
+  const next = (isColorTest ? COLOR_TEST_NEXT_ACTION : NEXT_ACTION)[
+    job.status
+  ];
   const busy =
     update.isPending || advance.isPending || cancel.isPending || remove.isPending;
 
@@ -219,6 +232,15 @@ export function PrintJobDialog({
             >
               {PRINT_JOB_STATUS_LABELS[job.status]}
             </span>
+            {isColorTest ? (
+              <span className="flex items-center gap-1.5 border border-fuchsia-300 bg-fuchsia-50 px-2 py-0.5 text-[11px] font-medium text-fuchsia-900 dark:border-fuchsia-800 dark:bg-fuchsia-950 dark:text-fuchsia-200">
+                <span
+                  className={cn("size-2", COLOR_TEST_SWATCH)}
+                  aria-hidden
+                />
+                {COLOR_TEST_LABEL}
+              </span>
+            ) : null}
           </div>
           <DialogDescription>
             {job.order.offerNumber} ·{" "}
@@ -283,40 +305,64 @@ export function PrintJobDialog({
               </div>
             </div>
 
-            <div className="grid gap-3 sm:grid-cols-3">
-              <MinutesField
-                phase="SETUP"
-                value={setupMinutes}
-                onChange={setSetupMinutes}
-                disabled={locked || busy}
-              />
-              <MinutesField
-                phase="PRINTING"
-                value={printMinutes}
-                onChange={setPrintMinutes}
-                disabled={locked || busy}
-              />
-              <MinutesField
-                phase="COOLDOWN"
-                value={cooldownMinutes}
-                onChange={setCooldownMinutes}
-                disabled={locked || busy}
-              />
-            </div>
+            {isColorTest ? (
+              <div className="grid gap-3 sm:grid-cols-3">
+                <Input
+                  label="Duración de la prueba (min)"
+                  type="text"
+                  inputMode="numeric"
+                  value={printMinutes}
+                  onChange={(event) =>
+                    setPrintMinutes(sanitizeInteger(event.target.value))
+                  }
+                  disabled={locked || busy}
+                  className="tabular-nums"
+                />
+              </div>
+            ) : (
+              <>
+                <div className="grid gap-3 sm:grid-cols-3">
+                  <MinutesField
+                    phase="SETUP"
+                    value={setupMinutes}
+                    onChange={setSetupMinutes}
+                    disabled={locked || busy}
+                  />
+                  <MinutesField
+                    phase="PRINTING"
+                    value={printMinutes}
+                    onChange={setPrintMinutes}
+                    disabled={locked || busy}
+                  />
+                  <MinutesField
+                    phase="COOLDOWN"
+                    value={cooldownMinutes}
+                    onChange={setCooldownMinutes}
+                    disabled={locked || busy}
+                  />
+                </div>
 
-            <CapacityNote
-              job={job}
-              machine={selectedMachine}
-              jobs={jobs}
-              day={dateValue}
-              derivedPrintMinutes={derivedPrintMinutes}
-              printMinutes={printMinutes}
-              disabled={locked || busy}
-              onUseDerived={() =>
-                derivedPrintMinutes !== null &&
-                setPrintMinutes(String(derivedPrintMinutes))
-              }
-            />
+                <CapacityNote
+                  job={job}
+                  machine={selectedMachine}
+                  jobs={jobs}
+                  day={dateValue}
+                  derivedPrintMinutes={derivedPrintMinutes}
+                  printMinutes={printMinutes}
+                  disabled={locked || busy}
+                  onUseDerived={() =>
+                    derivedPrintMinutes !== null &&
+                    setPrintMinutes(String(derivedPrintMinutes))
+                  }
+                />
+              </>
+            )}
+
+            {job.notes ? (
+              <p className="rounded-lg border bg-muted/30 p-3 text-xs text-muted-foreground">
+                {job.notes}
+              </p>
+            ) : null}
           </section>
 
           <section className="flex flex-col gap-3">
@@ -420,7 +466,7 @@ export function PrintJobDialog({
                 {next.label}
               </Button>
             ) : null}
-            {job.status === "PRINTING" ? (
+            {job.status === "PRINTING" && !isColorTest ? (
               <Button
                 variant="outline"
                 icon={CheckCircle2}

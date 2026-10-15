@@ -5,12 +5,15 @@ import {
 } from "@tanstack/react-query";
 import { apiFetch } from "@/lib/api";
 import type {
+  BriloAcceptContext,
+  BriloClientsQuery,
   BriloContractsQuery,
   MyOffersQuery,
   MyOffersSummary,
   OfferContractData,
   OfferDetail,
   OfferListItem,
+  PaginatedBriloClients,
   PaginatedBriloContracts,
   PaginatedMyOffers,
   PaginatedOffers,
@@ -199,6 +202,48 @@ export function useBriloContractsInfinite(query: BriloContractsQuery = {}) {
       const loaded = lastPage.page * lastPage.pageSize;
       return loaded < lastPage.total ? lastPage.page + 1 : undefined;
     },
+  });
+}
+
+export async function getBriloClientsPage(
+  query: BriloClientsQuery = {},
+): Promise<PaginatedBriloClients> {
+  return apiFetch<PaginatedBriloClients>("/offers/brilo-clients", {
+    query: buildBriloContractsParams(query),
+  });
+}
+
+export function useBriloClientsInfinite(query: BriloClientsQuery = {}) {
+  return useInfiniteQuery({
+    queryKey: ["offers", "brilo-clients", query],
+    queryFn: ({ pageParam }) =>
+      getBriloClientsPage({
+        ...query,
+        page: pageParam ?? 1,
+      }),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) => {
+      const loaded = lastPage.page * lastPage.pageSize;
+      return loaded < lastPage.total ? lastPage.page + 1 : undefined;
+    },
+  });
+}
+
+export async function getBriloAcceptContext(
+  id: string,
+): Promise<BriloAcceptContext> {
+  const response = await apiFetch<{ data: BriloAcceptContext }>(
+    `/offers/${id}/brilo-accept-context`,
+  );
+  return response.data;
+}
+
+export function useBriloAcceptContext(id: string | null, enabled = true) {
+  return useQuery({
+    queryKey: ["offers", id, "brilo-accept-context"],
+    queryFn: () => getBriloAcceptContext(id as string),
+    enabled: !!id && enabled,
+    staleTime: 0,
   });
 }
 

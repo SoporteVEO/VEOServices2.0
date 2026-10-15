@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { PrintJobStatus, type Prisma } from '@prisma/client';
+import { PrintJobKind, PrintJobStatus, type Prisma } from '@prisma/client';
 import { computeAreaM2 } from '../../printing/print-time.js';
 import { PrismaService } from '../../prisma/prisma.service.js';
 
@@ -212,6 +212,7 @@ export class PrintingAnalyticsService {
       }),
       this.prisma.printJob.findMany({
         where: {
+          kind: PrintJobKind.PRODUCTION,
           scheduledStartAt: { gte: from, lt: to },
           ...(machineId ? { machineId } : {}),
         },

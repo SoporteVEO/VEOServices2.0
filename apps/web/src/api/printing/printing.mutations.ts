@@ -9,6 +9,7 @@ import { printingKeys } from "./printing.get";
 import { computePrintMinutes } from "./printing.print-time";
 import type {
   PrintBacklogItem,
+  PrintColorTest,
   PrintJob,
   PrintJobAction,
   PrintingMachine,
@@ -103,8 +104,10 @@ async function freezeJobs(queryClient: QueryClient): Promise<Snapshot> {
   return jobWindows(queryClient);
 }
 
+/** Exactly one of `productionOrderItemId` or `colorTestId` is expected. */
 export interface SchedulePrintJobInput {
-  productionOrderItemId: string;
+  productionOrderItemId?: string;
+  colorTestId?: string;
   machineId: string;
   scheduledStartAt: string;
   setupMinutes?: number;
@@ -140,7 +143,8 @@ export function useSchedulePrintJob() {
         ...(await freezeJobs(queryClient)),
         ...backlogLists(queryClient),
       ];
-      dropBacklogItem(queryClient, input.productionOrderItemId);
+      const backlogId = input.colorTestId ?? input.productionOrderItemId;
+      if (backlogId) dropBacklogItem(queryClient, backlogId);
       if (optimisticJob) writeJob(queryClient, optimisticJob);
       return { snapshot, temporaryId: optimisticJob?.id };
     },
@@ -193,11 +197,11 @@ function patchJob(
 
   const setupMinutes = patch.setupMinutes ?? job.setupMinutes;
   const cooldownMinutes = patch.cooldownMinutes ?? job.cooldownMinutes;
-  // The server re-times a job that changes press, since duration follows
-  // throughput; mirroring that here keeps the bar from jumping on response.
+  // The server re-times a production job that changes press, since duration
+  // follows throughput; mirroring that here keeps the bar from jumping.
   const printMinutes =
     patch.printMinutes ??
-    (machineId !== job.machineId && target
+    (machineId !== job.machineId && target && job.kind === "PRODUCTION"
       ? computePrintMinutes(job.areaM2, target.printSpeedM2PerHour)
       : job.printMinutes);
   const plannedTotalMinutes = setupMinutes + printMinutes + cooldownMinutes;
@@ -303,6 +307,55 @@ export function useDeletePrintJob() {
     onSettled: () => {
       void queryClient.invalidateQueries({ queryKey: BACKLOG_KEY });
       void queryClient.invalidateQueries({ queryKey: PRODUCTION_ORDERS_KEY });
+    },
+  });
+}
+
+export interface CreatePrintColorTestInput {
+  productionOrderItemId: string;
+  durationMinutes: number;
+  notes?: string | null;
+}
+
+export async function createPrintColorTest(
+  input: CreatePrintColorTestInput,
+): Promise<PrintColorTest> {
+  const response = await apiFetch<{ data: PrintColorTest }>(
+    "/printing/color-tests",
+    { method: "POST", body: JSON.stringify(input) },
+  );
+  return response.data;
+}
+
+export function useCreatePrintColorTest() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: createPrintColorTest,
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: BACKLOG_KEY });
+    },
+  });
+}
+
+export async function deletePrintColorTest(colorTestId: string): Promise<void> {
+  await apiFetch(`/printing/color-tests/${colorTestId}`, { method: "DELETE" });
+}
+
+export function useDeletePrintColorTest() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: deletePrintColorTest,
+    onMutate: async (colorTestId) => {
+      await queryClient.cancelQueries({ queryKey: BACKLOG_KEY });
+      const snapshot: Snapshot = backlogLists(queryClient);
+      dropBacklogItem(queryClient, colorTestId);
+      return { snapshot };
+    },
+    onError: (_error, _variables, context) => {
+      if (context) restoreSnapshot(queryClient, context.snapshot);
+    },
+    onSettled: () => {
+      void queryClient.invalidateQueries({ queryKey: BACKLOG_KEY });
     },
   });
 }
