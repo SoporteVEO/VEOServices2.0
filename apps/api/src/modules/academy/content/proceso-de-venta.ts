@@ -31,12 +31,11 @@ export const PROCESO_DE_VENTA: AcademyArticleSource[] = [
 
 1. **Registra el negocio** en el CRM y revisa la disponibilidad.
 2. **Crea la cotización** en VEO Services y envíala al cliente.
-3. **Crea el contrato en Brilo** cuando el cliente acepta.
-4. **Acepta la cotización** en VEO Services y vincula el contrato de Brilo.
-5. **Envía el contrato al cliente** para que lo firme.
-6. **Producción e instalación** (vallas) o **programación de la campaña** (pantallas).
-7. **Reporta al cliente**: fotos de instalación y reporte mensual.
-8. **Renueva** antes de que termine el contrato.
+3. **Acepta la cotización** cuando el cliente confirma. VEO Services crea solo la cotización y el contrato en Brilo para la facturación.
+4. **Envía el contrato al cliente** para que lo firme.
+5. **Producción e instalación** (vallas) o **programación de la campaña** (pantallas).
+6. **Reporta al cliente**: fotos de instalación y reporte mensual.
+7. **Renueva** antes de que termine el contrato.
 
 ## Paso 1: Registra el negocio y revisa disponibilidad
 
@@ -55,35 +54,32 @@ Genera la [cotización](academy:glosario#cotizacion) en PDF con los precios de i
 
 La cotización queda **Pendiente** con un número como **COT0001/26**. Descarga el PDF y envíaselo al cliente (por correo desde el [CRM](academy:crm-mensajes-y-plantillas) o como prefieras). Vincúlala al negocio del CRM en su pestaña Cotizaciones.
 
-## Paso 3: Crea el contrato en Brilo
+## Paso 3: Acepta la cotización
 
-Cuando el cliente confirma, se crea el **contrato oficial en Brilo** con el cliente, las caras y las fechas. El contrato debe quedar **posteado** para que aparezca en VEO Services. Ver [Crear el contrato en Brilo](academy:contrato-en-brilo).
+Puedes enviarle al cliente varias cotizaciones hasta que acepte una. Cuando confirme, en **Mis cotizaciones** marca **esa** cotización como **Aceptada**, revisa el **Cliente Brilo** y el **Ejecutivo Brilo** que la plataforma te propone y confirma. Al confirmar:
 
-## Paso 4: Acepta la cotización y vincula el contrato
-
-En **Mis cotizaciones**, marca la cotización como **Aceptada** y elige el **Contrato Brilo** que acabas de crear. Al confirmar:
-
+- Si la cotización tiene **vallas estáticas**, VEO Services crea en Brilo la **cotización** y el **contrato posteado** con esas vallas, y los vincula solo. Ya no tienes que crearlos a mano. Ver [El contrato en Brilo](academy:contrato-en-brilo).
 - Se descarga el **contrato de arrendamiento** en PDF.
 - Si hay vallas, se crea la [orden de producción](academy:glosario#orden-de-produccion) y se avisa a Producción.
 - Si hay pantallas, se registran las campañas digitales.
 
-Ver [Aceptar la cotización y vincular el contrato](academy:aceptar-cotizacion).
+Ver [Aceptar la cotización](academy:aceptar-cotizacion).
 
-## Paso 5: Envía el contrato para firma
+## Paso 4: Envía el contrato para firma
 
 Envía el PDF del contrato al cliente para que lo firme y guarda la copia firmada. Ver [Enviar el contrato al cliente para firma](academy:enviar-contrato-firma).
 
 En el CRM, marca el negocio como **Ganado** (etapa *Orden firmada*): los sitios reservados pasan a **Vendida**.
 
-## Paso 6: Producción, instalación y campaña
+## Paso 5: Producción, instalación y campaña
 
 Carga el **arte** de cada valla en [Mis órdenes](app:/dashboard/my-space/production-orders); con eso Producción imprime las lonas, se programa la instalación y el instalador sube las fotos de evidencia. En pantallas, se confirma el arte y la campaña sale al aire. Puedes seguir todo desde [Mis órdenes](app:/dashboard/my-space/production-orders) o en la pestaña Ejecución del negocio. Ver [Después de la venta](academy:despues-de-la-venta).
 
-## Paso 7: Reporta al cliente
+## Paso 6: Reporta al cliente
 
 Envía el reporte de instalación cuando la valla esté colocada y luego el **reporte mensual** con fotos durante toda la campaña. Ver [Enviar reportes a clientes](academy:enviar-reporte).
 
-## Paso 8: Renueva
+## Paso 7: Renueva
 
 Revisa con tiempo los contratos que están por terminar y ofrece la renovación antes de que otro cliente tome el espacio. Ver [Renovaciones](academy:crm-renovaciones) y [Contratos por vencer](academy:contratos-por-vencer).`,
   },
@@ -138,7 +134,9 @@ Haz clic en un cliente para ver su historial de contratos, marcados como **Vigen
 
 ## El cliente también debe existir en Brilo
 
-Para crear el [contrato en Brilo](academy:contrato-en-brilo), el cliente tiene que estar registrado en Brilo con sus datos legales completos (representante legal, DUI, dirección y correos), porque el contrato en PDF los toma de ahí.`,
+El [contrato en Brilo](academy:contrato-en-brilo) se crea a nombre de un cliente que ya existe en Brilo, con sus datos legales completos (representante legal, DUI, dirección y correos), porque el contrato en PDF los toma de ahí.
+
+> **Usa el mismo correo en los dos sistemas.** Al aceptar una cotización, VEO Services busca al cliente en Brilo por su correo. Si coinciden, lo propone solo; si no, tendrás que buscarlo a mano.`,
   },
   {
     slug: 'crear-cotizacion-vallas',
@@ -202,7 +200,7 @@ Para crear el [contrato en Brilo](academy:contrato-en-brilo), el cliente tiene q
 
 ## Siguiente paso
 
-Cuando el cliente acepte, [crea el contrato en Brilo](academy:contrato-en-brilo) y luego [acepta la cotización](academy:aceptar-cotizacion).`,
+Cuando el cliente acepte, [acepta la cotización](academy:aceptar-cotizacion). La cotización y el contrato en Brilo se crean solos.`,
   },
   {
     slug: 'crear-cotizacion-mixta',
@@ -253,52 +251,84 @@ Mientras la cotización esté **Pendiente**, haz clic en ella en Mis cotizacione
 
 ## Siguiente paso
 
-Cuando el cliente acepte: [contrato en Brilo](academy:contrato-en-brilo) y [aceptar la cotización](academy:aceptar-cotizacion).`,
+Cuando el cliente acepte, [acepta la cotización](academy:aceptar-cotizacion). Si incluye vallas estáticas, se crean solos la cotización y el contrato en Brilo. Las pantallas y los conceptos adicionales no se envían a Brilo.`,
   },
   {
     slug: 'contrato-en-brilo',
-    title: 'Crear el contrato en Brilo',
+    title: 'El contrato en Brilo',
     category: 'proceso-de-venta',
     summary:
-      'Por qué el contrato oficial se crea en Brilo, qué datos necesita y cómo hacer que aparezca en VEO Services.',
-    tags: ['contrato', 'brilo', 'erp', 'crear contrato', 'posteado', 'CON'],
+      'Cómo VEO Services crea solo la cotización y el contrato en Brilo al aceptar una cotización, y qué hacer si falla.',
+    tags: [
+      'contrato',
+      'brilo',
+      'erp',
+      'crear contrato',
+      'contrato automático',
+      'facturación',
+      'posteado',
+      'CON',
+      'reintentar brilo',
+    ],
     related: ['aceptar-cotizacion', 'enviar-contrato-firma', 'crear-cliente'],
-    body: `El **contrato oficial** de VEO vive en **Brilo**, el ERP de la empresa. Brilo le asigna su número (por ejemplo, **CON0613-26**) y desde ahí se factura y se cobra. VEO Services **no crea** el contrato en Brilo: lo lee y lo vincula a tu cotización.
+    body: `El **contrato oficial** de VEO vive en **Brilo**, el ERP de la empresa. Brilo le asigna su número (por ejemplo, **CON0613-26**) y desde ahí se factura y se cobra. Para facturar, Brilo necesita una **cotización** y un **contrato** propios.
 
-## Cuándo crearlo
+**Ya no tienes que crearlos a mano.** Al [aceptar una cotización](academy:aceptar-cotizacion) con vallas estáticas, VEO Services crea en Brilo la cotización y el contrato con los mismos datos, y vincula el contrato a tu cotización.
 
-Después de que el cliente aceptó la [cotización](academy:glosario#cotizacion) y antes de marcarla como aceptada en VEO Services, porque al [aceptar la cotización](academy:aceptar-cotizacion) te pedirá elegir este contrato.
+> Los documentos de Brilo son **solo para facturación**. Al cliente se le envían la cotización y el contrato en PDF de VEO Services.
+
+## Qué se crea en Brilo
+
+- Una **cotización** en estado *Aceptada* (número **COT…**).
+- Un **contrato posteado** (número **CON…**) vinculado a esa cotización, con cuotas mensuales.
+- En ambos, cada **valla estática** de la cotización con sus fechas, el **arrendamiento mensual** (sin IVA) y la **impresión**.
+
+> **Solo vallas estáticas.** Las **pantallas digitales** y los **conceptos adicionales** no se envían a Brilo. Si una cotización solo tiene pantallas o conceptos, al aceptarla eliges a mano un contrato de Brilo existente, como antes.
 
 ## Qué datos necesita
 
-Crea el contrato en Brilo con:
+Al aceptar, la plataforma te pide confirmar dos datos de Brilo:
 
-- **Cliente**: debe existir en Brilo con sus datos legales completos. El PDF del contrato toma de Brilo el **nombre o razón social**, el **representante legal**, su **DUI**, el **municipio, departamento y dirección**, y los **correos** (general y de facturación).
-- **Ejecutivo**: tu nombre como vendedor. Así el contrato aparece en [Mis contratos](app:/dashboard/my-space/contracts) y en tus reportes.
-- **Caras y fechas**: las vallas (caras) contratadas con sus fechas de inicio y fin.
-- **Atención a**: la persona de contacto del cliente.
+- **Cliente Brilo**: se busca por el **correo** del cliente de la cotización. Si hay una sola coincidencia, se propone sola. Si no hay ninguna o hay varias, búscalo por nombre, código, NIT o correo.
+- **Ejecutivo Brilo**: se busca por el **nombre del asesor** de la cotización. Si hay una sola coincidencia, se propone solo; si no, elígelo de la lista. Así el contrato aparece en [Mis contratos](app:/dashboard/my-space/contracts) y en tus reportes.
 
-> **Importante:** el contrato debe quedar **posteado** y **no anulado**. Si no está posteado, no aparecerá en VEO Services al aceptar la cotización ni en Testigos.
+El cliente tiene que existir en Brilo con sus **datos legales completos**: el PDF del contrato toma de Brilo el **nombre o razón social**, el **representante legal**, su **DUI**, el **municipio, departamento y dirección**, y los **correos**. Si el cliente no existe en Brilo, pide que lo registren antes de aceptar.
 
 ## Qué datos salen de la cotización
 
-El monto, las vallas o pantallas y las fechas que aparecen en el contrato en PDF salen de **la cotización aceptada**, no de Brilo. Por eso es importante que la cotización esté correcta antes de aceptarla.
+El monto, las vallas y las fechas del contrato en Brilo y del contrato en PDF salen de **la cotización aceptada**. Por eso es importante que la cotización esté correcta antes de aceptarla: una vez aceptada ya no se puede editar.
+
+## Si Brilo no responde
+
+La cotización **queda aceptada** aunque Brilo falle: la orden de producción y las campañas de pantallas se crean igual. En ese caso:
+
+1. Verás un aviso con el error de Brilo en la cotización.
+2. Haz clic en **Reintentar Brilo** (en la fila de la cotización o en su detalle). Si la cotización de Brilo ya se había creado, no se duplica: solo se crea lo que faltó.
+3. Si el problema sigue, en el detalle de la cotización puedes vincular a mano un contrato de Brilo existente.
+
+El botón **Contrato** aparece cuando la cotización ya tiene un contrato de Brilo vinculado.
+
+## Si el cliente se echa para atrás
+
+Si rechazas una cotización ya aceptada, VEO Services **desvincula** el contrato, pero el contrato **sigue posteado en Brilo**. Pide que lo **anulen en Brilo** para que no se siga facturando.
 
 ## Siguiente paso
 
-[Acepta la cotización y vincula el contrato](academy:aceptar-cotizacion).`,
+[Acepta la cotización](academy:aceptar-cotizacion).`,
   },
   {
     slug: 'aceptar-cotizacion',
-    title: 'Aceptar la cotización y vincular el contrato',
+    title: 'Aceptar la cotización',
     category: 'proceso-de-venta',
     summary:
-      'Marca la cotización como aceptada, elige el contrato de Brilo y descarga el contrato de arrendamiento.',
+      'Marca la cotización como aceptada, genera la cotización y el contrato en Brilo y descarga el contrato de arrendamiento.',
     tags: [
       'aceptar cotización',
       'aceptada',
       'rechazada',
       'vincular contrato',
+      'contrato brilo',
+      'reintentar brilo',
       'contrato pdf',
       'descargar contrato',
       'estado cotización',
@@ -321,29 +351,42 @@ El monto, las vallas o pantallas y las fechas que aparecen en el contrato en PDF
 | **Aceptada** | El cliente aceptó y está vinculada a un contrato de Brilo. |
 | **Rechazada** | El cliente no aceptó. |
 
-## Aceptar una cotización
+Puedes crear varias cotizaciones para el mismo cliente mientras negocian. Acepta **solo la que el cliente eligió**: es la única que genera documentos en Brilo.
 
-Antes de empezar, el [contrato en Brilo](academy:contrato-en-brilo) ya debe estar creado y **posteado**.
+## Aceptar una cotización con vallas estáticas
+
+Ya **no** tienes que crear el contrato en Brilo antes: se crea al confirmar.
 
 1. Abre **Mis cotizaciones**.
-2. En la cotización, haz clic en **Aceptada**.
-3. En la ventana **Aceptar cotización**, busca el **Contrato Brilo** por su código (CON...) o por el nombre del ejecutivo.
-4. Haz clic en **Confirmar aceptación**.
+2. En la cotización, haz clic en **Aceptada** (o elige **Aceptada** en el estado de su detalle).
+3. En la ventana **Aceptar cotización**, revisa:
+   - **Cliente Brilo**: propuesto por el correo del cliente. Si no aparece, búscalo por nombre, código, NIT o correo.
+   - **Ejecutivo Brilo**: propuesto por el nombre del asesor. Si hay varias coincidencias o ninguna, elígelo de la lista.
+4. Haz clic en **Confirmar aceptación** y espera mientras se crea en Brilo.
 
 [Abrir Mis cotizaciones](app:/dashboard/my-space/offers)
 
+Ver [El contrato en Brilo](academy:contrato-en-brilo) para saber qué se crea y qué hacer si Brilo falla.
+
+## Aceptar una cotización sin vallas estáticas
+
+Si la cotización solo tiene **pantallas** o **conceptos adicionales**, no se crea nada en Brilo. En la ventana **Aceptar cotización** busca un **Contrato Brilo** existente por su código (CON...) o por el nombre del ejecutivo y confirma.
+
 ## Qué pasa al aceptar
 
+- Si hay vallas estáticas, se crean en Brilo la **cotización** y el **contrato posteado**, y el contrato queda vinculado solo.
 - Se descarga automáticamente el **contrato de arrendamiento** en PDF (archivo *Contrato CON….pdf*). Lo puedes volver a descargar con el botón **Contrato**.
 - Si la cotización tiene **vallas**, se crea la [orden de producción](academy:glosario#orden-de-produccion) con el mismo número de la cotización y Producción recibe un aviso. Después carga el [arte de cada valla](academy:produccion#arte-de-cada-valla) en **Mis órdenes**.
 - Si tiene **pantallas**, se programan las campañas digitales en el módulo Pantallas.
 
-> Si el contrato no se pudo generar, verás un aviso. La cotización sí quedó aceptada: descarga el contrato con el botón **Contrato**.
+> **Si Brilo falla**, la cotización sí queda aceptada y verás el error. Usa **Reintentar Brilo** en la fila o en el detalle de la cotización. Ver [Si Brilo no responde](academy:contrato-en-brilo#si-brilo-no-responde).
+
+> Si el PDF del contrato no se pudo generar, verás un aviso. Descárgalo después con el botón **Contrato**.
 
 ## Rechazar una cotización
 
 - Si está **Pendiente**, haz clic en **Rechazada**.
-- Si ya estaba **Aceptada**, al rechazarla se te pedirá confirmar. Esto **desvincula el contrato de Brilo**, elimina la orden de producción y libera el espacio reservado en las pantallas.
+- Si ya estaba **Aceptada**, al rechazarla se te pedirá confirmar. Esto **desvincula el contrato de Brilo**, elimina la orden de producción y libera el espacio reservado en las pantallas. El contrato **sigue posteado en Brilo**: pide que lo anulen allí para detener la facturación.
 
 ## Siguiente paso
 

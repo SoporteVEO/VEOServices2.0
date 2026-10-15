@@ -194,7 +194,7 @@ Las compras realizadas en la tienda aparecen en el módulo **Ordenes** del menú
 
 ## Qué hacer con una compra
 
-Una compra en línea sigue el mismo camino operativo que una venta normal: contrato en Brilo, producción, instalación y reportes. Ver [El proceso de venta paso a paso](academy:proceso-de-venta#paso-3-crea-el-contrato-en-brilo).`,
+Una compra en línea sigue el mismo camino operativo que una venta normal: contrato en Brilo, producción, instalación y reportes. Ver [El proceso de venta paso a paso](academy:proceso-de-venta#paso-3-acepta-la-cotizacion).`,
   },
   {
     slug: 'facturacion-y-cxc',
@@ -224,7 +224,7 @@ En **Mi Espacio → Mis facturas** ves la facturación generada bajo tu nombre c
 
 [Abrir Mis facturas](app:/dashboard/my-space/invoices)
 
-> Si una factura no aparece, revisa en Brilo que el contrato tenga tu nombre como **ejecutivo**. Ver [Crear el contrato en Brilo](academy:contrato-en-brilo#que-datos-necesita).
+> Si una factura no aparece, revisa en Brilo que el contrato tenga tu nombre como **ejecutivo**. Ver [El contrato en Brilo](academy:contrato-en-brilo#que-datos-necesita).
 
 ## Cuentas por cobrar (solo administradores)
 

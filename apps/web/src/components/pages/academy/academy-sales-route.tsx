@@ -14,13 +14,8 @@ const SALES_STEPS = [
     href: academyArticlePath("crear-cotizacion-vallas"),
   },
   {
-    title: "Contrato en Brilo",
-    detail: "Cliente, caras, fechas y posteo",
-    href: academyArticlePath("contrato-en-brilo"),
-  },
-  {
     title: "Acepta la cotización",
-    detail: "Vincula el contrato y descarga el PDF",
+    detail: "Se crea el contrato en Brilo y descargas el PDF",
     href: academyArticlePath("aceptar-cotizacion"),
   },
   {

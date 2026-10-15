@@ -104,7 +104,7 @@ Si eres el ejecutivo del contrato, también puedes hacerlo desde **Mi Espacio �
 
 [Abrir Mis contratos](app:/dashboard/my-space/contracts)
 
-> **¿No aparece el contrato?** En Brilo debe estar **posteado** y no anulado. Ver [Crear el contrato en Brilo](academy:contrato-en-brilo).`,
+> **¿No aparece el contrato?** En Brilo debe estar **posteado** y no anulado. Ver [El contrato en Brilo](academy:contrato-en-brilo).`,
   },
   {
     slug: 'contratos-por-vencer',

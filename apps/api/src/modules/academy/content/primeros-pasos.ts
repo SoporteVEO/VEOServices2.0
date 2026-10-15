@@ -107,7 +107,7 @@ VEO trabaja con dos sistemas que se complementan:
 - **VEO Services** (esta plataforma): cotizaciones, fotos, reportes, producción, CRM.
 - **Brilo** (el ERP): clientes de facturación, **contratos oficiales**, facturas y cobros.
 
-El contrato legal **se crea en Brilo** y luego se vincula en VEO Services al aceptar la cotización. Por eso el [proceso de venta](academy:proceso-de-venta) pasa por ambos sistemas.`,
+Al aceptar una cotización con vallas estáticas, VEO Services **crea sola** la cotización y el contrato en Brilo para la facturación. Trabajas en VEO Services y Brilo se mantiene al día. Ver [El contrato en Brilo](academy:contrato-en-brilo).`,
   },
   {
     slug: 'mi-espacio',

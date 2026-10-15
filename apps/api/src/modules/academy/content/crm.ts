@@ -315,7 +315,7 @@ Las tarifas son **mensuales** y se prorratean a meses de 30 días. Ejemplo: una 
 - **Perdido**: todos los sitios se **liberan** automáticamente.
 - **Reabrir**: los sitios vuelven a quedar **reservados**.
 
-> Las reservas del CRM **no bloquean** el sitio en Brilo. Son internas del equipo de Ventas. El contrato real se hace en Brilo. Ver [Crear el contrato en Brilo](academy:contrato-en-brilo).`,
+> Las reservas del CRM **no bloquean** el sitio en Brilo. Son internas del equipo de Ventas. El contrato en Brilo se crea al aceptar la cotización. Ver [El contrato en Brilo](academy:contrato-en-brilo).`,
   },
   {
     slug: 'crm-disponibilidad',
@@ -610,7 +610,7 @@ Abre el **Resumen** del CRM:
 
 ## Cuando el cliente responde
 
-- **Si acepta**: sigue el [proceso de venta](academy:proceso-de-venta#paso-3-crea-el-contrato-en-brilo), vincula la cotización y marca **Ganado**. Luego sigue la instalación en **Ejecución**.
+- **Si acepta**: [acepta la cotización](academy:proceso-de-venta#paso-3-acepta-la-cotizacion) (el contrato en Brilo se crea solo) y marca **Ganado**. Luego sigue la instalación en **Ejecución**.
 - **Si no acepta**: marca **Perdido** con el motivo. Los sitios se liberan solos.
 
 ## Una vez por semana
