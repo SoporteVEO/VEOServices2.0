@@ -1,6 +1,6 @@
 "use client";
 
-import { Controller, type UseFormReturn } from "react-hook-form";
+import { Controller, useWatch, type UseFormReturn } from "react-hook-form";
 import type { Client } from "@/api/clients/clients.get";
 import { DatePicker } from "@/components/ui/date-picker";
 import { Label } from "@/components/primitives/ui/label";
@@ -29,8 +29,8 @@ export function QuotationCustomerForm({
   defaultSelectedClient,
   onSelectClient,
 }: QuotationCustomerFormProps) {
-  const { register, control, formState, watch } = form;
-  const clientId = watch("clientId");
+  const { register, control, formState } = form;
+  const clientId = useWatch({ control, name: "clientId" });
 
   return (
     <section className="space-y-4">
