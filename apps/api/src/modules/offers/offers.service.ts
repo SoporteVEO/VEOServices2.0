@@ -9,6 +9,7 @@ import {
   BriloSyncStatus,
   DigitalCampaignArt,
   DigitalCampaignDeal,
+  OfferEditReason,
   OfferEventType,
   OfferItemType,
   OfferStatus,
@@ -33,6 +34,7 @@ import { EditOfferDto } from './dto/edit-offer.dto.js';
 import type { ListBriloContractsFilters } from './dto/list-brilo-contracts-query.dto.js';
 import { UpdateOfferDto } from './dto/update-offer.dto.js';
 import {
+  BRILO_CLIENT_LEGAL_SQL,
   BRILO_CONTRACT_WITH_CLIENT_SQL,
   computeContractAmounts,
   formatDimensions,
@@ -48,10 +50,12 @@ import {
 } from './offer-brilo-sync.service.js';
 import {
   buildEditMessage,
+  countBillboards,
   diffHeader,
   diffItems,
   diffTotals,
   type OfferChangeSet,
+  type OfferEditAudit,
   type OfferItemSnapshot,
 } from './offer-audit.js';
 
@@ -64,7 +68,9 @@ const BRILO_CONTRACTS_PAGE_SIZE = 30;
 
 const CLEARED_BRILO_LINK = {
   briloMconId: null,
+  briloMconCodigo: null,
   briloMcotId: null,
+  briloMcotNumero: null,
   briloCliId: null,
   briloEjecId: null,
   briloSyncStatus: null,
@@ -128,7 +134,9 @@ export interface OfferListItem {
   advisorFullName: string | null;
   status: OfferStatus;
   briloMconId: number | null;
+  briloMconCodigo: string | null;
   briloMcotId: number | null;
+  briloMcotNumero: string | null;
   briloSyncStatus: BriloSyncStatus | null;
   briloSyncError: string | null;
   subtotalImpression: number;
@@ -151,7 +159,7 @@ export interface OfferListItem {
 export interface BriloContractOption {
   mconId: number;
   mconCodigo: string;
-  mconFecha: string;
+  mconFecha: string | null;
   ejecNombre: string | null;
 }
 
@@ -175,6 +183,8 @@ export interface OfferDetailItem {
   quantity: number;
   impressionPrice: number;
   rentalPrice: number;
+  listImpressionPrice: number | null;
+  listRentalPrice: number | null;
   taxRate: number;
   description: string | null;
   digitalBillboardId: string | null;
@@ -183,7 +193,7 @@ export interface OfferDetailItem {
   endDate: string | null;
 }
 
-export interface OfferEventEntry {
+export interface OfferEventEntry extends OfferEditAudit {
   id: string;
   type: OfferEventType;
   message: string;
@@ -385,6 +395,8 @@ export class OffersService {
                 quantity: item.quantity,
                 impressionPrice: item.impressionPrice,
                 rentalPrice: item.rentalPrice,
+                listImpressionPrice: item.listImpressionPrice ?? null,
+                listRentalPrice: item.listRentalPrice ?? null,
                 taxRate: item.taxRate ?? DEFAULT_TAX_RATE,
                 description: item.description?.trim() || null,
                 digitalBillboardId: item.digitalBillboardId ?? null,
@@ -854,11 +866,7 @@ export class OffersService {
       throw new NotFoundException('CotizaciÃ³n no encontrada');
     }
 
-    const linkedBriloContract = row.briloMconId
-      ? await this.fetchBriloContractById(row.briloMconId)
-      : null;
-
-    return this.mapToDetail(row, linkedBriloContract);
+    return this.mapToDetail(row, await this.resolveLinkedContract(row));
   }
 
   async updateOffer(
@@ -877,13 +885,17 @@ export class OffersService {
       );
     }
 
+    let mconCodigo: string | null = null;
     if (dto.status === OfferStatus.ACCEPTED) {
       if (!dto.briloMconId) {
         throw new BadRequestException(
           'Debes vincular un contrato de Brilo para marcar la cotizaciÃ³n como aceptada',
         );
       }
-      await this.assertBriloContractExists(dto.briloMconId);
+      mconCodigo =
+        dto.briloMconId === existing.briloMconId && existing.briloMconCodigo
+          ? existing.briloMconCodigo
+          : await this.assertBriloContractExists(dto.briloMconId);
     }
 
     const wasAccepted = existing.status === OfferStatus.ACCEPTED;
@@ -894,7 +906,11 @@ export class OffersService {
         await tx.offerCreated.update({
           where: { id },
           data: willBeAccepted
-            ? { status: dto.status, briloMconId: dto.briloMconId! }
+            ? {
+                status: dto.status,
+                briloMconId: dto.briloMconId!,
+                briloMconCodigo: mconCodigo,
+              }
             : { status: dto.status, ...CLEARED_BRILO_LINK },
         });
 
@@ -933,11 +949,7 @@ export class OffersService {
       );
     }
 
-    const linkedBriloContract = updated.briloMconId
-      ? await this.fetchBriloContractById(updated.briloMconId)
-      : null;
-
-    return this.mapToDetail(updated, linkedBriloContract);
+    return this.mapToDetail(updated, await this.resolveLinkedContract(updated));
   }
 
   /**
@@ -995,6 +1007,21 @@ export class OffersService {
       itemsDiff.hasChanges ||
       Object.keys(totalsDiff).length > 0;
 
+    const billboardsChanged =
+      itemsDiff.billboardsAdded > 0 || itemsDiff.billboardsRemoved > 0;
+    const editReason = dto.editReason ?? null;
+    const editReasonNote = dto.editReasonNote?.trim() || null;
+    if (billboardsChanged && !editReason) {
+      throw new BadRequestException(
+        'Indica el motivo por el que se agregaron o quitaron vallas',
+      );
+    }
+    if (editReason === OfferEditReason.OTHER && !editReasonNote) {
+      throw new BadRequestException(
+        'Describe el motivo cuando seleccionas "Otro"',
+      );
+    }
+
     const updated = await this.prisma.$transaction(async (tx) => {
       // Full replacement keeps the write simple and is safe while PENDING:
       // no production order or digital usage rows reference these items yet.
@@ -1023,6 +1050,8 @@ export class OffersService {
               quantity: item.quantity,
               impressionPrice: item.impressionPrice,
               rentalPrice: item.rentalPrice,
+              listImpressionPrice: item.listImpressionPrice ?? null,
+              listRentalPrice: item.listRentalPrice ?? null,
               taxRate: item.taxRate ?? DEFAULT_TAX_RATE,
               description: item.description?.trim() || null,
               digitalBillboardId: item.digitalBillboardId ?? null,
@@ -1047,6 +1076,16 @@ export class OffersService {
             ...totalsDiff,
           },
           actorUserId: userId,
+          edit: {
+            editReason,
+            editReasonNote,
+            billboardsBefore: countBillboards(existing.items),
+            billboardsAfter: countBillboards(dto.items.map(toItemSnapshot)),
+            amountBefore: round2(
+              existing.totalRental + existing.totalImpression,
+            ),
+            amountAfter: round2(totals.totalRental + totals.totalImpression),
+          },
         });
       }
 
@@ -1056,11 +1095,7 @@ export class OffersService {
       });
     });
 
-    const linkedBriloContract = updated.briloMconId
-      ? await this.fetchBriloContractById(updated.briloMconId)
-      : null;
-
-    return this.mapToDetail(updated, linkedBriloContract);
+    return this.mapToDetail(updated, await this.resolveLinkedContract(updated));
   }
 
   async declineOffer(id: string, userId: string): Promise<OfferListItem> {
@@ -1150,16 +1185,17 @@ export class OffersService {
           'Debes vincular un contrato de Brilo para marcar la cotización como aceptada',
         );
       }
-      await this.assertBriloContractExists(dto.briloMconId);
+      const mconCodigo = await this.assertBriloContractExists(dto.briloMconId);
       acceptData = {
         status: OfferStatus.ACCEPTED,
         ...CLEARED_BRILO_LINK,
         briloMconId: dto.briloMconId,
+        briloMconCodigo: mconCodigo,
       };
-      message = `Cotización aceptada y vinculada al contrato Brilo #${dto.briloMconId}`;
+      message = `Cotización aceptada y vinculada al contrato Brilo ${mconCodigo}`;
       changes = {
         status: { from: offer.status, to: OfferStatus.ACCEPTED },
-        briloMconId: { from: null, to: dto.briloMconId },
+        briloContract: { from: null, to: mconCodigo },
       };
     }
 
@@ -1284,6 +1320,8 @@ export class OffersService {
         offerNumber: true,
         status: true,
         briloMconId: true,
+        briloMconCodigo: true,
+        briloCliId: true,
         createdByUserId: true,
         contractPdfS3Key: true,
         items: {
@@ -1315,11 +1353,10 @@ export class OffersService {
       );
     }
 
-    const rows = await this.brilo.query<BriloContractWithClientRow>(
-      BRILO_CONTRACT_WITH_CLIENT_SQL,
-      { MconId: offer.briloMconId },
-    );
-    const contract = rows[0];
+    const contract = await this.findContractWithClient({
+      ...offer,
+      briloMconId: offer.briloMconId,
+    });
     if (!contract) {
       throw new BadRequestException(
         'El contrato de Brilo vinculado ya no estÃ¡ disponible',
@@ -1394,6 +1431,45 @@ export class OffersService {
       endDate: endDate?.toISOString() ?? null,
       billboards,
       hasArchivedPdf: !!offer.contractPdfS3Key,
+    };
+  }
+
+  /**
+   * A contract VEO created through the WebAPI may not be on Brilo's read
+   * replica yet, so its stored code and the client's legal data stand in.
+   */
+  private async findContractWithClient(offer: {
+    id: string;
+    briloMconId: number;
+    briloMconCodigo: string | null;
+    briloCliId: number | null;
+  }): Promise<BriloContractWithClientRow | null> {
+    const rows = await this.brilo.query<BriloContractWithClientRow>(
+      BRILO_CONTRACT_WITH_CLIENT_SQL,
+      { MconId: offer.briloMconId },
+    );
+    if (rows[0]) return rows[0];
+    if (!offer.briloMconCodigo || !offer.briloCliId) return null;
+
+    const [clients, created] = await Promise.all([
+      this.brilo.query<
+        Omit<BriloContractWithClientRow, 'mconCodigo' | 'mconFecha'>
+      >(BRILO_CLIENT_LEGAL_SQL, { CliId: offer.briloCliId }),
+      this.prisma.offerEvent.findFirst({
+        where: {
+          offerId: offer.id,
+          type: OfferEventType.BRILO_CONTRATO_CREATED,
+        },
+        orderBy: { createdAt: 'desc' },
+        select: { createdAt: true },
+      }),
+    ]);
+    if (!clients[0]) return null;
+
+    return {
+      ...clients[0],
+      mconCodigo: offer.briloMconCodigo,
+      mconFecha: created?.createdAt ?? new Date(),
     };
   }
 
@@ -1523,6 +1599,7 @@ export class OffersService {
       message: string;
       changes?: OfferChangeSet | null;
       actorUserId: string | null;
+      edit?: OfferEditAudit;
     },
   ) {
     return tx.offerEvent.create({
@@ -1535,6 +1612,7 @@ export class OffersService {
             ? (input.changes as unknown as Prisma.InputJsonValue)
             : undefined,
         actorUserId: input.actorUserId,
+        ...input.edit,
       },
     });
   }
@@ -1542,7 +1620,13 @@ export class OffersService {
   private async findOwnedOffer(id: string, userId: string) {
     const offer = await this.prisma.offerCreated.findUnique({
       where: { id },
-      select: { id: true, createdByUserId: true, status: true },
+      select: {
+        id: true,
+        createdByUserId: true,
+        status: true,
+        briloMconId: true,
+        briloMconCodigo: true,
+      },
     });
     if (!offer) {
       throw new NotFoundException('CotizaciÃ³n no encontrada');
@@ -1668,6 +1752,25 @@ export class OffersService {
     });
   }
 
+  /**
+   * Brilo's read replica can lag behind the WebAPI, so a contract VEO just
+   * created falls back to the code stored on the offer.
+   */
+  private async resolveLinkedContract(row: {
+    briloMconId: number | null;
+    briloMconCodigo: string | null;
+  }): Promise<BriloContractOption | null> {
+    if (!row.briloMconId) return null;
+    const contract = await this.fetchBriloContractById(row.briloMconId);
+    if (contract || !row.briloMconCodigo) return contract;
+    return {
+      mconId: row.briloMconId,
+      mconCodigo: row.briloMconCodigo,
+      mconFecha: null,
+      ejecNombre: null,
+    };
+  }
+
   private async fetchBriloContractById(
     mconId: number,
   ): Promise<BriloContractOption | null> {
@@ -1689,10 +1792,10 @@ export class OffersService {
     };
   }
 
-  private async assertBriloContractExists(mconId: number): Promise<void> {
-    const rows = await this.brilo.query<{ mconId: number }>(
+  private async assertBriloContractExists(mconId: number): Promise<string> {
+    const rows = await this.brilo.query<{ mconCodigo: string }>(
       `
-      SELECT maecon.mconId
+      SELECT maecon.mconCodigo
       FROM olVallas.dbo.maeContratos maecon WITH (NOLOCK)
       WHERE maecon.mconId = @MconId
         AND maecon.mconPosteado <> 0
@@ -1705,6 +1808,7 @@ export class OffersService {
         'El contrato de Brilo seleccionado no existe',
       );
     }
+    return rows[0].mconCodigo.trim();
   }
 
   private mapToDetail(
@@ -1722,7 +1826,9 @@ export class OffersService {
       advisorFullName: string | null;
       status: OfferStatus;
       briloMconId: number | null;
+      briloMconCodigo: string | null;
       briloMcotId: number | null;
+      briloMcotNumero: string | null;
       briloSyncStatus: BriloSyncStatus | null;
       briloSyncError: string | null;
       subtotalImpression: number;
@@ -1753,6 +1859,8 @@ export class OffersService {
         quantity: number;
         impressionPrice: number;
         rentalPrice: number;
+        listImpressionPrice: number | null;
+        listRentalPrice: number | null;
         taxRate: number;
         description: string | null;
         digitalBillboardId: string | null;
@@ -1779,6 +1887,8 @@ export class OffersService {
         quantity: item.quantity,
         impressionPrice: item.impressionPrice,
         rentalPrice: item.rentalPrice,
+        listImpressionPrice: item.listImpressionPrice,
+        listRentalPrice: item.listRentalPrice,
         taxRate: item.taxRate,
         description: item.description,
         digitalBillboardId: item.digitalBillboardId,
@@ -1806,7 +1916,9 @@ export class OffersService {
     advisorFullName: string | null;
     status: OfferStatus;
     briloMconId: number | null;
+    briloMconCodigo: string | null;
     briloMcotId: number | null;
+    briloMcotNumero: string | null;
     briloSyncStatus: BriloSyncStatus | null;
     briloSyncError: string | null;
     subtotalImpression: number;
@@ -1839,7 +1951,9 @@ export class OffersService {
       advisorFullName: row.advisorFullName,
       status: row.status,
       briloMconId: row.briloMconId,
+      briloMconCodigo: row.briloMconCodigo,
       briloMcotId: row.briloMcotId,
+      briloMcotNumero: row.briloMcotNumero,
       briloSyncStatus: row.briloSyncStatus,
       briloSyncError: row.briloSyncError,
       subtotalImpression: row.subtotalImpression,
@@ -1897,7 +2011,7 @@ function statusEventMessage(from: OfferStatus, to: OfferStatus): string {
   }
 }
 
-interface OfferEventRow {
+interface OfferEventRow extends OfferEditAudit {
   id: string;
   type: OfferEventType;
   message: string;
@@ -1922,6 +2036,12 @@ function mapOfferEvent(row: OfferEventRow): OfferEventEntry {
       !Array.isArray(row.changes)
         ? (row.changes as unknown as OfferChangeSet)
         : null,
+    editReason: row.editReason,
+    editReasonNote: row.editReasonNote,
+    billboardsBefore: row.billboardsBefore,
+    billboardsAfter: row.billboardsAfter,
+    amountBefore: row.amountBefore,
+    amountAfter: row.amountAfter,
     actor: row.actor,
     createdAt: row.createdAt.toISOString(),
   };

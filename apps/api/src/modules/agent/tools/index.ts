@@ -2,6 +2,7 @@ import type { AgentToolContext } from './agent-tool-context.js';
 import { buildAcademyTools } from './academy.tools.js';
 import { buildApiTools } from './api.tools.js';
 import { buildBillboardTools } from './billboards.tools.js';
+import { buildBriloApiTools } from './brilo-api.tools.js';
 import { buildCrmOpportunityTools } from './crm-opportunity.tools.js';
 import { buildCrmTools } from './crm.tools.js';
 import { buildDataSourceTools } from './data-source.tools.js';
@@ -22,6 +23,7 @@ export function buildAgentTools(ctx: AgentToolContext) {
     ...buildSalesTools(ctx),
     ...buildCrmTools(ctx),
     ...buildCrmOpportunityTools(ctx),
+    ...buildBriloApiTools(ctx),
     ...buildDocumentTools(),
     ...buildEmailTools(ctx),
     ...buildIssueTools(ctx),
@@ -34,6 +36,7 @@ export function buildAgentTools(ctx: AgentToolContext) {
 export type AgentTools = ReturnType<typeof buildAgentTools>;
 
 export { loadBriloMcpTools } from './brilo-mcp.tools.js';
+export { resolveBriloChange } from './brilo-api.tools.js';
 export type {
   AgentIssueReport,
   AgentToolContext,

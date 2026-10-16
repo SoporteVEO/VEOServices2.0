@@ -8,6 +8,7 @@ import {
   type AgentMessagePart,
 } from "@/api/agent/agent.types";
 import { AgentApiCallPart } from "./agent-api-call-part";
+import { AgentBriloChangePart } from "./agent-brilo-change-part";
 import { AgentChart } from "./agent-chart";
 import { AgentDataSourceCard } from "./agent-data-source-card";
 import { AgentEmailPart } from "./agent-email-part";
@@ -40,6 +41,9 @@ const TOOL_LABELS: Record<string, string> = {
   create_client_proposal: "Preparando la propuesta",
   draft_crm_template: "Redactando plantilla",
   register_crm_opportunity: "Registrando en el CRM",
+  brilo_api_search: "Buscando en la API de Brilo",
+  brilo_api_describe: "Leyendo documentación de Brilo",
+  brilo_api_get: "Consultando Brilo",
 };
 
 function inventoryDetail(
@@ -300,6 +304,46 @@ export function AgentToolPart({ part }: { part: AgentMessagePart }) {
           approvalId={"approval" in part ? part.approval?.id : undefined}
         />
       );
+
+    case "tool-brilo_api_change":
+      return (
+        <AgentBriloChangePart
+          state={part.state}
+          input={part.input}
+          output={part.state === "output-available" ? part.output : undefined}
+          errorText={part.state === "output-error" ? part.errorText : undefined}
+          approvalId={"approval" in part ? part.approval?.id : undefined}
+        />
+      );
+
+    case "tool-brilo_api_search":
+    case "tool-brilo_api_describe":
+    case "tool-brilo_api_get": {
+      const output =
+        part.state === "output-available" ? part.output : undefined;
+      if (isUnauthorized(output))
+        return <AgentUnauthorizedNote message={output.message} />;
+      const input = part.input as
+        | { query?: unknown; path?: string; endpoint?: string; model?: string; module?: string }
+        | undefined;
+      return (
+        <AgentToolStatus
+          label={TOOL_LABELS[part.type.slice(5)]}
+          detail={
+            input?.path ??
+            input?.endpoint ??
+            input?.model ??
+            (typeof input?.query === "string" ? input.query : input?.module)
+          }
+          state={part.state}
+          input={part.type === "tool-brilo_api_get" ? input?.query : undefined}
+          output={output}
+          errorText={
+            part.state === "output-error" ? part.errorText : toolErrorText(output)
+          }
+        />
+      );
+    }
 
     case "tool-list_api_endpoints":
       return (

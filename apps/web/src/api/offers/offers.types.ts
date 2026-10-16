@@ -12,6 +12,8 @@ export interface OfferItemInput {
   quantity: number;
   impressionPrice: number;
   rentalPrice: number;
+  listImpressionPrice?: number | null;
+  listRentalPrice?: number | null;
   taxRate?: number;
   description?: string | null;
   digitalBillboardId?: string | null;
@@ -47,7 +49,7 @@ export type OfferStatus = "PENDING" | "DECLINED" | "ACCEPTED";
 export interface BriloContractOption {
   mconId: number;
   mconCodigo: string;
-  mconFecha: string;
+  mconFecha: string | null;
   ejecNombre: string | null;
 }
 
@@ -118,6 +120,9 @@ export interface OfferDetailItem {
   quantity: number;
   impressionPrice: number;
   rentalPrice: number;
+  /** Recommended unit prices; null for lines saved before they were tracked. */
+  listImpressionPrice: number | null;
+  listRentalPrice: number | null;
   taxRate: number;
   description: string | null;
   digitalBillboardId: string | null;
@@ -136,18 +141,38 @@ export type OfferEventType =
   | "DECLINED"
   | "REOPENED"
   | "BRILO_SYNCED"
-  | "BRILO_SYNC_FAILED";
+  | "BRILO_SYNC_FAILED"
+  | "BRILO_COTIZACION_CREATED"
+  | "BRILO_COTIZACION_FAILED"
+  | "BRILO_CONTRATO_CREATED"
+  | "BRILO_CONTRATO_FAILED";
 
 export interface OfferChange {
   from: unknown;
   to: unknown;
 }
 
+export type OfferEditReason =
+  | "CLIENT_BUDGET"
+  | "CAMPAIGN_SCOPE"
+  | "AVAILABILITY"
+  | "LOCATION"
+  | "PRICE_NEGOTIATION"
+  | "CAMPAIGN_DATES"
+  | "CORRECTION"
+  | "OTHER";
+
 export interface OfferEventEntry {
   id: string;
   type: OfferEventType;
   message: string;
   changes: Record<string, OfferChange> | null;
+  editReason: OfferEditReason | null;
+  editReasonNote: string | null;
+  billboardsBefore: number | null;
+  billboardsAfter: number | null;
+  amountBefore: number | null;
+  amountAfter: number | null;
   actor: {
     id: string;
     firstName: string;
@@ -222,6 +247,9 @@ export interface EditOfferInput {
   validUntil: string;
   specialConditions?: string | null;
   items: OfferItemInput[];
+  /** Required when billboards are added or removed. */
+  editReason?: OfferEditReason | null;
+  editReasonNote?: string | null;
 }
 
 export interface UpdateOfferInput {
@@ -243,7 +271,9 @@ export interface OfferListItem {
   advisorFullName: string | null;
   status: OfferStatus;
   briloMconId: number | null;
+  briloMconCodigo: string | null;
   briloMcotId: number | null;
+  briloMcotNumero: string | null;
   briloSyncStatus: BriloSyncStatus | null;
   briloSyncError: string | null;
   subtotalImpression: number;

@@ -24,6 +24,7 @@ import {
   StaticItemsSection,
   TotalsBlock,
 } from "./offer-pdf-items";
+import { offerItemsPricedLines, summarizeDiscounts } from "./offer-discounts";
 import { offerStyles as s } from "./offer-pdf-styles";
 import {
   computeOfferTotals,
@@ -151,7 +152,10 @@ export function OfferPdfDocument({ data }: OfferPdfDocumentProps) {
         <DigitalItemsSection items={digitalItems} />
         <MiscItemsSection items={miscItems} />
 
-        <TotalsBlock totals={totals} />
+        <TotalsBlock
+          totals={totals}
+          discounts={summarizeDiscounts(offerItemsPricedLines(data.items))}
+        />
         <DocFooter dotColor={DOC_COLORS.ink} />
       </Page>
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { MonitorPlay, ImageIcon } from "lucide-react";
+import { DIGITAL_BILLBOARD_ICON, STATIC_BILLBOARD_ICON } from "@/lib/billboard-icons";
 import {
   Select,
   SelectContent,
@@ -54,7 +54,7 @@ export function TypeSelect({ value }: TypeSelectProps) {
                 data-icon-wrapper
                 className="flex size-8 shrink-0 items-center justify-center rounded-md bg-blue-500/10 text-blue-600 dark:text-blue-400"
               >
-                <ImageIcon data-icon className="size-4" />
+                <STATIC_BILLBOARD_ICON data-icon className="size-4" />
               </div>
               <div className="flex flex-col text-left">
                 <span className="font-semibold text-foreground">
@@ -78,7 +78,7 @@ export function TypeSelect({ value }: TypeSelectProps) {
                 data-icon-wrapper
                 className="flex size-8 shrink-0 items-center justify-center rounded-md bg-purple-500/10 text-purple-600 dark:text-purple-400"
               >
-                <MonitorPlay data-icon className="size-4" />
+                <DIGITAL_BILLBOARD_ICON data-icon className="size-4" />
               </div>
               <div className="flex flex-col text-left">
                 <span className="font-semibold text-foreground">

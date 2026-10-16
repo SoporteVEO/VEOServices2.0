@@ -1,3 +1,4 @@
+import type { BriloWebapiService } from '../../brilo-webapi/brilo-webapi.service.js';
 import type { EmailService } from '../../email/email.service.js';
 import type { AgentApiClient } from '../agent-api-client.js';
 import type { AgentEndpointsService } from '../agent-endpoints.service.js';
@@ -22,6 +23,7 @@ export interface AgentToolContext {
   api: AgentApiClient;
   endpoints: AgentEndpointsService;
   email: EmailService;
+  brilo: BriloWebapiService;
   reportIssue: (report: AgentIssueReport) => Promise<{ ticket: string }>;
   rememberLearning: (content: string) => Promise<{ saved: boolean }>;
 }

@@ -13,6 +13,7 @@ interface AgentApprovalCardProps {
   state: string;
   approvalId?: string;
   approveLabel: string;
+  approveVariant?: "default" | "destructive";
   children: ReactNode;
   result?: ReactNode;
 }
@@ -24,6 +25,7 @@ export function AgentApprovalCard({
   state,
   approvalId,
   approveLabel,
+  approveVariant = "default",
   children,
   result,
 }: AgentApprovalCardProps) {
@@ -43,6 +45,7 @@ export function AgentApprovalCard({
             Cancelar
           </Button>
           <Button
+            variant={approveVariant}
             sizeVariant="sm"
             icon={Check}
             disabled={isBusy}

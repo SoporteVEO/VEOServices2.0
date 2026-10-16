@@ -43,14 +43,16 @@ export function BriloContractOptionCard({
           {ejecutivo}
         </span>
       ) : null}
-      <span
-        className={cn(
-          "text-muted-foreground",
-          compact ? "text-xs leading-snug" : "text-xs",
-        )}
-      >
-        {formatBriloShortDate(contract.mconFecha)}
-      </span>
+      {contract.mconFecha ? (
+        <span
+          className={cn(
+            "text-muted-foreground",
+            compact ? "text-xs leading-snug" : "text-xs",
+          )}
+        >
+          {formatBriloShortDate(contract.mconFecha)}
+        </span>
+      ) : null}
     </div>
   );
 }

@@ -1,5 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { MaintenanceJobStatus, Prisma } from '@prisma/client';
+import {
+  MaintenanceJobKind,
+  MaintenanceJobStatus,
+  Prisma,
+} from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service.js';
 
 export interface MaintenanceStatusCount {
@@ -47,8 +51,17 @@ const ALL_STATUSES: MaintenanceJobStatus[] = [
   MaintenanceJobStatus.PENDING,
   MaintenanceJobStatus.IN_PROGRESS,
   MaintenanceJobStatus.COMPLETED,
+  MaintenanceJobStatus.CLOSED,
   MaintenanceJobStatus.CANCELLED,
 ];
+
+/** Work the technician finished, whether or not a supervisor signed it off. */
+function isDone(status: MaintenanceJobStatus): boolean {
+  return (
+    status === MaintenanceJobStatus.COMPLETED ||
+    status === MaintenanceJobStatus.CLOSED
+  );
+}
 
 function minutesBetween(from: Date | null, to: Date | null): number | null {
   if (!from || !to) return null;
@@ -72,10 +85,11 @@ export class MaintenanceStatsService {
   constructor(private readonly prisma: PrismaService) {}
 
   async getOverview(params: {
+    kind: MaintenanceJobKind;
     from?: string;
     to?: string;
   }): Promise<MaintenanceOverview> {
-    const where: Prisma.MaintenanceJobWhereInput = {};
+    const where: Prisma.MaintenanceJobWhereInput = { kind: params.kind };
     if (params.from || params.to) {
       where.scheduledAt = {
         ...(params.from ? { gte: new Date(params.from) } : {}),
@@ -147,8 +161,7 @@ export class MaintenanceStatsService {
         durations: [],
       };
       category.total += 1;
-      if (row.status === MaintenanceJobStatus.COMPLETED)
-        category.completed += 1;
+      if (isDone(row.status)) category.completed += 1;
       if (worked != null) category.durations.push(worked);
       categories.set(categoryKey, category);
 
@@ -167,8 +180,7 @@ export class MaintenanceStatsService {
         durations: [],
       };
       technician.total += 1;
-      if (row.status === MaintenanceJobStatus.COMPLETED)
-        technician.completed += 1;
+      if (isDone(row.status)) technician.completed += 1;
       if (row.status === MaintenanceJobStatus.IN_PROGRESS) {
         technician.inProgress += 1;
       }
@@ -183,7 +195,9 @@ export class MaintenanceStatsService {
       }
     }
 
-    const completed = statusCounts.get(MaintenanceJobStatus.COMPLETED) ?? 0;
+    const completed =
+      (statusCounts.get(MaintenanceJobStatus.COMPLETED) ?? 0) +
+      (statusCounts.get(MaintenanceJobStatus.CLOSED) ?? 0);
     const cancelled = statusCounts.get(MaintenanceJobStatus.CANCELLED) ?? 0;
     const decided = completed + cancelled;
 

@@ -110,8 +110,6 @@ export function CrmAvailabilityPage() {
           <CrmInventorySelectionBar
             count={browser.count}
             total={browser.total}
-            hold={browser.hold}
-            onHoldChange={browser.setHold}
             onClear={browser.clear}
             pending={browser.pending}
             disabled={!target}

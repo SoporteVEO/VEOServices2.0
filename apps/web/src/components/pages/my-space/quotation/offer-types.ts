@@ -26,10 +26,14 @@ export interface StaticOfferItem extends OfferItemBase {
   width: number | null;
   height: number | null;
   impressionPrice: number;
-  /** Per 30-day period base rate from the billboard catalog. */
+  /** Monthly base rate from the billboard catalog. */
   monthlyRentalPrice: number;
   /** Total rental for the selected duration. */
   rentalPrice: number;
+  /** Brilo catalog monthly rate, kept apart from the negotiated one. */
+  listMonthlyRentalPrice: number | null;
+  /** Impression price by area before any manual change. */
+  listImpressionPrice: number | null;
 }
 
 export interface DigitalOfferItem extends OfferItemBase {
@@ -68,7 +72,8 @@ export interface OfferTotals {
 }
 
 const MS_PER_DAY = 86_400_000;
-const RENTAL_PERIOD_DAYS = 30;
+/** Leftover days beyond whole months that still bill as one more month. */
+const PARTIAL_MONTH_MIN_DAYS = 16;
 
 function round2(value: number): number {
   return Math.round(value * 100) / 100;
@@ -78,7 +83,22 @@ function stripTime(value: Date): Date {
   return new Date(value.getFullYear(), value.getMonth(), value.getDate());
 }
 
-/** Inclusive 30-day billing periods between start and end (minimum 1). */
+function addMonthsClamped(date: Date, months: number): Date {
+  const target = new Date(date.getFullYear(), date.getMonth() + months, 1);
+  const lastDay = new Date(
+    target.getFullYear(),
+    target.getMonth() + 1,
+    0,
+  ).getDate();
+  target.setDate(Math.min(date.getDate(), lastDay));
+  return target;
+}
+
+/**
+ * Calendar months billed for a date range, the way Brilo contracts are
+ * written: Oct 16 – Nov 15 is 1 month and Oct 15 – Dec 15 is 2. Leftover days
+ * only add a month past half a month. Minimum 1.
+ */
 export function calculateRentalMonths(
   startDate: Date | null,
   endDate: Date | null,
@@ -87,9 +107,20 @@ export function calculateRentalMonths(
   const start = stripTime(startDate);
   const end = stripTime(endDate);
   if (end < start) return 1;
-  const inclusiveDays =
-    Math.ceil((end.getTime() - start.getTime()) / MS_PER_DAY) + 1;
-  return Math.max(1, Math.ceil(inclusiveDays / RENTAL_PERIOD_DAYS));
+  const endExclusive = new Date(
+    end.getFullYear(),
+    end.getMonth(),
+    end.getDate() + 1,
+  );
+
+  let months = 0;
+  while (addMonthsClamped(start, months + 1) <= endExclusive) months += 1;
+  const leftoverDays = Math.round(
+    (endExclusive.getTime() - addMonthsClamped(start, months).getTime()) /
+      MS_PER_DAY,
+  );
+  if (leftoverDays >= PARTIAL_MONTH_MIN_DAYS) months += 1;
+  return Math.max(1, months);
 }
 
 /** Inclusive day count between two dates (minimum 1). */
@@ -154,6 +185,7 @@ export function staticBillboardToOfferItem(
   const startDate = defaults?.startDate ?? null;
   const endDate = defaults?.endDate ?? null;
   const monthlyRentalPrice = b.price ?? 0;
+  const impressionPrice = calculateImpressionPrice(b.width, b.height);
   return {
     id: `static-${b.billboardId}`,
     type: "STATIC_BILLBOARD",
@@ -165,9 +197,11 @@ export function staticBillboardToOfferItem(
     width: b.width,
     height: b.height,
     quantity: 1,
-    impressionPrice: calculateImpressionPrice(b.width, b.height),
+    impressionPrice,
     monthlyRentalPrice,
     rentalPrice: calculateStaticRentalPrice(monthlyRentalPrice, startDate, endDate),
+    listMonthlyRentalPrice: monthlyRentalPrice,
+    listImpressionPrice: impressionPrice,
     taxRate: IVA_RATE,
     startDate,
     endDate,

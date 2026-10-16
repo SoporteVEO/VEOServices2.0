@@ -1,6 +1,6 @@
 "use client";
 
-import { GripVertical, Trash2 } from "lucide-react";
+import { Flame, GripVertical, Trash2 } from "lucide-react";
 import type { DragEvent } from "react";
 import type { PrintBacklogItem } from "@/api/printing/printing.types";
 import { Skeleton } from "@/components/primitives/ui/skeleton";
@@ -11,6 +11,7 @@ import {
   COLOR_TEST_LABEL,
   COLOR_TEST_SWATCH,
   formatArea,
+  formatDay,
   formatMinutes,
   formatSize,
 } from "./printing-calendar-utils";
@@ -152,6 +153,22 @@ function BacklogCard({
             {formatArea(item.areaM2)} m²
           </span>
         )}
+        {!isColorTest && item.pendingReschedule ? (
+          <span
+            className={cn(
+              "flex items-center gap-1 text-[11px] font-medium",
+              item.pendingReschedule.isUrgent
+                ? "text-red-700 dark:text-red-400"
+                : "text-violet-700 dark:text-violet-400",
+            )}
+          >
+            <Flame className="size-3 shrink-0" aria-hidden />
+            {item.pendingReschedule.isUrgent ? "Prioridad" : "Reprogramación"}
+            {item.pendingReschedule.preferredDate
+              ? ` · ${formatDay(item.pendingReschedule.preferredDate)}`
+              : ""}
+          </span>
+        ) : null}
       </div>
       {isColorTest ? (
         <Button

@@ -20,6 +20,14 @@ import {
 } from '../auth/field-roles.js';
 import { NotificationsService } from '../notifications/notifications.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
+import {
+  ITEM_PRINT_JOB_ARGS,
+  ITEM_RESCHEDULE_REQUEST_ARGS,
+  mapItemPrintSchedule,
+  mapRescheduleRequest,
+  type ItemPrintScheduleDto,
+  type PrintRescheduleRequestDto,
+} from '../printing/print-schedule.js';
 import { PushService } from '../push/push.service.js';
 import {
   S3StorageService,
@@ -73,6 +81,8 @@ export interface ProductionOrderItemDto {
   installedAt: string | null;
   hasVulcanizadoImage: boolean;
   installationImageCount: number;
+  printSchedule: ItemPrintScheduleDto | null;
+  latestRescheduleRequest: PrintRescheduleRequestDto | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -180,6 +190,8 @@ const ITEM_INCLUDE = {
     where: { type: S3ImageType.STATIC_BILLBOARD_INSTALLATION },
     select: { id: true },
   },
+  printJobs: ITEM_PRINT_JOB_ARGS,
+  rescheduleRequests: ITEM_RESCHEDULE_REQUEST_ARGS,
 } satisfies Prisma.ProductionOrderItemInclude;
 
 const ORDER_INCLUDE = {
@@ -933,6 +945,10 @@ export class ProductionOrdersService {
       installedAt: item.installedAt?.toISOString() ?? null,
       hasVulcanizadoImage: !!item.vulcanizadoImageS3Key,
       installationImageCount: item.installationImages.length,
+      printSchedule: mapItemPrintSchedule(item.printJobs[0]),
+      latestRescheduleRequest: item.rescheduleRequests[0]
+        ? mapRescheduleRequest(item.rescheduleRequests[0])
+        : null,
       createdAt: item.createdAt.toISOString(),
       updatedAt: item.updatedAt.toISOString(),
     };

@@ -33,6 +33,12 @@ import {
 import { DigitalItemsSection } from "./digital-items-section";
 import { MiscItemsSection } from "./misc-items-section";
 import { offerDetailItemsToOfferItems } from "./offer-detail-to-items";
+import { staticListRentalPrice } from "./offer-discounts";
+import {
+  OfferEditReasonSection,
+  type OfferEditReasonValue,
+} from "./offer-edit-reason-section";
+import { billboardsChanged } from "./offer-edit-reasons";
 import { OfferPdfDocument } from "./offer-pdf-document";
 import {
   computeOfferTotals,
@@ -123,6 +129,8 @@ function offerItemToInput(item: OfferItem): OfferItemInput {
       quantity: item.quantity,
       impressionPrice: item.impressionPrice,
       rentalPrice: item.rentalPrice,
+      listImpressionPrice: item.listImpressionPrice,
+      listRentalPrice: staticListRentalPrice(item),
       taxRate: item.taxRate,
       startDate,
       endDate,
@@ -209,6 +217,10 @@ export function GenerateOfferModal({
   const [miscItems, setMiscItems] = useState<MiscOfferItem[]>(
     () => seededItems.filter((item): item is MiscOfferItem => item.type === "MISC"),
   );
+  const [editReason, setEditReason] = useState<OfferEditReasonValue>({
+    reason: null,
+    note: "",
+  });
 
   const advisorFullName = useMemo<string | null>(() => {
     // An edited offer keeps the advisor it was issued under.
@@ -230,6 +242,11 @@ export function GenerateOfferModal({
   );
 
   const totals = useMemo(() => computeOfferTotals(allItems), [allItems]);
+
+  const reasonRequired =
+    isEditing && billboardsChanged(seededItems, allItems);
+  const billboardsBefore = seededItems.filter((i) => i.type !== "MISC").length;
+  const billboardsAfter = staticItems.length + digitalItems.length;
 
   const form = useForm<QuotationCustomerFormValues>({
     defaultValues: initialFormValues(offer, initialClient),
@@ -286,6 +303,12 @@ export function GenerateOfferModal({
     if (miscMissingDescription) {
       return "Cada concepto adicional debe tener una descripción.";
     }
+    if (reasonRequired && !editReason.reason) {
+      return "Indica el motivo por el que se agregaron o quitaron vallas.";
+    }
+    if (editReason.reason === "OTHER" && !editReason.note.trim()) {
+      return "Describe el motivo del cambio.";
+    }
     return null;
   }
 
@@ -311,7 +334,14 @@ export function GenerateOfferModal({
       };
 
       const saved = offer
-        ? await editMutation.mutateAsync({ id: offer.id, input: payload })
+        ? await editMutation.mutateAsync({
+            id: offer.id,
+            input: {
+              ...payload,
+              editReason: editReason.reason,
+              editReasonNote: editReason.note.trim() || null,
+            },
+          })
         : await createMutation.mutateAsync(payload);
 
       const blob = await pdf(
@@ -406,6 +436,19 @@ export function GenerateOfferModal({
               <>
                 <Separator />
                 <OfferTotalsSummary totals={totals} />
+              </>
+            ) : null}
+
+            {isEditing ? (
+              <>
+                <Separator />
+                <OfferEditReasonSection
+                  value={editReason}
+                  onChange={setEditReason}
+                  required={reasonRequired}
+                  billboardsBefore={billboardsBefore}
+                  billboardsAfter={billboardsAfter}
+                />
               </>
             ) : null}
           </DialogBody>

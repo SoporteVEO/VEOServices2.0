@@ -1,4 +1,4 @@
-import { Role } from '@prisma/client';
+import { MaintenanceJobKind, Role } from '@prisma/client';
 
 /**
  * Single source of truth for what each field role is allowed to do. Field staff
@@ -23,10 +23,19 @@ export const INSTALLER_ROLES: Role[] = [
   ...VULCANIZADO_ROLES,
 ];
 
-/** Carries out maintenance work orders. */
-export const MAINTENANCE_ROLES: Role[] = [
+/** Carries out maintenance work orders on static billboards. */
+export const STATIC_MAINTENANCE_ROLES: Role[] = [
   Role.MANTENIMIENTO,
   Role.INSTALLER_MANTENIMIENTO,
+];
+
+/** Carries out maintenance work orders on Pantallas (digital screens). */
+export const DIGITAL_MAINTENANCE_ROLES: Role[] = [Role.MANTENIMIENTO_PANTALLAS];
+
+/** Carries out maintenance work orders of any kind. */
+export const MAINTENANCE_ROLES: Role[] = [
+  ...STATIC_MAINTENANCE_ROLES,
+  ...DIGITAL_MAINTENANCE_ROLES,
 ];
 
 /**
@@ -50,4 +59,17 @@ export const IMAGES_MODULE_ROLES: Role[] = [
 
 export function isMaintenanceRole(role: string | null | undefined): boolean {
   return MAINTENANCE_ROLES.includes(role as Role);
+}
+
+export function maintenanceRolesFor(kind: MaintenanceJobKind): Role[] {
+  return kind === MaintenanceJobKind.DIGITAL
+    ? DIGITAL_MAINTENANCE_ROLES
+    : STATIC_MAINTENANCE_ROLES;
+}
+
+export function isMaintenanceRoleFor(
+  kind: MaintenanceJobKind,
+  role: string | null | undefined,
+): boolean {
+  return maintenanceRolesFor(kind).includes(role as Role);
 }

@@ -12,6 +12,9 @@ type BriloClientComboboxProps = {
   onChange: (client: BriloClientOption | null) => void;
   /** Shown before the user types, e.g. the clients matched by email. */
   suggestions?: BriloClientOption[];
+  label?: string;
+  required?: boolean;
+  className?: string;
 };
 
 function toComboboxOption(client: BriloClientOption): ComboboxOption {
@@ -56,6 +59,9 @@ export function BriloClientCombobox({
   value,
   onChange,
   suggestions = [],
+  label = "Cliente Brilo",
+  required = true,
+  className,
 }: BriloClientComboboxProps) {
   const [search, setSearch] = useState("");
   const debouncedSearch = useDebouncedValue(search.trim(), 250);
@@ -87,7 +93,8 @@ export function BriloClientCombobox({
 
   return (
     <Combobox
-      label="Cliente Brilo"
+      label={label}
+      className={className}
       placeholder="Buscar por nombre, código, NIT o correo..."
       emptyLabel={
         debouncedSearch
@@ -115,7 +122,7 @@ export function BriloClientCombobox({
           compact
         />
       )}
-      required
+      required={required}
     />
   );
 }

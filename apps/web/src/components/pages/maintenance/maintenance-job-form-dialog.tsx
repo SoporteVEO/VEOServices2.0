@@ -2,8 +2,6 @@
 
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
-import type { AvailableBillboardListing } from "@/api/billboards/billboards.get";
-import { useAvailableBillboardsInRange } from "@/api/billboards/billboards.get";
 import {
   useMaintenanceCategories,
   useMaintenanceTechnicians,
@@ -12,7 +10,11 @@ import {
   useCreateMaintenanceJob,
   useUpdateMaintenanceJob,
 } from "@/api/maintenance/maintenance.mutations";
-import type { MaintenanceJob } from "@/api/maintenance/maintenance.types";
+import type {
+  CreateMaintenanceJobInput,
+  MaintenanceJob,
+  MaintenanceJobKind,
+} from "@/api/maintenance/maintenance.types";
 import { Button } from "@/components/ui/button";
 import { Combobox, type ComboboxOption } from "@/components/ui/combobox";
 import { DatePicker } from "@/components/ui/date-picker";
@@ -26,10 +28,18 @@ import {
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { TimePicker } from "@/components/ui/time-picker";
-import { toYYYYMMDD } from "@/lib/format";
-import { personName } from "./maintenance-const";
+import {
+  jobTargetLabel,
+  MAINTENANCE_KIND_COPY,
+  personName,
+} from "./maintenance-const";
+import {
+  MaintenanceTargetPicker,
+  type MaintenanceTarget,
+} from "./maintenance-target-picker";
 
 type Props = {
+  kind: MaintenanceJobKind;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   /** When present the dialog edits that job instead of creating a new one. */
@@ -37,7 +47,7 @@ type Props = {
 };
 
 interface FormState {
-  billboard: AvailableBillboardListing | null;
+  target: MaintenanceTarget | null;
   assignedUserId: string | null;
   categoryId: string | null;
   description: string;
@@ -49,22 +59,13 @@ interface FormState {
 const NO_CATEGORY = "__none__";
 
 const EMPTY_FORM: FormState = {
-  billboard: null,
+  target: null,
   assignedUserId: null,
   categoryId: null,
   description: "",
   date: null,
   time: "08:00",
 };
-
-/** 60-day catalog window, wide enough to cover any billboard in the picker. */
-function billboardRange(): { from: string; to: string } {
-  const from = new Date();
-  from.setHours(0, 0, 0, 0);
-  const to = new Date(from);
-  to.setDate(to.getDate() + 60);
-  return { from: toYYYYMMDD(from), to: toYYYYMMDD(to) };
-}
 
 function applyTime(date: Date, time: string): Date {
   const [hours, minutes] = time.split(":").map(Number);
@@ -73,22 +74,42 @@ function applyTime(date: Date, time: string): Date {
   return next;
 }
 
-export function MaintenanceJobFormDialog({ open, onOpenChange, job }: Props) {
+function targetInput(
+  target: MaintenanceTarget,
+): Omit<
+  CreateMaintenanceJobInput,
+  "assignedUserId" | "description" | "scheduledAt" | "categoryId"
+> {
+  if (target.kind === "DIGITAL") {
+    return { kind: "DIGITAL", digitalBillboardId: target.screen.id };
+  }
+  const b = target.billboard;
+  return {
+    kind: "STATIC",
+    billboardId: b.billboardId,
+    billboardCode: b.billboardCode,
+    address: b.address,
+    cityName: b.cityName,
+    departmentName: b.departmentName,
+    width: b.width,
+    height: b.height,
+  };
+}
+
+export function MaintenanceJobFormDialog({
+  kind,
+  open,
+  onOpenChange,
+  job,
+}: Props) {
   const isEdit = !!job;
+  const copy = MAINTENANCE_KIND_COPY[kind];
   const [form, setForm] = useState<FormState>(EMPTY_FORM);
   const [seededKey, setSeededKey] = useState<string | null>(null);
 
-  const [range] = useState(billboardRange);
-  const { data: billboards = [], isLoading: loadingBillboards } =
-    useAvailableBillboardsInRange({
-      from: range.from,
-      to: range.to,
-      includeUnavailable: true,
-      enabled: open && !isEdit,
-    });
   const { data: technicians = [], isLoading: loadingTechnicians } =
-    useMaintenanceTechnicians(open);
-  const { data: categories = [] } = useMaintenanceCategories();
+    useMaintenanceTechnicians(kind, open);
+  const { data: categories = [] } = useMaintenanceCategories(kind);
 
   const createMutation = useCreateMaintenanceJob();
   const updateMutation = useUpdateMaintenanceJob();
@@ -104,7 +125,7 @@ export function MaintenanceJobFormDialog({ open, onOpenChange, job }: Props) {
     } else if (job) {
       const scheduled = new Date(job.scheduledAt);
       setForm({
-        billboard: null,
+        target: null,
         assignedUserId: job.assignedUser.id,
         categoryId: job.category?.id ?? null,
         description: job.description,
@@ -117,28 +138,6 @@ export function MaintenanceJobFormDialog({ open, onOpenChange, job }: Props) {
       setForm(EMPTY_FORM);
     }
   }
-
-  const billboardOptions = useMemo<ComboboxOption[]>(
-    () =>
-      billboards.map((b) => ({
-        value: b.billboardId,
-        label: (
-          <div className="flex min-w-0 flex-col">
-            <span className="truncate text-sm font-medium">
-              {b.billboardCode ?? `#${b.billboardId}`}
-            </span>
-            <span className="truncate text-xs text-muted-foreground">
-              {b.address ?? "—"}
-              {[b.cityName, b.departmentName].filter(Boolean).length > 0
-                ? ` · ${[b.cityName, b.departmentName].filter(Boolean).join(", ")}`
-                : ""}
-            </span>
-          </div>
-        ),
-        filterValue: `${b.billboardCode ?? ""} ${b.address ?? ""} ${b.cityName ?? ""} ${b.departmentName ?? ""}`,
-      })),
-    [billboards],
-  );
 
   const technicianOptions = useMemo<ComboboxOption[]>(
     () =>
@@ -203,20 +202,14 @@ export function MaintenanceJobFormDialog({ open, onOpenChange, job }: Props) {
       return;
     }
 
-    if (!form.billboard) {
-      toast.error("Selecciona la valla estática.");
+    if (!form.target) {
+      toast.error(copy.missingTarget);
       return;
     }
 
     createMutation.mutate(
       {
-        billboardId: form.billboard.billboardId,
-        billboardCode: form.billboard.billboardCode,
-        address: form.billboard.address,
-        cityName: form.billboard.cityName,
-        departmentName: form.billboard.departmentName,
-        width: form.billboard.width,
-        height: form.billboard.height,
+        ...targetInput(form.target),
         assignedUserId: form.assignedUserId,
         categoryId: form.categoryId,
         description: form.description.trim(),
@@ -248,29 +241,17 @@ export function MaintenanceJobFormDialog({ open, onOpenChange, job }: Props) {
           </DialogTitle>
           <DialogDescription>
             {isEdit
-              ? `Orden ${job?.code} · ${job?.billboardCode ?? "sin código"}`
-              : "Asigna una valla estática a un usuario de mantenimiento."}
+              ? `Orden ${job?.code} · ${(job && jobTargetLabel(job)) ?? "sin código"}`
+              : copy.createDescription}
           </DialogDescription>
         </DialogHeader>
 
         <div className="flex flex-col gap-4 p-4">
           {isEdit ? null : (
-            <Combobox
-              label="Valla estática"
-              required
-              placeholder="Selecciona una valla..."
-              emptyLabel={
-                loadingBillboards ? "Cargando vallas..." : "Sin resultados."
-              }
-              options={billboardOptions}
-              value={form.billboard?.billboardId ?? null}
-              isLoading={loadingBillboards}
-              onChange={(value) => {
-                const found = billboards.find(
-                  (b) => b.billboardId === Number(value),
-                );
-                setForm((prev) => ({ ...prev, billboard: found ?? null }));
-              }}
+            <MaintenanceTargetPicker
+              kind={kind}
+              value={form.target}
+              onChange={(target) => setForm((prev) => ({ ...prev, target }))}
             />
           )}
 
@@ -279,9 +260,7 @@ export function MaintenanceJobFormDialog({ open, onOpenChange, job }: Props) {
             required
             placeholder="Selecciona un usuario..."
             emptyLabel={
-              loadingTechnicians
-                ? "Cargando usuarios..."
-                : "No hay usuarios con rol Mantenimiento."
+              loadingTechnicians ? "Cargando usuarios..." : copy.noTechnicians
             }
             options={technicianOptions}
             value={form.assignedUserId}

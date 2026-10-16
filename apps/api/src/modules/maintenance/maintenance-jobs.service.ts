@@ -7,11 +7,16 @@ import {
 } from '@nestjs/common';
 import {
   MaintenanceEventType,
+  MaintenanceJobKind,
   MaintenanceJobStatus,
   Prisma,
   S3ImageType,
 } from '@prisma/client';
-import { MAINTENANCE_ROLES, isMaintenanceRole } from '../auth/field-roles.js';
+import {
+  isMaintenanceRole,
+  isMaintenanceRoleFor,
+  maintenanceRolesFor,
+} from '../auth/field-roles.js';
 import { BillboardsService } from '../billboards/billboards.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { ImageProcessorService } from '../s3-images/image-processor.service.js';
@@ -19,6 +24,7 @@ import { S3ImagesService } from '../s3-images/s3-images.service.js';
 import { S3StorageService } from '../s3-images/s3-storage.service.js';
 import { PushService } from '../push/push.service.js';
 import type {
+  AddMaintenanceCommentDto,
   CompleteMaintenanceJobDto,
   CreateMaintenanceJobDto,
   ListMaintenanceJobsQueryDto,
@@ -29,6 +35,17 @@ import type {
 const PHOTO_FOLDER = 'maintenance/proof';
 const DEFAULT_PAGE_SIZE = 20;
 const MAX_PAGE_SIZE = 100;
+
+const JOB_CODE_PREFIX: Record<MaintenanceJobKind, string> = {
+  STATIC: 'MNT',
+  DIGITAL: 'MNP',
+};
+
+/** Hidden from the working lists: signed off or called off. */
+const ARCHIVED_STATUSES: MaintenanceJobStatus[] = [
+  MaintenanceJobStatus.CLOSED,
+  MaintenanceJobStatus.CANCELLED,
+];
 
 export interface MaintenancePersonDto {
   id: string;
@@ -55,12 +72,22 @@ export interface MaintenanceEventDto {
   createdAt: string;
 }
 
+export interface MaintenanceCommentDto {
+  id: string;
+  body: string;
+  author: MaintenancePersonDto | null;
+  createdAt: string;
+}
+
 export interface MaintenanceJobListItemDto {
   id: string;
   code: string;
+  kind: MaintenanceJobKind;
   status: MaintenanceJobStatus;
   billboardId: number | null;
+  digitalBillboardId: string | null;
   billboardCode: string | null;
+  billboardName: string | null;
   address: string | null;
   cityName: string | null;
   departmentName: string | null;
@@ -68,9 +95,11 @@ export interface MaintenanceJobListItemDto {
   scheduledAt: string;
   startedAt: string | null;
   completedAt: string | null;
+  closedAt: string | null;
   category: { id: string; name: string; color: string | null } | null;
   assignedUser: MaintenancePersonDto;
   photoCount: number;
+  commentCount: number;
   createdAt: string;
   isOverdue: boolean;
 }
@@ -85,6 +114,7 @@ export interface MaintenanceJobDto extends MaintenanceJobListItemDto {
   completionNotes: string | null;
   createdBy: MaintenancePersonDto | null;
   photos: MaintenancePhotoDto[];
+  comments: MaintenanceCommentDto[];
   events: MaintenanceEventDto[];
   /** Derived durations, in minutes, for the Historial tab. */
   minutesToStart: number | null;
@@ -101,12 +131,13 @@ const PERSON_SELECT = {
 const LIST_INCLUDE = {
   assignedUser: { select: PERSON_SELECT },
   category: { select: { id: true, name: true, color: true } },
-  _count: { select: { photos: true } },
+  _count: { select: { photos: true, comments: true } },
 } satisfies Prisma.MaintenanceJobInclude;
 
 const DETAIL_INCLUDE = {
   ...LIST_INCLUDE,
   createdBy: { select: PERSON_SELECT },
+  digitalBillboard: { select: { latitude: true, longitude: true } },
   photos: {
     select: {
       id: true,
@@ -117,6 +148,15 @@ const DETAIL_INCLUDE = {
       uploadedBy: { select: PERSON_SELECT },
     },
     orderBy: [{ createdAt: 'desc' }],
+  },
+  comments: {
+    select: {
+      id: true,
+      body: true,
+      createdAt: true,
+      author: { select: PERSON_SELECT },
+    },
+    orderBy: [{ createdAt: 'asc' }],
   },
   events: {
     select: {
@@ -137,6 +177,18 @@ type DetailRow = Prisma.MaintenanceJobGetPayload<{
   include: typeof DETAIL_INCLUDE;
 }>;
 
+interface JobTarget {
+  billboardId: number | null;
+  digitalBillboardId: string | null;
+  billboardCode: string | null;
+  billboardName: string | null;
+  address: string | null;
+  cityName: string | null;
+  departmentName: string | null;
+  width: number | null;
+  height: number | null;
+}
+
 function decodeBase64Image(base64: string): Buffer {
   const normalized = base64.includes(',') ? base64.split(',')[1] : base64;
   if (!normalized) {
@@ -151,10 +203,11 @@ function minutesBetween(from: Date | null, to: Date | null): number | null {
 }
 
 /**
- * Maintenance work orders: assignment from the dashboard module, execution
- * from the technician's mobile portal. Every state change appends a
- * `MaintenanceEvent` so the Historial tab and the module's stats can be
- * rebuilt from the trail rather than inferred from timestamps alone.
+ * Maintenance work orders for static billboards and Pantallas screens:
+ * assignment from the dashboard module, execution from the technician's
+ * mobile portal. Every state change appends a `MaintenanceEvent` so the
+ * Historial tab and the module's stats can be rebuilt from the trail rather
+ * than inferred from timestamps alone.
  */
 @Injectable()
 export class MaintenanceJobsService {
@@ -185,12 +238,15 @@ export class MaintenanceJobsService {
     );
 
     const where = this.buildWhere(query);
+    const isClosedView = query.status === MaintenanceJobStatus.CLOSED;
 
     const [rows, total] = await Promise.all([
       this.prisma.maintenanceJob.findMany({
         where,
         include: LIST_INCLUDE,
-        orderBy: [{ scheduledAt: 'desc' }, { createdAt: 'desc' }],
+        orderBy: isClosedView
+          ? [{ closedAt: 'desc' }, { createdAt: 'desc' }]
+          : [{ scheduledAt: 'desc' }, { createdAt: 'desc' }],
         skip: (page - 1) * pageSize,
         take: pageSize,
       }),
@@ -200,21 +256,23 @@ export class MaintenanceJobsService {
     return { data: rows.map(mapListItem), total, page, pageSize };
   }
 
-  /** Users who can receive a work order, i.e. hold a maintenance role. */
-  async listTechnicians(): Promise<MaintenancePersonDto[]> {
+  /** Users who can receive a work order of the given kind. */
+  async listTechnicians(
+    kind: MaintenanceJobKind,
+  ): Promise<MaintenancePersonDto[]> {
     return this.prisma.user.findMany({
-      where: { disabled: false, role: { in: MAINTENANCE_ROLES } },
+      where: { disabled: false, role: { in: maintenanceRolesFor(kind) } },
       select: PERSON_SELECT,
       orderBy: [{ firstName: 'asc' }, { lastName: 'asc' }],
     });
   }
 
-  /** Jobs assigned to the signed-in technician, soonest first. */
+  /** Open jobs assigned to the signed-in technician, soonest first. */
   async listAssignedTo(userId: string): Promise<MaintenanceJobListItemDto[]> {
     const rows = await this.prisma.maintenanceJob.findMany({
       where: {
         assignedUserId: userId,
-        status: { not: MaintenanceJobStatus.CANCELLED },
+        status: { notIn: ARCHIVED_STATUSES },
       },
       include: LIST_INCLUDE,
       orderBy: [{ status: 'asc' }, { scheduledAt: 'asc' }],
@@ -245,6 +303,8 @@ export class MaintenanceJobsService {
     dto: CreateMaintenanceJobDto,
     createdByUserId: string,
   ): Promise<MaintenanceJobDto> {
+    const kind = dto.kind ?? MaintenanceJobKind.STATIC;
+
     const assignee = await this.prisma.user.findUnique({
       where: { id: dto.assignedUserId },
       select: { id: true, role: true, disabled: true },
@@ -252,31 +312,25 @@ export class MaintenanceJobsService {
     if (!assignee || assignee.disabled) {
       throw new BadRequestException('El usuario asignado no está disponible');
     }
-    if (!isMaintenanceRole(assignee.role)) {
-      throw new BadRequestException(
-        'Solo puedes asignar órdenes a usuarios con un rol de mantenimiento',
-      );
+    if (!isMaintenanceRoleFor(kind, assignee.role)) {
+      throw new BadRequestException(assigneeRoleError(kind));
     }
 
-    if (dto.categoryId) await this.assertCategoryExists(dto.categoryId);
+    if (dto.categoryId) await this.assertCategoryExists(dto.categoryId, kind);
 
     const scheduledAt = new Date(dto.scheduledAt);
     if (Number.isNaN(scheduledAt.getTime())) {
       throw new BadRequestException('La fecha programada no es válida');
     }
 
-    const code = await this.generateJobCode();
+    const target = await this.resolveTarget(kind, dto);
+    const code = await this.generateJobCode(kind);
 
     const created = await this.prisma.maintenanceJob.create({
       data: {
         code,
-        billboardId: dto.billboardId,
-        billboardCode: dto.billboardCode?.trim() || null,
-        address: dto.address?.trim() || null,
-        cityName: dto.cityName?.trim() || null,
-        departmentName: dto.departmentName?.trim() || null,
-        width: dto.width ?? null,
-        height: dto.height ?? null,
+        kind,
+        ...target,
         categoryId: dto.categoryId ?? null,
         assignedUserId: dto.assignedUserId,
         description: dto.description.trim(),
@@ -307,6 +361,7 @@ export class MaintenanceJobsService {
       select: {
         id: true,
         code: true,
+        kind: true,
         billboardCode: true,
         address: true,
         status: true,
@@ -337,10 +392,12 @@ export class MaintenanceJobsService {
           lastName: true,
         },
       });
-      if (!assignee || assignee.disabled || !isMaintenanceRole(assignee.role)) {
-        throw new BadRequestException(
-          'Solo puedes asignar órdenes a usuarios con un rol de mantenimiento',
-        );
+      if (
+        !assignee ||
+        assignee.disabled ||
+        !isMaintenanceRoleFor(current.kind, assignee.role)
+      ) {
+        throw new BadRequestException(assigneeRoleError(current.kind));
       }
       data.assignedUser = { connect: { id: dto.assignedUserId } };
       events.push({
@@ -377,7 +434,9 @@ export class MaintenanceJobsService {
     if (dto.categoryId !== undefined) {
       const nextCategoryId = dto.categoryId ?? null;
       if (nextCategoryId !== current.categoryId) {
-        if (nextCategoryId) await this.assertCategoryExists(nextCategoryId);
+        if (nextCategoryId) {
+          await this.assertCategoryExists(nextCategoryId, current.kind);
+        }
         data.category = nextCategoryId
           ? { connect: { id: nextCategoryId } }
           : { disconnect: true };
@@ -429,6 +488,7 @@ export class MaintenanceJobsService {
     job: {
       id: string;
       code: string;
+      kind: MaintenanceJobKind;
       billboardCode: string | null;
       address: string | null;
     },
@@ -436,7 +496,10 @@ export class MaintenanceJobsService {
   ) {
     const place = job.billboardCode ?? job.address;
     void this.push.sendToUser(userId, {
-      title: 'Nueva orden de mantenimiento',
+      title:
+        job.kind === MaintenanceJobKind.DIGITAL
+          ? 'Nueva orden de mantenimiento de pantalla'
+          : 'Nueva orden de mantenimiento',
       body: place ? `${job.code} · ${place}` : job.code,
       url: `/portal/mantenimiento/${job.id}`,
       tag: `maintenance-${job.id}`,
@@ -474,7 +537,10 @@ export class MaintenanceJobsService {
     actorUserId: string,
   ): Promise<MaintenanceJobDto> {
     const job = await this.findOwnedJob(id, actorUserId);
-    if (job.status === MaintenanceJobStatus.COMPLETED) {
+    if (
+      job.status === MaintenanceJobStatus.COMPLETED ||
+      job.status === MaintenanceJobStatus.CLOSED
+    ) {
       throw new BadRequestException('La orden ya está finalizada');
     }
     if (job.status === MaintenanceJobStatus.CANCELLED) {
@@ -502,6 +568,42 @@ export class MaintenanceJobsService {
     return this.getJob(id);
   }
 
+  /**
+   * Supervisor sign-off on a job the technician already finished. Terminada
+   * jobs drop out of both the dashboard and the portal working lists.
+   */
+  async close(id: string, actorUserId: string): Promise<MaintenanceJobDto> {
+    const job = await this.prisma.maintenanceJob.findUnique({
+      where: { id },
+      select: { id: true, status: true },
+    });
+    if (!job)
+      throw new NotFoundException('Orden de mantenimiento no encontrada');
+    if (job.status === MaintenanceJobStatus.CLOSED) return this.getJob(id);
+    if (job.status !== MaintenanceJobStatus.COMPLETED) {
+      throw new BadRequestException(
+        'Solo puedes marcar como terminada una orden finalizada',
+      );
+    }
+
+    await this.prisma.maintenanceJob.update({
+      where: { id },
+      data: {
+        status: MaintenanceJobStatus.CLOSED,
+        closedAt: new Date(),
+        events: {
+          create: {
+            type: MaintenanceEventType.CLOSED,
+            message: 'Orden marcada como terminada',
+            actorUserId,
+          },
+        },
+      },
+    });
+
+    return this.getJob(id);
+  }
+
   async cancel(id: string, actorUserId: string): Promise<MaintenanceJobDto> {
     const job = await this.prisma.maintenanceJob.findUnique({
       where: { id },
@@ -510,6 +612,9 @@ export class MaintenanceJobsService {
     if (!job)
       throw new NotFoundException('Orden de mantenimiento no encontrada');
     if (job.status === MaintenanceJobStatus.CANCELLED) return this.getJob(id);
+    if (job.status === MaintenanceJobStatus.CLOSED) {
+      throw new BadRequestException('La orden ya está terminada');
+    }
 
     await this.prisma.maintenanceJob.update({
       where: { id },
@@ -529,6 +634,10 @@ export class MaintenanceJobsService {
     return this.getJob(id);
   }
 
+  /**
+   * A Terminada job goes back to Finalizada; a Finalizada or cancelled job
+   * goes back to the open state it was in.
+   */
   async reopen(id: string, actorUserId: string): Promise<MaintenanceJobDto> {
     const job = await this.prisma.maintenanceJob.findUnique({
       where: { id },
@@ -536,6 +645,25 @@ export class MaintenanceJobsService {
     });
     if (!job)
       throw new NotFoundException('Orden de mantenimiento no encontrada');
+
+    if (job.status === MaintenanceJobStatus.CLOSED) {
+      await this.prisma.maintenanceJob.update({
+        where: { id },
+        data: {
+          status: MaintenanceJobStatus.COMPLETED,
+          closedAt: null,
+          events: {
+            create: {
+              type: MaintenanceEventType.REOPENED,
+              message: 'Orden devuelta a finalizada',
+              actorUserId,
+            },
+          },
+        },
+      });
+      return this.getJob(id);
+    }
+
     if (
       job.status !== MaintenanceJobStatus.COMPLETED &&
       job.status !== MaintenanceJobStatus.CANCELLED
@@ -564,6 +692,37 @@ export class MaintenanceJobsService {
     return this.getJob(id);
   }
 
+  /** Technicians comment on their own jobs; supervisors on any job. */
+  async addComment(
+    id: string,
+    actorUserId: string,
+    dto: AddMaintenanceCommentDto,
+  ): Promise<MaintenanceJobDto> {
+    const job = await this.findOwnedJob(id, actorUserId);
+    if (job.status === MaintenanceJobStatus.CANCELLED) {
+      throw new BadRequestException('No puedes comentar una orden cancelada');
+    }
+
+    const body = dto.body.trim();
+    if (!body) throw new BadRequestException('El comentario está vacío');
+
+    await this.prisma.maintenanceJob.update({
+      where: { id },
+      data: {
+        comments: { create: { body, authorUserId: actorUserId } },
+        events: {
+          create: {
+            type: MaintenanceEventType.COMMENTED,
+            message: body.length > 120 ? `${body.slice(0, 117)}...` : body,
+            actorUserId,
+          },
+        },
+      },
+    });
+
+    return this.getJob(id);
+  }
+
   /**
    * Proof photos live in their own table and S3 folder, so they never appear
    * in the Imágenes module.
@@ -574,9 +733,12 @@ export class MaintenanceJobsService {
     dto: UploadMaintenancePhotoDto,
   ): Promise<MaintenanceJobDto> {
     const job = await this.findOwnedJob(id, actorUserId);
-    if (job.status === MaintenanceJobStatus.CANCELLED) {
+    if (
+      job.status === MaintenanceJobStatus.CANCELLED ||
+      job.status === MaintenanceJobStatus.CLOSED
+    ) {
       throw new BadRequestException(
-        'No puedes agregar evidencia a una orden cancelada',
+        'No puedes agregar evidencia a una orden cerrada',
       );
     }
 
@@ -589,6 +751,8 @@ export class MaintenanceJobsService {
       extension: processed.extension,
       folder: PHOTO_FOLDER,
     });
+
+    const note = dto.note?.trim() || null;
 
     try {
       // The first photo doubles as the signal that work actually began.
@@ -605,7 +769,7 @@ export class MaintenanceJobsService {
           photos: {
             create: {
               s3Key: upload.key,
-              note: dto.note?.trim() || null,
+              note,
               uploadedByUserId: actorUserId,
             },
           },
@@ -622,7 +786,9 @@ export class MaintenanceJobsService {
                 : []),
               {
                 type: MaintenanceEventType.PHOTO_UPLOADED,
-                message: 'Evidencia fotográfica agregada',
+                message: note
+                  ? `Evidencia fotográfica agregada: ${note}`
+                  : 'Evidencia fotográfica agregada',
                 actorUserId,
               },
             ],
@@ -655,10 +821,15 @@ export class MaintenanceJobsService {
         note: true,
         s3ImageId: true,
         uploadedByUserId: true,
-        job: { select: { code: true, billboardCode: true } },
+        job: { select: { code: true, kind: true, billboardCode: true } },
       },
     });
     if (!photo) throw new NotFoundException('Evidencia no encontrada');
+    if (photo.job.kind !== MaintenanceJobKind.STATIC) {
+      throw new BadRequestException(
+        'Solo la evidencia de vallas estáticas se puede agregar a Imágenes',
+      );
+    }
     if (photo.s3ImageId) {
       throw new BadRequestException('Esta foto ya está en el módulo Imágenes');
     }
@@ -732,9 +903,11 @@ export class MaintenanceJobsService {
   private buildWhere(
     query: ListMaintenanceJobsQueryDto,
   ): Prisma.MaintenanceJobWhereInput {
-    const where: Prisma.MaintenanceJobWhereInput = {};
+    const where: Prisma.MaintenanceJobWhereInput = {
+      kind: query.kind ?? MaintenanceJobKind.STATIC,
+    };
 
-    where.status = query.status ?? { not: MaintenanceJobStatus.CANCELLED };
+    where.status = query.status ?? { notIn: ARCHIVED_STATUSES };
     if (query.categoryId) where.categoryId = query.categoryId;
     if (query.assignedUserId) where.assignedUserId = query.assignedUserId;
 
@@ -743,6 +916,7 @@ export class MaintenanceJobsService {
       where.OR = [
         { code: { contains: search, mode: 'insensitive' } },
         { billboardCode: { contains: search, mode: 'insensitive' } },
+        { billboardName: { contains: search, mode: 'insensitive' } },
         { description: { contains: search, mode: 'insensitive' } },
         { address: { contains: search, mode: 'insensitive' } },
       ];
@@ -758,6 +932,58 @@ export class MaintenanceJobsService {
     return where;
   }
 
+  /**
+   * Static jobs trust the descriptive fields sent by the picker, as before.
+   * Digital jobs read them from the Pantallas catalog, which lives in this DB.
+   */
+  private async resolveTarget(
+    kind: MaintenanceJobKind,
+    dto: CreateMaintenanceJobDto,
+  ): Promise<JobTarget> {
+    if (kind === MaintenanceJobKind.DIGITAL) {
+      if (!dto.digitalBillboardId) {
+        throw new BadRequestException('Selecciona la pantalla');
+      }
+      const screen = await this.prisma.digitalBillboard.findUnique({
+        where: { id: dto.digitalBillboardId },
+        select: {
+          id: true,
+          code: true,
+          name: true,
+          address: true,
+          departmentName: true,
+        },
+      });
+      if (!screen) throw new BadRequestException('La pantalla no existe');
+      return {
+        billboardId: null,
+        digitalBillboardId: screen.id,
+        billboardCode: screen.code,
+        billboardName: screen.name,
+        address: screen.address,
+        cityName: null,
+        departmentName: screen.departmentName,
+        width: null,
+        height: null,
+      };
+    }
+
+    if (dto.billboardId == null) {
+      throw new BadRequestException('Selecciona la valla estática');
+    }
+    return {
+      billboardId: dto.billboardId,
+      digitalBillboardId: null,
+      billboardCode: dto.billboardCode?.trim() || null,
+      billboardName: null,
+      address: dto.address?.trim() || null,
+      cityName: dto.cityName?.trim() || null,
+      departmentName: dto.departmentName?.trim() || null,
+      width: dto.width ?? null,
+      height: dto.height ?? null,
+    };
+  }
+
   private statusTransitionData(
     from: MaintenanceJobStatus,
     to: MaintenanceJobStatus,
@@ -769,10 +995,23 @@ export class MaintenanceJobsService {
           status: to,
           startedAt: now,
           completedAt: null,
+          closedAt: null,
           cancelledAt: null,
         };
       case MaintenanceJobStatus.COMPLETED:
-        return { status: to, completedAt: now, cancelledAt: null };
+        return {
+          status: to,
+          completedAt: now,
+          closedAt: null,
+          cancelledAt: null,
+        };
+      case MaintenanceJobStatus.CLOSED:
+        if (from !== MaintenanceJobStatus.COMPLETED) {
+          throw new BadRequestException(
+            'Solo puedes marcar como terminada una orden finalizada',
+          );
+        }
+        return { status: to, closedAt: now };
       case MaintenanceJobStatus.CANCELLED:
         return { status: to, cancelledAt: now };
       case MaintenanceJobStatus.PENDING:
@@ -781,7 +1020,12 @@ export class MaintenanceJobsService {
             'Una orden iniciada no puede volver a pendiente',
           );
         }
-        return { status: to, completedAt: null, cancelledAt: null };
+        return {
+          status: to,
+          completedAt: null,
+          closedAt: null,
+          cancelledAt: null,
+        };
     }
   }
 
@@ -826,20 +1070,26 @@ export class MaintenanceJobsService {
     return record.id;
   }
 
-  private async assertCategoryExists(categoryId: string): Promise<void> {
+  private async assertCategoryExists(
+    categoryId: string,
+    kind: MaintenanceJobKind,
+  ): Promise<void> {
     const found = await this.prisma.maintenanceCategory.findUnique({
       where: { id: categoryId },
-      select: { id: true },
+      select: { id: true, kind: true },
     });
-    if (!found) throw new BadRequestException('La categoría no existe');
+    if (!found || found.kind !== kind) {
+      throw new BadRequestException('La categoría no existe');
+    }
   }
 
-  private async generateJobCode(): Promise<string> {
+  private async generateJobCode(kind: MaintenanceJobKind): Promise<string> {
+    const prefix = JOB_CODE_PREFIX[kind];
     const now = new Date();
     const yearStart = new Date(now.getFullYear(), 0, 1);
     const yearEnd = new Date(now.getFullYear() + 1, 0, 1);
     const yearSuffix = String(now.getFullYear()).slice(-2);
-    const numberPattern = `^MNT[0-9]+/${yearSuffix}$`;
+    const numberPattern = `^${prefix}[0-9]+/${yearSuffix}$`;
 
     const rows = await this.prisma.$queryRaw<
       Array<{ max_sequence: number | null }>
@@ -859,15 +1109,16 @@ export class MaintenanceJobsService {
     `;
 
     const maxSequence = Number(rows[0]?.max_sequence ?? 0);
-    return `MNT${String(maxSequence + 1).padStart(4, '0')}/${yearSuffix}`;
+    return `${prefix}${String(maxSequence + 1).padStart(4, '0')}/${yearSuffix}`;
   }
 
   private async mapDetail(row: DetailRow): Promise<MaintenanceJobDto> {
-    const location = row.billboardId
-      ? await this.billboards
-          .getBillboardLocation(row.billboardId)
-          .catch(() => null)
-      : null;
+    const location =
+      row.kind === MaintenanceJobKind.STATIC && row.billboardId
+        ? await this.billboards
+            .getBillboardLocation(row.billboardId)
+            .catch(() => null)
+        : null;
 
     const photos = await Promise.all(
       row.photos.map(async (photo) => ({
@@ -884,13 +1135,19 @@ export class MaintenanceJobsService {
       ...mapListItem(row),
       width: location?.width ?? row.width,
       height: location?.height ?? row.height,
-      latitude: location?.latitude ?? null,
-      longitude: location?.longitude ?? null,
+      latitude: location?.latitude ?? row.digitalBillboard?.latitude ?? null,
+      longitude: location?.longitude ?? row.digitalBillboard?.longitude ?? null,
       reference: location?.reference ?? null,
       cancelledAt: row.cancelledAt?.toISOString() ?? null,
       completionNotes: row.completionNotes,
       createdBy: row.createdBy ?? null,
       photos,
+      comments: row.comments.map((comment) => ({
+        id: comment.id,
+        body: comment.body,
+        author: comment.author ?? null,
+        createdAt: comment.createdAt.toISOString(),
+      })),
       events: row.events.map((event) => ({
         id: event.id,
         type: event.type,
@@ -904,13 +1161,22 @@ export class MaintenanceJobsService {
   }
 }
 
+function assigneeRoleError(kind: MaintenanceJobKind): string {
+  return kind === MaintenanceJobKind.DIGITAL
+    ? 'Solo puedes asignar órdenes de pantallas a usuarios con rol Mantenimiento Pantallas'
+    : 'Solo puedes asignar órdenes a usuarios con un rol de mantenimiento de vallas';
+}
+
 function mapListItem(row: ListRow): MaintenanceJobListItemDto {
   return {
     id: row.id,
     code: row.code,
+    kind: row.kind,
     status: row.status,
     billboardId: row.billboardId,
+    digitalBillboardId: row.digitalBillboardId,
     billboardCode: row.billboardCode,
+    billboardName: row.billboardName,
     address: row.address,
     cityName: row.cityName,
     departmentName: row.departmentName,
@@ -918,13 +1184,15 @@ function mapListItem(row: ListRow): MaintenanceJobListItemDto {
     scheduledAt: row.scheduledAt.toISOString(),
     startedAt: row.startedAt?.toISOString() ?? null,
     completedAt: row.completedAt?.toISOString() ?? null,
+    closedAt: row.closedAt?.toISOString() ?? null,
     category: row.category,
     assignedUser: row.assignedUser,
     photoCount: row._count.photos,
+    commentCount: row._count.comments,
     createdAt: row.createdAt.toISOString(),
     isOverdue:
-      row.status !== MaintenanceJobStatus.COMPLETED &&
-      row.status !== MaintenanceJobStatus.CANCELLED &&
+      (row.status === MaintenanceJobStatus.PENDING ||
+        row.status === MaintenanceJobStatus.IN_PROGRESS) &&
       row.scheduledAt.getTime() < Date.now(),
   };
 }
@@ -935,6 +1203,8 @@ function statusEventType(status: MaintenanceJobStatus): MaintenanceEventType {
       return MaintenanceEventType.STARTED;
     case MaintenanceJobStatus.COMPLETED:
       return MaintenanceEventType.COMPLETED;
+    case MaintenanceJobStatus.CLOSED:
+      return MaintenanceEventType.CLOSED;
     case MaintenanceJobStatus.CANCELLED:
       return MaintenanceEventType.CANCELLED;
     case MaintenanceJobStatus.PENDING:

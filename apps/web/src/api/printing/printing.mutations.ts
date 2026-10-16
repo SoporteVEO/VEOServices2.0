@@ -18,6 +18,7 @@ import type {
 const JOBS_KEY = ["printing", "jobs"] as const;
 const BACKLOG_KEY = ["printing", "backlog"] as const;
 const PRODUCTION_ORDERS_KEY = ["production-orders"] as const;
+const RESCHEDULE_REQUESTS_KEY = ["print-reschedule-requests"] as const;
 
 const MINUTE_MS = 60 * 1000;
 
@@ -157,6 +158,7 @@ export function useSchedulePrintJob() {
     onSettled: () => {
       void queryClient.invalidateQueries({ queryKey: BACKLOG_KEY });
       void queryClient.invalidateQueries({ queryKey: PRODUCTION_ORDERS_KEY });
+      void queryClient.invalidateQueries({ queryKey: RESCHEDULE_REQUESTS_KEY });
     },
   });
 }
@@ -238,7 +240,12 @@ export function useUpdatePrintJob() {
     onError: (_error, _variables, context) => {
       if (context) restoreSnapshot(queryClient, context.snapshot);
     },
-    onSuccess: (job) => writeJob(queryClient, job),
+    onSuccess: (job) => {
+      writeJob(queryClient, job);
+      void queryClient.invalidateQueries({
+        queryKey: RESCHEDULE_REQUESTS_KEY,
+      });
+    },
   });
 }
 

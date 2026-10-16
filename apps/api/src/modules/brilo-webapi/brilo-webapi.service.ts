@@ -12,6 +12,23 @@ import type {
   BriloCotizacionInput,
   BriloCotizacionResponse,
 } from './brilo-webapi.types.js';
+import { unwrapSingle } from './brilo-response.js';
+
+export type BriloQueryValue = string | number | boolean | string[] | undefined;
+export type BriloQuery = Record<string, BriloQueryValue>;
+export type BriloMethod = 'GET' | 'POST' | 'PUT' | 'DELETE';
+
+export interface BriloResult<T> {
+  data: T;
+  /** From the `X-Total-Count` header; only some endpoints send it. */
+  total: number | null;
+}
+
+export interface BriloFile {
+  buffer: Buffer;
+  contentType: string;
+  fileName: string | null;
+}
 
 interface BriloErrorBody {
   message?: string;
@@ -29,6 +46,13 @@ interface BriloErrorBody {
 @Injectable()
 export class BriloWebapiService {
   private readonly logger = new Logger(BriloWebapiService.name);
+
+  isConfigured(): boolean {
+    return (
+      !!process.env.BRILO_WEBAPI_URL?.trim() &&
+      !!process.env.BRILO_WEBAPI_TOKEN?.trim()
+    );
+  }
 
   private getConfig(): { baseUrl: string; token: string } {
     const baseUrl = process.env.BRILO_WEBAPI_URL?.trim();
@@ -50,27 +74,34 @@ export class BriloWebapiService {
     };
   }
 
-  private async request<T>(
-    path: string,
-    init: RequestInit & { query?: Record<string, string | number | undefined> },
-  ): Promise<T> {
+  private buildUrl(path: string, query?: BriloQuery): URL {
     const { baseUrl } = this.getConfig();
     const url = new URL(
       `${baseUrl}${path.startsWith('/') ? path : `/${path}`}`,
     );
-    if (init.query) {
-      for (const [key, value] of Object.entries(init.query)) {
-        if (value !== undefined && value !== null && value !== '') {
-          url.searchParams.set(key, String(value));
-        }
+    for (const [key, value] of Object.entries(query ?? {})) {
+      if (value === undefined || value === null || value === '') continue;
+      if (Array.isArray(value)) {
+        for (const item of value) url.searchParams.append(key, item);
+      } else {
+        url.searchParams.set(key, String(value));
       }
     }
+    return url;
+  }
+
+  private async fetchRaw(
+    path: string,
+    init: RequestInit & { query?: BriloQuery },
+  ): Promise<Response> {
+    const { query, ...rest } = init;
+    const url = this.buildUrl(path, query);
 
     let response: Response;
     try {
       response = await fetch(url.toString(), {
-        ...init,
-        headers: { ...this.buildHeaders(), ...(init.headers ?? {}) },
+        ...rest,
+        headers: { ...this.buildHeaders(), ...(rest.headers ?? {}) },
       });
     } catch (err) {
       this.logger.error(`Brilo WebAPI network error (${path})`, err as Error);
@@ -79,13 +110,12 @@ export class BriloWebapiService {
       );
     }
 
-    const rawText = await response.text();
-    const parsed = this.safeJsonParse(rawText);
-
     if (!response.ok) {
+      const rawText = await response.text();
+      const parsed = this.safeJsonParse(rawText);
       const message =
         this.extractErrorMessage(parsed) ||
-        (typeof rawText === 'string' && rawText.length > 0
+        (rawText.length > 0
           ? rawText.slice(0, 300)
           : `Error HTTP ${response.status} llamando a ${path}`);
       this.logger.warn(
@@ -94,7 +124,54 @@ export class BriloWebapiService {
       throw new BadGatewayException(message);
     }
 
-    return parsed as T;
+    return response;
+  }
+
+  private async request<T>(
+    path: string,
+    init: RequestInit & { query?: BriloQuery },
+  ): Promise<T> {
+    const response = await this.fetchRaw(path, init);
+    return this.safeJsonParse(await response.text()) as T;
+  }
+
+  /**
+   * Generic passthrough for the finance modules. `path` is relative to
+   * BRILO_WEBAPI_URL (which already ends in `/api`), e.g. `/v2/Conta/Partidas`.
+   */
+  async send<T = unknown>(
+    method: BriloMethod,
+    path: string,
+    options: { query?: BriloQuery; body?: unknown } = {},
+  ): Promise<BriloResult<T>> {
+    const response = await this.fetchRaw(path, {
+      method,
+      query: options.query,
+      ...(options.body !== undefined
+        ? { body: JSON.stringify(options.body) }
+        : {}),
+    });
+    const totalHeader = response.headers.get('x-total-count');
+    const total = totalHeader != null ? Number(totalHeader) : null;
+    return {
+      data: this.safeJsonParse(await response.text()) as T,
+      total: Number.isFinite(total) ? total : null,
+    };
+  }
+
+  async fetchFile(path: string, query?: BriloQuery): Promise<BriloFile> {
+    const response = await this.fetchRaw(path, {
+      method: 'GET',
+      query,
+      headers: { Accept: 'application/pdf, application/octet-stream, */*' },
+    });
+    const disposition = response.headers.get('content-disposition') ?? '';
+    const fileName = /filename\*?=(?:UTF-8'')?"?([^";]+)"?/i.exec(disposition);
+    return {
+      buffer: Buffer.from(await response.arrayBuffer()),
+      contentType: response.headers.get('content-type') ?? 'application/pdf',
+      fileName: fileName ? decodeURIComponent(fileName[1]) : null,
+    };
   }
 
   private safeJsonParse(text: string): unknown {
@@ -178,25 +255,4 @@ export class BriloWebapiService {
     if (typeof input.bcoId === 'number') body.bcoId = input.bcoId;
     return body;
   }
-}
-
-/**
- * The Vallas write endpoints document their response as the saved model, but
- * Brilo is inconsistent about wrapping it in an array or a `data` envelope and
- * about key casing, so all of those shapes are normalized to camelCase keys.
- */
-function unwrapSingle<T>(raw: unknown): T {
-  let value = raw;
-  if (value && typeof value === 'object' && !Array.isArray(value)) {
-    const envelope = value as Record<string, unknown>;
-    value = envelope.data ?? envelope.Data ?? value;
-  }
-  if (Array.isArray(value)) value = value[0];
-  if (!value || typeof value !== 'object') return {} as T;
-
-  const normalized: Record<string, unknown> = {};
-  for (const [key, val] of Object.entries(value as Record<string, unknown>)) {
-    normalized[key.charAt(0).toLowerCase() + key.slice(1)] = val;
-  }
-  return normalized as T;
 }

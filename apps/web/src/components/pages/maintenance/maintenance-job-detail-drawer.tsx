@@ -3,9 +3,11 @@
 import { useState } from "react";
 import Image from "next/image";
 import {
+  CheckCheck,
   ExternalLink,
   Image as ImageIcon,
   MapPin,
+  MonitorPlay,
   Pencil,
   Ruler,
   Trash2,
@@ -15,7 +17,9 @@ import {
 import { toast } from "sonner";
 import { useMaintenanceJob } from "@/api/maintenance/maintenance.get";
 import {
+  useAddMaintenanceComment,
   useCancelMaintenanceJob,
+  useCloseMaintenanceJob,
   useDeleteMaintenancePhoto,
   useReopenMaintenanceJob,
 } from "@/api/maintenance/maintenance.mutations";
@@ -37,7 +41,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { formatBriloShortDate, formatDimensions } from "@/lib/format";
 import { googleMapsUrl } from "@/lib/installer-portal";
 import { MaintenanceCategoryBadge } from "./maintenance-category-badge";
-import { personName } from "./maintenance-const";
+import { MaintenanceCommentsSection } from "./maintenance-comments-section";
+import {
+  jobTargetLabel,
+  MAINTENANCE_KIND_COPY,
+  personName,
+} from "./maintenance-const";
 import { MaintenanceJobFormDialog } from "./maintenance-job-form-dialog";
 import { MaintenanceJobHistory } from "./maintenance-job-history";
 import { MaintenancePhotoPreviewDialog } from "./maintenance-photo-preview-dialog";
@@ -109,8 +118,8 @@ function DrawerBody({
               <MaintenanceCategoryBadge category={job.category} />
             </DrawerTitle>
             <DrawerDescription className="truncate">
-              {job.billboardCode ?? "Valla sin código"} ·{" "}
-              {formatBriloShortDate(job.scheduledAt)}
+              {jobTargetLabel(job) ?? MAINTENANCE_KIND_COPY[job.kind].noCode}{" "}
+              · {formatBriloShortDate(job.scheduledAt)}
             </DrawerDescription>
           </div>
           <PrimitiveButton
@@ -141,6 +150,7 @@ function DrawerBody({
             <div className="flex flex-col gap-5 p-4">
               <DetailSection job={job} />
               <PhotosSection job={job} />
+              <CommentsSection job={job} />
             </div>
           </ScrollArea>
         </TabsContent>
@@ -162,6 +172,7 @@ function DrawerBody({
       </DrawerFooter>
 
       <MaintenanceJobFormDialog
+        kind={job.kind}
         open={editOpen}
         onOpenChange={setEditOpen}
         job={job}
@@ -191,11 +202,19 @@ function DetailSection({ job }: { job: MaintenanceJob }) {
           label="Asignada a"
           value={personName(job.assignedUser)}
         />
-        <InfoRow
-          icon={Ruler}
-          label="Medidas"
-          value={`${formatDimensions(job.width, job.height)} m`}
-        />
+        {job.kind === "DIGITAL" ? (
+          <InfoRow
+            icon={MonitorPlay}
+            label="Pantalla"
+            value={jobTargetLabel(job) ?? "—"}
+          />
+        ) : (
+          <InfoRow
+            icon={Ruler}
+            label="Medidas"
+            value={`${formatDimensions(job.width, job.height)} m`}
+          />
+        )}
         <InfoRow
           icon={MapPin}
           label="Ubicación"
@@ -315,11 +334,24 @@ function PhotosSection({ job }: { job: MaintenanceJob }) {
         photo={preview}
         jobCode={job.code}
         billboardCode={job.billboardCode}
+        canPublish={job.kind === "STATIC"}
         onOpenChange={(open) => {
           if (!open) setPreviewId(null);
         }}
       />
     </section>
+  );
+}
+
+function CommentsSection({ job }: { job: MaintenanceJob }) {
+  const addComment = useAddMaintenanceComment();
+  return (
+    <MaintenanceCommentsSection
+      comments={job.comments}
+      isPending={addComment.isPending}
+      readOnly={job.status === "CANCELLED"}
+      onSubmit={(body) => addComment.mutateAsync({ id: job.id, body })}
+    />
   );
 }
 
@@ -332,8 +364,11 @@ function JobActions({
 }) {
   const cancelJob = useCancelMaintenanceJob();
   const reopenJob = useReopenMaintenanceJob();
-  const isClosed = job.status === "COMPLETED" || job.status === "CANCELLED";
-  const isBusy = cancelJob.isPending || reopenJob.isPending;
+  const closeJob = useCloseMaintenanceJob();
+  const isTerminated = job.status === "CLOSED";
+  const isClosed =
+    job.status === "COMPLETED" || job.status === "CANCELLED" || isTerminated;
+  const isBusy = cancelJob.isPending || reopenJob.isPending || closeJob.isPending;
 
   return (
     <div className="flex flex-wrap items-center gap-2">
@@ -350,7 +385,12 @@ function JobActions({
             reopenJob.mutate(
               { id: job.id },
               {
-                onSuccess: () => toast.success("Orden reabierta."),
+                onSuccess: () =>
+                  toast.success(
+                    isTerminated
+                      ? "Orden devuelta a finalizada."
+                      : "Orden reabierta.",
+                  ),
                 onError: (error) =>
                   toast.error(
                     error instanceof Error
@@ -361,7 +401,7 @@ function JobActions({
             )
           }
         >
-          Reabrir
+          {isTerminated ? "Devolver a finalizada" : "Reabrir"}
         </Button>
       ) : (
         <Button
@@ -387,9 +427,40 @@ function JobActions({
         </Button>
       )}
 
-      <Button sizeVariant="sm" icon={Pencil} onClick={onEdit}>
-        Editar
-      </Button>
+      {isTerminated ? null : (
+        <Button
+          variant={job.status === "COMPLETED" ? "outline" : "default"}
+          sizeVariant="sm"
+          icon={Pencil}
+          onClick={onEdit}
+        >
+          Editar
+        </Button>
+      )}
+
+      {job.status === "COMPLETED" ? (
+        <Button
+          sizeVariant="sm"
+          icon={CheckCheck}
+          disabled={isBusy}
+          onClick={() =>
+            closeJob.mutate(
+              { id: job.id },
+              {
+                onSuccess: () => toast.success("Orden marcada como terminada."),
+                onError: (error) =>
+                  toast.error(
+                    error instanceof Error
+                      ? error.message
+                      : "No se pudo marcar la orden como terminada.",
+                  ),
+              },
+            )
+          }
+        >
+          Marcar como terminada
+        </Button>
+      ) : null}
     </div>
   );
 }

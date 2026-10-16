@@ -3,12 +3,15 @@ import {
   IsArray,
   IsDateString,
   IsEmail,
+  IsEnum,
   IsOptional,
   IsString,
+  MaxLength,
   MinLength,
   ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
+import { OfferEditReason } from '@prisma/client';
 import { CreateOfferItemDto } from './create-offer.dto.js';
 
 /**
@@ -53,4 +56,14 @@ export class EditOfferDto {
   @ValidateNested({ each: true })
   @Type(() => CreateOfferItemDto)
   items!: CreateOfferItemDto[];
+
+  /** Required by the service when billboards are added or removed. */
+  @IsOptional()
+  @IsEnum(OfferEditReason)
+  editReason?: OfferEditReason | null;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(1000)
+  editReasonNote?: string | null;
 }

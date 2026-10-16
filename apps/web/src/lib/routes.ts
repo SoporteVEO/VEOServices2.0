@@ -1,12 +1,10 @@
 import {
   FileText,
   LayoutDashboard,
-  MonitorPlay,
   ShoppingCart,
   LucideIcon,
   Store,
   Users,
-  Monitor,
   Image,
   SquareChartGantt,
   BookUser,
@@ -29,6 +27,10 @@ import {
   Settings,
   BookOpen,
   Megaphone,
+  Calculator,
+  Landmark,
+  HandCoins,
+  ReceiptText,
 } from "lucide-react";
 import {
   IMAGES_MODULE_FIELD_ROLES,
@@ -36,6 +38,7 @@ import {
   SubRole,
   UserRole,
 } from "@/api/users/users.types";
+import { DIGITAL_BILLBOARD_ICON, STATIC_BILLBOARD_ICON } from "@/lib/billboard-icons";
 import { portalHome } from "@/lib/portal-access";
 
 export interface NavItem {
@@ -94,14 +97,14 @@ export const NAV_GROUPS: NavGroup[] = [
       {
         title: "Pantallas",
         href: "/dashboard/pantallas",
-        icon: MonitorPlay,
+        icon: DIGITAL_BILLBOARD_ICON,
         allowedRoles: [],
         requiredSubRoles: ["PANTALLAS_PRODUCCION", "PANTALLAS_COMERCIAL"],
       },
       {
         title: "Vallas estáticas",
         href: "/dashboard/static-billboards",
-        icon: Monitor,
+        icon: STATIC_BILLBOARD_ICON,
       },
       IMAGES_NAV_ITEM,
       {
@@ -126,7 +129,14 @@ export const NAV_GROUPS: NavGroup[] = [
           {
             title: "Vallas",
             href: "/dashboard/mantenimiento",
-            icon: Monitor,
+            icon: STATIC_BILLBOARD_ICON,
+            allowedRoles: [],
+            requiredSubRoles: ["MANTENIMIENTO"],
+          },
+          {
+            title: "Pantallas",
+            href: "/dashboard/mantenimiento/pantallas",
+            icon: DIGITAL_BILLBOARD_ICON,
             allowedRoles: [],
             requiredSubRoles: ["MANTENIMIENTO"],
           },
@@ -213,6 +223,39 @@ export const NAV_GROUPS: NavGroup[] = [
             requiredSubRoles: ["VENTAS"],
           },
         ],
+      },
+    ],
+  },
+  {
+    label: "Finanzas",
+    items: [
+      {
+        title: "Contabilidad",
+        href: "/dashboard/finanzas/contabilidad",
+        icon: Calculator,
+        allowedRoles: [],
+        requiredSubRoles: ["CONTABILIDAD"],
+      },
+      {
+        title: "Bancos",
+        href: "/dashboard/finanzas/bancos",
+        icon: Landmark,
+        allowedRoles: [],
+        requiredSubRoles: ["FINANZAS"],
+      },
+      {
+        title: "Cuentas por cobrar",
+        href: "/dashboard/finanzas/cuentas-por-cobrar",
+        icon: HandCoins,
+        allowedRoles: [],
+        requiredSubRoles: ["FINANZAS"],
+      },
+      {
+        title: "Facturación",
+        href: "/dashboard/finanzas/facturacion",
+        icon: ReceiptText,
+        allowedRoles: [],
+        requiredSubRoles: ["FACTURACION"],
       },
     ],
   },

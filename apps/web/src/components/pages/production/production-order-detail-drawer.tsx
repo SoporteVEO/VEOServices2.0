@@ -22,6 +22,7 @@ import {
 import { DetailPanelSkeleton } from "@/components/ui/skeletons";
 import { formatBriloShortDate, formatDimensions } from "@/lib/format";
 import { ProductionOrderArtSlot } from "@/components/pages/production-orders-shared/production-order-art-slot";
+import { ProductionOrderPrintScheduleCard } from "@/components/pages/production-orders-shared/production-order-print-schedule-card";
 import { ProductionOrderLegacyDocuments } from "@/components/pages/production-orders-shared/production-order-legacy-documents";
 import { ProductionOrderStatusBadge } from "@/components/pages/production-orders-shared/production-order-status-badge";
 import {
@@ -248,6 +249,7 @@ function ItemCard({
         </div>
       </div>
 
+      <ProductionOrderPrintScheduleCard item={item} readOnly />
       <ProductionOrderArtSlot
         item={item}
         readOnly={!canEditArt}

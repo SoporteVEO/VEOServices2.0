@@ -5,7 +5,8 @@ export type UserRole =
   | "INSTALLER"
   | "WORKER"
   | "MANTENIMIENTO"
-  | "INSTALLER_MANTENIMIENTO";
+  | "INSTALLER_MANTENIMIENTO"
+  | "MANTENIMIENTO_PANTALLAS";
 
 /** Roles whose users work in the field and file installation or vulcanizado work. */
 export const FIELD_ROLES = [
@@ -18,6 +19,7 @@ export const FIELD_ROLES = [
 export const MAINTENANCE_FIELD_ROLES = [
   "MANTENIMIENTO",
   "INSTALLER_MANTENIMIENTO",
+  "MANTENIMIENTO_PANTALLAS",
 ] as const satisfies readonly UserRole[];
 
 /**
@@ -29,6 +31,7 @@ export const IMAGES_MODULE_FIELD_ROLES = [
   "INSTALLER",
   "MANTENIMIENTO",
   "INSTALLER_MANTENIMIENTO",
+  "MANTENIMIENTO_PANTALLAS",
 ] as const satisfies readonly UserRole[];
 
 export function isFieldRole(role: UserRole | undefined | null): boolean {
@@ -56,7 +59,10 @@ export type SubRole =
   | "PANTALLAS_PRODUCCION"
   | "PANTALLAS_COMERCIAL"
   | "DESARROLLADOR"
-  | "VENTAS";
+  | "VENTAS"
+  | "CONTABILIDAD"
+  | "FINANZAS"
+  | "FACTURACION";
 
 export type User = {
   id: string;

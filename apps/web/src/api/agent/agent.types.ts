@@ -308,6 +308,33 @@ export interface AgentOpportunityOutput {
   warnings: string[];
 }
 
+export type AgentBriloWriteMethod = "POST" | "PUT" | "DELETE";
+
+export interface AgentBriloChange {
+  record: string;
+  field: string;
+  before?: string;
+  after?: string;
+}
+
+export interface AgentBriloChangeInput {
+  title: string;
+  explanation: string;
+  changes: AgentBriloChange[];
+  warnings?: string[];
+  method: AgentBriloWriteMethod;
+  path: string;
+  query?: Record<string, string | number | boolean>;
+  body?: unknown;
+}
+
+export interface AgentBriloResult {
+  ok: true;
+  endpoint: string;
+  total?: number;
+  data: unknown;
+}
+
 type ToolResult<T> = T | AgentUnauthorized | AgentToolError;
 
 export type AgentUITools = {
@@ -378,6 +405,22 @@ export type AgentUITools = {
   register_crm_opportunity: {
     input: AgentOpportunityInput;
     output: ToolResult<AgentOpportunityOutput>;
+  };
+  brilo_api_search: {
+    input: { query?: string; module?: string; method?: string };
+    output: ToolResult<{ ok: true; count?: number }>;
+  };
+  brilo_api_describe: {
+    input: { endpoint?: string; model?: string };
+    output: ToolResult<{ ok: true; endpoint?: string }>;
+  };
+  brilo_api_get: {
+    input: { path: string; query?: Record<string, string | number | boolean> };
+    output: ToolResult<AgentBriloResult>;
+  };
+  brilo_api_change: {
+    input: AgentBriloChangeInput;
+    output: ToolResult<AgentBriloResult>;
   };
 };
 

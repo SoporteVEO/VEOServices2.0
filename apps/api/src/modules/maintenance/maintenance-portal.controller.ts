@@ -6,6 +6,7 @@ import {
 } from '../auth/decorators.js';
 import { MAINTENANCE_ROLES } from '../auth/field-roles.js';
 import {
+  AddMaintenanceCommentDto,
   CompleteMaintenanceJobDto,
   UploadMaintenancePhotoDto,
 } from './dto/maintenance-job.dto.js';
@@ -64,6 +65,16 @@ export class MaintenancePortalController {
     @CurrentUser() user: AuthUser,
   ) {
     const data = await this.jobs.uploadPhoto(id, user.id, dto);
+    return { data };
+  }
+
+  @Post('jobs/:id/comments')
+  async addComment(
+    @Param('id') id: string,
+    @Body() dto: AddMaintenanceCommentDto,
+    @CurrentUser() user: AuthUser,
+  ) {
+    const data = await this.jobs.addComment(id, user.id, dto);
     return { data };
   }
 }

@@ -1,4 +1,14 @@
-import { OfferItemType } from '@prisma/client';
+import { OfferEditReason, OfferItemType } from '@prisma/client';
+
+/** Structured columns stored next to a content edit, used by analytics. */
+export interface OfferEditAudit {
+  editReason: OfferEditReason | null;
+  editReasonNote: string | null;
+  billboardsBefore: number | null;
+  billboardsAfter: number | null;
+  amountBefore: number | null;
+  amountAfter: number | null;
+}
 
 /** A single before/after pair recorded in `OfferEvent.changes`. */
 export interface OfferChange {
@@ -146,6 +156,16 @@ export interface ItemsDiff {
   /** One human-readable line per change, ready to render in the history feed. */
   summary: string[];
   hasChanges: boolean;
+  billboardsAdded: number;
+  billboardsRemoved: number;
+}
+
+export function isBillboardItem(item: { itemType: OfferItemType }): boolean {
+  return item.itemType !== OfferItemType.MISC;
+}
+
+export function countBillboards(items: { itemType: OfferItemType }[]): number {
+  return items.filter(isBillboardItem).length;
 }
 
 export function diffItems(
@@ -161,17 +181,21 @@ export function diffItems(
 
   const changes: OfferChangeSet = {};
   const summary: string[] = [];
+  let billboardsAdded = 0;
+  let billboardsRemoved = 0;
 
   for (const [signature, item] of afterBySignature) {
     if (beforeBySignature.has(signature)) continue;
     changes[`item.${signature}`] = { from: null, to: itemLabel(item) };
     summary.push(`Se agregó ${itemLabel(item)}`);
+    if (isBillboardItem(item)) billboardsAdded += 1;
   }
 
   for (const [signature, item] of beforeBySignature) {
     if (afterBySignature.has(signature)) continue;
     changes[`item.${signature}`] = { from: itemLabel(item), to: null };
     summary.push(`Se eliminó ${itemLabel(item)}`);
+    if (isBillboardItem(item)) billboardsRemoved += 1;
   }
 
   for (const [signature, next] of afterBySignature) {
@@ -188,7 +212,13 @@ export function diffItems(
     }
   }
 
-  return { changes, summary, hasChanges: summary.length > 0 };
+  return {
+    changes,
+    summary,
+    hasChanges: summary.length > 0,
+    billboardsAdded,
+    billboardsRemoved,
+  };
 }
 
 /** Condenses a change list into the one-line message shown in the feed. */

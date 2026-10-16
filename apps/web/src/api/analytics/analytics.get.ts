@@ -1,6 +1,7 @@
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { apiFetch } from "@/lib/api";
 import type {
+  OfferEditsOverview,
   OffersAnalyticsList,
   OffersAnalyticsOverview,
   PrintingAnalyticsOverview,
@@ -120,6 +121,42 @@ export function useOffersAnalyticsOverview(
   return useQuery({
     queryKey: offersAnalyticsOverviewQueryKey(from, to, userId),
     queryFn: () => getOffersAnalyticsOverview(from, to, { userId }),
+    enabled: Boolean(from && to && from <= to),
+    staleTime: ANALYTICS_STALE_TIME,
+    gcTime: ANALYTICS_GC_TIME,
+    placeholderData: keepPreviousData,
+  });
+}
+
+export const offerEditsAnalyticsQueryKey = (
+  from: string,
+  to: string,
+  userId: string | null,
+) => ["analytics", "offers-overview", "edits", from, to, userId] as const;
+
+export async function getOfferEditsAnalytics(
+  from: string,
+  to: string,
+  options: { userId?: string | null } = {},
+) {
+  const query: Record<string, string> = { from, to };
+  if (options.userId) query.userId = options.userId;
+  const response = await apiFetch<{ data: OfferEditsOverview }>(
+    "/analytics/offers-overview/edits",
+    { query },
+  );
+  return response.data;
+}
+
+export function useOfferEditsAnalytics(
+  from: string,
+  to: string,
+  options: { userId?: string | null } = {},
+) {
+  const userId = options.userId ?? null;
+  return useQuery({
+    queryKey: offerEditsAnalyticsQueryKey(from, to, userId),
+    queryFn: () => getOfferEditsAnalytics(from, to, { userId }),
     enabled: Boolean(from && to && from <= to),
     staleTime: ANALYTICS_STALE_TIME,
     gcTime: ANALYTICS_GC_TIME,

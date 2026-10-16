@@ -48,7 +48,7 @@ export function QuotationItemRow({
   const rentalBreakdown = useMemo(() => {
     const multiplier = formatRentalPeriodMultiplier(rentalPeriods);
     const periodLabel =
-      rentalPeriods === 1 ? "período de 30 días" : "períodos de 30 días";
+      rentalPeriods === 1 ? "mes" : "meses";
     return `${formatMoney(item.monthlyRentalPrice)} ${multiplier} ${periodLabel}`;
   }, [item.monthlyRentalPrice, rentalPeriods]);
 

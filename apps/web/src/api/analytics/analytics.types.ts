@@ -1,3 +1,5 @@
+import type { OfferEditReason } from "@/api/offers/offers.types";
+
 export type UserAppUsageDailyRow = {
   date: string;
   totalMs: number;
@@ -169,6 +171,58 @@ export type OffersAnalyticsList = {
   total: number;
   page: number;
   pageSize: number;
+};
+
+export type OfferEditDirection = "INCREASED" | "DECREASED" | "UNCHANGED";
+
+export type OfferEditsTotals = {
+  edits: number;
+  offersEdited: number;
+  increased: number;
+  decreased: number;
+  unchanged: number;
+  netBillboards: number;
+  amountDelta: number;
+  withoutReason: number;
+};
+
+export type OfferEditsByReasonRow = {
+  reason: OfferEditReason | null;
+  edits: number;
+  increased: number;
+  decreased: number;
+  unchanged: number;
+  netBillboards: number;
+  amountDelta: number;
+};
+
+export type OfferEditRow = {
+  id: string;
+  offerId: string;
+  offerNumber: string;
+  customerName: string;
+  customerCompany: string | null;
+  reason: OfferEditReason | null;
+  note: string | null;
+  direction: OfferEditDirection;
+  billboardsBefore: number;
+  billboardsAfter: number;
+  amountBefore: number | null;
+  amountAfter: number | null;
+  message: string;
+  createdAt: string;
+  actor: {
+    id: string;
+    firstName: string;
+    lastName: string | null;
+    email: string;
+  } | null;
+};
+
+export type OfferEditsOverview = {
+  totals: OfferEditsTotals;
+  byReason: OfferEditsByReasonRow[];
+  recent: OfferEditRow[];
 };
 
 export type ReportsAnalyticsTypeBreakdown = {

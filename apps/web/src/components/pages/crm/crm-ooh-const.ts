@@ -1,4 +1,5 @@
-import { Layers, Monitor, Signpost, type LucideIcon } from "lucide-react";
+import { Layers, type LucideIcon } from "lucide-react";
+import { DIGITAL_BILLBOARD_ICON, STATIC_BILLBOARD_ICON } from "@/lib/billboard-icons";
 import type { CrmMediaType } from "@/api/crm/crm.types";
 import type {
   CrmSiteKind,
@@ -15,8 +16,8 @@ export const MEDIA_TYPE_LABELS: Record<CrmMediaType, string> = {
 };
 
 export const MEDIA_TYPE_ICONS: Record<CrmMediaType, LucideIcon> = {
-  STATIC: Signpost,
-  DIGITAL: Monitor,
+  STATIC: STATIC_BILLBOARD_ICON,
+  DIGITAL: DIGITAL_BILLBOARD_ICON,
   MIXED: Layers,
 };
 
@@ -32,8 +33,8 @@ export const SITE_KIND_LABELS: Record<CrmSiteKind, string> = {
 };
 
 export const SITE_KIND_ICONS: Record<CrmSiteKind, LucideIcon> = {
-  STATIC: Signpost,
-  DIGITAL: Monitor,
+  STATIC: STATIC_BILLBOARD_ICON,
+  DIGITAL: DIGITAL_BILLBOARD_ICON,
 };
 
 export const SITE_STATUS_LABELS: Record<CrmSiteStatus, string> = {

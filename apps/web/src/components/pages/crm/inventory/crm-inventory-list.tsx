@@ -21,6 +21,7 @@ import type { InventorySelection } from "./inventory-state";
 import { OohFormatIcon } from "./ooh-format-icon";
 
 const STATE_ORDER: InventoryState[] = ["AVAILABLE", "HELD", "BOOKED", "CONTRACTED", "FULL"];
+const INTERACTIVE_SELECTOR = "button, a, input, label";
 
 interface Props {
   items: InventoryItem[];
@@ -115,11 +116,19 @@ function InventoryRow({
   const size = sizeLabel(item.width, item.height);
   const maps = mapsLink(item.latitude, item.longitude);
 
+  function handleRowClick(event: React.MouseEvent<HTMLLIElement>) {
+    if (!onLocate) return;
+    if ((event.target as HTMLElement).closest(INTERACTIVE_SELECTOR)) return;
+    onLocate();
+  }
+
   return (
     <li
       id={inventoryRowId(item.key)}
+      onClick={handleRowClick}
       className={cn(
         "flex items-start gap-3 p-3 text-sm transition-colors",
+        onLocate && "cursor-pointer hover:bg-muted/50",
         selected && "bg-accent/40",
         active && "bg-primary/5 shadow-[inset_3px_0_0_var(--primary)]",
         item.inDeal && "opacity-60",

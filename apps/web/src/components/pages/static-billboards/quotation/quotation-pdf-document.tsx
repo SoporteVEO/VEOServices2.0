@@ -22,6 +22,8 @@ function toStaticOfferItem(item: QuotationItem): StaticOfferItem {
     impressionPrice: item.impressionPrice,
     monthlyRentalPrice: item.monthlyRentalPrice,
     rentalPrice: item.rentalPrice,
+    listMonthlyRentalPrice: null,
+    listImpressionPrice: null,
     taxRate: IVA_RATE,
     startDate: item.startDate,
     endDate: item.endDate,

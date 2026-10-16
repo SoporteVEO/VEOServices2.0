@@ -6,6 +6,7 @@ import {
 import {
   PrintJobKind,
   PrintJobStatus,
+  PrintRescheduleStatus,
   ProductionOrderStatus,
   type Prisma,
 } from '@prisma/client';
@@ -100,6 +101,8 @@ export interface PrintBacklogItemDto {
    * this with a machine's throughput to preview a duration.
    */
   areaM2: number;
+  /** Set when the salesperson asked production to move this billboard. */
+  pendingReschedule: { isUrgent: boolean; preferredDate: string | null } | null;
   createdAt: string;
 }
 
@@ -190,6 +193,11 @@ const BACKLOG_ITEM_SELECT = {
       customerCompany: true,
     },
   },
+  rescheduleRequests: {
+    where: { status: PrintRescheduleStatus.PENDING },
+    take: 1,
+    select: { isUrgent: true, preferredDate: true },
+  },
 } satisfies Prisma.ProductionOrderItemSelect;
 
 type BacklogItemRow = Prisma.ProductionOrderItemGetPayload<{
@@ -228,6 +236,7 @@ function buildItemSearch(
 }
 
 function mapBacklogItem(row: BacklogItemRow): PrintBacklogItemDto {
+  const reschedule = row.rescheduleRequests[0];
   return {
     id: row.id,
     kind: PrintJobKind.PRODUCTION,
@@ -248,8 +257,20 @@ function mapBacklogItem(row: BacklogItemRow): PrintBacklogItemDto {
     customerName: row.productionOrder.customerName,
     customerCompany: row.productionOrder.customerCompany,
     areaM2: computeAreaM2(row),
+    pendingReschedule: reschedule
+      ? {
+          isUrgent: reschedule.isUrgent,
+          preferredDate: reschedule.preferredDate?.toISOString() ?? null,
+        }
+      : null,
     createdAt: row.createdAt.toISOString(),
   };
+}
+
+/** Requested billboards first, urgent ones ahead; otherwise oldest first. */
+function rescheduleRank(item: PrintBacklogItemDto): number {
+  if (!item.pendingReschedule) return 2;
+  return item.pendingReschedule.isUrgent ? 0 : 1;
 }
 
 @Injectable()
@@ -340,7 +361,9 @@ export class PrintJobsService {
         areaM2: 0,
         createdAt: test.createdAt.toISOString(),
       })),
-      ...items.map(mapBacklogItem),
+      ...items
+        .map(mapBacklogItem)
+        .sort((a, b) => rescheduleRank(a) - rescheduleRank(b)),
     ];
   }
 

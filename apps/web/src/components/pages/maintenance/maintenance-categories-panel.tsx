@@ -9,7 +9,10 @@ import {
   useDeleteMaintenanceCategory,
   useUpdateMaintenanceCategory,
 } from "@/api/maintenance/maintenance.mutations";
-import type { MaintenanceCategory } from "@/api/maintenance/maintenance.types";
+import type {
+  MaintenanceCategory,
+  MaintenanceJobKind,
+} from "@/api/maintenance/maintenance.types";
 import { Badge } from "@/components/primitives/ui/badge";
 import { Button as PrimitiveButton } from "@/components/primitives/ui/button";
 import { Skeleton } from "@/components/primitives/ui/skeleton";
@@ -17,13 +20,22 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { BRAND_CHART_COLORS } from "@/lib/brand-colors";
 import { MaintenanceCategoryBadge } from "./maintenance-category-badge";
+import { MAINTENANCE_KIND_COPY } from "./maintenance-const";
 
 const PRESET_COLORS: readonly string[] = BRAND_CHART_COLORS;
 
-export function MaintenanceCategoriesPanel() {
+export function MaintenanceCategoriesPanel({
+  kind,
+}: {
+  kind: MaintenanceJobKind;
+}) {
+  const copy = MAINTENANCE_KIND_COPY[kind];
   const [name, setName] = useState("");
   const [color, setColor] = useState(PRESET_COLORS[0]);
-  const { data: categories = [], isLoading } = useMaintenanceCategories(true);
+  const { data: categories = [], isLoading } = useMaintenanceCategories(
+    kind,
+    true,
+  );
   const createCategory = useCreateMaintenanceCategory();
 
   function handleCreate() {
@@ -33,7 +45,7 @@ export function MaintenanceCategoriesPanel() {
       return;
     }
     createCategory.mutate(
-      { name: trimmed, color },
+      { kind, name: trimmed, color },
       {
         onSuccess: () => {
           toast.success(`Categoría "${trimmed}" creada.`);
@@ -57,15 +69,14 @@ export function MaintenanceCategoriesPanel() {
       <section className="rounded-xl border bg-card p-4">
         <h3 className="text-sm font-semibold">Nueva categoría</h3>
         <p className="pt-0.5 text-xs text-muted-foreground">
-          Agrupa las órdenes por tipo de falla, por ejemplo estructura,
-          iluminación o lona.
+          {copy.categoryExamples}
         </p>
 
         <div className="flex flex-col gap-3 pt-3 sm:flex-row sm:items-end">
           <Input
             label="Nombre"
             type="text"
-            placeholder="Ej. Iluminación"
+            placeholder={copy.categoryPlaceholder}
             value={name}
             onChange={(event) => setName(event.target.value)}
             onKeyDown={(event) => {

@@ -92,6 +92,11 @@ export function offerDetailItemsToOfferItems(
       impressionPrice: item.impressionPrice,
       monthlyRentalPrice: round2(item.rentalPrice / Math.max(1, months)),
       rentalPrice: item.rentalPrice,
+      listMonthlyRentalPrice:
+        item.listRentalPrice == null
+          ? null
+          : round2(item.listRentalPrice / Math.max(1, months)),
+      listImpressionPrice: item.listImpressionPrice,
       taxRate: item.taxRate ?? IVA_RATE,
       startDate,
       endDate,

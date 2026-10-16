@@ -96,9 +96,11 @@ export function AcceptOfferModal({
     // The acceptance is already committed, so a contract that fails to
     // render is reported on its own and stays available from the
     // "Contrato" button rather than reversing the acceptance.
-    void downloadOfferContract(updated.id).catch(() =>
+    void downloadOfferContract(updated.id).catch((err: unknown) =>
       toast.error(
-        "La cotización se aceptó, pero no se pudo generar el contrato. Descárgalo desde el botón «Contrato».",
+        `La cotización se aceptó, pero no se pudo generar el PDF del contrato${
+          err instanceof Error && err.message ? `: ${err.message}` : "."
+        } Descárgalo desde el botón «Contrato».`,
       ),
     );
   }

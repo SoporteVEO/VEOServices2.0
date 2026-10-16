@@ -118,4 +118,5 @@ export interface BriloContratoInput {
 export interface BriloContratoResponse {
   mconId?: number;
   mconCodigo?: string | null;
+  mconPosteado?: boolean | null;
 }

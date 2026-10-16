@@ -112,6 +112,21 @@ export function useS3Images(query: ListS3ImagesQuery = {}) {
   });
 }
 
+export function useBillboardS3Images(code: string | null, limit = 8) {
+  return useQuery({
+    queryKey: ["s3-images", "by-code", code, limit],
+    queryFn: async () => {
+      const page = await getS3ImagesPage({ code: code!, limit, sortOrder: "desc" });
+      const target = code!.toLowerCase();
+      return page.data.filter(
+        (image) => image.staticBillboardCode?.code.toLowerCase() === target,
+      );
+    },
+    enabled: !!code,
+    staleTime: 5 * 60 * 1000,
+  });
+}
+
 export async function getS3ImageUploaders() {
   const response = await apiFetch<{ data: S3ImageUploader[] }>(
     "/s3-images/uploaders",

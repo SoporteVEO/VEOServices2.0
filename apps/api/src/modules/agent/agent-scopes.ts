@@ -34,7 +34,12 @@ export type AgentScopeKey =
   | 'users'
   | 'email'
   | 'erp_sql'
-  | 'development';
+  | 'erp_api'
+  | 'erp_api_write'
+  | 'development'
+  | 'accounting'
+  | 'finance'
+  | 'invoicing';
 
 export interface AgentUser {
   id: string;
@@ -54,6 +59,7 @@ const EVERYONE = [
   'WORKER',
   'MANTENIMIENTO',
   'INSTALLER_MANTENIMIENTO',
+  'MANTENIMIENTO_PANTALLAS',
 ];
 
 export const AGENT_SCOPES: AgentScope[] = [
@@ -194,6 +200,22 @@ export const AGENT_SCOPES: AgentScope[] = [
     pathPrefixes: [],
   },
   {
+    key: 'erp_api',
+    label: 'Brilo WebAPI (consultas)',
+    description:
+      'Read Brilo ERP data through its official WebAPI: clients, billboard quotes and contracts, invoices/ODF, receivables, purchases, accounting, inventory and service tickets.',
+    allowedRoles: ['ADMIN', 'USER'],
+    pathPrefixes: [],
+  },
+  {
+    key: 'erp_api_write',
+    label: 'Brilo WebAPI (modificaciones)',
+    description:
+      'Create, update or delete records in the Brilo ERP through its WebAPI, always after the user confirms the exact change.',
+    allowedRoles: ['ADMIN'],
+    pathPrefixes: [],
+  },
+  {
     key: 'development',
     label: 'Desarrollo',
     description:
@@ -201,6 +223,33 @@ export const AGENT_SCOPES: AgentScope[] = [
     allowedRoles: [],
     requiredSubRoles: ['DESARROLLADOR'],
     pathPrefixes: ['/development'],
+  },
+  {
+    key: 'accounting',
+    label: 'Contabilidad',
+    description:
+      'Brilo chart of accounts, cost centers and journal entries (partidas) with their lines.',
+    allowedRoles: [],
+    requiredSubRoles: ['CONTABILIDAD'],
+    pathPrefixes: ['/finance/accounting'],
+  },
+  {
+    key: 'finance',
+    label: 'Finanzas',
+    description:
+      'Brilo bank accounts, bank deposits and charges, client receivable balances, credit limits, invoice payments and sale advances.',
+    allowedRoles: [],
+    requiredSubRoles: ['FINANZAS'],
+    pathPrefixes: ['/finance/banks', '/finance/receivables'],
+  },
+  {
+    key: 'invoicing',
+    label: 'Facturación',
+    description:
+      'Brilo sales invoices with balances and payments, and billing orders (ODF): detail, totals, PDF, finalize and email.',
+    allowedRoles: [],
+    requiredSubRoles: ['FACTURACION'],
+    pathPrefixes: ['/finance/invoicing'],
   },
 ];
 

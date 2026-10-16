@@ -1,7 +1,10 @@
+export type MaintenanceJobKind = "STATIC" | "DIGITAL";
+
 export type MaintenanceJobStatus =
   | "PENDING"
   | "IN_PROGRESS"
   | "COMPLETED"
+  | "CLOSED"
   | "CANCELLED";
 
 export type MaintenanceEventType =
@@ -12,7 +15,9 @@ export type MaintenanceEventType =
   | "STARTED"
   | "PHOTO_UPLOADED"
   | "PHOTO_DELETED"
+  | "COMMENTED"
   | "COMPLETED"
+  | "CLOSED"
   | "REOPENED"
   | "CANCELLED";
 
@@ -25,6 +30,7 @@ export interface MaintenancePerson {
 
 export interface MaintenanceCategory {
   id: string;
+  kind: MaintenanceJobKind;
   name: string;
   color: string | null;
   archived: boolean;
@@ -42,6 +48,13 @@ export interface MaintenancePhoto {
   publishedImageId: string | null;
 }
 
+export interface MaintenanceComment {
+  id: string;
+  body: string;
+  author: MaintenancePerson | null;
+  createdAt: string;
+}
+
 export interface MaintenanceEvent {
   id: string;
   type: MaintenanceEventType;
@@ -53,9 +66,12 @@ export interface MaintenanceEvent {
 export interface MaintenanceJobListItem {
   id: string;
   code: string;
+  kind: MaintenanceJobKind;
   status: MaintenanceJobStatus;
   billboardId: number | null;
+  digitalBillboardId: string | null;
   billboardCode: string | null;
+  billboardName: string | null;
   address: string | null;
   cityName: string | null;
   departmentName: string | null;
@@ -63,9 +79,11 @@ export interface MaintenanceJobListItem {
   scheduledAt: string;
   startedAt: string | null;
   completedAt: string | null;
+  closedAt: string | null;
   category: { id: string; name: string; color: string | null } | null;
   assignedUser: MaintenancePerson;
   photoCount: number;
+  commentCount: number;
   createdAt: string;
   isOverdue: boolean;
 }
@@ -80,6 +98,7 @@ export interface MaintenanceJob extends MaintenanceJobListItem {
   completionNotes: string | null;
   createdBy: MaintenancePerson | null;
   photos: MaintenancePhoto[];
+  comments: MaintenanceComment[];
   events: MaintenanceEvent[];
   minutesToStart: number | null;
   minutesWorked: number | null;
@@ -117,7 +136,9 @@ export interface MaintenanceOverview {
 }
 
 export interface CreateMaintenanceJobInput {
-  billboardId: number;
+  kind: MaintenanceJobKind;
+  billboardId?: number;
+  digitalBillboardId?: string;
   billboardCode?: string | null;
   address?: string | null;
   cityName?: string | null;
@@ -140,6 +161,7 @@ export interface UpdateMaintenanceJobInput {
 }
 
 export interface MaintenanceJobsQuery {
+  kind: MaintenanceJobKind;
   search?: string;
   status?: MaintenanceJobStatus;
   categoryId?: string;

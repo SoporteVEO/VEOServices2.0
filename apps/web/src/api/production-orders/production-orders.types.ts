@@ -42,8 +42,73 @@ export interface ProductionOrderItem {
   installedAt: string | null;
   hasVulcanizadoImage: boolean;
   installationImageCount: number;
+  printSchedule: ItemPrintSchedule | null;
+  /** Latest request not withdrawn by its author, pending or answered. */
+  latestRescheduleRequest: PrintRescheduleRequest | null;
   createdAt: string;
   updatedAt: string;
+}
+
+export type PrintScheduleStatus =
+  | "SCHEDULED"
+  | "SETUP"
+  | "PRINTING"
+  | "COOLDOWN"
+  | "COMPLETED";
+
+export interface ItemPrintSchedule {
+  jobId: string;
+  status: PrintScheduleStatus;
+  machineName: string;
+  scheduledStartAt: string;
+  /** When the press starts printing, once the set up is done. */
+  printStartAt: string;
+  scheduledEndAt: string;
+  printMinutes: number;
+  plannedTotalMinutes: number;
+  printStartedAt: string | null;
+  completedAt: string | null;
+}
+
+export type PrintRescheduleStatus =
+  | "PENDING"
+  | "RESOLVED"
+  | "REJECTED"
+  | "CANCELLED";
+
+export interface PersonSummary {
+  id: string;
+  firstName: string;
+  lastName: string | null;
+}
+
+export interface PrintRescheduleRequest {
+  id: string;
+  productionOrderItemId: string;
+  status: PrintRescheduleStatus;
+  isUrgent: boolean;
+  preferredDate: string | null;
+  reason: string;
+  previousStartAt: string | null;
+  resolutionNote: string | null;
+  resolvedAt: string | null;
+  createdAt: string;
+  requestedBy: PersonSummary;
+  resolvedBy: PersonSummary | null;
+}
+
+/** A pending request as the production team sees it. */
+export interface PrintRescheduleQueueItem extends PrintRescheduleRequest {
+  productionOrderId: string;
+  orderNumber: string;
+  customerName: string;
+  customerCompany: string | null;
+  billboardCode: string | null;
+  address: string | null;
+  cityName: string | null;
+  width: number | null;
+  height: number | null;
+  printSchedule: ItemPrintSchedule | null;
 }
 
 export interface ProductionOrder {

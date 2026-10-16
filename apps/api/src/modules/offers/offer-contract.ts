@@ -28,6 +28,21 @@ WHERE maecon.mconId = @MconId
   AND maecon.mconAnulado <> 1
 `;
 
+export const BRILO_CLIENT_LEGAL_SQL = `
+SELECT
+    cli.cliNombres,
+    cli.cliNomComercial,
+    cli.cliNomRepLegal,
+    cli.cliNumIdentifRepLegal,
+    cli.cliDireccion,
+    cli.cliCiudadMuni,
+    cli.cliDeptoEstado,
+    cli.cliEmail,
+    cli.cliEmailFacturacion
+FROM olComun.dbo.Clientes cli WITH (NOLOCK)
+WHERE cli.cliId = @CliId
+`;
+
 export interface BriloContractWithClientRow {
   mconCodigo: string;
   mconFecha: Date;
@@ -112,24 +127,42 @@ export function vallaTypeFromCode(code: string | null | undefined): string {
 }
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
-const RENTAL_PERIOD_DAYS = 30;
+/** Leftover days beyond whole months that still bill as one more month. */
+const PARTIAL_MONTH_MIN_DAYS = 16;
 
-function utcDay(date: Date): number {
-  return Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
+function addUtcMonthsClamped(day: Date, months: number): number {
+  const year = day.getUTCFullYear();
+  const month = day.getUTCMonth() + months;
+  const lastDay = new Date(Date.UTC(year, month + 1, 0)).getUTCDate();
+  return Date.UTC(year, month, Math.min(day.getUTCDate(), lastDay));
 }
 
 /**
- * 30-day rental periods in a date range, counted the way the offer builder
- * prices static billboards, so a line's rent splits back into the monthly rate
- * the client was quoted.
+ * Calendar months billed for a date range, matching the offer builder and the
+ * way Brilo contracts are written: Oct 16 – Nov 15 is 1 month and
+ * Oct 15 – Dec 15 is 2. Leftover days only add a month past half a month.
+ * Brilo bills the monthly rate times these months, so a line's rent splits
+ * back into the rate that reproduces the offer total.
  */
 export function rentalPeriods(start: Date | null, end: Date | null): number {
   if (!start || !end) return 1;
-  const startDay = utcDay(start);
-  const endDay = utcDay(end);
-  if (endDay < startDay) return 1;
-  const inclusiveDays = Math.round((endDay - startDay) / MS_PER_DAY) + 1;
-  return Math.max(1, Math.ceil(inclusiveDays / RENTAL_PERIOD_DAYS));
+  const startDay = new Date(
+    Date.UTC(start.getUTCFullYear(), start.getUTCMonth(), start.getUTCDate()),
+  );
+  const endExclusive = Date.UTC(
+    end.getUTCFullYear(),
+    end.getUTCMonth(),
+    end.getUTCDate() + 1,
+  );
+  if (endExclusive <= startDay.getTime()) return 1;
+
+  let months = 0;
+  while (addUtcMonthsClamped(startDay, months + 1) <= endExclusive) months += 1;
+  const leftoverDays = Math.round(
+    (endExclusive - addUtcMonthsClamped(startDay, months)) / MS_PER_DAY,
+  );
+  if (leftoverDays >= PARTIAL_MONTH_MIN_DAYS) months += 1;
+  return Math.max(1, months);
 }
 
 function round2(value: number): number {

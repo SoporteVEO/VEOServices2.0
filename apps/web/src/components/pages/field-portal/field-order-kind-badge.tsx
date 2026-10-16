@@ -1,8 +1,12 @@
-import { Hammer, Wrench, type LucideIcon } from "lucide-react";
+import { Hammer, MonitorPlay, Wrench, type LucideIcon } from "lucide-react";
+import type { MaintenanceJobKind } from "@/api/maintenance/maintenance.types";
 import { Badge } from "@/components/primitives/ui/badge";
 import { cn } from "@/lib/utils";
 
-export type FieldOrderKind = "installation" | "maintenance";
+export type FieldOrderKind =
+  | "installation"
+  | "maintenance"
+  | "screen-maintenance";
 
 const KIND_CONFIG: Record<
   FieldOrderKind,
@@ -20,7 +24,17 @@ const KIND_CONFIG: Record<
     className:
       "border-violet-500/50 bg-violet-500/10 text-violet-700 dark:text-violet-300",
   },
+  "screen-maintenance": {
+    label: "Mantenimiento pantalla",
+    icon: MonitorPlay,
+    className:
+      "border-fuchsia-500/50 bg-fuchsia-500/10 text-fuchsia-700 dark:text-fuchsia-300",
+  },
 };
+
+export function maintenanceOrderKind(kind: MaintenanceJobKind): FieldOrderKind {
+  return kind === "DIGITAL" ? "screen-maintenance" : "maintenance";
+}
 
 export function FieldOrderKindBadge({ kind }: { kind: FieldOrderKind }) {
   const { label, icon: Icon, className } = KIND_CONFIG[kind];

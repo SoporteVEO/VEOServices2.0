@@ -8,6 +8,7 @@ import { formatMoney } from "@/lib/format";
 import { INVENTORY_STATE_LABELS, INVENTORY_STATE_STYLES } from "../crm-ooh-const";
 import { mapsLink, sizeLabel } from "../crm-ooh-format";
 import { CrmInventoryHolds } from "./crm-inventory-holds";
+import { CrmInventoryPopupImages } from "./crm-inventory-popup-images";
 import { formatLabel } from "./inventory-format";
 import { OohFormatIcon } from "./ooh-format-icon";
 
@@ -37,6 +38,7 @@ export function CrmInventoryMapPopup({ item, selected, onToggle }: Props) {
 
   return (
     <div className="flex flex-col gap-3">
+      {item.kind === "STATIC" ? <CrmInventoryPopupImages key={item.key} code={item.code} /> : null}
       <div className="flex items-start gap-3 pe-5">
         <div className="flex size-12 shrink-0 items-center justify-center rounded-md border bg-white">
           <OohFormatIcon item={item} size={40} />

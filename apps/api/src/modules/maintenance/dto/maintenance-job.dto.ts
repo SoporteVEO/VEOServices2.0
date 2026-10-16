@@ -1,4 +1,4 @@
-import { MaintenanceJobStatus } from '@prisma/client';
+import { MaintenanceJobKind, MaintenanceJobStatus } from '@prisma/client';
 import {
   IsBoolean,
   IsDateString,
@@ -13,8 +13,19 @@ import {
 } from 'class-validator';
 
 export class CreateMaintenanceJobDto {
+  @IsOptional()
+  @IsEnum(MaintenanceJobKind)
+  kind?: MaintenanceJobKind;
+
+  /** Brilo static billboard, required for STATIC jobs. */
+  @IsOptional()
   @IsInt()
-  billboardId!: number;
+  billboardId?: number;
+
+  /** Pantallas screen, required for DIGITAL jobs. */
+  @IsOptional()
+  @IsUUID()
+  digitalBillboardId?: string;
 
   // Descriptive fields come from the picker the same way offer items do, so
   // the job keeps readable location text without a Brilo round trip.
@@ -93,7 +104,7 @@ export class UploadMaintenancePhotoDto {
 
   @IsOptional()
   @IsString()
-  @MaxLength(300)
+  @MaxLength(1000)
   note?: string;
 }
 
@@ -104,7 +115,24 @@ export class CompleteMaintenanceJobDto {
   completionNotes?: string;
 }
 
+export class AddMaintenanceCommentDto {
+  @IsString()
+  @MinLength(1)
+  @MaxLength(2000)
+  body!: string;
+}
+
+export class MaintenanceKindQueryDto {
+  @IsOptional()
+  @IsEnum(MaintenanceJobKind)
+  kind?: MaintenanceJobKind;
+}
+
 export class ListMaintenanceJobsQueryDto {
+  @IsOptional()
+  @IsEnum(MaintenanceJobKind)
+  kind?: MaintenanceJobKind;
+
   @IsOptional()
   @IsString()
   search?: string;

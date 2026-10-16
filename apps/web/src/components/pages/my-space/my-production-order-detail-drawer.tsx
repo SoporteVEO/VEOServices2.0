@@ -25,6 +25,7 @@ import { DetailPanelSkeleton } from "@/components/ui/skeletons";
 import { formatBriloShortDate, formatDimensions } from "@/lib/format";
 import { ProductionOrderArtSlot } from "@/components/pages/production-orders-shared/production-order-art-slot";
 import { ProductionOrderLegacyDocuments } from "@/components/pages/production-orders-shared/production-order-legacy-documents";
+import { ProductionOrderPrintScheduleCard } from "@/components/pages/production-orders-shared/production-order-print-schedule-card";
 import { ProductionOrderStatusBadge } from "@/components/pages/production-orders-shared/production-order-status-badge";
 import { sortProductionOrderItems } from "@/components/pages/production-orders-shared/production-order-utils";
 
@@ -167,8 +168,8 @@ function DrawerContentInner({
                   Vallas estáticas
                 </h3>
                 <p className="pt-1 text-xs text-muted-foreground">
-                  Carga el arte de cada valla. El estado lo actualiza el equipo
-                  de producción.
+                  Carga el arte de cada valla y consulta cuándo se imprimirá. Si
+                  necesitas otra fecha, solicita una reprogramación.
                 </p>
               </div>
             </header>
@@ -222,6 +223,7 @@ function ItemCard({
         <ProductionOrderStatusBadge status={item.status} />
       </div>
 
+      <ProductionOrderPrintScheduleCard item={item} readOnly={readOnly} />
       <ProductionOrderArtSlot item={item} readOnly={readOnly} />
       <ProductionOrderLegacyDocuments item={item} />
     </div>

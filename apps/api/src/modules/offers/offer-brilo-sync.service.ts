@@ -203,6 +203,7 @@ export class OfferBriloSyncService {
 
     const items = briloStaticItems(offer.items);
     let mcotId = offer.briloMcotId;
+    let step: 'cotizacion' | 'contrato' = mcotId ? 'contrato' : 'cotizacion';
 
     try {
       if (!offer.briloCliId || !offer.briloEjecId) {
@@ -230,28 +231,49 @@ export class OfferBriloSyncService {
           );
         }
         mcotId = cotizacion.mcotId;
-        await this.prisma.offerCreated.update({
-          where: { id: offerId },
-          data: { briloMcotId: mcotId },
-        });
+        const numero =
+          cotizacion.mcotNumero?.trim() ||
+          (await this.fetchCotizacionNumero(mcotId));
+
+        await this.prisma.$transaction([
+          this.prisma.offerCreated.update({
+            where: { id: offerId },
+            data: { briloMcotId: mcotId, briloMcotNumero: numero },
+          }),
+          this.prisma.offerEvent.create({
+            data: {
+              offerId,
+              type: OfferEventType.BRILO_COTIZACION_CREATED,
+              message: numero
+                ? `Cotización ${numero} creada en Brilo`
+                : 'Cotización creada en Brilo',
+              actorUserId,
+            },
+          }),
+        ]);
       }
 
+      step = 'contrato';
       const contrato = await this.briloApi.createContrato(
         buildBriloContrato(header, items, mcotId),
       );
       if (!contrato.mconId) {
         throw new Error('Brilo no devolvió el identificador del contrato');
       }
+      if (contrato.mconPosteado === false) {
+        this.logger.warn(
+          `Brilo created contract ${contrato.mconId} unposted for offer ${offerId}`,
+        );
+      }
 
-      const cotizacionNumero = await this.fetchCotizacionNumero(mcotId);
-      const contratoLabel = contrato.mconCodigo ?? `#${contrato.mconId}`;
-      const cotizacionLabel = cotizacionNumero ?? `#${mcotId}`;
+      const codigo = contrato.mconCodigo?.trim() || null;
 
       await this.prisma.$transaction([
         this.prisma.offerCreated.update({
           where: { id: offerId },
           data: {
             briloMconId: contrato.mconId,
+            briloMconCodigo: codigo,
             briloSyncStatus: BriloSyncStatus.SYNCED,
             briloSyncError: null,
           },
@@ -259,9 +281,10 @@ export class OfferBriloSyncService {
         this.prisma.offerEvent.create({
           data: {
             offerId,
-            type: OfferEventType.BRILO_SYNCED,
-            message: `Cotización ${cotizacionLabel} y contrato ${contratoLabel} creados en Brilo`,
-            changes: { briloMconId: { from: null, to: contrato.mconId } },
+            type: OfferEventType.BRILO_CONTRATO_CREATED,
+            message: codigo
+              ? `Contrato ${codigo} creado en Brilo`
+              : 'Contrato creado en Brilo',
             actorUserId,
           },
         }),
@@ -284,8 +307,11 @@ export class OfferBriloSyncService {
         this.prisma.offerEvent.create({
           data: {
             offerId,
-            type: OfferEventType.BRILO_SYNC_FAILED,
-            message: `No se pudo crear ${mcotId ? 'el contrato' : 'la cotización'} en Brilo: ${message}`,
+            type:
+              step === 'contrato'
+                ? OfferEventType.BRILO_CONTRATO_FAILED
+                : OfferEventType.BRILO_COTIZACION_FAILED,
+            message: `No se pudo crear ${step === 'contrato' ? 'el contrato' : 'la cotización'} en Brilo: ${message}`,
             actorUserId,
           },
         }),

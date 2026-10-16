@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import type { Request, Response } from 'express';
 import type { UIMessage } from 'ai' with { 'resolution-mode': 'import' };
+import { BriloWebapiService } from '../brilo-webapi/brilo-webapi.service.js';
 import { AgentIssuesService } from '../development/agent-issues.service.js';
 import { AgentLearningsService } from '../development/agent-learnings.service.js';
 import { EmailService } from '../email/email.service.js';
@@ -31,7 +32,11 @@ import { loadAgentSdk } from './agent-sdk.js';
 import type { AgentUser } from './agent-scopes.js';
 import { AgentThreadsService } from './agent-threads.service.js';
 import type { AgentChatBody } from './dto/agent-chat.schema.js';
-import { buildAgentTools, loadBriloMcpTools } from './tools/index.js';
+import {
+  buildAgentTools,
+  loadBriloMcpTools,
+  resolveBriloChange,
+} from './tools/index.js';
 
 const MAX_STEPS = Number(process.env.AGENT_MAX_STEPS) || 16;
 const MAX_OUTPUT_TOKENS = Number(process.env.AGENT_MAX_OUTPUT_TOKENS) || 8000;
@@ -58,6 +63,7 @@ export class AgentChatService {
     private readonly issues: AgentIssuesService,
     private readonly learnings: AgentLearningsService,
     private readonly memory: AgentMemoryService,
+    private readonly brilo: BriloWebapiService,
   ) {}
 
   async stream(
@@ -108,6 +114,7 @@ export class AgentChatService {
         api: AgentApiClient.fromRequest(req, diagnostics),
         endpoints: this.endpoints,
         email: this.email,
+        brilo: this.brilo,
         reportIssue,
         rememberLearning: async (content) => {
           if (learningsSaved >= MAX_LEARNINGS_PER_REQUEST) {
@@ -162,6 +169,8 @@ export class AgentChatService {
         register_crm_opportunity: 'user-approval',
         call_api: ({ method }) =>
           method === 'GET' ? undefined : 'user-approval',
+        brilo_api_change: (input) =>
+          resolveBriloChange(user, input).ok ? 'user-approval' : undefined,
       },
       experimental_toolApprovalSecret: approvalSecret(),
       stopWhen: sdk.ai.isStepCount(MAX_STEPS),

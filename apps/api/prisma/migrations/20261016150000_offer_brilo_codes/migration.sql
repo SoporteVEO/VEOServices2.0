@@ -1,0 +1,9 @@
+-- AlterEnum
+ALTER TYPE "OfferEventType" ADD VALUE 'BRILO_COTIZACION_CREATED';
+ALTER TYPE "OfferEventType" ADD VALUE 'BRILO_COTIZACION_FAILED';
+ALTER TYPE "OfferEventType" ADD VALUE 'BRILO_CONTRATO_CREATED';
+ALTER TYPE "OfferEventType" ADD VALUE 'BRILO_CONTRATO_FAILED';
+
+-- AlterTable
+ALTER TABLE "offers_created" ADD COLUMN     "brilo_mcon_codigo" TEXT,
+ADD COLUMN     "brilo_mcot_numero" TEXT;

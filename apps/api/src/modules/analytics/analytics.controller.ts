@@ -10,6 +10,7 @@ import { PrintingOverviewQueryDto } from './dto/printing-overview-query.dto.js';
 import { ReportsOverviewQueryDto } from './dto/reports-overview-query.dto.js';
 import { SalesByCostCenterQueryDto } from './dto/sales-by-cost-center-query.dto.js';
 import { UserAppUsageQueryDto } from './dto/user-app-usage-query.dto.js';
+import { OfferEditsAnalyticsService } from './services/offer-edits-analytics.service.js';
 import { OffersAnalyticsService } from './services/offers-analytics.service.js';
 import { PrintingAnalyticsService } from './services/printing-analytics.service.js';
 import { ReportsAnalyticsService } from './services/reports-analytics.service.js';
@@ -26,6 +27,7 @@ export class AnalyticsController {
     private readonly userMetricsService: UserMetricsService,
     private readonly salesByCostCenterService: SalesByCostCenterService,
     private readonly offersAnalyticsService: OffersAnalyticsService,
+    private readonly offerEditsAnalyticsService: OfferEditsAnalyticsService,
     private readonly reportsAnalyticsService: ReportsAnalyticsService,
     private readonly printingAnalyticsService: PrintingAnalyticsService,
   ) {}
@@ -98,6 +100,18 @@ export class AnalyticsController {
       pageSize,
     });
     return data;
+  }
+
+  @RequiredRoles('ADMIN')
+  @Get('offers-overview/edits')
+  async offerEditsOverview(@Query() query: OffersOverviewQueryDto) {
+    const { from, to } = parseExclusiveRange(query);
+    const data = await this.offerEditsAnalyticsService.getOverview({
+      from,
+      to,
+      userId: query.userId?.trim() || null,
+    });
+    return { data };
   }
 
   @RequiredRoles('ADMIN')

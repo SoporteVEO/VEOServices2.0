@@ -8,6 +8,8 @@ import {
   formatDimensions,
   formatMoney,
 } from "@/lib/format";
+import { priceDiscount } from "./quotation/offer-discounts";
+import { PriceDiscountHint } from "./quotation/price-discount-hint";
 
 export const MY_OFFER_ITEMS_COLUMNS: ColumnDef<OfferDetailItem>[] = [
   {
@@ -65,6 +67,12 @@ export const MY_OFFER_ITEMS_COLUMNS: ColumnDef<OfferDetailItem>[] = [
     cell: ({ row }) => (
       <div className="whitespace-nowrap text-right text-xs font-medium tabular-nums">
         {formatMoney(row.original.rentalPrice)}
+        <PriceDiscountHint
+          discount={priceDiscount(
+            row.original.listRentalPrice,
+            row.original.rentalPrice,
+          )}
+        />
       </div>
     ),
   },
@@ -74,6 +82,12 @@ export const MY_OFFER_ITEMS_COLUMNS: ColumnDef<OfferDetailItem>[] = [
     cell: ({ row }) => (
       <div className="whitespace-nowrap text-right text-xs font-medium tabular-nums">
         {formatMoney(row.original.impressionPrice)}
+        <PriceDiscountHint
+          discount={priceDiscount(
+            row.original.listImpressionPrice,
+            row.original.impressionPrice,
+          )}
+        />
       </div>
     ),
   },

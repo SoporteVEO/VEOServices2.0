@@ -1,5 +1,7 @@
+import { MaintenanceJobKind } from '@prisma/client';
 import {
   IsBoolean,
+  IsEnum,
   IsHexColor,
   IsOptional,
   IsString,
@@ -8,6 +10,10 @@ import {
 } from 'class-validator';
 
 export class CreateMaintenanceCategoryDto {
+  @IsOptional()
+  @IsEnum(MaintenanceJobKind)
+  kind?: MaintenanceJobKind;
+
   @IsString()
   @MinLength(2)
   @MaxLength(60)

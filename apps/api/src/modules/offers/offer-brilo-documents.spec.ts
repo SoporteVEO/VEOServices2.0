@@ -6,6 +6,40 @@ import {
   matchExecutivesByName,
   type BriloExecutiveOption,
 } from './offer-brilo-documents';
+import { rentalPeriods } from './offer-contract';
+
+describe('rentalPeriods', () => {
+  const months = (start: string, end: string) =>
+    rentalPeriods(
+      new Date(`${start}T12:00:00.000Z`),
+      new Date(`${end}T12:00:00.000Z`),
+    );
+
+  it('counts calendar months the way Brilo contracts are written', () => {
+    expect(months('2026-10-16', '2026-11-15')).toBe(1);
+    expect(months('2026-10-01', '2026-10-31')).toBe(1);
+    expect(months('2026-10-15', '2026-12-14')).toBe(2);
+    expect(months('2026-10-21', '2027-01-20')).toBe(3);
+    expect(months('2026-10-26', '2027-03-25')).toBe(5);
+  });
+
+  it('ignores a few extra days but bills more than half a month', () => {
+    expect(months('2026-10-15', '2026-12-15')).toBe(2);
+    expect(months('2026-11-01', '2027-04-01')).toBe(5);
+    expect(months('2026-10-01', '2026-11-15')).toBe(1);
+    expect(months('2026-10-01', '2026-11-16')).toBe(2);
+  });
+
+  it('never bills less than one month', () => {
+    expect(months('2026-10-01', '2026-10-05')).toBe(1);
+    expect(rentalPeriods(null, null)).toBe(1);
+  });
+
+  it('clamps month ends', () => {
+    expect(months('2026-01-31', '2026-02-27')).toBe(1);
+    expect(months('2026-01-31', '2026-03-30')).toBe(2);
+  });
+});
 
 const executives: BriloExecutiveOption[] = [
   { ejecId: 22, ejecCodigo: '019', ejecNombre: 'Luis Segovia ' },
@@ -46,6 +80,17 @@ describe('Brilo documents', () => {
 
   it('splits the period rent into the monthly amount Brilo bills', () => {
     expect(briloMonthlyRent(staticItem)).toBe(300);
+  });
+
+  it('sends the whole offer rent as the monthly rate for a one-month contract', () => {
+    expect(
+      briloMonthlyRent({
+        ...staticItem,
+        rentalPrice: 700,
+        startDate: new Date('2026-10-16T12:00:00.000Z'),
+        endDate: new Date('2026-11-15T12:00:00.000Z'),
+      }),
+    ).toBe(700);
   });
 
   it('only sends static billboards with a Brilo face', () => {

@@ -162,12 +162,15 @@ function MyOfferDetailContent({
   );
 
   const canEdit = offer.canEdit && !readOnly;
+  const briloDocumentsCreated =
+    offer.status === "ACCEPTED" && offer.briloSyncStatus != null;
 
   const isDirty = useMemo(() => {
     if (status !== offer.status) return true;
+    if (briloDocumentsCreated) return false;
     const currentMconId = linkedContract?.mconId ?? null;
     return currentMconId !== offer.briloMconId;
-  }, [status, linkedContract, offer]);
+  }, [status, linkedContract, offer, briloDocumentsCreated]);
 
   function handleStatusChange(next: OfferStatus) {
     if (next === "ACCEPTED" && offer.status !== "ACCEPTED") {
@@ -357,7 +360,18 @@ function MyOfferDetailContent({
                 </Select>
               </div>
 
-              {status === "ACCEPTED" ? (
+              {status === "ACCEPTED" && briloDocumentsCreated ? (
+                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                  <InfoCard
+                    label="Cotización Brilo"
+                    value={offer.briloMcotNumero}
+                  />
+                  <InfoCard
+                    label="Contrato Brilo"
+                    value={offer.briloMconCodigo}
+                  />
+                </div>
+              ) : status === "ACCEPTED" ? (
                 <BriloContractCombobox
                   label="Contrato Brilo vinculado"
                   value={linkedContract?.mconId ?? null}

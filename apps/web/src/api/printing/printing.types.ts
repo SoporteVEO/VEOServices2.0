@@ -104,6 +104,8 @@ export interface PrintBacklogItem {
   customerName: string;
   customerCompany: string | null;
   areaM2: number;
+  /** Set when the salesperson asked production to move this billboard. */
+  pendingReschedule: { isUrgent: boolean; preferredDate: string | null } | null;
   createdAt: string;
 }
 

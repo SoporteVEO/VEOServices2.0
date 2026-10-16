@@ -8,14 +8,17 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
+import { MaintenanceJobKind } from '@prisma/client';
 import { CurrentUser, RequiredSubRoles } from '../auth/decorators.js';
 import {
   CreateMaintenanceCategoryDto,
   UpdateMaintenanceCategoryDto,
 } from './dto/maintenance-category.dto.js';
 import {
+  AddMaintenanceCommentDto,
   CreateMaintenanceJobDto,
   ListMaintenanceJobsQueryDto,
+  MaintenanceKindQueryDto,
   UpdateMaintenanceJobDto,
 } from './dto/maintenance-job.dto.js';
 import { MaintenanceCategoriesService } from './maintenance-categories.service.js';
@@ -27,10 +30,11 @@ interface AuthUser {
 }
 
 /**
- * The Mantenimiento module. Gated on the MANTENIMIENTO sub-role, which is the
- * permission a dashboard user needs to assign and supervise work orders. The
- * technicians who execute them hold the MANTENIMIENTO *role* instead and are
- * served by `MaintenancePortalController`.
+ * The Mantenimiento module, for both static billboards and Pantallas (picked
+ * with `kind`). Gated on the MANTENIMIENTO sub-role, which is the permission a
+ * dashboard user needs to assign and supervise work orders. The technicians
+ * who execute them hold a maintenance *role* instead and are served by
+ * `MaintenancePortalController`.
  */
 @Controller('maintenance')
 @RequiredSubRoles('MANTENIMIENTO')
@@ -83,6 +87,22 @@ export class MaintenanceController {
     return { data };
   }
 
+  @Patch('jobs/:id/close')
+  async closeJob(@Param('id') id: string, @CurrentUser() user: AuthUser) {
+    const data = await this.jobs.close(id, user.id);
+    return { data };
+  }
+
+  @Post('jobs/:id/comments')
+  async addComment(
+    @Param('id') id: string,
+    @Body() dto: AddMaintenanceCommentDto,
+    @CurrentUser() user: AuthUser,
+  ) {
+    const data = await this.jobs.addComment(id, user.id, dto);
+    return { data };
+  }
+
   @Post('photos/:photoId/publish')
   async publishPhoto(
     @Param('photoId') photoId: string,
@@ -102,14 +122,22 @@ export class MaintenanceController {
   }
 
   @Get('technicians')
-  async listTechnicians() {
-    const data = await this.jobs.listTechnicians();
+  async listTechnicians(@Query() query: MaintenanceKindQueryDto) {
+    const data = await this.jobs.listTechnicians(
+      query.kind ?? MaintenanceJobKind.STATIC,
+    );
     return { data };
   }
 
   @Get('categories')
-  async listCategories(@Query('includeArchived') includeArchived?: string) {
-    const data = await this.categories.list(includeArchived === 'true');
+  async listCategories(
+    @Query() query: MaintenanceKindQueryDto,
+    @Query('includeArchived') includeArchived?: string,
+  ) {
+    const data = await this.categories.list(
+      query.kind ?? MaintenanceJobKind.STATIC,
+      includeArchived === 'true',
+    );
     return { data };
   }
 
@@ -134,8 +162,16 @@ export class MaintenanceController {
   }
 
   @Get('overview')
-  async getOverview(@Query('from') from?: string, @Query('to') to?: string) {
-    const data = await this.stats.getOverview({ from, to });
+  async getOverview(
+    @Query() query: MaintenanceKindQueryDto,
+    @Query('from') from?: string,
+    @Query('to') to?: string,
+  ) {
+    const data = await this.stats.getOverview({
+      kind: query.kind ?? MaintenanceJobKind.STATIC,
+      from,
+      to,
+    });
     return { data };
   }
 }

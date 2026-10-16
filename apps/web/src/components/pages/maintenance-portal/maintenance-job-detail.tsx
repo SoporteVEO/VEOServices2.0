@@ -7,18 +7,22 @@ import {
   CheckCircle2,
   ExternalLink,
   MapPin,
+  MonitorPlay,
   PlayCircle,
   Ruler,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useMyMaintenanceJob } from "@/api/maintenance/maintenance.get";
 import {
+  useAddMyMaintenanceComment,
   useCompleteMaintenanceJob,
   useStartMaintenanceJob,
   useUploadMaintenancePhoto,
 } from "@/api/maintenance/maintenance.mutations";
 import type { MaintenanceJob } from "@/api/maintenance/maintenance.types";
 import { MaintenanceCategoryBadge } from "@/components/pages/maintenance/maintenance-category-badge";
+import { MaintenanceCommentsSection } from "@/components/pages/maintenance/maintenance-comments-section";
+import { jobTargetLabel } from "@/components/pages/maintenance/maintenance-const";
 import { MaintenanceStatusBadge } from "@/components/pages/maintenance/maintenance-status-badge";
 import { Button } from "@/components/primitives/ui/button";
 import { Skeleton } from "@/components/primitives/ui/skeleton";
@@ -26,7 +30,10 @@ import { PendingBar } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { formatBriloShortDate, formatDimensions } from "@/lib/format";
 import { googleMapsUrl, openStreetMapEmbedUrl } from "@/lib/installer-portal";
-import { FieldOrderKindBadge } from "@/components/pages/field-portal/field-order-kind-badge";
+import {
+  FieldOrderKindBadge,
+  maintenanceOrderKind,
+} from "@/components/pages/field-portal/field-order-kind-badge";
 import { FieldPortalShell } from "@/components/pages/field-portal/field-portal-shell";
 import { FIELD_PORTAL_BASE } from "@/lib/portal-access";
 import { MaintenancePhotoUploader } from "./maintenance-photo-uploader";
@@ -91,24 +98,29 @@ function JobView({ job }: { job: MaintenanceJob }) {
   const startJob = useStartMaintenanceJob();
   const completeJob = useCompleteMaintenanceJob();
   const uploadPhoto = useUploadMaintenancePhoto();
+  const addComment = useAddMyMaintenanceComment();
   const [notes, setNotes] = useState("");
 
   const location = [job.address, job.cityName, job.departmentName]
     .filter(Boolean)
     .join(", ");
   const mapsUrl = googleMapsUrl(job.latitude, job.longitude, location);
-  const isClosed = job.status === "COMPLETED" || job.status === "CANCELLED";
+  const isClosed =
+    job.status === "COMPLETED" ||
+    job.status === "CLOSED" ||
+    job.status === "CANCELLED";
+  const placeNoun = job.kind === "DIGITAL" ? "pantalla" : "valla";
 
   return (
     <FieldPortalShell
-      title={job.billboardCode ?? job.code}
+      title={jobTargetLabel(job) ?? job.code}
       subtitle={`${job.code} · ${formatBriloShortDate(job.scheduledAt)}`}
       backHref={FIELD_PORTAL_BASE}
     >
       <div className="flex flex-col gap-4">
         <section className="rounded-xl border bg-card p-4">
           <div className="flex flex-wrap items-center gap-2">
-            <FieldOrderKindBadge kind="maintenance" />
+            <FieldOrderKindBadge kind={maintenanceOrderKind(job.kind)} />
             <MaintenanceStatusBadge status={job.status} />
             <MaintenanceCategoryBadge category={job.category} />
             {job.isOverdue ? (
@@ -131,11 +143,19 @@ function JobView({ job }: { job: MaintenanceJob }) {
               label="Fecha programada"
               value={formatBriloShortDate(job.scheduledAt)}
             />
-            <DetailRow
-              icon={Ruler}
-              label="Medidas"
-              value={`${formatDimensions(job.width, job.height)} m`}
-            />
+            {job.kind === "DIGITAL" ? (
+              <DetailRow
+                icon={MonitorPlay}
+                label="Pantalla"
+                value={jobTargetLabel(job) ?? "—"}
+              />
+            ) : (
+              <DetailRow
+                icon={Ruler}
+                label="Medidas"
+                value={`${formatDimensions(job.width, job.height)} m`}
+              />
+            )}
           </dl>
         </section>
 
@@ -154,7 +174,7 @@ function JobView({ job }: { job: MaintenanceJob }) {
           {job.latitude != null && job.longitude != null ? (
             <div className="mt-3 overflow-hidden rounded-lg border">
               <iframe
-                title="Mapa de la valla"
+                title={`Mapa de la ${placeNoun}`}
                 src={openStreetMapEmbedUrl(job.latitude, job.longitude)}
                 className="h-48 w-full"
                 loading="lazy"
@@ -162,7 +182,7 @@ function JobView({ job }: { job: MaintenanceJob }) {
             </div>
           ) : (
             <p className="mt-3 rounded-lg border border-dashed p-3 text-xs text-muted-foreground">
-              No hay coordenadas registradas para esta valla.
+              No hay coordenadas registradas para esta {placeNoun}.
             </p>
           )}
 
@@ -207,8 +227,8 @@ function JobView({ job }: { job: MaintenanceJob }) {
         {isClosed ? null : (
           <MaintenancePhotoUploader
             isBusy={uploadPhoto.isPending}
-            onUpload={(imageBase64) =>
-              uploadPhoto.mutateAsync({ id: job.id, imageBase64 })
+            onUpload={(imageBase64, note) =>
+              uploadPhoto.mutateAsync({ id: job.id, imageBase64, note })
             }
           />
         )}
@@ -224,7 +244,7 @@ function JobView({ job }: { job: MaintenanceJob }) {
                   <div className="relative aspect-square overflow-hidden rounded-lg border bg-muted">
                     <Image
                       src={photo.url}
-                      alt="Evidencia de mantenimiento"
+                      alt={photo.note ?? "Evidencia de mantenimiento"}
                       fill
                       unoptimized
                       className="object-cover"
@@ -233,12 +253,25 @@ function JobView({ job }: { job: MaintenanceJob }) {
                   </div>
                   <figcaption className="text-[11px] text-muted-foreground">
                     {formatBriloShortDate(photo.createdAt)}
+                    {photo.note ? (
+                      <span className="block whitespace-pre-wrap text-foreground">
+                        {photo.note}
+                      </span>
+                    ) : null}
                   </figcaption>
                 </figure>
               ))}
             </div>
           </section>
         ) : null}
+
+        <MaintenanceCommentsSection
+          className="rounded-xl border bg-card p-4"
+          comments={job.comments}
+          isPending={addComment.isPending}
+          readOnly={job.status === "CANCELLED" || job.status === "CLOSED"}
+          onSubmit={(body) => addComment.mutateAsync({ id: job.id, body })}
+        />
 
         {job.status === "IN_PROGRESS" ? (
           <section className="rounded-xl border bg-card p-4">
@@ -283,7 +316,7 @@ function JobView({ job }: { job: MaintenanceJob }) {
           </section>
         ) : null}
 
-        {job.status === "COMPLETED" ? (
+        {job.status === "COMPLETED" || job.status === "CLOSED" ? (
           <section className="rounded-xl border border-emerald-500/40 bg-emerald-500/5 p-4">
             <p className="flex items-center gap-2 text-sm font-medium text-emerald-700 dark:text-emerald-400">
               <CheckCircle2 className="size-4" aria-hidden />

@@ -51,7 +51,7 @@ export function groupFieldOrders(
   }
 
   for (const job of jobs) {
-    if (job.status === "CANCELLED") continue;
+    if (job.status === "CANCELLED" || job.status === "CLOSED") continue;
     const order: FieldOrder = {
       kind: "maintenance",
       id: job.id,

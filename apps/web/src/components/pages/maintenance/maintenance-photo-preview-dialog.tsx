@@ -29,6 +29,8 @@ type Props = {
   photo: MaintenancePhoto | null;
   jobCode: string;
   billboardCode: string | null;
+  /** The Imágenes module only groups static billboards. */
+  canPublish?: boolean;
   onOpenChange: (open: boolean) => void;
 };
 
@@ -36,6 +38,7 @@ export function MaintenancePhotoPreviewDialog({
   photo,
   jobCode,
   billboardCode,
+  canPublish = true,
   onOpenChange,
 }: Props) {
   return (
@@ -54,6 +57,7 @@ export function MaintenancePhotoPreviewDialog({
             photo={photo}
             jobCode={jobCode}
             billboardCode={billboardCode}
+            canPublish={canPublish}
           />
         ) : null}
       </DialogContent>
@@ -65,10 +69,12 @@ function PreviewBody({
   photo,
   jobCode,
   billboardCode,
+  canPublish,
 }: {
   photo: MaintenancePhoto;
   jobCode: string;
   billboardCode: string | null;
+  canPublish: boolean;
 }) {
   const [isDownloading, setIsDownloading] = useState(false);
   const publish = usePublishMaintenancePhoto();
@@ -174,7 +180,7 @@ function PreviewBody({
             {isDownloading ? "Descargando..." : "Descargar"}
           </Button>
 
-          {isPublished ? (
+          {!canPublish ? null : isPublished ? (
             <>
               <div className="flex items-center justify-center gap-2 rounded-md border border-emerald-500/50 bg-emerald-500/10 px-3 py-2 text-sm font-medium text-emerald-700 dark:text-emerald-400">
                 <Check className="size-4" aria-hidden />
@@ -205,10 +211,12 @@ function PreviewBody({
             </Button>
           )}
 
-          <p className="text-center text-[11px] text-muted-foreground">
-            Se guarda como &ldquo;Imagen de mantenimiento de valla&rdquo; a
-            nombre de quien tomó la foto.
-          </p>
+          {canPublish ? (
+            <p className="text-center text-[11px] text-muted-foreground">
+              Se guarda como &ldquo;Imagen de mantenimiento de valla&rdquo; a
+              nombre de quien tomó la foto.
+            </p>
+          ) : null}
         </div>
       </aside>
     </div>

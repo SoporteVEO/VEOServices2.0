@@ -8,59 +8,62 @@ datasource db {
 }
 
 model User {
-  id                     String                 @id
-  publicId               String                 @unique @default(uuid()) @map("public_id")
-  firstName              String                 @map("first_name")
-  lastName               String?                @map("last_name")
-  email                  String                 @unique
-  role                   Role                   @default(USER)
-  subRoles               SubRole[]              @default([]) @map("sub_roles")
-  disabled               Boolean                @default(false)
-  lastLoginAt            DateTime?              @map("last_login_at")
-  createdAt              DateTime               @default(now())
-  updatedAt              DateTime               @updatedAt
-  emailVerified          Boolean                @default(false)
-  image                  String?
-  accounts               Account[]
-  sessions               Session[]
-  s3Images               S3Image[]
-  teamMember             TeamMember?            @relation("TeamMemberUser")
-  teamMembersAsBoss      TeamMember[]           @relation("TeamMemberDirectBoss")
-  absences               Absence[]
-  notifications          Notification[]
-  metrics                UserMetrics?
-  metricsDays            UserMetricsDay[]
-  offersCreated          OfferCreated[]
-  installationsAssigned  ProductionOrderItem[]  @relation("ProductionOrderInstaller")
-  vulcanizadosAssigned   ProductionOrderItem[]  @relation("ProductionOrderVulcanizador")
-  fleetVehiclesCreated   FleetVehicle[]         @relation("FleetVehicleCreatedBy")
-  fleetServicesCreated   FleetMaintenance[]     @relation("FleetMaintenanceCreatedBy")
-  printJobsCreated       PrintJob[]             @relation("PrintJobCreatedBy")
-  printColorTestsCreated PrintColorTest[]       @relation("PrintColorTestCreatedBy")
-  maintenanceAssigned    MaintenanceJob[]       @relation("MaintenanceAssignee")
-  maintenanceCreated     MaintenanceJob[]       @relation("MaintenanceCreatedBy")
-  maintenancePhotos      MaintenancePhoto[]     @relation("MaintenancePhotoUploader")
-  maintenanceEvents      MaintenanceEvent[]     @relation("MaintenanceEventActor")
-  offerEvents            OfferEvent[]           @relation("OfferEventActor")
-  productionOrders       ProductionOrder[]      @relation("ProductionOrderCreatedBy")
-  pushSubscriptions      PushSubscription[]
-  agentThreads           AgentThread[]
-  agentIssuesReported    AgentIssue[]           @relation("AgentIssueReporter")
-  agentIssuesResolved    AgentIssue[]           @relation("AgentIssueResolver")
-  agentFeedback          AgentFeedback[]        @relation("AgentFeedbackAuthor")
-  agentFeedbackReviewed  AgentFeedback[]        @relation("AgentFeedbackReviewer")
-  learningsProposed      AgentLearning[]        @relation("AgentLearningProposer")
-  learningsReviewed      AgentLearning[]        @relation("AgentLearningReviewer")
-  crmDealsOwned          CrmDeal[]              @relation("CrmDealOwner")
-  crmDealsCreated        CrmDeal[]              @relation("CrmDealCreatedBy")
-  crmActivities          CrmActivity[]          @relation("CrmActivityActor")
-  crmTasksAssigned       CrmTask[]              @relation("CrmTaskAssignee")
-  crmTasksCreated        CrmTask[]              @relation("CrmTaskCreatedBy")
-  crmEmailTemplates      CrmEmailTemplate[]
-  crmMessages            CrmMessage[]
-  crmConnections         CrmChannelConnection[]
-  crmDealSites           CrmDealSite[]          @relation("CrmDealSiteCreatedBy")
-  patchNotesCreated      PatchNote[]            @relation("PatchNoteCreatedBy")
+  id                      String                   @id
+  publicId                String                   @unique @default(uuid()) @map("public_id")
+  firstName               String                   @map("first_name")
+  lastName                String?                  @map("last_name")
+  email                   String                   @unique
+  role                    Role                     @default(USER)
+  subRoles                SubRole[]                @default([]) @map("sub_roles")
+  disabled                Boolean                  @default(false)
+  lastLoginAt             DateTime?                @map("last_login_at")
+  createdAt               DateTime                 @default(now())
+  updatedAt               DateTime                 @updatedAt
+  emailVerified           Boolean                  @default(false)
+  image                   String?
+  accounts                Account[]
+  sessions                Session[]
+  s3Images                S3Image[]
+  teamMember              TeamMember?              @relation("TeamMemberUser")
+  teamMembersAsBoss       TeamMember[]             @relation("TeamMemberDirectBoss")
+  absences                Absence[]
+  notifications           Notification[]
+  metrics                 UserMetrics?
+  metricsDays             UserMetricsDay[]
+  offersCreated           OfferCreated[]
+  installationsAssigned   ProductionOrderItem[]    @relation("ProductionOrderInstaller")
+  vulcanizadosAssigned    ProductionOrderItem[]    @relation("ProductionOrderVulcanizador")
+  fleetVehiclesCreated    FleetVehicle[]           @relation("FleetVehicleCreatedBy")
+  fleetServicesCreated    FleetMaintenance[]       @relation("FleetMaintenanceCreatedBy")
+  printJobsCreated        PrintJob[]               @relation("PrintJobCreatedBy")
+  printColorTestsCreated  PrintColorTest[]         @relation("PrintColorTestCreatedBy")
+  printRescheduleRequests PrintRescheduleRequest[] @relation("PrintRescheduleRequestedBy")
+  printRescheduleResolved PrintRescheduleRequest[] @relation("PrintRescheduleResolvedBy")
+  maintenanceAssigned     MaintenanceJob[]         @relation("MaintenanceAssignee")
+  maintenanceCreated      MaintenanceJob[]         @relation("MaintenanceCreatedBy")
+  maintenancePhotos       MaintenancePhoto[]       @relation("MaintenancePhotoUploader")
+  maintenanceEvents       MaintenanceEvent[]       @relation("MaintenanceEventActor")
+  maintenanceComments     MaintenanceComment[]     @relation("MaintenanceCommentAuthor")
+  offerEvents             OfferEvent[]             @relation("OfferEventActor")
+  productionOrders        ProductionOrder[]        @relation("ProductionOrderCreatedBy")
+  pushSubscriptions       PushSubscription[]
+  agentThreads            AgentThread[]
+  agentIssuesReported     AgentIssue[]             @relation("AgentIssueReporter")
+  agentIssuesResolved     AgentIssue[]             @relation("AgentIssueResolver")
+  agentFeedback           AgentFeedback[]          @relation("AgentFeedbackAuthor")
+  agentFeedbackReviewed   AgentFeedback[]          @relation("AgentFeedbackReviewer")
+  learningsProposed       AgentLearning[]          @relation("AgentLearningProposer")
+  learningsReviewed       AgentLearning[]          @relation("AgentLearningReviewer")
+  crmDealsOwned           CrmDeal[]                @relation("CrmDealOwner")
+  crmDealsCreated         CrmDeal[]                @relation("CrmDealCreatedBy")
+  crmActivities           CrmActivity[]            @relation("CrmActivityActor")
+  crmTasksAssigned        CrmTask[]                @relation("CrmTaskAssignee")
+  crmTasksCreated         CrmTask[]                @relation("CrmTaskCreatedBy")
+  crmEmailTemplates       CrmEmailTemplate[]
+  crmMessages             CrmMessage[]
+  crmConnections          CrmChannelConnection[]
+  crmDealSites            CrmDealSite[]            @relation("CrmDealSiteCreatedBy")
+  patchNotesCreated       PatchNote[]              @relation("PatchNoteCreatedBy")
 
   @@map("users")
 }
@@ -491,13 +494,14 @@ model DigitalBillboard {
   lastChangeAction String?   @map("last_change_action")
   lastChangeAt     DateTime? @map("last_change_at")
 
-  createdAt     DateTime                  @default(now())
-  updatedAt     DateTime                  @updatedAt
-  sublists      DigitalBillboardSublist[]
-  offerItems    OfferCreatedItem[]
-  image         Image?                    @relation(fields: [imageId], references: [id])
-  purchaseItems PurchaseItem[]
-  crmDealSites  CrmDealSite[]
+  createdAt       DateTime                  @default(now())
+  updatedAt       DateTime                  @updatedAt
+  sublists        DigitalBillboardSublist[]
+  offerItems      OfferCreatedItem[]
+  image           Image?                    @relation(fields: [imageId], references: [id])
+  purchaseItems   PurchaseItem[]
+  crmDealSites    CrmDealSite[]
+  maintenanceJobs MaintenanceJob[]
 
   @@map("digital_billboards")
 }
@@ -639,6 +643,7 @@ enum Role {
   WORKER
   MANTENIMIENTO
   INSTALLER_MANTENIMIENTO
+  MANTENIMIENTO_PANTALLAS
 }
 
 enum SubRole {
@@ -650,6 +655,9 @@ enum SubRole {
   PANTALLAS_COMERCIAL
   DESARROLLADOR
   VENTAS
+  CONTABILIDAD
+  FINANZAS
+  FACTURACION
 }
 
 enum AgentIssueStatus {
@@ -849,8 +857,11 @@ model OfferCreated {
   advisorFullName    String?            @map("advisor_full_name")
   status             OfferStatus        @default(PENDING)
   briloMconId        Int?               @map("brilo_mcon_id")
+  /// Code users know the contract by (e.g. CON0626/26).
+  briloMconCodigo    String?            @map("brilo_mcon_codigo")
   /// Brilo cotización created from the static lines when the offer is accepted.
   briloMcotId        Int?               @map("brilo_mcot_id")
+  briloMcotNumero    String?            @map("brilo_mcot_numero")
   briloCliId         Int?               @map("brilo_cli_id")
   briloEjecId        Int?               @map("brilo_ejec_id")
   briloSyncStatus    BriloSyncStatus?   @map("brilo_sync_status")
@@ -891,6 +902,21 @@ enum OfferEventType {
   REOPENED
   BRILO_SYNCED
   BRILO_SYNC_FAILED
+  BRILO_COTIZACION_CREATED
+  BRILO_COTIZACION_FAILED
+  BRILO_CONTRATO_CREATED
+  BRILO_CONTRATO_FAILED
+}
+
+enum OfferEditReason {
+  CLIENT_BUDGET
+  CAMPAIGN_SCOPE
+  AVAILABILITY
+  LOCATION
+  PRICE_NEGOTIATION
+  CAMPAIGN_DATES
+  CORRECTION
+  OTHER
 }
 
 /// Append-only audit trail for offers. Powers the "Historial" tab and answers
@@ -907,6 +933,16 @@ model OfferEvent {
   /// that carry no before/after value (creation, PDF replacement).
   changes Json?
 
+  /// Why the seller edited the offer. Required whenever billboards were added
+  /// or removed, so analytics can explain shrinking or growing campaigns.
+  editReason       OfferEditReason? @map("edit_reason")
+  editReasonNote   String?          @map("edit_reason_note")
+  /// Billboard lines (static + digital) and grand total around a content edit.
+  billboardsBefore Int?             @map("billboards_before")
+  billboardsAfter  Int?             @map("billboards_after")
+  amountBefore     Float?           @map("amount_before")
+  amountAfter      Float?           @map("amount_after")
+
   actorUserId String? @map("actor_user_id")
   actor       User?   @relation("OfferEventActor", fields: [actorUserId], references: [id], onDelete: SetNull)
 
@@ -914,6 +950,7 @@ model OfferEvent {
 
   @@index([offerId, createdAt])
   @@index([type, createdAt])
+  @@index([editReason, createdAt])
   @@map("offer_events")
 }
 
@@ -932,6 +969,10 @@ model OfferCreatedItem {
   quantity            Int                        @default(1)
   impressionPrice     Float                      @map("impression_price")
   rentalPrice         Float                      @map("rental_price")
+  /// Recommended unit prices (Brilo catalog rate for the period, impression by
+  /// area) the seller started from; the gap to the charged price is the discount.
+  listImpressionPrice Float?                     @map("list_impression_price")
+  listRentalPrice     Float?                     @map("list_rental_price")
   taxRate             Float                      @default(0.13) @map("tax_rate")
   description         String?
   digitalBillboardId  String?                    @map("digital_billboard_id")
@@ -1051,6 +1092,40 @@ model PrintJob {
   @@map("print_jobs")
 }
 
+enum PrintRescheduleStatus {
+  PENDING
+  RESOLVED
+  REJECTED
+  CANCELLED
+}
+
+/// A salesperson asking production to move (usually advance) the print of a
+/// billboard. Only one request per billboard may be PENDING at a time.
+model PrintRescheduleRequest {
+  id                    String                @id @default(uuid())
+  productionOrderItemId String                @map("production_order_item_id")
+  productionOrderItem   ProductionOrderItem   @relation(fields: [productionOrderItemId], references: [id], onDelete: Cascade)
+  status                PrintRescheduleStatus @default(PENDING)
+  isUrgent              Boolean               @default(false) @map("is_urgent")
+  /// Day the requester would like the billboard printed, if any.
+  preferredDate         DateTime?             @map("preferred_date")
+  reason                String
+  /// Print start the requester saw when asking, to tell whether it moved.
+  previousStartAt       DateTime?             @map("previous_start_at")
+  requestedByUserId     String                @map("requested_by_user_id")
+  requestedBy           User                  @relation("PrintRescheduleRequestedBy", fields: [requestedByUserId], references: [id], onDelete: Cascade)
+  resolvedByUserId      String?               @map("resolved_by_user_id")
+  resolvedBy            User?                 @relation("PrintRescheduleResolvedBy", fields: [resolvedByUserId], references: [id], onDelete: SetNull)
+  resolutionNote        String?               @map("resolution_note")
+  resolvedAt            DateTime?             @map("resolved_at")
+  createdAt             DateTime              @default(now())
+  updatedAt             DateTime              @updatedAt
+
+  @@index([productionOrderItemId, status])
+  @@index([status, createdAt])
+  @@map("print_reschedule_requests")
+}
+
 /// Either generated from an accepted offer (`offerId` set) or created by hand
 /// from the production module. Customer columns are copied on create in both
 /// cases, which is safe because an offer's content is frozen once accepted.
@@ -1075,41 +1150,42 @@ model ProductionOrder {
 }
 
 model ProductionOrderItem {
-  id                      String                @id @default(uuid())
-  productionOrderId       String                @map("production_order_id")
-  productionOrder         ProductionOrder       @relation(fields: [productionOrderId], references: [id], onDelete: Cascade)
-  offerItemId             String?               @unique @map("offer_item_id")
-  offerItem               OfferCreatedItem?     @relation(fields: [offerItemId], references: [id], onDelete: Cascade)
+  id                      String                   @id @default(uuid())
+  productionOrderId       String                   @map("production_order_id")
+  productionOrder         ProductionOrder          @relation(fields: [productionOrderId], references: [id], onDelete: Cascade)
+  offerItemId             String?                  @unique @map("offer_item_id")
+  offerItem               OfferCreatedItem?        @relation(fields: [offerItemId], references: [id], onDelete: Cascade)
   /// Brilo static billboard, copied on create like `MaintenanceJob`.
-  billboardId             Int?                  @map("billboard_id")
-  billboardCode           String?               @map("billboard_code")
+  billboardId             Int?                     @map("billboard_id")
+  billboardCode           String?                  @map("billboard_code")
   address                 String?
-  cityName                String?               @map("city_name")
-  departmentName          String?               @map("department_name")
+  cityName                String?                  @map("city_name")
+  departmentName          String?                  @map("department_name")
   width                   Float?
   height                  Float?
-  quantity                Int                   @default(1)
-  status                  ProductionOrderStatus @default(RECEIVED)
+  quantity                Int                      @default(1)
+  status                  ProductionOrderStatus    @default(RECEIVED)
   /// Deprecated: replaced by the per-billboard art. Kept read-only for older orders.
-  productionDocumentS3Key String?               @map("production_document_s3_key")
+  productionDocumentS3Key String?                  @map("production_document_s3_key")
   /// Deprecated: replaced by the per-billboard art. Kept read-only for older orders.
-  designDocumentS3Key     String?               @map("design_document_s3_key")
-  artS3Key                String?               @map("art_s3_key")
-  artFileName             String?               @map("art_file_name")
-  artMimeType             String?               @map("art_mime_type")
-  artUploadedAt           DateTime?             @map("art_uploaded_at")
-  assignedInstallerId     String?               @map("assigned_installer_id")
-  assignedInstaller       User?                 @relation("ProductionOrderInstaller", fields: [assignedInstallerId], references: [id], onDelete: SetNull)
-  assignedVulcanizadorId  String?               @map("assigned_vulcanizador_id")
-  assignedVulcanizador    User?                 @relation("ProductionOrderVulcanizador", fields: [assignedVulcanizadorId], references: [id], onDelete: SetNull)
-  scheduledInstallationAt DateTime?             @map("scheduled_installation_at")
-  installedAt             DateTime?             @map("installed_at")
-  vulcanizadoImageS3Key   String?               @map("vulcanizado_image_s3_key")
+  designDocumentS3Key     String?                  @map("design_document_s3_key")
+  artS3Key                String?                  @map("art_s3_key")
+  artFileName             String?                  @map("art_file_name")
+  artMimeType             String?                  @map("art_mime_type")
+  artUploadedAt           DateTime?                @map("art_uploaded_at")
+  assignedInstallerId     String?                  @map("assigned_installer_id")
+  assignedInstaller       User?                    @relation("ProductionOrderInstaller", fields: [assignedInstallerId], references: [id], onDelete: SetNull)
+  assignedVulcanizadorId  String?                  @map("assigned_vulcanizador_id")
+  assignedVulcanizador    User?                    @relation("ProductionOrderVulcanizador", fields: [assignedVulcanizadorId], references: [id], onDelete: SetNull)
+  scheduledInstallationAt DateTime?                @map("scheduled_installation_at")
+  installedAt             DateTime?                @map("installed_at")
+  vulcanizadoImageS3Key   String?                  @map("vulcanizado_image_s3_key")
   installationImages      S3Image[]
   printJobs               PrintJob[]
   colorTests              PrintColorTest[]
-  createdAt               DateTime              @default(now())
-  updatedAt               DateTime              @updatedAt
+  rescheduleRequests      PrintRescheduleRequest[]
+  createdAt               DateTime                 @default(now())
+  updatedAt               DateTime                 @updatedAt
 
   @@index([productionOrderId])
   @@index([status])
@@ -1118,10 +1194,21 @@ model ProductionOrderItem {
   @@map("production_order_items")
 }
 
+/// Which billboard catalog a job belongs to: Brilo static billboards or the
+/// Pantallas (DOOH) screens. Each kind has its own module, categories and
+/// technician role.
+enum MaintenanceJobKind {
+  STATIC
+  DIGITAL
+}
+
+/// COMPLETED is "Finalizada" (the technician finished); CLOSED is "Terminada"
+/// (a supervisor signed it off), which hides it from the working lists.
 enum MaintenanceJobStatus {
   PENDING
   IN_PROGRESS
   COMPLETED
+  CLOSED
   CANCELLED
 }
 
@@ -1133,39 +1220,49 @@ enum MaintenanceEventType {
   STARTED
   PHOTO_UPLOADED
   PHOTO_DELETED
+  COMMENTED
   COMPLETED
+  CLOSED
   REOPENED
   CANCELLED
 }
 
 /// User-managed tags for maintenance work, e.g. "Estructura", "Iluminación".
 model MaintenanceCategory {
-  id        String   @id @default(uuid())
-  name      String   @unique
+  id        String             @id @default(uuid())
+  kind      MaintenanceJobKind @default(STATIC)
+  name      String
   color     String?
-  archived  Boolean  @default(false)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  archived  Boolean            @default(false)
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
 
   jobs MaintenanceJob[]
 
+  @@unique([kind, name])
   @@index([archived])
   @@map("maintenance_categories")
 }
 
 model MaintenanceJob {
-  id   String @id @default(uuid())
-  code String @unique
+  id   String             @id @default(uuid())
+  code String             @unique
+  kind MaintenanceJobKind @default(STATIC)
 
-  /// Brilo static billboard. The descriptive columns are copied on create so
-  /// the job keeps reading correctly even if the catalog entry changes later.
-  billboardId    Int?    @map("billboard_id")
-  billboardCode  String? @map("billboard_code")
-  address        String?
-  cityName       String? @map("city_name")
-  departmentName String? @map("department_name")
-  width          Float?
-  height         Float?
+  /// Brilo static billboard (`billboardId`) or Pantallas screen
+  /// (`digitalBillboardId`), depending on `kind`. The descriptive columns are
+  /// copied on create so the job keeps reading correctly even if the catalog
+  /// entry changes later.
+  billboardId        Int?              @map("billboard_id")
+  digitalBillboardId String?           @map("digital_billboard_id")
+  digitalBillboard   DigitalBillboard? @relation(fields: [digitalBillboardId], references: [id], onDelete: SetNull)
+  billboardCode      String?           @map("billboard_code")
+  billboardName      String?           @map("billboard_name")
+  address            String?
+  cityName           String?           @map("city_name")
+  departmentName     String?           @map("department_name")
+  width              Float?
+  height             Float?
 
   categoryId String?              @map("category_id")
   category   MaintenanceCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
@@ -1179,6 +1276,7 @@ model MaintenanceJob {
 
   startedAt       DateTime? @map("started_at")
   completedAt     DateTime? @map("completed_at")
+  closedAt        DateTime? @map("closed_at")
   cancelledAt     DateTime? @map("cancelled_at")
   completionNotes String?   @map("completion_notes")
 
@@ -1188,15 +1286,35 @@ model MaintenanceJob {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  photos MaintenancePhoto[]
-  events MaintenanceEvent[]
+  photos   MaintenancePhoto[]
+  events   MaintenanceEvent[]
+  comments MaintenanceComment[]
 
   @@index([assignedUserId, status])
+  @@index([kind, status])
   @@index([status])
   @@index([scheduledAt])
   @@index([categoryId])
   @@index([billboardId])
+  @@index([digitalBillboardId])
   @@map("maintenance_jobs")
+}
+
+/// Free-form notes left on a job by the technician or a supervisor.
+model MaintenanceComment {
+  id    String         @id @default(uuid())
+  jobId String         @map("job_id")
+  job   MaintenanceJob @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  body String
+
+  authorUserId String? @map("author_user_id")
+  author       User?   @relation("MaintenanceCommentAuthor", fields: [authorUserId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+
+  @@index([jobId, createdAt])
+  @@map("maintenance_comments")
 }
 
 /// Proof-of-work photos. Deliberately kept out of `s3_images` so they never

@@ -1,4 +1,5 @@
 import type { AvailableBillboardListing } from "@/api/billboards/billboards.get";
+import { calculateRentalMonths } from "@/components/pages/my-space/quotation/offer-types";
 
 export const IVA_RATE = 0.13;
 export const IMPRESSION_RATE_PER_M2 = 13;
@@ -14,9 +15,9 @@ export interface QuotationItem {
   height: number | null;
   quantity: number;
   impressionPrice: number;
-  /** Per 30-day period base rate from the billboard catalog. */
+  /** Monthly base rate from the billboard catalog. */
   monthlyRentalPrice: number;
-  /** Total rental for the selected duration (monthlyRentalPrice × 30-day periods). */
+  /** Total rental for the selected duration (monthlyRentalPrice × months). */
   rentalPrice: number;
   startDate: Date | null;
   endDate: Date | null;
@@ -48,26 +49,7 @@ function round2(value: number): number {
   return Math.round(value * 100) / 100;
 }
 
-function stripTime(value: Date): Date {
-  return new Date(value.getFullYear(), value.getMonth(), value.getDate());
-}
-
-const MS_PER_DAY = 86_400_000;
-const RENTAL_PERIOD_DAYS = 30;
-
-/** Inclusive 30-day billing periods between start and end (minimum 1). */
-export function calculateRentalMonths(
-  startDate: Date | null,
-  endDate: Date | null,
-): number {
-  if (!startDate || !endDate) return 1;
-  const start = stripTime(startDate);
-  const end = stripTime(endDate);
-  if (end < start) return 1;
-  const inclusiveDays =
-    Math.ceil((end.getTime() - start.getTime()) / MS_PER_DAY) + 1;
-  return Math.max(1, Math.ceil(inclusiveDays / RENTAL_PERIOD_DAYS));
-}
+export { calculateRentalMonths };
 
 export function calculateRentalPrice(
   monthlyRentalPrice: number,

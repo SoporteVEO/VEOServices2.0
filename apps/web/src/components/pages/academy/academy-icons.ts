@@ -4,6 +4,7 @@ import {
   FileImage,
   Handshake,
   Kanban,
+  Landmark,
   Rocket,
   type LucideIcon,
 } from "lucide-react";
@@ -13,6 +14,7 @@ const CATEGORY_ICONS: Record<string, LucideIcon> = {
   handshake: Handshake,
   "file-image": FileImage,
   factory: Factory,
+  landmark: Landmark,
   kanban: Kanban,
   book: BookMarked,
 };

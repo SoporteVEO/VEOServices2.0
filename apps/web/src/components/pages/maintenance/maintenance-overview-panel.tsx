@@ -9,6 +9,7 @@ import {
   Timer,
 } from "lucide-react";
 import { useMaintenanceOverview } from "@/api/maintenance/maintenance.get";
+import type { MaintenanceJobKind } from "@/api/maintenance/maintenance.types";
 import { Badge } from "@/components/primitives/ui/badge";
 import { Skeleton } from "@/components/primitives/ui/skeleton";
 import {
@@ -22,8 +23,12 @@ import { cn } from "@/lib/utils";
  * Module-level analytics. Deliberately a compact summary rather than a full
  * report: the per-job breakdown lives in each order's Historial tab.
  */
-export function MaintenanceOverviewPanel() {
-  const { data: overview, isLoading } = useMaintenanceOverview({});
+export function MaintenanceOverviewPanel({
+  kind,
+}: {
+  kind: MaintenanceJobKind;
+}) {
+  const { data: overview, isLoading } = useMaintenanceOverview({ kind });
 
   if (isLoading) {
     return (

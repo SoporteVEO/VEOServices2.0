@@ -3,7 +3,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
+import { MaintenanceJobKind, Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service.js';
 import type {
   CreateMaintenanceCategoryDto,
@@ -12,6 +12,7 @@ import type {
 
 export interface MaintenanceCategoryDto {
   id: string;
+  kind: MaintenanceJobKind;
   name: string;
   color: string | null;
   archived: boolean;
@@ -23,21 +24,17 @@ export interface MaintenanceCategoryDto {
 export class MaintenanceCategoriesService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async list(includeArchived = false): Promise<MaintenanceCategoryDto[]> {
+  async list(
+    kind: MaintenanceJobKind,
+    includeArchived = false,
+  ): Promise<MaintenanceCategoryDto[]> {
     const rows = await this.prisma.maintenanceCategory.findMany({
-      where: includeArchived ? {} : { archived: false },
+      where: includeArchived ? { kind } : { kind, archived: false },
       include: { _count: { select: { jobs: true } } },
       orderBy: [{ archived: 'asc' }, { name: 'asc' }],
     });
 
-    return rows.map((row) => ({
-      id: row.id,
-      name: row.name,
-      color: row.color,
-      archived: row.archived,
-      jobCount: row._count.jobs,
-      createdAt: row.createdAt.toISOString(),
-    }));
+    return rows.map(mapCategory);
   }
 
   async create(
@@ -46,17 +43,14 @@ export class MaintenanceCategoriesService {
     const name = dto.name.trim();
     try {
       const created = await this.prisma.maintenanceCategory.create({
-        data: { name, color: dto.color ?? null },
+        data: {
+          kind: dto.kind ?? MaintenanceJobKind.STATIC,
+          name,
+          color: dto.color ?? null,
+        },
         include: { _count: { select: { jobs: true } } },
       });
-      return {
-        id: created.id,
-        name: created.name,
-        color: created.color,
-        archived: created.archived,
-        jobCount: created._count.jobs,
-        createdAt: created.createdAt.toISOString(),
-      };
+      return mapCategory(created);
     } catch (error) {
       if (isUniqueViolation(error)) {
         throw new ConflictException(`La categoría "${name}" ya existe`);
@@ -82,14 +76,7 @@ export class MaintenanceCategoriesService {
         data,
         include: { _count: { select: { jobs: true } } },
       });
-      return {
-        id: updated.id,
-        name: updated.name,
-        color: updated.color,
-        archived: updated.archived,
-        jobCount: updated._count.jobs,
-        createdAt: updated.createdAt.toISOString(),
-      };
+      return mapCategory(updated);
     } catch (error) {
       if (isUniqueViolation(error)) {
         throw new ConflictException('Ya existe una categoría con ese nombre');
@@ -129,6 +116,22 @@ export class MaintenanceCategoriesService {
     if (!found) throw new NotFoundException('Categoría no encontrada');
     return found;
   }
+}
+
+function mapCategory(
+  row: Prisma.MaintenanceCategoryGetPayload<{
+    include: { _count: { select: { jobs: true } } };
+  }>,
+): MaintenanceCategoryDto {
+  return {
+    id: row.id,
+    kind: row.kind,
+    name: row.name,
+    color: row.color,
+    archived: row.archived,
+    jobCount: row._count.jobs,
+    createdAt: row.createdAt.toISOString(),
+  };
 }
 
 function isUniqueViolation(error: unknown): boolean {

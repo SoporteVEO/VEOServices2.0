@@ -7,6 +7,7 @@ import { useOffersAnalyticsOverview } from "@/api/analytics/analytics.get";
 import { DateRangePicker } from "@/components/ui/date-range-picker";
 import { toYYYYMMDD } from "@/lib/format";
 import { AnalyticsUserFilter } from "./analytics-user-filter";
+import { OfferEditsAnalytics } from "./offer-edits-analytics";
 import { OffersAnalyticsCharts } from "./offers-analytics-charts";
 import { OffersAnalyticsKpis } from "./offers-analytics-kpis";
 import { OffersAnalyticsTables } from "./offers-analytics-tables";
@@ -72,6 +73,8 @@ export function OffersAnalyticsReport() {
         userId={userId}
         rangeReady={rangeReady}
       />
+
+      <OfferEditsAnalytics from={fromStr} to={toStr} userId={userId} />
     </div>
   );
 }

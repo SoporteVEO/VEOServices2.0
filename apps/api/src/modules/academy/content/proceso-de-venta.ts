@@ -159,6 +159,8 @@ El [contrato en Brilo](academy:contrato-en-brilo) se crea a nombre de un cliente
       'arrendamiento',
       'iva',
       'descuento',
+      'precio recomendado',
+      'precio de lista',
     ],
     modules: [
       { label: 'Abrir Vallas estáticas', href: '/dashboard/static-billboards' },
@@ -185,10 +187,10 @@ El [contrato en Brilo](academy:contrato-en-brilo) se crea a nombre de un cliente
 ## Cómo se calculan los precios
 
 - **Impresión**: por defecto, el área de la valla (ancho × alto) por **$13 el metro cuadrado**. Puedes cambiarlo.
-- **Arrendamiento**: el precio mensual de lista multiplicado por los periodos de 30 días de la duración. Puedes cambiarlo.
+- **Arrendamiento**: el precio mensual de lista multiplicado por los meses de la duración, contados por calendario como en Brilo (del 16 de octubre al 15 de noviembre es 1 mes). Unos días extra no suman otro mes; más de medio mes, sí. Puedes cambiarlo.
 - A ambos se les suma el **IVA (13%)**. Abajo verás el **Subtotal**, el **IVA** y el **Total**.
 
-> **Descuentos:** no hay un campo de porcentaje. Baja el precio directamente en la tabla o escribe el descuento en **Condiciones especiales**.
+> **Descuentos:** no hay un campo de porcentaje. Baja el precio directamente en la tabla o escribe el descuento en **Condiciones especiales**. Si quieres que la cotización y el PDF muestren el descuento sobre el precio recomendado, créala desde **Mis cotizaciones**. Ver [Descuentos](academy:crear-cotizacion-mixta#descuentos).
 
 > **Fechas ocupadas:** si las fechas de una valla chocan con un contrato existente, la plataforma te avisa. Cambia las fechas o elige otra valla.
 
@@ -217,6 +219,8 @@ Cuando el cliente acepte, [acepta la cotización](academy:aceptar-cotizacion). L
       'conceptos adicionales',
       'cotización mixta',
       'editar cotización',
+      'motivo del cambio',
+      'historial',
     ],
     modules: [
       { label: 'Abrir Mis cotizaciones', href: '/dashboard/my-space/offers' },
@@ -248,6 +252,21 @@ El arrendamiento de pantallas se calcula **por día**: precio diario de la panta
 ## Editar una cotización
 
 Mientras la cotización esté **Pendiente**, haz clic en ella en Mis cotizaciones y usa **Editar**. Al terminar, haz clic en **Guardar cambios**. Una cotización aceptada ya no se puede editar.
+
+### Motivo del cambio
+
+Si **agregas o quitas vallas o pantallas**, la plataforma te pide el **Motivo del cambio** antes de guardar:
+
+- Presupuesto del cliente
+- Cambio en el alcance de la campaña
+- Disponibilidad de vallas
+- Ubicación o cobertura
+- Negociación de precio
+- Cambio de fechas
+- Corrección de un error
+- Otro (en este caso, describe el motivo en **Detalle**)
+
+Si solo cambias precios, fechas o datos del cliente, el motivo es opcional. Queda registrado en el **Historial** de la cotización junto con el cambio de vallas (por ejemplo, *Vallas: 5 → 3*), y los administradores lo ven en **Analytics → Ediciones de cotizaciones** para entender por qué cambian las propuestas.
 
 ## Siguiente paso
 

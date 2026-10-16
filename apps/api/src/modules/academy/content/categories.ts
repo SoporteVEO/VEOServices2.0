@@ -25,8 +25,15 @@ export const ACADEMY_CATEGORIES: AcademyCategory[] = [
     id: 'operacion',
     title: 'Operación',
     description:
-      'Producción, instalación, pantallas digitales, mantenimiento y tienda.',
+      'Producción, instalación, pantallas digitales, mantenimiento de vallas y pantallas, y tienda.',
     icon: 'factory',
+  },
+  {
+    id: 'finanzas',
+    title: 'Finanzas',
+    description:
+      'Contabilidad, bancos, cuentas por cobrar y facturación conectados a Brilo.',
+    icon: 'landmark',
   },
   {
     id: 'crm',

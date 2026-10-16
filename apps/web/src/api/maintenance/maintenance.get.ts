@@ -3,6 +3,7 @@ import { apiFetch } from "@/lib/api";
 import type {
   MaintenanceCategory,
   MaintenanceJob,
+  MaintenanceJobKind,
   MaintenanceJobListItem,
   MaintenanceJobsQuery,
   MaintenanceOverview,
@@ -16,11 +17,14 @@ export const maintenanceKeys = {
   jobs: (query: MaintenanceJobsQuery) =>
     ["maintenance", "jobs", query] as const,
   job: (id: string | null) => ["maintenance", "job", id] as const,
-  categories: (includeArchived: boolean) =>
-    ["maintenance", "categories", includeArchived] as const,
-  technicians: ["maintenance", "technicians"] as const,
-  overview: (range: { from?: string; to?: string }) =>
-    ["maintenance", "overview", range] as const,
+  categories: (kind: MaintenanceJobKind, includeArchived: boolean) =>
+    ["maintenance", "categories", kind, includeArchived] as const,
+  technicians: (kind: MaintenanceJobKind) =>
+    ["maintenance", "technicians", kind] as const,
+  overview: (
+    kind: MaintenanceJobKind,
+    range: { from?: string; to?: string },
+  ) => ["maintenance", "overview", kind, range] as const,
   portalJobs: ["maintenance-portal", "jobs"] as const,
   portalJob: (id: string | null) =>
     ["maintenance-portal", "job", id] as const,
@@ -36,7 +40,7 @@ interface PaginatedJobs {
 export async function getMaintenanceJobs(
   query: MaintenanceJobsQuery,
 ): Promise<PaginatedJobs> {
-  const params: Record<string, string> = {};
+  const params: Record<string, string> = { kind: query.kind };
   if (query.search) params.search = query.search;
   if (query.status) params.status = query.status;
   if (query.categoryId) params.categoryId = query.categoryId;
@@ -72,46 +76,56 @@ export function useMaintenanceJob(id: string | null) {
 }
 
 export async function getMaintenanceCategories(
+  kind: MaintenanceJobKind,
   includeArchived = false,
 ): Promise<MaintenanceCategory[]> {
+  const query: Record<string, string> = { kind };
+  if (includeArchived) query.includeArchived = "true";
   const response = await apiFetch<{ data: MaintenanceCategory[] }>(
     "/maintenance/categories",
-    { query: includeArchived ? { includeArchived: "true" } : undefined },
+    { query },
   );
   return response.data;
 }
 
-export function useMaintenanceCategories(includeArchived = false) {
+export function useMaintenanceCategories(
+  kind: MaintenanceJobKind,
+  includeArchived = false,
+) {
   return useQuery({
-    queryKey: maintenanceKeys.categories(includeArchived),
-    queryFn: () => getMaintenanceCategories(includeArchived),
+    queryKey: maintenanceKeys.categories(kind, includeArchived),
+    queryFn: () => getMaintenanceCategories(kind, includeArchived),
     staleTime: 5 * 60 * 1000,
   });
 }
 
-export async function getMaintenanceTechnicians(): Promise<
-  MaintenancePerson[]
-> {
+export async function getMaintenanceTechnicians(
+  kind: MaintenanceJobKind,
+): Promise<MaintenancePerson[]> {
   const response = await apiFetch<{ data: MaintenancePerson[] }>(
     "/maintenance/technicians",
+    { query: { kind } },
   );
   return response.data;
 }
 
-export function useMaintenanceTechnicians(enabled = true) {
+export function useMaintenanceTechnicians(
+  kind: MaintenanceJobKind,
+  enabled = true,
+) {
   return useQuery({
-    queryKey: maintenanceKeys.technicians,
-    queryFn: getMaintenanceTechnicians,
+    queryKey: maintenanceKeys.technicians(kind),
+    queryFn: () => getMaintenanceTechnicians(kind),
     enabled,
     staleTime: 5 * 60 * 1000,
   });
 }
 
-export async function getMaintenanceOverview(range: {
-  from?: string;
-  to?: string;
-}): Promise<MaintenanceOverview> {
-  const query: Record<string, string> = {};
+export async function getMaintenanceOverview(
+  kind: MaintenanceJobKind,
+  range: { from?: string; to?: string },
+): Promise<MaintenanceOverview> {
+  const query: Record<string, string> = { kind };
   if (range.from) query.from = range.from;
   if (range.to) query.to = range.to;
   const response = await apiFetch<{ data: MaintenanceOverview }>(
@@ -121,15 +135,17 @@ export async function getMaintenanceOverview(range: {
   return response.data;
 }
 
-export function useMaintenanceOverview(range: {
+export function useMaintenanceOverview(params: {
+  kind: MaintenanceJobKind;
   from?: string;
   to?: string;
   enabled?: boolean;
 }) {
+  const range = { from: params.from, to: params.to };
   return useQuery({
-    queryKey: maintenanceKeys.overview({ from: range.from, to: range.to }),
-    queryFn: () => getMaintenanceOverview({ from: range.from, to: range.to }),
-    enabled: range.enabled ?? true,
+    queryKey: maintenanceKeys.overview(params.kind, range),
+    queryFn: () => getMaintenanceOverview(params.kind, range),
+    enabled: params.enabled ?? true,
     staleTime: STALE_TIME,
   });
 }

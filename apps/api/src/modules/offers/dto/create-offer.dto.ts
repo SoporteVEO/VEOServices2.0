@@ -64,6 +64,16 @@ export class CreateOfferItemDto {
   @IsOptional()
   @IsNumber()
   @Min(0)
+  listImpressionPrice?: number | null;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  listRentalPrice?: number | null;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
   @Max(1)
   taxRate?: number;
 

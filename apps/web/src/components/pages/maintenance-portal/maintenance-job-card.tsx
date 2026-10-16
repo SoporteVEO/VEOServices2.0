@@ -4,11 +4,16 @@ import {
   Camera,
   ChevronRight,
   MapPin,
+  MessageSquare,
 } from "lucide-react";
 import Link from "next/link";
 import type { MaintenanceJobListItem } from "@/api/maintenance/maintenance.types";
 import { Badge } from "@/components/primitives/ui/badge";
-import { FieldOrderKindBadge } from "@/components/pages/field-portal/field-order-kind-badge";
+import {
+  FieldOrderKindBadge,
+  maintenanceOrderKind,
+} from "@/components/pages/field-portal/field-order-kind-badge";
+import { jobTargetLabel } from "@/components/pages/maintenance/maintenance-const";
 import { MaintenanceCategoryBadge } from "@/components/pages/maintenance/maintenance-category-badge";
 import { MaintenanceStatusBadge } from "@/components/pages/maintenance/maintenance-status-badge";
 import { formatBriloShortDate } from "@/lib/format";
@@ -26,9 +31,9 @@ export function MaintenanceJobCard({ job }: { job: MaintenanceJobListItem }) {
     >
       <div className="min-w-0 flex-1 space-y-1.5">
         <div className="flex flex-wrap items-center gap-1.5">
-          <FieldOrderKindBadge kind="maintenance" />
+          <FieldOrderKindBadge kind={maintenanceOrderKind(job.kind)} />
           <Badge variant="secondary" className="font-mono">
-            {job.billboardCode ?? job.code}
+            {jobTargetLabel(job) ?? job.code}
           </Badge>
           <MaintenanceStatusBadge status={job.status} />
           <MaintenanceCategoryBadge category={job.category} />
@@ -61,6 +66,12 @@ export function MaintenanceJobCard({ job }: { job: MaintenanceJobListItem }) {
             <span className="flex items-center gap-1.5">
               <Camera className="size-3 shrink-0" aria-hidden />
               {job.photoCount}
+            </span>
+          ) : null}
+          {job.commentCount > 0 ? (
+            <span className="flex items-center gap-1.5">
+              <MessageSquare className="size-3 shrink-0" aria-hidden />
+              {job.commentCount}
             </span>
           ) : null}
         </div>

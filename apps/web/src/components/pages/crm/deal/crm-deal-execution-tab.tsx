@@ -2,7 +2,8 @@
 
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
-import { Camera, ClipboardList, Monitor, Signpost } from "lucide-react";
+import { Camera, ClipboardList } from "lucide-react";
+import { DIGITAL_BILLBOARD_ICON, STATIC_BILLBOARD_ICON } from "@/lib/billboard-icons";
 import { useCrmDealExecution } from "@/api/crm/crm-ooh.get";
 import type {
   CrmExecutionDigitalItem,
@@ -101,7 +102,7 @@ export function CrmDealExecutionTab({ dealId }: { dealId: string }) {
             <ul className="divide-y divide-border">
               {data.staticItems.map((item) => (
                 <li key={item.id} className="flex items-start gap-3 px-4 py-3 text-sm">
-                  <Signpost className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
+                  <STATIC_BILLBOARD_ICON className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
                   <div className="flex min-w-0 flex-1 flex-col gap-0.5">
                     <span className="truncate font-medium">
                       {item.billboardCode ?? "Sin código"}
@@ -158,7 +159,7 @@ export function CrmDealExecutionTab({ dealId }: { dealId: string }) {
             <ul className="divide-y divide-border">
               {data.digitalItems.map((item) => (
                 <li key={item.id} className="flex items-start gap-3 px-4 py-3 text-sm">
-                  <Monitor className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
+                  <DIGITAL_BILLBOARD_ICON className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
                   <div className="flex min-w-0 flex-1 flex-col gap-0.5">
                     <span className="truncate font-medium">{item.screenName}</span>
                     <span className="text-xs text-muted-foreground">

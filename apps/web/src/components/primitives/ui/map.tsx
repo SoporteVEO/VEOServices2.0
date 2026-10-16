@@ -30,7 +30,7 @@ if (typeof window !== "undefined" && !MapLibreGL.getWorkerUrl()) {
 
 const defaultStyles = {
   dark: "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json",
-  light: "https://basemaps.cartocdn.com/gl/positron-gl-style/style.json",
+  light: "https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json",
 };
 
 // A tile-less, dependency-free style with a transparent background. Use it for

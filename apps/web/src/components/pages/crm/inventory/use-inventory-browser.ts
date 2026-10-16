@@ -8,7 +8,6 @@ import type { InventoryItem } from "@/api/crm/crm-ooh.types";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import { errorMessage } from "../crm-format";
 import { isoDay } from "../crm-ooh-format";
-import type { HoldOptions } from "./crm-inventory-selection-bar";
 import {
   inventoryQuery,
   selectionToSites,
@@ -28,7 +27,6 @@ interface Options {
 export function useInventoryBrowser({ initialFilters, dealId, industry, enabled = true }: Options) {
   const [filters, setFilters] = useState<InventoryFilters>(initialFilters);
   const [selection, setSelection] = useState<InventorySelection>({});
-  const [hold, setHold] = useState<HoldOptions>({ hold: true, holdDays: 7 });
   const debouncedSearch = useDebouncedValue(filters.search.trim(), 300);
   const addSites = useAddCrmDealSites();
 
@@ -72,8 +70,6 @@ export function useInventoryBrowser({ initialFilters, dealId, industry, enabled 
         sites: selectionToSites(selection),
         startDate: isoDay(filters.from),
         endDate: isoDay(filters.to),
-        hold: hold.hold,
-        holdDays: hold.holdDays,
       },
       {
         onSuccess: (result) => {
@@ -97,8 +93,6 @@ export function useInventoryBrowser({ initialFilters, dealId, industry, enabled 
     toggle,
     setSpots,
     clear: () => setSelection({}),
-    hold,
-    setHold,
     count,
     total,
     submit,

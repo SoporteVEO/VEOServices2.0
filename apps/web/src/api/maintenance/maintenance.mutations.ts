@@ -5,6 +5,7 @@ import type {
   CreateMaintenanceJobInput,
   MaintenanceCategory,
   MaintenanceJob,
+  MaintenanceJobKind,
   UpdateMaintenanceJobInput,
 } from "./maintenance.types";
 
@@ -84,6 +85,34 @@ export function useReopenMaintenanceJob() {
   });
 }
 
+export function useCloseMaintenanceJob() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: { id: string }) => {
+      const response = await apiFetch<{ data: MaintenanceJob }>(
+        `/maintenance/jobs/${input.id}/close`,
+        { method: "PATCH" },
+      );
+      return response.data;
+    },
+    onSuccess: (job) => syncJobCaches(queryClient, job),
+  });
+}
+
+export function useAddMaintenanceComment() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: { id: string; body: string }) => {
+      const response = await apiFetch<{ data: MaintenanceJob }>(
+        `/maintenance/jobs/${input.id}/comments`,
+        { method: "POST", body: JSON.stringify({ body: input.body }) },
+      );
+      return response.data;
+    },
+    onSuccess: (job) => syncJobCaches(queryClient, job),
+  });
+}
+
 export function usePublishMaintenancePhoto() {
   const queryClient = useQueryClient();
   return useMutation({
@@ -120,7 +149,11 @@ export function useDeleteMaintenancePhoto() {
 export function useCreateMaintenanceCategory() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (input: { name: string; color?: string }) => {
+    mutationFn: async (input: {
+      kind: MaintenanceJobKind;
+      name: string;
+      color?: string;
+    }) => {
       const response = await apiFetch<{ data: MaintenanceCategory }>(
         "/maintenance/categories",
         { method: "POST", body: JSON.stringify(input) },
@@ -212,6 +245,20 @@ export function useUploadMaintenancePhoto() {
             note: input.note,
           }),
         },
+      );
+      return response.data;
+    },
+    onSuccess: (job) => syncJobCaches(queryClient, job),
+  });
+}
+
+export function useAddMyMaintenanceComment() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: { id: string; body: string }) => {
+      const response = await apiFetch<{ data: MaintenanceJob }>(
+        `/maintenance-portal/jobs/${input.id}/comments`,
+        { method: "POST", body: JSON.stringify({ body: input.body }) },
       );
       return response.data;
     },

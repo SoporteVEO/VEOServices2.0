@@ -22,6 +22,7 @@ export function dealSitesToStaticOfferItems(sites: CrmDealSite[]): StaticOfferIt
       const startDate = localDate(site.startDate);
       const endDate = localDate(site.endDate);
       const location = [site.cityName, site.departmentName].filter(Boolean).join(", ");
+      const impressionPrice = calculateImpressionPrice(site.width, site.height);
       return {
         id: `static-${site.billboardId}`,
         type: "STATIC_BILLBOARD",
@@ -33,9 +34,11 @@ export function dealSitesToStaticOfferItems(sites: CrmDealSite[]): StaticOfferIt
         width: site.width,
         height: site.height,
         quantity: 1,
-        impressionPrice: calculateImpressionPrice(site.width, site.height),
+        impressionPrice,
         monthlyRentalPrice: site.rate,
         rentalPrice: calculateStaticRentalPrice(site.rate, startDate, endDate),
+        listMonthlyRentalPrice: site.rate,
+        listImpressionPrice: impressionPrice,
         taxRate: IVA_RATE,
         startDate,
         endDate,

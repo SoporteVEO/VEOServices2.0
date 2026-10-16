@@ -15,6 +15,8 @@ import {
   staticBillboardToOfferItem,
   type StaticOfferItem,
 } from "./offer-types";
+import { priceDiscount, staticListRentalPrice } from "./offer-discounts";
+import { PriceDiscountHint } from "./price-discount-hint";
 import { StaticBillboardPicker } from "./static-billboard-picker";
 
 export interface StaticItemsSectionProps {
@@ -159,7 +161,7 @@ function StaticItemRow({
   const rentalBreakdown = (() => {
     const multiplier = formatRentalPeriodMultiplier(rentalPeriods);
     const periodLabel =
-      rentalPeriods === 1 ? "período de 30 días" : "períodos de 30 días";
+      rentalPeriods === 1 ? "mes" : "meses";
     return `${formatMoney(item.monthlyRentalPrice)} ${multiplier} ${periodLabel}`;
   })();
 
@@ -189,6 +191,10 @@ function StaticItemRow({
           step={0.01}
           onChange={(v) => onChangeImpression(Math.max(0, v))}
         />
+        <PriceDiscountHint
+          className="mt-0.5"
+          discount={priceDiscount(item.listImpressionPrice, item.impressionPrice)}
+        />
       </td>
       <td className="px-2 py-1.5 text-right">
         <NumericCellInput
@@ -196,6 +202,10 @@ function StaticItemRow({
           min={0}
           step={0.01}
           onChange={(v) => onChangeRental(Math.max(0, v))}
+        />
+        <PriceDiscountHint
+          className="mt-0.5"
+          discount={priceDiscount(staticListRentalPrice(item), item.rentalPrice)}
         />
       </td>
       <td className="px-2 py-1.5">

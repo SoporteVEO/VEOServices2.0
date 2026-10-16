@@ -89,7 +89,10 @@ export class NotificationsService {
       | 'PANTALLAS_PRODUCCION'
       | 'PANTALLAS_COMERCIAL'
       | 'DESARROLLADOR'
-      | 'VENTAS',
+      | 'VENTAS'
+      | 'CONTABILIDAD'
+      | 'FINANZAS'
+      | 'FACTURACION',
     description: string,
     priority: NotificationPriority = 'MEDIUM',
     options: { excludeUserId?: string; href?: string } = {},

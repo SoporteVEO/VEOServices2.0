@@ -44,6 +44,12 @@ export const roleBadge: Record<UserRole, BadgeStyle> = {
     className:
       "border-indigo-500/50 bg-indigo-500/10 text-indigo-700 dark:text-indigo-400",
   },
+  MANTENIMIENTO_PANTALLAS: {
+    label: "Mantenimiento Pantallas",
+    variant: "outline",
+    className:
+      "border-fuchsia-500/50 bg-fuchsia-500/10 text-fuchsia-700 dark:text-fuchsia-400",
+  },
 };
 
 export const ROLE_OPTIONS: {
@@ -89,6 +95,12 @@ export const ROLE_OPTIONS: {
     label: "Instalador y mantenimiento",
     description:
       "Hace ambos trabajos: accede al portal de instalaciones, al de mantenimiento y al módulo de imágenes, y puede recibir asignaciones de los dos",
+  },
+  {
+    value: "MANTENIMIENTO_PANTALLAS",
+    label: "Mantenimiento Pantallas",
+    description:
+      "Accede al portal móvil con sus órdenes de mantenimiento de pantallas asignadas y al módulo de imágenes",
   },
 ];
 
@@ -141,6 +153,24 @@ export const subRoleBadge: Record<SubRole, BadgeStyle> = {
     className:
       "border-rose-500/50 bg-rose-500/10 text-rose-700 dark:text-rose-400",
   },
+  CONTABILIDAD: {
+    label: "Contabilidad",
+    variant: "outline",
+    className:
+      "border-violet-500/50 bg-violet-500/10 text-violet-700 dark:text-violet-400",
+  },
+  FINANZAS: {
+    label: "Finanzas",
+    variant: "outline",
+    className:
+      "border-green-500/50 bg-green-500/10 text-green-700 dark:text-green-400",
+  },
+  FACTURACION: {
+    label: "Facturación",
+    variant: "outline",
+    className:
+      "border-blue-500/50 bg-blue-500/10 text-blue-700 dark:text-blue-400",
+  },
 };
 
 export const SUB_ROLE_OPTIONS: { value: SubRole; label: string; description: string }[] = [
@@ -164,7 +194,7 @@ export const SUB_ROLE_OPTIONS: { value: SubRole; label: string; description: str
     value: "MANTENIMIENTO",
     label: "Mantenimiento",
     description:
-      "Acceso al módulo de mantenimiento para asignar y dar seguimiento a órdenes",
+      "Acceso al módulo de mantenimiento (vallas, pantallas y flota) para asignar y dar seguimiento a órdenes",
   },
   {
     value: "PANTALLAS_PRODUCCION",
@@ -189,5 +219,23 @@ export const SUB_ROLE_OPTIONS: { value: SubRole; label: string; description: str
     label: "Ventas",
     description:
       "Acceso al CRM: pipelines, negocios, contactos, tareas, plantillas de correo y envío por Gmail y WhatsApp",
+  },
+  {
+    value: "CONTABILIDAD",
+    label: "Contabilidad",
+    description:
+      "Finanzas · Contabilidad: catálogo de cuentas, centros de costo y partidas contables de Brilo",
+  },
+  {
+    value: "FINANZAS",
+    label: "Finanzas",
+    description:
+      "Finanzas · Bancos y Cuentas por cobrar: abonos y cargos bancarios, saldos de clientes, cobros y anticipos en Brilo",
+  },
+  {
+    value: "FACTURACION",
+    label: "Facturación",
+    description:
+      "Finanzas · Facturación: facturas de venta, órdenes de facturación, PDF y envío por correo desde Brilo",
   },
 ];

@@ -3,8 +3,8 @@
 import type { ColumnDef } from "@tanstack/react-table";
 import type { ProductionOrder } from "@/api/production-orders/production-orders.types";
 import { Badge } from "@/components/primitives/ui/badge";
+import { ProductionOrderPrintDateCell } from "@/components/pages/production-orders-shared/production-order-print-date-cell";
 import { ProductionOrderStatusBadge } from "@/components/pages/production-orders-shared/production-order-status-badge";
-import { formatBriloShortDate } from "@/lib/format";
 
 export const MY_PRODUCTION_ORDERS_COLUMNS: ColumnDef<ProductionOrder>[] = [
   {
@@ -45,12 +45,8 @@ export const MY_PRODUCTION_ORDERS_COLUMNS: ColumnDef<ProductionOrder>[] = [
     ),
   },
   {
-    accessorKey: "createdAt",
-    header: "Creada",
-    cell: ({ row }) => (
-      <span className="text-xs tabular-nums text-muted-foreground">
-        {formatBriloShortDate(row.original.createdAt)}
-      </span>
-    ),
+    id: "printDate",
+    header: "Fecha de impresión",
+    cell: ({ row }) => <ProductionOrderPrintDateCell order={row.original} />,
   },
 ];

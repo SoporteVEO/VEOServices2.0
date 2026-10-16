@@ -9,6 +9,13 @@ import {
   joinDetails,
   splitStaticDescription,
 } from "./offer-pdf-copy";
+import {
+  formatDiscountPercent,
+  priceDiscount,
+  staticListRentalPrice,
+  type OfferDiscountSummary,
+  type PriceDiscount,
+} from "./offer-discounts";
 import { offerStyles as s } from "./offer-pdf-styles";
 import type {
   DigitalOfferItem,
@@ -74,6 +81,28 @@ function Description({
         {area ? <Text style={d.tdArea}> · {area}</Text> : null}
       </Text>
       {detail ? <Text style={s.descriptionDetail}>{detail}</Text> : null}
+    </View>
+  );
+}
+
+function PriceCell({
+  charged,
+  discount,
+}: {
+  charged: number;
+  discount: PriceDiscount | null;
+}) {
+  return (
+    <View>
+      <Text style={[s.tdText, { textAlign: "right" }]}>
+        {formatCurrency(charged)}
+      </Text>
+      {discount ? (
+        <Text style={s.priceDiscount}>
+          <Text style={s.priceList}>{formatCurrency(discount.list)}</Text>
+          {"  "}-{formatDiscountPercent(discount.percent)}
+        </Text>
+      ) : null}
     </View>
   );
 }
@@ -185,8 +214,16 @@ export function StaticItemsSection({ items }: { items: StaticOfferItem[] }) {
               ])}
             />,
             String(item.quantity),
-            formatCurrency(item.rentalPrice),
-            formatCurrency(item.impressionPrice),
+            <PriceCell
+              key="rental"
+              charged={item.rentalPrice}
+              discount={priceDiscount(staticListRentalPrice(item), item.rentalPrice)}
+            />,
+            <PriceCell
+              key="impression"
+              charged={item.impressionPrice}
+              discount={priceDiscount(item.listImpressionPrice, item.impressionPrice)}
+            />,
             formatCurrency(lineTotal(item)),
           ],
         };
@@ -285,7 +322,18 @@ function TotalsRow({
   );
 }
 
-export function TotalsBlock({ totals }: { totals: OfferTotals }) {
+function discountLabel(discount: PriceDiscount | null): string {
+  if (!discount) return "—";
+  return `-${formatCurrency(discount.amount)} (${formatDiscountPercent(discount.percent)})`;
+}
+
+export function TotalsBlock({
+  totals,
+  discounts,
+}: {
+  totals: OfferTotals;
+  discounts: OfferDiscountSummary;
+}) {
   return (
     <View style={s.totals} wrap={false}>
       <View style={d.tableHeadRow}>
@@ -299,6 +347,23 @@ export function TotalsBlock({ totals }: { totals: OfferTotals }) {
           </View>
         ))}
       </View>
+      {discounts.total ? (
+        <View style={s.totalsRow}>
+          <View style={{ width: TOTALS_COLUMNS[0] }}>
+            <Text style={s.totalsLabel}>DESCUENTO</Text>
+          </View>
+          <View style={{ width: TOTALS_COLUMNS[1] }}>
+            <Text style={[s.totalsValue, s.totalsDiscountValue]}>
+              {discountLabel(discounts.rental)}
+            </Text>
+          </View>
+          <View style={{ width: TOTALS_COLUMNS[2] }}>
+            <Text style={[s.totalsValue, s.totalsDiscountValue]}>
+              {discountLabel(discounts.impression)}
+            </Text>
+          </View>
+        </View>
+      ) : null}
       <TotalsRow
         label="SUBTOTAL"
         rental={totals.subtotalRental}
@@ -325,6 +390,24 @@ export function TotalsBlock({ totals }: { totals: OfferTotals }) {
           </Text>
         </View>
       </View>
+      <View style={s.totalsPayableRow}>
+        <View style={{ width: TOTALS_COLUMNS[0] }}>
+          <Text style={s.totalsPayableLabel}>TOTAL A PAGAR</Text>
+          <Text style={s.totalsPayableHint}>IVA incluido</Text>
+        </View>
+        <View style={{ flex: 1 }}>
+          <Text style={s.totalsPayableValue}>
+            {formatCurrency(totals.grandTotal)}
+          </Text>
+        </View>
+      </View>
+      {discounts.total ? (
+        <Text style={s.totalsDiscountNote}>
+          Incluye un descuento de {formatCurrency(discounts.total.amount)} (
+          {formatDiscountPercent(discounts.total.percent)}) sobre el precio
+          recomendado de {formatCurrency(discounts.total.list)}, antes de IVA.
+        </Text>
+      ) : null}
     </View>
   );
 }
