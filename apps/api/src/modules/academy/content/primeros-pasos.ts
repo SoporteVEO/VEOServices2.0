@@ -28,6 +28,7 @@ export const PRIMEROS_PASOS: AcademyArticleSource[] = [
 | Pantallas digitales | [Pantallas digitales: campañas y ocupación](academy:pantallas). |
 | Mantenimiento | [Mantenimiento de vallas y flota](academy:mantenimiento). |
 | Nuevo en VEO | [Conoce VEO Services](academy:conoce-veo-services) y el [glosario](academy:glosario). |
+| Quieres pedir una mejora a la plataforma | [Solicitar una nueva funcionalidad](academy:solicitar-funcionalidad). |
 
 ## Pregúntale a Nexo
 
@@ -99,6 +100,11 @@ El seguimiento comercial: pipeline de negocios, reservas de sitios, renovaciones
 
 ### Tienda
 La tienda en línea pública y las órdenes recibidas. Ver [Tienda en línea](academy:tienda-en-linea).
+
+### Actualizaciones y Solicitar funcionalidad
+Al final del menú. **Actualizaciones** muestra las novedades de cada versión de la plataforma. **Solicitar funcionalidad** te permite pedir una mejora al equipo de desarrollo y seguir su avance. Ver [Solicitar una nueva funcionalidad](academy:solicitar-funcionalidad).
+
+[Abrir Solicitar funcionalidad](app:/dashboard/solicitudes)
 
 ## Dos sistemas: VEO Services y Brilo
 
@@ -192,6 +198,10 @@ Los administradores también pueden pedirle a Nexo que **cree, modifique o elimi
 
 > Brilo es el sistema oficial de facturación. Revisa bien cada cambio antes de aprobarlo.
 
+## Si necesitas algo que la plataforma no hace
+
+Nexo no crea funcionalidades nuevas. Para pedirlas al equipo de desarrollo usa el módulo **Solicitar funcionalidad**. Ver [Solicitar una nueva funcionalidad](academy:solicitar-funcionalidad).
+
 ## Cómo preguntarle
 
 Escribe como le hablarías a un compañero:
@@ -204,5 +214,116 @@ Escribe como le hablarías a un compañero:
 Si la respuesta no es lo que buscabas, dile qué entendió mal. Nexo aprende de tus correcciones.
 
 > **Importante:** Nexo nunca inventa datos. Si no encuentra la información, te lo dirá.`,
+  },
+  {
+    slug: 'solicitar-funcionalidad',
+    title: 'Solicitar una nueva funcionalidad',
+    category: 'primeros-pasos',
+    summary:
+      'Cómo pedir una mejora al equipo de desarrollo: llenar el formato, subirlo en PDF, agregar colaboradores, seguir el estado y aprobar con tu firma.',
+    tags: [
+      'solicitar funcionalidad',
+      'nueva funcionalidad',
+      'solicitud',
+      'ticket',
+      'mejora',
+      'desarrollo',
+      'formato',
+      'pdf',
+      'firma',
+      'aprobar',
+      'colaboradores',
+    ],
+    modules: [
+      {
+        label: 'Abrir Solicitar funcionalidad',
+        href: '/dashboard/solicitudes',
+      },
+    ],
+    related: ['nexo', 'preguntas-frecuentes', 'bienvenida'],
+    body: `Si hay algo que la plataforma no hace, o que podría hacerse mejor, puedes pedirlo al equipo de desarrollo desde **Solicitar funcionalidad**, al final del menú de la izquierda (debajo de **Actualizaciones**). Cada solicitud funciona como un ticket: queda registrada, puedes ver en qué estado va y te avisamos de cada avance.
+
+[Abrir Solicitar funcionalidad](app:/dashboard/solicitudes)
+
+## Antes de empezar: el formato
+
+Toda solicitud lleva el formato **Solicitud de nueva funcionalidad** llenado y guardado como **PDF**. Sirve para que el equipo entienda bien qué necesitas. El formato te pide:
+
+- **Información general:** nombre de la solicitud, área, quién la pide y quién usará la función.
+- **Necesidad del negocio:** qué problema existe hoy, qué necesitas que el sistema permita y un ejemplo real.
+- **Importancia:** prioridad sugerida y qué pasa si no se implementa.
+- **Cómo debería funcionar:** paso a paso, datos que se necesitan y reglas o permisos.
+- **Diagrama del proceso:** un dibujo sencillo, por ejemplo en Excalidraw, con el enlace compartido.
+- **Cómo sabremos que funciona:** dos o tres resultados que se puedan comprobar.
+
+Escribe con tus propias palabras. No necesitas saber de programación. Si algo no aplica, escribe "No aplica".
+
+## Crear una solicitud
+
+1. Entra a **Solicitar funcionalidad** y haz clic en **Nueva solicitud**.
+2. Haz clic en **Descargar formato** y llena el documento de Word.
+3. Guárdalo o expórtalo como **PDF** (Archivo → Guardar como → PDF).
+4. En la ventana, escribe el **Título** y un **Resumen** corto de lo que necesitas.
+5. Elige la **Prioridad sugerida**: alta si te impide trabajar, media si ahorra tiempo o evita errores, baja si es una mejora opcional.
+6. Sube el PDF en **Formato llenado en PDF**. Debe pesar menos de 25 MB.
+7. Si otras personas trabajan contigo en esto, agrégalas en **Colaboradores** (ver más abajo).
+8. Haz clic en **Enviar solicitud**.
+
+> **Importante:** sin el PDF no se puede enviar la solicitud. Si el botón está apagado, revisa que el título tenga al menos 3 letras, el resumen al menos 10 y que el archivo sea un PDF.
+
+Al enviarla recibes un número de ticket como **SF-0001** y el equipo de desarrollo recibe un aviso.
+
+## Colaboradores
+
+Un colaborador es alguien que también necesita esta mejora. Los colaboradores:
+
+- Ven la solicitud y su avance.
+- Reciben los mismos avisos que tú.
+- **Firman la aprobación final**, igual que quien creó la solicitud.
+
+Puedes agregarlos al crear la solicitud o después, desde la pestaña **Resumen** de la solicitud, en **Participantes**. Solo quien creó la solicitud puede agregar o quitar colaboradores, y solo mientras no esté cerrada (aprobada o rechazada).
+
+## Seguir el estado
+
+Abre cualquier solicitud para ver el resumen, el PDF, los participantes y la pestaña **Actividad** con todo lo que ha pasado. Los estados son:
+
+| Estado | Qué significa |
+| --- | --- |
+| **Enviada** | Llegó al equipo de desarrollo y espera revisión. |
+| **En revisión** | Están evaluando la solicitud. |
+| **En desarrollo** | Se está construyendo. |
+| **Por aprobar** | Desarrollo la terminó y espera la firma de los participantes. |
+| **Aprobada** | Todos los participantes firmaron. |
+| **Rechazada** | No se hará; el equipo explica el motivo en la actividad. |
+
+Cada vez que cambia el estado o el equipo deja una nota, te llega una notificación que abre la solicitud directamente.
+
+## Aprobar con tu firma
+
+Cuando desarrollo marca la solicitud como completada, quien la creó y todos los colaboradores reciben una notificación para revisarla. En **Solicitar funcionalidad** verás un aviso arriba y la etiqueta **Requiere tu firma** en esa solicitud.
+
+1. Prueba la funcionalidad en la plataforma.
+2. Abre la solicitud y haz clic en **Firmar aprobación**.
+3. Dibuja tu firma con el mouse o con el dedo. Puedes usar **Borrar firma** para repetirla.
+4. Marca la casilla que confirma que la funcionalidad funciona como esperabas, sin problemas, y te resulta útil.
+5. Haz clic en **Firmar y aprobar**.
+
+Tu firma queda guardada como evidencia, junto con tu nombre, correo y la fecha y hora. Cuando **todos** los participantes firman, la solicitud pasa a **Aprobada**. Puedes ver las firmas en la pestaña **Firmas**.
+
+### Si algo no funciona
+
+Si al probarla encuentras un problema, **no firmes**. Haz clic en **Reportar problema**, cuenta qué hiciste y qué pasó, y envíalo. La solicitud vuelve a **En desarrollo** y se avisa al equipo y a los demás participantes. Cuando desarrollo la complete de nuevo, volverán a pedir las firmas.
+
+## Para el equipo de desarrollo
+
+Quienes tienen el permiso de **Desarrollador** ven en el menú, dentro de **Desarrollo**, la opción **Solicitudes de funcionalidad**.
+
+- La tabla se organiza por estado y se puede filtrar por prioridad y buscar por ticket (**SF-0001**), título o solicitante.
+- Al abrir una solicitud pueden **ver o descargar el PDF** del formato.
+- Desde la parte inferior eligen el nuevo **Estado** y escriben una nota para los participantes. Al **rechazar** es obligatorio explicar el motivo.
+- Al marcarla **Completada (pedir firma)** se notifica a todos los participantes para que firmen.
+- Una solicitud **Aprobada** queda cerrada y ya no se puede modificar.
+
+[Abrir Solicitudes de funcionalidad](app:/dashboard/desarrollo/solicitudes)`,
   },
 ];

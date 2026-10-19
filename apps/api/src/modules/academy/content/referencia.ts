@@ -138,6 +138,25 @@ Ahora está dentro del CRM, en **CRM → Clientes**. Ahí puedes crear clientes 
 
 [Abrir Clientes](app:/dashboard/crm/clientes)
 
+## Solicitudes de funcionalidad
+
+### ¿Cómo pido una mejora a la plataforma?
+Desde **Solicitar funcionalidad**, al final del menú. Descargas el formato, lo llenas, lo guardas en PDF y lo subes con un título y un resumen. Ver [Solicitar una nueva funcionalidad](academy:solicitar-funcionalidad#crear-una-solicitud).
+
+[Abrir Solicitar funcionalidad](app:/dashboard/solicitudes)
+
+### No puedo enviar la solicitud
+Falta algo: el PDF es obligatorio (máximo 25 MB), el título debe tener al menos 3 letras y el resumen al menos 10.
+
+### ¿Puedo pedir una funcionalidad entre varias personas?
+Sí. Agrega **colaboradores** al crearla o después, en **Participantes**. Ellos ven el avance, reciben los avisos y también firman la aprobación. Ver [Colaboradores](academy:solicitar-funcionalidad#colaboradores).
+
+### Desarrollo terminó mi solicitud, ¿qué hago?
+Pruébala y, si funciona bien, abre la solicitud y haz clic en **Firmar aprobación**. Si encuentras un problema, usa **Reportar problema** en lugar de firmar. Ver [Aprobar con tu firma](academy:solicitar-funcionalidad#aprobar-con-tu-firma).
+
+### La solicitud sigue en "Por aprobar"
+Falta la firma de alguno de los participantes (quien la creó o algún colaborador). En **Participantes** ves quién ya firmó y quién está pendiente.
+
 ## Acceso
 
 ### No veo un módulo en el menú
