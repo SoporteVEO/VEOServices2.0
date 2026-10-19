@@ -172,7 +172,7 @@ La facturación registrada en Brilo bajo tu nombre como vendedor, por centro de 
     category: 'primeros-pasos',
     summary:
       'Qué puede hacer Nexo, cómo preguntarle y cómo usa VEO Academy para responderte.',
-    tags: ['nexo', 'asistente', 'ia', 'chat', 'ayuda', 'preguntar'],
+    tags: ['nexo', 'asistente', 'ia', 'chat', 'ayuda', 'preguntar', 'brilo'],
     related: ['bienvenida', 'enviar-reporte', 'proceso-de-venta'],
     body: `**Nexo** es el asistente inteligente de VEO Services. Lo abres con el botón de Nexo arriba a la derecha o con **Ctrl + I**.
 
@@ -182,8 +182,15 @@ La facturación registrada en Brilo bajo tu nombre como vendedor, por centro de 
 - **Buscar datos reales**: ventas del mes, cotizaciones, contratos, clientes, disponibilidad de vallas, fotos.
 - **Generar reportes y archivos**: reporte de disponibilidad, reporte mensual de un contrato, Excel o PDF.
 - **Enviar correos** y hacer acciones, siempre pidiéndote aprobación antes.
+- **Consultar Brilo** directamente: clientes, cotizaciones y contratos de vallas, facturas, cuentas por cobrar, contabilidad e inventario.
 
 Nexo solo te muestra información de los módulos a los que tienes acceso.
+
+## Cambios en Brilo
+
+Los administradores también pueden pedirle a Nexo que **cree, modifique o elimine** registros en Brilo, por ejemplo: *"Corrige el correo de facturación del cliente X en Brilo"*. Antes de enviar nada, Nexo muestra una tarjeta **Cambio en Brilo** con la explicación y la lista exacta de cambios. Revísala y haz clic en **Aplicar en Brilo** (o **Eliminar en Brilo**) para confirmar. Si no apruebas, no se cambia nada.
+
+> Brilo es el sistema oficial de facturación. Revisa bien cada cambio antes de aprobarlo.
 
 ## Cómo preguntarle
 

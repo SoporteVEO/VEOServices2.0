@@ -268,11 +268,19 @@ En la pestaña **Ejecución** revisas, sin preguntar a operaciones:
 4. Revisa el [estado de cada sitio](#estados-de-disponibilidad).
 5. Marca los sitios que quieres. En las **pantallas**, indica los **Spots/día**.
 6. Abajo verás cuántos seleccionaste y el **valor aproximado del periodo**.
-7. Decide:
-   - Activa **Reservar por**, elige los días (3, 7, 14 o 30) y haz clic en **Reservar sitios** para **apartarlos**.
-   - O desactiva la reserva y haz clic en **Agregar a propuesta** para incluirlos sin apartarlos.
+7. Haz clic en **Agregar a propuesta**. Los sitios entran al negocio como **Propuesta**, todavía sin apartar.
+8. Para apartarlos, [resérvalos](#reservar-sitios) desde la lista de sitios del negocio.
 
-> Si eliges un sitio contratado o una pantalla sin cupo, se agrega solo como **Propuesta** y verás un aviso.
+En el mapa, haz clic en una valla estática para ver sus **fotos** más recientes (mensuales, de instalación o de mantenimiento) con su fecha. Si tiene varias, cambia de foto con las miniaturas. Al hacer clic en un sitio de la lista, el mapa te lleva a su ubicación.
+
+## Reservar sitios
+
+Una reserva **aparta** el sitio para tu cliente durante unos días para que nadie más lo venda.
+
+1. En la pestaña **Sitios** del negocio, marca los sitios que quieres apartar.
+2. Haz clic en **Reservar (N)** y elige los días: **3, 7, 14 o 30**.
+
+También puedes reservar un solo sitio desde su menú **⋯** con **Reservar**. Un sitio contratado o una pantalla sin cupo no se puede reservar: se queda como **Propuesta**.
 
 ## Estados de disponibilidad
 
@@ -296,7 +304,7 @@ En cada sitio, el menú **⋯** te permite:
 - **Editar fechas y tarifa**: cambia fechas, tarifa mensual o spots por día.
 - **Quitar del negocio**.
 
-También puedes marcar varios sitios y usar **Reservar**, **Liberar** o **Quitar** para todos a la vez.
+También puedes marcar varios sitios y usar **Reservar (N)**, **Liberar** o **Quitar** para todos a la vez.
 
 ## Avisos en cada sitio
 
@@ -322,13 +330,15 @@ Las tarifas son **mensuales** y se prorratean a meses de 30 días. Ejemplo: una 
     title: 'Disponibilidad: consultar inventario libre',
     category: 'crm',
     summary:
-      'Busca vallas y pantallas libres en unas fechas sin abrir un negocio, y resérvalas en uno.',
+      'Busca vallas y pantallas libres en unas fechas sin abrir un negocio, mira sus fotos y agrégalas a uno.',
     tags: [
       'disponibilidad',
       'inventario',
       'qué hay libre',
       'vallas libres',
       'pantallas libres',
+      'fotos de la valla',
+      'mapa',
     ],
     modules: [
       { label: 'Abrir Disponibilidad', href: '/dashboard/crm/disponibilidad' },
@@ -342,8 +352,9 @@ Las tarifas son **mensuales** y se prorratean a meses de 30 días. Ejemplo: una 
 
 1. Pon las fechas y los filtros.
 2. Revisa los [estados de cada sitio](academy:crm-sitios-y-reservas#estados-de-disponibilidad).
-3. Si quieres apartar algo, elige el negocio en **Agregar al negocio**, marca los sitios y haz clic en **Reservar sitios** o **Agregar a propuesta**.
-4. Con **Abrir negocio** vas al negocio elegido.`,
+3. Haz clic en una valla del mapa para ver sus fotos más recientes.
+4. Si te interesa algo, elige el negocio en **Agregar al negocio**, marca los sitios y haz clic en **Agregar a propuesta**.
+5. Con **Abrir negocio** vas al negocio elegido. Desde su pestaña **Sitios** puedes [reservar los sitios](academy:crm-sitios-y-reservas#reservar-sitios).`,
   },
   {
     slug: 'crm-renovaciones',

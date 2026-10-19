@@ -18,6 +18,7 @@ export const OPERACION: AcademyArticleSource[] = [
       'instalación',
       'instalador',
       'calendario',
+      'prueba de color',
       'qr',
       'fecha de impresión',
       'reprogramar',
@@ -76,6 +77,17 @@ El instalador abre su portal escaneando el **código QR** de la orden y desde ah
 Muestra los trabajos de impresión agendados por día. Cada trabajo pasa por estos estados: **Agendado**, **En set up**, **Imprimiendo**, **En cooldown**, **Finalizado** o **Cancelado**.
 
 En la lista de vallas por agendar, las que tienen una solicitud del vendedor llevan la etiqueta **Prioridad** o **Reprogramación** (con la fecha preferida, si la indicó) y aparecen primero.
+
+### Pruebas de color
+
+Antes de imprimir una lona puedes reservar tiempo de máquina para una **prueba de color**:
+
+1. En el calendario, haz clic en **Prueba de color**.
+2. Elige la **orden de producción** y la **valla estática**.
+3. Indica la **Duración de la prueba (min)** (30 por defecto) y, si quieres, **Notas** como el perfil de color o el sustrato.
+4. Haz clic en **Agregar a Sin agendar** y arrastra la prueba a una máquina para reservar su horario.
+
+Las pruebas se ven en color fucsia. Como son una sola corrida, no tienen set up ni cooldown: se avanzan con **Iniciar prueba** y **Finalizar prueba**. Si ya no la necesitas, elimínala desde la lista de **Sin agendar**.
 
 ## Pestaña Solicitudes
 

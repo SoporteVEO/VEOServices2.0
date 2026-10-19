@@ -97,7 +97,7 @@ Esos datos salen del cliente en Brilo. Complétalos en Brilo y vuelve a descarga
 Sí, mientras esté **Pendiente**. Una vez aceptada, ya no. Ver [Editar una cotización](academy:crear-cotizacion-mixta#editar-una-cotizacion).
 
 ### ¿Cómo doy un descuento?
-Baja el precio directamente en la tabla de la cotización o escríbelo en **Condiciones especiales**. Ver [Cómo se calculan los precios](academy:crear-cotizacion-vallas#como-se-calculan-los-precios).
+Baja el precio directamente en la tabla de la cotización. Si la creas desde **Mis cotizaciones**, la plataforma muestra el descuento sobre el precio recomendado en la cotización y en el PDF. También puedes escribirlo en **Condiciones especiales**. Ver [Descuentos](academy:crear-cotizacion-mixta#descuentos).
 
 ### ¿La cotización se envía sola al cliente?
 No. Se descarga en PDF y tú se la envías, idealmente desde el [CRM](academy:crm-mensajes-y-plantillas).
@@ -122,7 +122,7 @@ Selecciona solo las fotos de instalación en el panel del contrato. Ver [Mensual
 ## CRM
 
 ### ¿Por qué no puedo reservar un sitio?
-Puede estar **contratado** en Brilo, **vendido** en otro negocio, o la pantalla **sin cupo**. Ver [Estados de disponibilidad](academy:crm-sitios-y-reservas#estados-de-disponibilidad).
+Las reservas se hacen desde la pestaña **Sitios** del negocio, no desde el buscador. Si ahí tampoco puedes, el sitio puede estar **contratado** en Brilo, **vendido** en otro negocio, o la pantalla **sin cupo**. Ver [Reservar sitios](academy:crm-sitios-y-reservas#reservar-sitios) y [Estados de disponibilidad](academy:crm-sitios-y-reservas#estados-de-disponibilidad).
 
 ### Otro vendedor tiene el sitio reservado
 Resérvalo igual: quedarás como **2ª opción**. Si el otro lo libera, pierde el negocio o su reserva vence, tú quedas primero.

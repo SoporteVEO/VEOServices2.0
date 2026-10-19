@@ -218,6 +218,8 @@ Cuando el cliente acepte, [acepta la cotización](academy:aceptar-cotizacion). L
       'spots',
       'conceptos adicionales',
       'cotización mixta',
+      'descuento',
+      'precio recomendado',
       'editar cotización',
       'motivo del cambio',
       'historial',
@@ -249,6 +251,16 @@ El arrendamiento de pantallas se calcula **por día**: precio diario de la panta
 
 > **Capacidad:** al cotizar no se revisa si la pantalla tiene cupo. Eso se valida al **aceptar** la cotización, cuando la campaña se programa. Revisa antes la ocupación en el [CRM](academy:crm-disponibilidad) o en [Pantallas](academy:pantallas).
 
+## Descuentos
+
+En las **vallas estáticas**, la **Impresión** y el **Arrendamiento** empiezan con el **precio recomendado** (el de lista). Para dar un descuento, baja el precio en la tabla: debajo verás el precio recomendado tachado y cuánto le quitaste, por ejemplo *-10% ($100.00)*.
+
+- En el detalle de la cotización, el **Total general** muestra el descuento total sobre el precio recomendado, y los bloques de **Arrendamiento** e **Impresión** muestran el suyo.
+- El PDF indica en los totales: *Incluye un descuento de … sobre el precio recomendado*.
+- Los descuentos se calculan **antes de IVA**. Si subes el precio de una valla, eso no reduce el descuento que diste en otra.
+
+> Las pantallas y los conceptos adicionales no muestran descuento. Tampoco las cotizaciones rápidas hechas desde **Vallas estáticas**: ahí escribe el descuento en **Condiciones especiales**.
+
 ## Editar una cotización
 
 Mientras la cotización esté **Pendiente**, haz clic en ella en Mis cotizaciones y usa **Editar**. Al terminar, haz clic en **Guardar cambios**. Una cotización aceptada ya no se puede editar.
@@ -266,7 +278,7 @@ Si **agregas o quitas vallas o pantallas**, la plataforma te pide el **Motivo de
 - Corrección de un error
 - Otro (en este caso, describe el motivo en **Detalle**)
 
-Si solo cambias precios, fechas o datos del cliente, el motivo es opcional. Queda registrado en el **Historial** de la cotización junto con el cambio de vallas (por ejemplo, *Vallas: 5 → 3*), y los administradores lo ven en **Analytics → Ediciones de cotizaciones** para entender por qué cambian las propuestas.
+Si solo cambias precios, fechas o datos del cliente, el motivo es opcional. Queda registrado en el **Historial** de la cotización junto con el cambio de vallas (por ejemplo, *Vallas: 5 → 3*), y los administradores lo ven en **Analíticas → Resumen de cotizaciones**, en la sección **Ediciones de cotizaciones**, para entender por qué cambian las propuestas.
 
 ## Siguiente paso
 
