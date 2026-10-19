@@ -31,6 +31,8 @@ import {
   Landmark,
   HandCoins,
   ReceiptText,
+  ClipboardList,
+  Lightbulb,
 } from "lucide-react";
 import {
   IMAGES_MODULE_FIELD_ROLES,
@@ -294,6 +296,13 @@ export const NAV_GROUPS: NavGroup[] = [
         allowedRoles: [],
         requiredSubRoles: ["DESARROLLADOR"],
       },
+      {
+        title: "Solicitudes de funcionalidad",
+        href: "/dashboard/desarrollo/solicitudes",
+        icon: ClipboardList,
+        allowedRoles: [],
+        requiredSubRoles: ["DESARROLLADOR"],
+      },
     ],
   },
   {
@@ -315,6 +324,12 @@ export const NAV_GROUPS: NavGroup[] = [
         title: "Actualizaciones",
         href: "/dashboard/actualizaciones",
         icon: Megaphone,
+        allowedRoles: ["ADMIN", "USER", "LIMITED", ...IMAGES_MODULE_FIELD_ROLES],
+      },
+      {
+        title: "Solicitar funcionalidad",
+        href: "/dashboard/solicitudes",
+        icon: Lightbulb,
         allowedRoles: ["ADMIN", "USER", "LIMITED", ...IMAGES_MODULE_FIELD_ROLES],
       },
     ],

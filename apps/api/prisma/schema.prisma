@@ -8,62 +8,67 @@ datasource db {
 }
 
 model User {
-  id                      String                   @id
-  publicId                String                   @unique @default(uuid()) @map("public_id")
-  firstName               String                   @map("first_name")
-  lastName                String?                  @map("last_name")
-  email                   String                   @unique
-  role                    Role                     @default(USER)
-  subRoles                SubRole[]                @default([]) @map("sub_roles")
-  disabled                Boolean                  @default(false)
-  lastLoginAt             DateTime?                @map("last_login_at")
-  createdAt               DateTime                 @default(now())
-  updatedAt               DateTime                 @updatedAt
-  emailVerified           Boolean                  @default(false)
-  image                   String?
-  accounts                Account[]
-  sessions                Session[]
-  s3Images                S3Image[]
-  teamMember              TeamMember?              @relation("TeamMemberUser")
-  teamMembersAsBoss       TeamMember[]             @relation("TeamMemberDirectBoss")
-  absences                Absence[]
-  notifications           Notification[]
-  metrics                 UserMetrics?
-  metricsDays             UserMetricsDay[]
-  offersCreated           OfferCreated[]
-  installationsAssigned   ProductionOrderItem[]    @relation("ProductionOrderInstaller")
-  vulcanizadosAssigned    ProductionOrderItem[]    @relation("ProductionOrderVulcanizador")
-  fleetVehiclesCreated    FleetVehicle[]           @relation("FleetVehicleCreatedBy")
-  fleetServicesCreated    FleetMaintenance[]       @relation("FleetMaintenanceCreatedBy")
-  printJobsCreated        PrintJob[]               @relation("PrintJobCreatedBy")
-  printColorTestsCreated  PrintColorTest[]         @relation("PrintColorTestCreatedBy")
-  printRescheduleRequests PrintRescheduleRequest[] @relation("PrintRescheduleRequestedBy")
-  printRescheduleResolved PrintRescheduleRequest[] @relation("PrintRescheduleResolvedBy")
-  maintenanceAssigned     MaintenanceJob[]         @relation("MaintenanceAssignee")
-  maintenanceCreated      MaintenanceJob[]         @relation("MaintenanceCreatedBy")
-  maintenancePhotos       MaintenancePhoto[]       @relation("MaintenancePhotoUploader")
-  maintenanceEvents       MaintenanceEvent[]       @relation("MaintenanceEventActor")
-  maintenanceComments     MaintenanceComment[]     @relation("MaintenanceCommentAuthor")
-  offerEvents             OfferEvent[]             @relation("OfferEventActor")
-  productionOrders        ProductionOrder[]        @relation("ProductionOrderCreatedBy")
-  pushSubscriptions       PushSubscription[]
-  agentThreads            AgentThread[]
-  agentIssuesReported     AgentIssue[]             @relation("AgentIssueReporter")
-  agentIssuesResolved     AgentIssue[]             @relation("AgentIssueResolver")
-  agentFeedback           AgentFeedback[]          @relation("AgentFeedbackAuthor")
-  agentFeedbackReviewed   AgentFeedback[]          @relation("AgentFeedbackReviewer")
-  learningsProposed       AgentLearning[]          @relation("AgentLearningProposer")
-  learningsReviewed       AgentLearning[]          @relation("AgentLearningReviewer")
-  crmDealsOwned           CrmDeal[]                @relation("CrmDealOwner")
-  crmDealsCreated         CrmDeal[]                @relation("CrmDealCreatedBy")
-  crmActivities           CrmActivity[]            @relation("CrmActivityActor")
-  crmTasksAssigned        CrmTask[]                @relation("CrmTaskAssignee")
-  crmTasksCreated         CrmTask[]                @relation("CrmTaskCreatedBy")
-  crmEmailTemplates       CrmEmailTemplate[]
-  crmMessages             CrmMessage[]
-  crmConnections          CrmChannelConnection[]
-  crmDealSites            CrmDealSite[]            @relation("CrmDealSiteCreatedBy")
-  patchNotesCreated       PatchNote[]              @relation("PatchNoteCreatedBy")
+  id                         String                       @id
+  publicId                   String                       @unique @default(uuid()) @map("public_id")
+  firstName                  String                       @map("first_name")
+  lastName                   String?                      @map("last_name")
+  email                      String                       @unique
+  role                       Role                         @default(USER)
+  subRoles                   SubRole[]                    @default([]) @map("sub_roles")
+  disabled                   Boolean                      @default(false)
+  lastLoginAt                DateTime?                    @map("last_login_at")
+  createdAt                  DateTime                     @default(now())
+  updatedAt                  DateTime                     @updatedAt
+  emailVerified              Boolean                      @default(false)
+  image                      String?
+  accounts                   Account[]
+  sessions                   Session[]
+  s3Images                   S3Image[]
+  teamMember                 TeamMember?                  @relation("TeamMemberUser")
+  teamMembersAsBoss          TeamMember[]                 @relation("TeamMemberDirectBoss")
+  absences                   Absence[]
+  notifications              Notification[]
+  metrics                    UserMetrics?
+  metricsDays                UserMetricsDay[]
+  offersCreated              OfferCreated[]
+  installationsAssigned      ProductionOrderItem[]        @relation("ProductionOrderInstaller")
+  vulcanizadosAssigned       ProductionOrderItem[]        @relation("ProductionOrderVulcanizador")
+  fleetVehiclesCreated       FleetVehicle[]               @relation("FleetVehicleCreatedBy")
+  fleetServicesCreated       FleetMaintenance[]           @relation("FleetMaintenanceCreatedBy")
+  printJobsCreated           PrintJob[]                   @relation("PrintJobCreatedBy")
+  printColorTestsCreated     PrintColorTest[]             @relation("PrintColorTestCreatedBy")
+  printRescheduleRequests    PrintRescheduleRequest[]     @relation("PrintRescheduleRequestedBy")
+  printRescheduleResolved    PrintRescheduleRequest[]     @relation("PrintRescheduleResolvedBy")
+  maintenanceAssigned        MaintenanceJob[]             @relation("MaintenanceAssignee")
+  maintenanceCreated         MaintenanceJob[]             @relation("MaintenanceCreatedBy")
+  maintenancePhotos          MaintenancePhoto[]           @relation("MaintenancePhotoUploader")
+  maintenanceEvents          MaintenanceEvent[]           @relation("MaintenanceEventActor")
+  maintenanceComments        MaintenanceComment[]         @relation("MaintenanceCommentAuthor")
+  offerEvents                OfferEvent[]                 @relation("OfferEventActor")
+  productionOrders           ProductionOrder[]            @relation("ProductionOrderCreatedBy")
+  pushSubscriptions          PushSubscription[]
+  agentThreads               AgentThread[]
+  agentIssuesReported        AgentIssue[]                 @relation("AgentIssueReporter")
+  agentIssuesResolved        AgentIssue[]                 @relation("AgentIssueResolver")
+  agentFeedback              AgentFeedback[]              @relation("AgentFeedbackAuthor")
+  agentFeedbackReviewed      AgentFeedback[]              @relation("AgentFeedbackReviewer")
+  learningsProposed          AgentLearning[]              @relation("AgentLearningProposer")
+  learningsReviewed          AgentLearning[]              @relation("AgentLearningReviewer")
+  crmDealsOwned              CrmDeal[]                    @relation("CrmDealOwner")
+  crmDealsCreated            CrmDeal[]                    @relation("CrmDealCreatedBy")
+  crmActivities              CrmActivity[]                @relation("CrmActivityActor")
+  crmTasksAssigned           CrmTask[]                    @relation("CrmTaskAssignee")
+  crmTasksCreated            CrmTask[]                    @relation("CrmTaskCreatedBy")
+  crmEmailTemplates          CrmEmailTemplate[]
+  crmMessages                CrmMessage[]
+  crmConnections             CrmChannelConnection[]
+  crmDealSites               CrmDealSite[]                @relation("CrmDealSiteCreatedBy")
+  patchNotesCreated          PatchNote[]                  @relation("PatchNoteCreatedBy")
+  featureRequests            FeatureRequest[]             @relation("FeatureRequestRequester")
+  featureRequestCollabs      FeatureRequestCollaborator[] @relation("FeatureRequestCollaboratorUser")
+  featureRequestCollabsAdded FeatureRequestCollaborator[] @relation("FeatureRequestCollaboratorAddedBy")
+  featureRequestSignatures   FeatureRequestSignature[]    @relation("FeatureRequestSignatureUser")
+  featureRequestEvents       FeatureRequestEvent[]        @relation("FeatureRequestEventActor")
 
   @@map("users")
 }
@@ -301,6 +306,116 @@ model PatchNote {
 
   @@index([createdAt])
   @@map("patch_notes")
+}
+
+enum FeatureRequestStatus {
+  SUBMITTED
+  IN_REVIEW
+  IN_PROGRESS
+  /// Built by the dev team and waiting for every participant to sign.
+  COMPLETED
+  /// Every participant signed the current completion round.
+  APPROVED
+  REJECTED
+}
+
+enum FeatureRequestPriority {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+enum FeatureRequestEventType {
+  CREATED
+  STATUS_CHANGED
+  COMMENT
+  COLLABORATOR_ADDED
+  COLLABORATOR_REMOVED
+  SIGNED
+  PROBLEM_REPORTED
+  APPROVED
+}
+
+/// A feature a user asks the dev team to build. The filled-in request form is
+/// archived as a PDF. The participants (requester plus collaborators) sign off
+/// once dev marks it completed; `completionRound` counts those hand-overs so a
+/// signature always refers to one specific delivery.
+model FeatureRequest {
+  id              String                       @id @default(uuid())
+  number          Int                          @unique @default(autoincrement())
+  title           String
+  summary         String
+  priority        FeatureRequestPriority       @default(MEDIUM)
+  status          FeatureRequestStatus         @default(SUBMITTED)
+  requesterId     String                       @map("requester_id")
+  requester       User                         @relation("FeatureRequestRequester", fields: [requesterId], references: [id])
+  fileS3Key       String                       @map("file_s3_key")
+  fileName        String                       @map("file_name")
+  fileSize        Int                          @map("file_size")
+  completionRound Int                          @default(0) @map("completion_round")
+  completedAt     DateTime?                    @map("completed_at")
+  approvedAt      DateTime?                    @map("approved_at")
+  createdAt       DateTime                     @default(now()) @map("created_at")
+  updatedAt       DateTime                     @updatedAt @map("updated_at")
+  collaborators   FeatureRequestCollaborator[]
+  signatures      FeatureRequestSignature[]
+  events          FeatureRequestEvent[]
+
+  @@index([status, createdAt])
+  @@index([requesterId])
+  @@map("feature_requests")
+}
+
+model FeatureRequestCollaborator {
+  id        String         @id @default(uuid())
+  requestId String         @map("request_id")
+  request   FeatureRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  userId    String         @map("user_id")
+  user      User           @relation("FeatureRequestCollaboratorUser", fields: [userId], references: [id], onDelete: Cascade)
+  addedById String?        @map("added_by_id")
+  addedBy   User?          @relation("FeatureRequestCollaboratorAddedBy", fields: [addedById], references: [id], onDelete: SetNull)
+  createdAt DateTime       @default(now()) @map("created_at")
+
+  @@unique([requestId, userId])
+  @@index([userId])
+  @@map("feature_request_collaborators")
+}
+
+/// Evidence that a participant accepted one delivery. The signer's name and
+/// email are copied here so the record survives the account being deleted.
+model FeatureRequestSignature {
+  id          String         @id @default(uuid())
+  requestId   String         @map("request_id")
+  request     FeatureRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  userId      String?        @map("user_id")
+  user        User?          @relation("FeatureRequestSignatureUser", fields: [userId], references: [id], onDelete: SetNull)
+  round       Int
+  signerName  String         @map("signer_name")
+  signerEmail String         @map("signer_email")
+  imageS3Key  String         @map("image_s3_key")
+  ipAddress   String?        @map("ip_address")
+  userAgent   String?        @map("user_agent")
+  signedAt    DateTime       @default(now()) @map("signed_at")
+
+  @@unique([requestId, userId, round])
+  @@index([requestId, round])
+  @@map("feature_request_signatures")
+}
+
+model FeatureRequestEvent {
+  id          String                  @id @default(uuid())
+  requestId   String                  @map("request_id")
+  request     FeatureRequest          @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  type        FeatureRequestEventType
+  fromStatus  FeatureRequestStatus?   @map("from_status")
+  toStatus    FeatureRequestStatus?   @map("to_status")
+  message     String?
+  actorUserId String?                 @map("actor_user_id")
+  actor       User?                   @relation("FeatureRequestEventActor", fields: [actorUserId], references: [id], onDelete: SetNull)
+  createdAt   DateTime                @default(now()) @map("created_at")
+
+  @@index([requestId, createdAt])
+  @@map("feature_request_events")
 }
 
 /// Web Push endpoint of one installed browser/PWA. The endpoint is unique per

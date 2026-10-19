@@ -33,6 +33,7 @@ import { CrmModule } from './modules/crm/crm.module.js';
 import { AcademyModule } from './modules/academy/academy.module.js';
 import { PatchNotesModule } from './modules/patch-notes/patch-notes.module.js';
 import { FinanceModule } from './modules/finance/finance.module.js';
+import { FeatureRequestsModule } from './modules/feature-requests/feature-requests.module.js';
 
 @Module({
   imports: [
@@ -70,6 +71,7 @@ import { FinanceModule } from './modules/finance/finance.module.js';
     AcademyModule,
     PatchNotesModule,
     FinanceModule,
+    FeatureRequestsModule,
   ],
 })
 export class AppModule {}
