@@ -20,6 +20,7 @@
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "import:pantallas": "tsx scripts/import-pantallas.ts",
+    "migrate:client-companies": "tsx scripts/migrate-client-companies.ts",
     "vercel-build": "prisma generate && prisma migrate deploy && turbo run build --filter=api"
   },
   "prisma": {

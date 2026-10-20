@@ -85,7 +85,7 @@ Las fotos del mes ya deben estar subidas con el código de valla correcto. Ver [
 4. Haz clic en la fila del contrato. Se abre el panel con sus vallas y fotos.
 5. **Toca una imagen para incluirla en el reporte**. Elige las fotos que quieres mostrar.
 6. Haz clic en **Generar reporte**.
-7. En la ventana **Enviar reporte por email**, revisa el **Correo del destinatario**.
+7. En la ventana **Enviar reporte por email**, revisa el **Destinatario**. Se elige entre los **contactos del cliente** y viene seleccionado el **contacto principal**. Si necesitas otro, escribe el correo en el mismo campo.
 8. Haz clic en **Enviar reporte**.
 
 [Abrir Testigos](app:/dashboard/reports)
@@ -103,6 +103,8 @@ No hay que elegir el tipo de reporte: **depende de las fotos que selecciones**. 
 Si eres el ejecutivo del contrato, también puedes hacerlo desde **Mi Espacio → Mis contratos**: haz clic en el contrato y se abre el mismo panel.
 
 [Abrir Mis contratos](app:/dashboard/my-space/contracts)
+
+> **¿No aparece tu contacto?** Los destinatarios salen de los contactos del cliente en el CRM, que se encuentra por su **Cliente Brilo** vinculado o por su correo. Agrega el contacto en [CRM → Contactos](academy:crm-clientes-contactos-tareas#contactos) o escribe el correo directamente.
 
 > **¿No aparece el contrato?** En Brilo debe estar **posteado** y no anulado. Ver [El contrato en Brilo](academy:contrato-en-brilo).`,
   },

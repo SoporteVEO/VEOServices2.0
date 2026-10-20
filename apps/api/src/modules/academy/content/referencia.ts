@@ -47,6 +47,9 @@ Una oportunidad de venta dentro del [CRM](academy:crm-introduccion). Avanza por 
 ### OOH
 *Out Of Home*: publicidad exterior en **vallas estáticas** con lona impresa. Se cotiza con **impresión** (por metro cuadrado) y **arrendamiento** (mensual).
 
+### OP (orden de pauta)
+El pedido con el que Soporte Comercial solicita que una campaña entre a las pantallas digitales. Producción la revisa y la ingresa a las listas o la devuelve para corregir. Ver [Órdenes de pauta (OP)](academy:pantallas#ordenes-de-pauta-op).
+
 ### Orden de producción
 La orden para imprimir e instalar las lonas de una venta. Se crea sola al aceptar una cotización con vallas. Por cada valla se carga un solo archivo: su **arte**. Ver [Órdenes de producción e instalación](academy:produccion).
 
@@ -85,7 +88,7 @@ No, si la cotización tiene vallas estáticas: al aceptarla, VEO Services crea e
 La cotización sí quedó aceptada. Haz clic en **Reintentar Brilo** en la fila o en el detalle de la cotización. Ver [Si Brilo no responde](academy:contrato-en-brilo#si-brilo-no-responde).
 
 ### No aparece el cliente o el ejecutivo de Brilo al aceptar
-El cliente se busca por **correo** y el ejecutivo por el **nombre del asesor**. Si no coinciden, búscalos a mano en la ventana. Si el cliente no existe en Brilo, pide que lo registren primero.
+Si el cliente de la cotización tiene un **Cliente Brilo** vinculado, se usa ese. Si no, se busca por el **correo** de la cotización, y el ejecutivo por el **nombre del asesor**. Si no coinciden, búscalos a mano en la ventana. Para que no vuelva a pasar, vincula el cliente en **CRM → Clientes → Información → Cliente en Brilo**. Si el cliente no existe en Brilo, pide que lo registren primero.
 
 ### No encuentro el contrato al aceptar una cotización de pantallas
 Las cotizaciones sin vallas estáticas se vinculan a un contrato existente. En Brilo debe estar **posteado** y **no anulado**. Búscalo por su código CON.
@@ -134,9 +137,26 @@ La reserva ya no te protege, pero el sitio sigue en tu negocio. Usa **Extender r
 Haz clic en **Sincronizar respuestas** en la pestaña **Mensajes**. Si Gmail dice "Requiere atención", ve a [Ajustes](academy:crm-conectar-gmail-whatsapp#si-gmail-dice-requiere-atencion) y reconecta.
 
 ### ¿Dónde quedó el módulo Clientes?
-Ahora está dentro del CRM, en **CRM → Clientes**. Ahí puedes crear clientes con **Nuevo cliente**, editarlos en la pestaña **Información** y ver sus contratos de Brilo en la pestaña **Contratos**. Ver [Registrar un cliente](academy:crear-cliente).
+Ahora está dentro del CRM, en **CRM → Clientes**. Ahí puedes crear clientes con **Nuevo cliente**, editarlos en la pestaña **Información** y ver sus contratos de Brilo en la pestaña **Contratos**. Los correos y teléfonos se agregan como **contactos**. Ver [Registrar un cliente](academy:crear-cliente).
 
 [Abrir Clientes](app:/dashboard/crm/clientes)
+
+### ¿Dónde está la empresa o el correo del cliente?
+El cliente solo lleva **nombre** y **tipo**. Los correos y teléfonos están en sus **contactos**, y el **principal** es el que se propone en cotizaciones, mensajes y reportes. Ver [Contactos](academy:crm-clientes-contactos-tareas#contactos).
+
+## Plataforma
+
+### ¿Cómo voy rápido a un módulo?
+Usa el **buscador de módulos**: la lupa de arriba a la derecha o **Ctrl + K**. Ver [Buscar un módulo](academy:conoce-veo-services#buscar-un-modulo).
+
+### No me llegan los avisos del navegador
+Actívalos con el botón **Activar** del aviso superior o desde la **campana** de notificaciones. Si el navegador los tiene **bloqueados**, permítelos desde el candado de la barra de direcciones. Al cerrar sesión se desactivan en ese equipo, así que vuelve a activarlos si usas otro. Ver [Notificaciones](academy:conoce-veo-services#notificaciones).
+
+### ¿Dónde quedó «Mis órdenes» en Mi Espacio?
+Ahora se llama **Producción Vallas**. Sigue siendo ahí donde cargas el arte de tus vallas. Ver [Mi Espacio](academy:mi-espacio).
+
+### No veo una cotización rechazada
+**Mis cotizaciones** ya no muestra las rechazadas. Las aceptadas y pendientes siguen en la lista.
 
 ## Solicitudes de funcionalidad
 

@@ -2,8 +2,10 @@ import { ClientType } from '@prisma/client';
 import {
   IsEmail,
   IsEnum,
+  IsInt,
   IsOptional,
   IsString,
+  Min,
   MinLength,
   ValidateIf,
 } from 'class-validator';
@@ -36,4 +38,10 @@ export class UpdateClientDto {
   @ValidateIf((_o, value) => value !== null)
   @IsString()
   contact?: string | null;
+
+  @IsOptional()
+  @ValidateIf((_o, value) => value !== null)
+  @IsInt()
+  @Min(1)
+  briloCliId?: number | null;
 }

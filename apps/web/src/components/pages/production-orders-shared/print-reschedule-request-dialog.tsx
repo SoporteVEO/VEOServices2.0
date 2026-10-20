@@ -96,16 +96,17 @@ function RescheduleForm({
   const [reason, setReason] = useState("");
   const [isUrgent, setIsUrgent] = useState(false);
   const [preferredDate, setPreferredDate] = useState<Date | undefined>();
+  const [attemptedSubmit, setAttemptedSubmit] = useState(false);
 
   const schedule = item.printSchedule;
   const trimmedReason = reason.trim();
+  const reasonTooShort = trimmedReason.length < MIN_REASON_LENGTH;
+  const showReasonError = attemptedSubmit && reasonTooShort;
 
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (trimmedReason.length < MIN_REASON_LENGTH) {
-      toast.error("Explica brevemente el motivo de la reprogramación.");
-      return;
-    }
+    setAttemptedSubmit(true);
+    if (reasonTooShort) return;
     void onSubmit({
       reason: trimmedReason,
       isUrgent,
@@ -151,8 +152,15 @@ function RescheduleForm({
           placeholder="Ej. El cliente adelantó el inicio de la campaña…"
           value={reason}
           disabled={isSubmitting}
+          aria-invalid={showReasonError || undefined}
           onChange={(event) => setReason(event.target.value)}
         />
+        {showReasonError ? (
+          <p className="-mt-2 text-xs text-destructive">
+            Escribe al menos {MIN_REASON_LENGTH} caracteres para explicar el
+            motivo.
+          </p>
+        ) : null}
 
         <div className="flex items-start gap-3 rounded-md border bg-accent/10 p-3">
           <Switch
@@ -188,7 +196,7 @@ function RescheduleForm({
           type="submit"
           icon={CalendarSync}
           loading={isSubmitting}
-          disabled={isSubmitting || trimmedReason.length < MIN_REASON_LENGTH}
+          disabled={isSubmitting}
         >
           Enviar solicitud
         </Button>

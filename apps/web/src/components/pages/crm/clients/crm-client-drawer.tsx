@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Building2, Mail, Phone, Plus, X } from "lucide-react";
+import { Mail, Phone, Plus, User, X } from "lucide-react";
 import { useCrmClientSummary, useCrmContacts } from "@/api/crm/crm.get";
 import type { CrmClientSummary } from "@/api/crm/crm.types";
 import { ClientContractsHistory } from "@/components/pages/clients/client-contracts-history";
@@ -113,6 +113,11 @@ function ClientDrawerContent({
   const [contactOpen, setContactOpen] = useState(false);
   const context = { clientId: client.id };
   const clientRef = { id: client.id, name: client.name, company: client.company };
+  const { data: contactsPage } = useCrmContacts({ clientId: client.id, pageSize: 100 });
+  const primaryContact =
+    contactsPage?.data.find((contact) => contact.isPrimary) ??
+    contactsPage?.data[0] ??
+    null;
 
   return (
     <>
@@ -131,24 +136,30 @@ function ClientDrawerContent({
                 </DrawerTitle>
                 <ClientTypeBadge type={client.type} />
               </div>
-              <DrawerDescription className="flex flex-wrap gap-x-3 gap-y-0.5 text-xs">
-                {client.company ? (
+              {primaryContact ? (
+                <DrawerDescription className="flex flex-wrap gap-x-3 gap-y-0.5 text-xs">
                   <span className="flex items-center gap-1">
-                    <Building2 className="size-3" />
-                    {client.company}
+                    <User className="size-3" />
+                    {personName(primaryContact)}
                   </span>
-                ) : null}
-                <span className="flex items-center gap-1">
-                  <Mail className="size-3" />
-                  {client.email}
-                </span>
-                {client.contact ? (
-                  <span className="flex items-center gap-1">
-                    <Phone className="size-3" />
-                    {client.contact}
-                  </span>
-                ) : null}
-              </DrawerDescription>
+                  {primaryContact.email ? (
+                    <span className="flex items-center gap-1">
+                      <Mail className="size-3" />
+                      {primaryContact.email}
+                    </span>
+                  ) : null}
+                  {primaryContact.phone ? (
+                    <span className="flex items-center gap-1">
+                      <Phone className="size-3" />
+                      {primaryContact.phone}
+                    </span>
+                  ) : null}
+                </DrawerDescription>
+              ) : (
+                <DrawerDescription className="sr-only">
+                  Detalle del cliente
+                </DrawerDescription>
+              )}
             </div>
           </div>
           <div className="flex shrink-0 items-center gap-1.5">
@@ -227,7 +238,13 @@ function ClientDrawerContent({
           <div className="p-4">
             <CrmMessageThread
               context={context}
-              recipient={{ email: client.email, whatsapp: client.contact }}
+              recipient={{
+                email: primaryContact?.email ?? client.email,
+                whatsapp:
+                  primaryContact?.whatsapp ??
+                  primaryContact?.phone ??
+                  client.contact,
+              }}
             />
           </div>
         </CrmDrawerPanel>

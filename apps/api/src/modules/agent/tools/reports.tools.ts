@@ -15,6 +15,7 @@ interface ActiveContractGroup {
   contractNumber: string;
   customerName: string | null;
   customerEmail: string | null;
+  customerBriloId?: number | null;
   description: string | null;
   endDate: string;
   totalBillboards: number;
@@ -83,6 +84,7 @@ export function buildReportTools(ctx: AgentToolContext) {
             contractNumber: group.contractNumber,
             customerName: group.customerName,
             customerEmail: group.customerEmail,
+            customerBriloId: group.customerBriloId,
             description: group.description,
             endDate: group.endDate,
             totalBillboards: group.totalBillboards,

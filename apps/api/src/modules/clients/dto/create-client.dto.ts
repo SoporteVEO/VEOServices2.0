@@ -2,9 +2,12 @@ import { ClientType } from '@prisma/client';
 import {
   IsEmail,
   IsEnum,
+  IsInt,
   IsOptional,
   IsString,
+  Min,
   MinLength,
+  ValidateIf,
 } from 'class-validator';
 
 export class CreateClientDto {
@@ -20,8 +23,9 @@ export class CreateClientDto {
   @IsString()
   company?: string | null;
 
+  @IsOptional()
   @IsEmail()
-  email!: string;
+  email?: string | null;
 
   @IsOptional()
   @IsEmail()
@@ -30,4 +34,10 @@ export class CreateClientDto {
   @IsOptional()
   @IsString()
   contact?: string | null;
+
+  @IsOptional()
+  @ValidateIf((_o, value) => value !== null)
+  @IsInt()
+  @Min(1)
+  briloCliId?: number | null;
 }

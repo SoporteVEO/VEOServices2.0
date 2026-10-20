@@ -73,6 +73,7 @@ export interface ProductionOrderItemDto {
   height: number | null;
   quantity: number;
   art: ProductionOrderArtDto | null;
+  artLinkUrl: string | null;
   hasProductionDocument: boolean;
   hasDesignDocument: boolean;
   assignedInstaller: InstallerSummaryDto | null;
@@ -130,6 +131,7 @@ export interface ListProductionOrdersFilters {
   page?: number;
   pageSize?: number;
   status?: ProductionOrderStatus;
+  hideFinished?: boolean;
 }
 
 export interface PaginatedProductionOrders {
@@ -517,6 +519,19 @@ export class ProductionOrdersService {
       ...(filters.status
         ? { items: { some: { status: filters.status } } }
         : {}),
+      ...(filters.hideFinished
+        ? {
+            NOT: [
+              { items: { some: { status: ProductionOrderStatus.CANCELLED } } },
+              {
+                AND: [
+                  { items: { some: {} } },
+                  { items: { every: { status: ProductionOrderStatus.COMPLETED } } },
+                ],
+              },
+            ],
+          }
+        : {}),
     };
 
     const [rows, total] = await Promise.all([
@@ -638,6 +653,36 @@ export class ProductionOrdersService {
 
     void this.storage.deleteByKey(item.artS3Key);
 
+    return this.mapItemToDto(updated);
+  }
+
+  async setArtLink(
+    actor: DocumentActor,
+    itemId: string,
+    url: string,
+  ): Promise<ProductionOrderItemDto> {
+    await this.findItemEditableBy(itemId, actor);
+    const updated = await this.prisma.productionOrderItem.update({
+      where: { id: itemId },
+      data: { artLinkUrl: url.trim() },
+      include: ITEM_INCLUDE,
+    });
+    return this.mapItemToDto(updated);
+  }
+
+  async deleteArtLink(
+    actor: DocumentActor,
+    itemId: string,
+  ): Promise<ProductionOrderItemDto> {
+    const item = await this.findItemEditableBy(itemId, actor);
+    if (!item.artLinkUrl) {
+      throw new NotFoundException('El enlace del arte no existe');
+    }
+    const updated = await this.prisma.productionOrderItem.update({
+      where: { id: itemId },
+      data: { artLinkUrl: null },
+      include: ITEM_INCLUDE,
+    });
     return this.mapItemToDto(updated);
   }
 
@@ -936,6 +981,7 @@ export class ProductionOrdersService {
               uploadedAt: (item.artUploadedAt ?? item.updatedAt).toISOString(),
             }
           : null,
+      artLinkUrl: item.artLinkUrl,
       hasProductionDocument: !!item.productionDocumentS3Key,
       hasDesignDocument: !!item.designDocumentS3Key,
       assignedInstaller: item.assignedInstaller,

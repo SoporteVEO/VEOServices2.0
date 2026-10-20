@@ -10,7 +10,11 @@ import {
 } from "@/components/dashboard/agent";
 import { AppSidebar } from "@/components/dashboard/app-sidebar";
 import { DashboardAccessGuard } from "@/components/dashboard/dashboard-access-guard";
-import { NotificationsButton } from "@/components/dashboard/notifications";
+import { ModuleSearch } from "@/components/dashboard/module-search";
+import {
+  NotificationsButton,
+  PushPermissionBanner,
+} from "@/components/dashboard/notifications";
 import { ModeToggle } from "@/components/mode-toggle";
 import {
   SidebarInset,
@@ -42,6 +46,7 @@ export function DashboardShell({ children }: { children: ReactNode }) {
               </span>
             </div>
             <div className="flex flex-1 items-center justify-end gap-1.5">
+              <ModuleSearch />
               <NotificationsButton />
               <ModeToggle />
               <AgentPanelTrigger />
@@ -50,6 +55,7 @@ export function DashboardShell({ children }: { children: ReactNode }) {
           <div className="relative flex min-w-0 flex-1 flex-col overflow-hidden">
             <div className="@container/main flex h-full min-h-0 w-full min-w-0 flex-1 flex-col overflow-x-auto overflow-y-auto bg-background">
               <div className="mx-auto flex min-h-0 w-full max-w-[1800px] flex-1 flex-col p-3 @3xl/main:p-5 @7xl/main:p-6">
+                <PushPermissionBanner />
                 <DashboardAccessGuard>{children}</DashboardAccessGuard>
               </div>
             </div>

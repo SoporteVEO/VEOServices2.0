@@ -40,16 +40,18 @@ function BriloClientOptionCard({
     .join(" · ");
   return (
     <div className={cn("flex min-w-0 flex-col text-left", !compact && "gap-0.5")}>
-      <span className="truncate text-sm font-semibold text-foreground">
+      <span className="truncate text-sm font-semibold text-foreground group-hover/button:text-background">
         {client.name || "Sin nombre"}
       </span>
       {client.commercialName && client.commercialName !== client.name ? (
-        <span className="truncate text-xs text-foreground/90">
+        <span className="truncate text-xs text-foreground/90 group-hover/button:text-background/90">
           {client.commercialName}
         </span>
       ) : null}
       {meta ? (
-        <span className="truncate text-xs text-muted-foreground">{meta}</span>
+        <span className="truncate text-xs text-muted-foreground group-hover/button:text-background/70">
+          {meta}
+        </span>
       ) : null}
     </div>
   );

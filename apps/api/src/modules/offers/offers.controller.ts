@@ -63,6 +63,7 @@ export class OffersController {
     @Query('page') pageStr?: string,
     @Query('pageSize') pageSizeStr?: string,
     @Query('viewAsUserId') viewAsUserId?: string,
+    @Query('hideDeclined') hideDeclinedStr?: string,
   ) {
     const page = pageStr ? Number(pageStr) : undefined;
     const pageSize = pageSizeStr ? Number(pageSizeStr) : undefined;
@@ -81,6 +82,7 @@ export class OffersController {
       search: search?.trim() || undefined,
       page,
       pageSize,
+      hideDeclined: hideDeclinedStr === 'true',
     });
   }
 

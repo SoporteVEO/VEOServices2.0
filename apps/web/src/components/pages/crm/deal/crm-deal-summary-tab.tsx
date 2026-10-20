@@ -73,12 +73,7 @@ export function CrmDealSummaryTab({ deal }: { deal: CrmDealDetail }) {
         <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <Field icon={Building2} label="Cliente">
             {deal.client ? (
-              <span>
-                {deal.client.name}
-                {deal.client.company ? (
-                  <span className="text-muted-foreground"> · {deal.client.company}</span>
-                ) : null}
-              </span>
+              <span>{deal.client.name}</span>
             ) : (
               <Empty>Sin cliente</Empty>
             )}

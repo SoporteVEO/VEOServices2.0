@@ -17,6 +17,7 @@ interface CrmContactComboboxProps {
   selected?: ContactName | null;
   label?: string;
   onAdd?: () => void;
+  disabled?: boolean;
 }
 
 export function CrmContactCombobox({
@@ -26,6 +27,7 @@ export function CrmContactCombobox({
   selected,
   label = "Contacto",
   onAdd,
+  disabled,
 }: CrmContactComboboxProps) {
   const [search, setSearch] = useState("");
   const debouncedSearch = useDebouncedValue(search.trim(), 250);
@@ -54,6 +56,7 @@ export function CrmContactCombobox({
       emptyLabel={clientId ? "Este cliente no tiene contactos." : "Sin contactos."}
       options={options}
       value={value}
+      disabled={disabled}
       isLoading={isLoading}
       manualFilter
       onSearch={setSearch}

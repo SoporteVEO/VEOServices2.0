@@ -35,8 +35,19 @@ export function usePushNotifications() {
     enable.mutate(Notification.requestPermission());
   }
 
+  const data = status.data;
+  const canEnable =
+    !!data?.supported &&
+    data.serverEnabled &&
+    !data.subscribed &&
+    data.permission !== "denied";
+  const isBlocked =
+    !!data?.supported && data.serverEnabled && data.permission === "denied";
+
   return {
-    status: status.data,
+    status: data,
+    canEnable,
+    isBlocked,
     isLoading: status.isPending,
     requestEnable,
     isEnabling: enable.isPending,

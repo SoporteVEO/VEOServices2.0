@@ -29,7 +29,7 @@ export const TEMPLATE_VARIABLE_KEYS = [
 ] as const;
 
 export interface TemplateContext {
-  client?: { name: string; company: string | null; email: string } | null;
+  client?: { name: string; company: string | null; email: string | null } | null;
   contact?: {
     firstName: string;
     lastName: string | null;
@@ -99,8 +99,8 @@ export function buildTemplateVariables(
 
   if (ctx.client) {
     vars['cliente.nombre'] = ctx.client.name;
-    vars['cliente.empresa'] = ctx.client.company ?? ctx.client.name;
-    vars['cliente.correo'] = ctx.client.email;
+    vars['cliente.empresa'] = ctx.client.name;
+    vars['cliente.correo'] = ctx.client.email ?? '';
   }
   if (ctx.contact) {
     vars['contacto.nombre'] = ctx.contact.firstName;

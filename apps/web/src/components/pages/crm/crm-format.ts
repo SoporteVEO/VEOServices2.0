@@ -19,11 +19,8 @@ export function personInitials(person: {
     .slice(0, 2);
 }
 
-export function clientLabel(
-  client: { name: string; company: string | null } | null,
-): string | null {
-  if (!client) return null;
-  return client.company || client.name;
+export function clientLabel(client: { name: string } | null): string | null {
+  return client?.name ?? null;
 }
 
 export function timeAgo(value: string | Date): string {

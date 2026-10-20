@@ -10,6 +10,7 @@ import type {
   ClientType,
   PaginatedClients,
   PaginatedClientsPage,
+  ReportRecipients,
 } from "./clients.types";
 
 export type {
@@ -104,6 +105,33 @@ export function useClient(id: string | null) {
     queryKey: ["clients", id],
     queryFn: () => getClient(id as string),
     enabled: !!id,
+  });
+}
+
+export interface ReportRecipientsQuery {
+  briloCliId?: number | null;
+  email?: string | null;
+}
+
+export async function getReportRecipients(
+  query: ReportRecipientsQuery,
+): Promise<ReportRecipients> {
+  const params: Record<string, string> = {};
+  if (query.briloCliId) params.briloCliId = String(query.briloCliId);
+  if (query.email) params.email = query.email;
+  const response = await apiFetch<{ data: ReportRecipients }>(
+    "/clients/report-recipients",
+    { method: "GET", query: params },
+  );
+  return response.data;
+}
+
+export function useReportRecipients(query: ReportRecipientsQuery) {
+  return useQuery({
+    queryKey: ["clients", "report-recipients", query.briloCliId ?? null, query.email ?? ""],
+    queryFn: () => getReportRecipients(query),
+    enabled: !!query.briloCliId || !!query.email,
+    staleTime: 30 * 1000,
   });
 }
 

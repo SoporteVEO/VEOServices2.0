@@ -1,7 +1,11 @@
 "use client";
 
-import { Controller, useWatch, type UseFormReturn } from "react-hook-form";
+import { useState } from "react";
+import { Controller, type UseFormReturn } from "react-hook-form";
 import type { Client } from "@/api/clients/clients.get";
+import type { CrmContact } from "@/api/crm/crm.types";
+import { CrmContactFormDialog } from "@/components/pages/crm/contacts/crm-contact-form-dialog";
+import { CrmContactCombobox } from "@/components/pages/crm/shared/crm-contact-combobox";
 import { DatePicker } from "@/components/ui/date-picker";
 import { Label } from "@/components/primitives/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -20,17 +24,21 @@ export interface QuotationCustomerFormValues {
 
 export interface QuotationCustomerFormProps {
   form: UseFormReturn<QuotationCustomerFormValues>;
-  defaultSelectedClient: Client | null;
+  client: Client | null;
+  contact: CrmContact | null;
   onSelectClient: (client: Client | null) => void;
+  onSelectContact: (contact: CrmContact | null) => void;
 }
 
 export function QuotationCustomerForm({
   form,
-  defaultSelectedClient,
+  client,
+  contact,
   onSelectClient,
+  onSelectContact,
 }: QuotationCustomerFormProps) {
   const { register, control, formState } = form;
-  const clientId = useWatch({ control, name: "clientId" });
+  const [contactDialogOpen, setContactDialogOpen] = useState(false);
 
   return (
     <section className="space-y-4">
@@ -41,12 +49,21 @@ export function QuotationCustomerForm({
             <span className="-ml-1 text-red-500">*</span>
           </Label>
           <ClientCombobox
-            value={clientId}
-            defaultSelectedClient={defaultSelectedClient}
+            value={client?.id ?? null}
+            defaultSelectedClient={client}
             onChange={onSelectClient}
             allowCreate
           />
         </div>
+        <CrmContactCombobox
+          key={client?.id ?? "no-client"}
+          value={contact?.id ?? null}
+          clientId={client?.id}
+          selected={contact}
+          disabled={!client}
+          onChange={(_id, next) => onSelectContact(next)}
+          onAdd={() => setContactDialogOpen(true)}
+        />
         <Controller
           control={control}
           name="validUntil"
@@ -79,6 +96,19 @@ export function QuotationCustomerForm({
           {...register("specialConditions")}
         />
       </div>
+
+      {client ? (
+        <CrmContactFormDialog
+          open={contactDialogOpen}
+          onOpenChange={setContactDialogOpen}
+          defaultClient={{
+            id: client.id,
+            name: client.name,
+            company: client.company,
+          }}
+          onSaved={onSelectContact}
+        />
+      ) : null}
     </section>
   );
 }

@@ -5,7 +5,7 @@ import type { ColumnDef } from "@tanstack/react-table";
 import { Image as ImageIcon, Mail, Monitor } from "lucide-react";
 import { Badge } from "@/components/primitives/ui/badge";
 import { DataTable } from "@/components/ui/data-table";
-import { formatShortDate } from "@/lib/format";
+import { formatBriloShortDate } from "@/lib/format";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import {
   useActiveContracts,
@@ -117,7 +117,7 @@ export function ContractsReportTable({
       {
         accessorKey: "endDate",
         header: "Vencimiento",
-        cell: ({ row }) => formatShortDate(new Date(row.original.endDate)),
+        cell: ({ row }) => formatBriloShortDate(row.original.endDate),
       },
     ],
     [],

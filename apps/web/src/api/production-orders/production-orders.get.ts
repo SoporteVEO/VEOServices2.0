@@ -19,6 +19,7 @@ function buildQuery(params: ProductionOrdersQuery): Record<string, string> {
   if (params.pageSize) query.pageSize = String(params.pageSize);
   if (params.search) query.search = params.search;
   if (params.status) query.status = params.status;
+  if (params.hideFinished) query.hideFinished = "true";
   return query;
 }
 
@@ -48,6 +49,7 @@ export function useProductionOrders(
       params.pageSize ?? null,
       params.search ?? "",
       params.status ?? null,
+      params.hideFinished ?? false,
       params.viewAsUserId ?? null,
     ],
     queryFn: () => getProductionOrders(scope, params),

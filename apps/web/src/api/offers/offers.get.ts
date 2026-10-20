@@ -54,6 +54,7 @@ export async function getMyOffers(
   if (query.pageSize) params.pageSize = String(query.pageSize);
   if (query.search) params.search = query.search;
   if (query.viewAsUserId) params.viewAsUserId = query.viewAsUserId;
+  if (query.hideDeclined) params.hideDeclined = "true";
   return apiFetch<PaginatedMyOffers>("/offers/mine", { query: params });
 }
 
@@ -67,6 +68,7 @@ export function useMyOffers(
       query.page ?? 1,
       query.pageSize ?? null,
       query.search ?? "",
+      query.hideDeclined ?? false,
       query.viewAsUserId ?? null,
     ],
     queryFn: () => getMyOffers(query),

@@ -12,7 +12,7 @@ export interface CrmClientRow {
   type: ClientType;
   name: string;
   company: string | null;
-  email: string;
+  email: string | null;
   contact: string | null;
   contactsCount: number;
   openDeals: number;
@@ -35,7 +35,7 @@ export interface CrmClientSummary {
     type: ClientType;
     name: string;
     company: string | null;
-    email: string;
+    email: string | null;
     billingEmail: string | null;
     contact: string | null;
     createdAt: string;

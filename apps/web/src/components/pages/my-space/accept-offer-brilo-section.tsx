@@ -22,6 +22,9 @@ type AcceptOfferBriloSectionProps = {
 };
 
 function clientHint(context: BriloAcceptContext): string {
+  if (context.linkedClient) {
+    return "Cliente de Brilo vinculado al cliente de la cotización.";
+  }
   const email = context.customerEmail;
   if (!email) {
     return "La cotización no tiene correo de cliente. Selecciona el cliente de Brilo.";

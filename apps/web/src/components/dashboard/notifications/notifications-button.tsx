@@ -34,6 +34,7 @@ import {
 import { NotificationItem } from "./notification-item";
 import { NotificationsSearch } from "./notifications-search";
 import { filterNotifications } from "./notifications-filter";
+import { PushPermissionNotice } from "./push-permission-notice";
 
 const MAX_BADGE_COUNT = 9;
 
@@ -194,6 +195,7 @@ export function NotificationsButton({ className }: NotificationsButtonProps) {
           </div>
         ) : null}
         <Separator />
+        <PushPermissionNotice />
         <NotificationsList
           isLoading={isLoading}
           isError={isError}

@@ -34,11 +34,11 @@ export function dealProposalPrompt(deal: CrmDeal): string {
 
 export function clientResearchPrompt(summary: CrmClientSummary): string {
   const { client } = summary;
-  const company = client.company || client.name;
+  const company = client.name;
   return `Hola ${AGENT_NAME}, investiga a ${company} y dime qué oportunidades de publicidad exterior ves para ellos. Revisa también su historial con nosotros en el CRM.`;
 }
 
 export function clientProposalDraft(summary: CrmClientSummary): string {
-  const company = summary.client.company || summary.client.name;
+  const company = summary.client.name;
   return `Hola ${AGENT_NAME}, genera una propuesta para ${company} con las vallas que más le convienen para `;
 }

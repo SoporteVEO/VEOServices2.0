@@ -53,7 +53,8 @@ export function AcceptOfferModal({
     context?.executiveMatchIds.length === 1
       ? context.executiveMatchIds[0]
       : null;
-  const client = clientOverride ?? suggestedClient;
+  const client =
+    clientOverride ?? context?.linkedClient ?? suggestedClient;
   const executiveId = executiveOverride ?? suggestedExecutiveId;
 
   const canSubmit = requiresBrilo

@@ -238,6 +238,7 @@ export interface ListMineOffersFilters {
   search?: string;
   page?: number;
   pageSize?: number;
+  hideDeclined?: boolean;
 }
 
 export interface MyOffersSummaryFilters {
@@ -636,6 +637,7 @@ export class OffersService {
 
     const where: Prisma.OfferCreatedWhereInput = {
       createdByUserId: userId,
+      ...(filters.hideDeclined ? { status: { not: OfferStatus.DECLINED } } : {}),
       ...(search
         ? {
             OR: [

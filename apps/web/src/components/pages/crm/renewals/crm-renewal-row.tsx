@@ -38,7 +38,7 @@ function daysLeftBadge(daysLeft: number) {
 export function CrmRenewalRow({ item, creating, onCreate, onOpenDeal }: Props) {
   const Icon = SITE_KIND_ICONS[item.kind];
   const due = daysLeftBadge(item.daysLeft);
-  const customer = item.client?.company || item.client?.name || item.customerName;
+  const customer = item.client?.name || item.customerName;
 
   return (
     <li className="flex flex-col gap-3 p-4 text-sm sm:flex-row sm:items-start">

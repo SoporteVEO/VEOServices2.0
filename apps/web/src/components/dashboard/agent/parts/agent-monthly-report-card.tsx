@@ -223,6 +223,7 @@ function ContractReportItem({
         open={isSendOpen}
         onOpenChange={setIsSendOpen}
         defaultEmail={contract.customerEmail}
+        briloCliId={contract.customerBriloId}
         contractNumber={contract.contractNumber}
         periodLabel={periodLabel}
         totalBillboardsCount={contract.totalBillboards}

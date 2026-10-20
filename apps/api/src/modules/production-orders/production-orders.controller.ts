@@ -19,6 +19,7 @@ import {
   AttachProductionOrderArtDto,
   CreateProductionOrderArtUploadDto,
 } from './dto/production-order-art.dto.js';
+import { SetProductionOrderArtLinkDto } from './dto/production-order-art-link.dto.js';
 import {
   type DocumentActor,
   ProductionDocumentKind,
@@ -107,6 +108,7 @@ export class ProductionOrdersController {
     @Query('page') pageStr?: string,
     @Query('pageSize') pageSizeStr?: string,
     @Query('status') statusStr?: string,
+    @Query('hideFinished') hideFinishedStr?: string,
   ) {
     const page = pageStr ? Number(pageStr) : undefined;
     const pageSize = pageSizeStr ? Number(pageSizeStr) : undefined;
@@ -125,6 +127,7 @@ export class ProductionOrdersController {
       page,
       pageSize,
       status: parseStatusOrThrow(statusStr),
+      hideFinished: hideFinishedStr === 'true',
     });
   }
 
@@ -176,6 +179,32 @@ export class ProductionOrdersController {
     @CurrentUser() user: AuthUser,
   ) {
     const data = await this.service.deleteArt(toDocumentActor(user), itemId);
+    return { data };
+  }
+
+  @Patch('items/:itemId/art-link')
+  async setArtLink(
+    @Param('itemId') itemId: string,
+    @Body() dto: SetProductionOrderArtLinkDto,
+    @CurrentUser() user: AuthUser,
+  ) {
+    const data = await this.service.setArtLink(
+      toDocumentActor(user),
+      itemId,
+      dto.url,
+    );
+    return { data };
+  }
+
+  @Delete('items/:itemId/art-link')
+  async deleteArtLink(
+    @Param('itemId') itemId: string,
+    @CurrentUser() user: AuthUser,
+  ) {
+    const data = await this.service.deleteArtLink(
+      toDocumentActor(user),
+      itemId,
+    );
     return { data };
   }
 

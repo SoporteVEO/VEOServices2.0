@@ -70,13 +70,28 @@ WHERE maecon.mconPosteado <> 0
         AND child.mconPosteado <> 0
   )
   AND (
-      LOWER(LTRIM(RTRIM(cli.cliEmail))) IN (@Email1, @Email2)
-      OR LOWER(LTRIM(RTRIM(cli.cliEmailFacturacion))) IN (@Email1, @Email2)
-      OR LOWER(LTRIM(RTRIM(cli.cliEmailAdicional))) IN (@Email1, @Email2)
+      LOWER(LTRIM(RTRIM(cli.cliEmail))) IN (__EMAILS__)
+      OR LOWER(LTRIM(RTRIM(cli.cliEmailFacturacion))) IN (__EMAILS__)
+      OR LOWER(LTRIM(RTRIM(cli.cliEmailAdicional))) IN (__EMAILS__)
   )
 GROUP BY maecon.mconId
 ORDER BY MAX(detcon.dconFechaHasta) DESC, maecon.mconId DESC
 `;
+
+function buildEmailFilter(emails: string[]): {
+  sql: string;
+  params: Record<string, string>;
+} {
+  const params: Record<string, string> = {};
+  const names = emails.map((email, index) => {
+    params[`Email${index}`] = email;
+    return `@Email${index}`;
+  });
+  return {
+    sql: CLIENT_CONTRACTS_SQL.replaceAll('__EMAILS__', names.join(', ')),
+    params,
+  };
+}
 
 @Injectable()
 export class ClientContractsService {
@@ -88,17 +103,29 @@ export class ClientContractsService {
   async listByClient(clientId: string): Promise<ClientContract[]> {
     const client = await this.prisma.client.findUnique({
       where: { id: clientId },
-      select: { email: true, billingEmail: true },
+      select: {
+        email: true,
+        billingEmail: true,
+        crmContacts: { select: { email: true } },
+      },
     });
     if (!client) throw new NotFoundException('Cliente no encontrado');
 
-    const email = client.email.trim().toLowerCase();
-    const billingEmail = client.billingEmail?.trim().toLowerCase() || email;
+    const emails = [
+      ...new Set(
+        [
+          client.email,
+          client.billingEmail,
+          ...client.crmContacts.map((contact) => contact.email),
+        ]
+          .map((value) => value?.trim().toLowerCase())
+          .filter((value): value is string => Boolean(value)),
+      ),
+    ];
+    if (emails.length === 0) return [];
 
-    const rows = await this.brilo.query<ClientContractRow>(
-      CLIENT_CONTRACTS_SQL,
-      { Email1: email, Email2: billingEmail },
-    );
+    const { sql, params } = buildEmailFilter(emails);
+    const rows = await this.brilo.query<ClientContractRow>(sql, params);
 
     const today = startOfToday();
     return rows.map((row) => ({

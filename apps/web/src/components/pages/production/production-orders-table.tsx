@@ -24,14 +24,12 @@ import { CreateProductionOrderDialog } from "./create-production-order";
 
 const DEFAULT_PAGE_SIZE = 25;
 
-type StatusFilter = "ALL" | ProductionOrderStatus;
+type StatusFilter = "ALL" | Exclude<ProductionOrderStatus, "COMPLETED" | "CANCELLED">;
 
 const STATUS_FILTER_OPTIONS: { value: StatusFilter; label: string }[] = [
   { value: "ALL", label: "Todos los estados" },
   { value: "RECEIVED", label: PRODUCTION_STATUS_LABELS.RECEIVED },
   { value: "IN_PRODUCTION", label: PRODUCTION_STATUS_LABELS.IN_PRODUCTION },
-  { value: "COMPLETED", label: PRODUCTION_STATUS_LABELS.COMPLETED },
-  { value: "CANCELLED", label: PRODUCTION_STATUS_LABELS.CANCELLED },
 ];
 
 export function ProductionOrdersTable() {
@@ -51,6 +49,7 @@ export function ProductionOrdersTable() {
     pageSize,
     search: debouncedSearch || undefined,
     status: statusFilter === "ALL" ? undefined : statusFilter,
+    hideFinished: true,
   });
 
   function handleSearchChange(value: string) {

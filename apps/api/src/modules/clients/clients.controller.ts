@@ -79,6 +79,18 @@ export class ClientsController {
     });
   }
 
+  @Get('report-recipients')
+  async reportRecipients(
+    @Query('briloCliId') briloCliIdRaw?: string,
+    @Query('email') email?: string,
+  ) {
+    const recipients = await this.service.findReportRecipients({
+      briloCliId: parsePositiveInt(briloCliIdRaw, 'briloCliId'),
+      email: email?.trim() || undefined,
+    });
+    return { data: recipients };
+  }
+
   @Get(':id')
   async findOne(@Param('id') id: string) {
     const client = await this.service.findById(id);

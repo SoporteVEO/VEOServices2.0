@@ -422,7 +422,7 @@ Si la renovación ya tiene negocio, en lugar del botón verás su estado.
     related: ['crear-cliente', 'crm-negocios', 'crm-dia-tipico'],
     body: `## Clientes
 
-En **CRM → Clientes** ves todas las empresas con sus negocios abiertos, lo ganado, sus cotizaciones y su última actividad. Haz clic en un cliente para ver sus pestañas: **Negocios**, **Contactos**, **Actividad**, **Mensajes**, **Cotizaciones**, **Contratos** (historial en Brilo) e **Información** (datos editables del cliente).
+En **CRM → Clientes** ves todas las empresas con sus negocios abiertos, lo ganado, sus cotizaciones y su última actividad. Haz clic en un cliente para ver sus pestañas: **Negocios**, **Contactos**, **Actividad**, **Mensajes**, **Cotizaciones**, **Contratos** (historial en Brilo) e **Información** (nombre, tipo y **Cliente Brilo**, editables). En el encabezado del cliente se muestra su **contacto principal** con su correo y teléfono.
 
 Puedes filtrar por tipo (**Directo** o **Agencia**) o ver solo los que tienen negocios abiertos. Para registrar un cliente nuevo usa el botón **Nuevo cliente**; ver [Registrar un cliente](academy:crear-cliente).
 
@@ -438,6 +438,8 @@ Los contactos son **las personas** con las que hablas (gerente de marketing, com
 4. Haz clic en **Crear contacto**.
 
 La estrella indica el **contacto principal** del cliente.
+
+> **Los correos y teléfonos viven en los contactos**, no en el cliente. El contacto principal es el que se propone al hacer una cotización, al enviar un correo desde el cliente y al enviar un reporte. Agrega al menos un contacto con correo a cada cliente.
 
 ## Tareas
 
@@ -519,7 +521,7 @@ Son palabras entre llaves dobles que se reemplazan con los datos reales al envia
 | \`{{contacto.nombre}}\` | Nombre del contacto |
 | \`{{contacto.nombre_completo}}\` | Nombre y apellido |
 | \`{{contacto.cargo}}\` | Cargo |
-| \`{{cliente.empresa}}\` | Empresa del cliente |
+| \`{{cliente.empresa}}\` | Nombre del cliente |
 | \`{{negocio.titulo}}\` | Nombre del negocio |
 | \`{{negocio.valor}}\` | Valor del negocio |
 | \`{{negocio.etapa}}\` | Etapa actual |

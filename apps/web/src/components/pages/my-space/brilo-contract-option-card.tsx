@@ -27,7 +27,7 @@ export function BriloContractOptionCard({
     >
       <span
         className={cn(
-          "font-semibold text-foreground",
+          "font-semibold text-foreground group-hover/button:text-background",
           compact ? "text-sm leading-tight" : "text-sm",
         )}
       >
@@ -36,7 +36,7 @@ export function BriloContractOptionCard({
       {ejecutivo ? (
         <span
           className={cn(
-            "truncate text-foreground/90",
+            "truncate text-foreground/90 group-hover/button:text-background/90",
             compact ? "text-xs leading-snug" : "text-xs",
           )}
         >
@@ -46,7 +46,7 @@ export function BriloContractOptionCard({
       {contract.mconFecha ? (
         <span
           className={cn(
-            "text-muted-foreground",
+            "text-muted-foreground group-hover/button:text-background/70",
             compact ? "text-xs leading-snug" : "text-xs",
           )}
         >

@@ -46,8 +46,18 @@ export async function loadPushStatus(): Promise<PushStatus> {
     getServiceWorkerRegistration(),
     getPushPublicKey().catch(() => null),
   ]);
-  const subscription = await registration.pushManager.getSubscription();
   const permission = Notification.permission;
+  let subscription = await registration.pushManager.getSubscription();
+
+  // Permission survives sign-out but the subscription does not, and no prompt is needed to restore it.
+  if (!subscription && permission === "granted" && publicKey) {
+    subscription = await registration.pushManager
+      .subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(publicKey),
+      })
+      .catch(() => null);
+  }
 
   if (subscription && permission === "granted" && publicKey) {
     await savePushSubscription(toSubscriptionInput(subscription)).catch(

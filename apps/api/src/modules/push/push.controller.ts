@@ -13,6 +13,7 @@ import { PushService } from './push.service.js';
 
 interface AuthUser {
   id: string;
+  role?: string;
 }
 
 @AllowLimited()
@@ -52,10 +53,13 @@ export class PushController {
   @Post('test')
   @HttpCode(204)
   async sendTest(@CurrentUser() user: AuthUser) {
+    const isFieldUser = FIELD_ROLES.has(user.role ?? '');
     await this.pushService.sendToUser(user.id, {
       title: 'Notificaciones activadas',
-      body: 'Recibirás un aviso cuando se te asigne una orden.',
-      url: '/portal',
+      body: isFieldUser
+        ? 'Recibirás un aviso cuando se te asigne una orden.'
+        : 'Recibirás tus notificaciones de Veo Services en este navegador.',
+      url: isFieldUser ? '/portal' : '/dashboard',
       tag: 'push-test',
     });
   }

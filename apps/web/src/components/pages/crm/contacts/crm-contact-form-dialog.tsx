@@ -70,6 +70,7 @@ function clientStub(client: ClientRef): Client {
     email: "",
     billingEmail: null,
     contact: null,
+    briloCliId: null,
     createdAt: "",
     updatedAt: "",
   };

@@ -4,6 +4,8 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { useCreateClient } from "@/api/clients/clients.post";
 import type { Client, ClientType } from "@/api/clients/clients.types";
+import type { BriloClientOption } from "@/api/offers/offers.types";
+import { BriloClientCombobox } from "@/components/pages/my-space/brilo-client-combobox";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -27,24 +29,16 @@ import {
   CLIENT_TYPE_ORDER,
 } from "./const";
 
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
 interface FormState {
   type: ClientType;
   name: string;
-  company: string;
-  email: string;
-  billingEmail: string;
-  contact: string;
+  briloClient: BriloClientOption | null;
 }
 
 const EMPTY_FORM: FormState = {
   type: "DIRECT",
   name: "",
-  company: "",
-  email: "",
-  billingEmail: "",
-  contact: "",
+  briloClient: null,
 };
 
 type Props = {
@@ -71,8 +65,6 @@ export function ClientFormDialog({ open, onOpenChange, onCreated }: Props) {
 
   function handleSubmit() {
     const name = form.name.trim();
-    const email = form.email.trim();
-    const billingEmail = form.billingEmail.trim();
 
     if (!name) {
       toast.error(
@@ -82,23 +74,12 @@ export function ClientFormDialog({ open, onOpenChange, onCreated }: Props) {
       );
       return;
     }
-    if (!EMAIL_RE.test(email)) {
-      toast.error("Ingresa un correo electrónico válido.");
-      return;
-    }
-    if (billingEmail && !EMAIL_RE.test(billingEmail)) {
-      toast.error("El correo de facturación no es válido.");
-      return;
-    }
 
     createMutation.mutate(
       {
         type: form.type,
         name,
-        company: form.company.trim() || null,
-        email,
-        billingEmail: billingEmail || null,
-        contact: form.contact.trim() || null,
+        briloCliId: form.briloClient?.cliId ?? null,
       },
       {
         onSuccess: (created) => {
@@ -120,7 +101,8 @@ export function ClientFormDialog({ open, onOpenChange, onCreated }: Props) {
         <DialogHeader>
           <DialogTitle>Nuevo cliente</DialogTitle>
           <DialogDescription>
-            Registra un cliente directo o una agencia.
+            Registra un cliente directo o una agencia. Agrega sus correos y
+            teléfonos como contactos.
           </DialogDescription>
         </DialogHeader>
 
@@ -148,43 +130,25 @@ export function ClientFormDialog({ open, onOpenChange, onCreated }: Props) {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            <Input
-              label={isAgency ? "Nombre de la agencia" : "Nombre"}
-              required
-              value={form.name}
-              onChange={(e) => setField("name", e.target.value)}
-            />
-            <Input
-              label={isAgency ? "Razón social" : "Empresa"}
-              value={form.company}
-              onChange={(e) => setField("company", e.target.value)}
-            />
-          </div>
-
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            <Input
-              label="Correo principal"
-              required
-              type="email"
-              value={form.email}
-              onChange={(e) => setField("email", e.target.value)}
-            />
-            <Input
-              label="Correo de facturación"
-              type="email"
-              placeholder="Usar correo principal"
-              value={form.billingEmail}
-              onChange={(e) => setField("billingEmail", e.target.value)}
-            />
-          </div>
-
           <Input
-            label="Teléfono"
-            type="tel"
-            value={form.contact}
-            onChange={(e) => setField("contact", e.target.value)}
+            label={isAgency ? "Nombre de la agencia" : "Nombre"}
+            required
+            value={form.name}
+            onChange={(e) => setField("name", e.target.value)}
           />
+
+          <div className="flex flex-col gap-1.5">
+            <BriloClientCombobox
+              label="Cliente Brilo (opcional)"
+              required={false}
+              value={form.briloClient}
+              onChange={(client) => setField("briloClient", client)}
+            />
+            <p className="text-xs text-muted-foreground">
+              Al aceptar una cotización de este cliente, el cliente de Brilo se
+              completará automáticamente.
+            </p>
+          </div>
         </div>
 
         <DialogFooter>

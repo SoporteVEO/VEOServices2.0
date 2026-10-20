@@ -1,9 +1,18 @@
 import {
+  BadRequestException,
   ConflictException,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import type { ClientType, Prisma } from '@prisma/client';
+import { BriloDatabaseService } from '../brilo-database/brilo-database.service.js';
+import {
+  BRILO_CLIENT_BY_ID_SQL,
+  toBriloClientOption,
+  type BriloClientOption,
+  type BriloClientRow,
+} from '../offers/offer-brilo-documents.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { CreateClientDto } from './dto/create-client.dto.js';
 import { UpdateClientDto } from './dto/update-client.dto.js';
@@ -13,12 +22,35 @@ export interface ClientListItem {
   type: ClientType;
   name: string;
   company: string | null;
-  email: string;
+  email: string | null;
   billingEmail: string | null;
   contact: string | null;
+  briloCliId: number | null;
   createdAt: string;
   updatedAt: string;
 }
+
+export interface ReportRecipient {
+  id: string;
+  name: string;
+  email: string;
+  jobTitle: string | null;
+  isPrimary: boolean;
+}
+
+export interface ReportRecipients {
+  client: { id: string; name: string } | null;
+  contacts: ReportRecipient[];
+}
+
+export interface ClientDetail extends ClientListItem {
+  briloClient: BriloClientOption | null;
+}
+
+type ClientRow = Omit<ClientListItem, 'createdAt' | 'updatedAt'> & {
+  createdAt: Date;
+  updatedAt: Date;
+};
 
 export interface ListClientsFilters {
   search?: string;
@@ -83,7 +115,12 @@ function buildWhere(
 
 @Injectable()
 export class ClientsService {
-  constructor(private readonly prisma: PrismaService) {}
+  private readonly logger = new Logger(ClientsService.name);
+
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly briloDb: BriloDatabaseService,
+  ) {}
 
   async list(filters: ListClientsFilters = {}): Promise<PaginatedClients> {
     const limit = clampLimit(filters.limit);
@@ -132,13 +169,75 @@ export class ClientsService {
     };
   }
 
-  async findById(id: string): Promise<ClientListItem> {
-    const row = await this.prisma.client.findUnique({ where: { id } });
-    if (!row) throw new NotFoundException('Cliente no encontrado');
-    return this.toListItem(row);
+  /**
+   * Contacts with an email that a report for a Brilo customer can go to. The
+   * CRM client is found through the Brilo link first, then by any known email.
+   */
+  async findReportRecipients(filters: {
+    briloCliId?: number;
+    email?: string;
+  }): Promise<ReportRecipients> {
+    const email = filters.email?.trim() ? normalizeEmail(filters.email) : null;
+    const byLink = filters.briloCliId
+      ? await this.prisma.client.findFirst({
+          where: { briloCliId: filters.briloCliId },
+          select: { id: true, name: true },
+        })
+      : null;
+    const client =
+      byLink ??
+      (email
+        ? await this.prisma.client.findFirst({
+            where: {
+              OR: [
+                { email: { equals: email, mode: 'insensitive' } },
+                { billingEmail: { equals: email, mode: 'insensitive' } },
+                {
+                  crmContacts: {
+                    some: { email: { equals: email, mode: 'insensitive' } },
+                  },
+                },
+              ],
+            },
+            select: { id: true, name: true },
+          })
+        : null);
+    if (!client) return { client: null, contacts: [] };
+
+    const contacts = await this.prisma.crmContact.findMany({
+      where: { clientId: client.id, email: { not: null } },
+      orderBy: [{ isPrimary: 'desc' }, { firstName: 'asc' }, { id: 'asc' }],
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        email: true,
+        jobTitle: true,
+        isPrimary: true,
+      },
+    });
+
+    return {
+      client,
+      contacts: contacts
+        .filter((contact) => contact.email?.trim())
+        .map((contact) => ({
+          id: contact.id,
+          name: [contact.firstName, contact.lastName].filter(Boolean).join(' '),
+          email: normalizeEmail(contact.email!),
+          jobTitle: contact.jobTitle,
+          isPrimary: contact.isPrimary,
+        })),
+    };
   }
 
-  async update(id: string, dto: UpdateClientDto): Promise<ClientListItem> {
+  async findById(id: string): Promise<ClientDetail> {
+    const row = await this.prisma.client.findUnique({ where: { id } });
+    if (!row) throw new NotFoundException('Cliente no encontrado');
+    return this.toDetail(row);
+  }
+
+  async update(id: string, dto: UpdateClientDto): Promise<ClientDetail> {
     const existing = await this.prisma.client.findUnique({ where: { id } });
     if (!existing) throw new NotFoundException('Cliente no encontrado');
 
@@ -186,12 +285,21 @@ export class ClientsService {
       data.contact = dto.contact === null ? null : dto.contact.trim() || null;
     }
 
+    if (dto.briloCliId !== undefined) {
+      if (dto.briloCliId === null) {
+        data.briloCliId = null;
+      } else if (dto.briloCliId !== existing.briloCliId) {
+        await this.assertBriloClientExists(dto.briloCliId);
+        data.briloCliId = dto.briloCliId;
+      }
+    }
+
     if (Object.keys(data).length === 0) {
-      return this.toListItem(existing);
+      return this.toDetail(existing);
     }
 
     const updated = await this.prisma.client.update({ where: { id }, data });
-    return this.toListItem(updated);
+    return this.toDetail(updated);
   }
 
   /**
@@ -199,7 +307,9 @@ export class ClientsService {
    * the idempotent operation used by the quotation flow so submitting an
    * existing email simply attaches that client to the new offer.
    */
-  async upsertByEmail(dto: CreateClientDto): Promise<ClientListItem> {
+  async upsertByEmail(
+    dto: CreateClientDto & { email: string },
+  ): Promise<ClientListItem> {
     const email = normalizeEmail(dto.email);
     const existing = await this.prisma.client.findUnique({ where: { email } });
 
@@ -235,25 +345,27 @@ export class ClientsService {
       return this.toListItem(updated);
     }
 
-    return this.insert(dto, email);
+    return this.toListItem(await this.insert(dto, email));
   }
 
-  async create(dto: CreateClientDto): Promise<ClientListItem> {
-    const email = normalizeEmail(dto.email);
-    const existing = await this.prisma.client.findUnique({ where: { email } });
-    if (existing) {
-      throw new ConflictException(
-        'Ya existe un cliente con ese correo electrónico',
-      );
+  async create(dto: CreateClientDto): Promise<ClientDetail> {
+    const email = dto.email?.trim() ? normalizeEmail(dto.email) : null;
+    if (email) {
+      const existing = await this.prisma.client.findUnique({
+        where: { email },
+      });
+      if (existing) {
+        throw new ConflictException(
+          'Ya existe un cliente con ese correo electrónico',
+        );
+      }
     }
-    return this.insert(dto, email);
+    if (dto.briloCliId) await this.assertBriloClientExists(dto.briloCliId);
+    return this.toDetail(await this.insert(dto, email));
   }
 
-  private async insert(
-    dto: CreateClientDto,
-    email: string,
-  ): Promise<ClientListItem> {
-    const created = await this.prisma.client.create({
+  private insert(dto: CreateClientDto, email: string | null) {
+    return this.prisma.client.create({
       data: {
         type: dto.type ?? 'DIRECT',
         name: dto.name.trim(),
@@ -263,22 +375,48 @@ export class ClientsService {
           ? normalizeEmail(dto.billingEmail)
           : null,
         contact: dto.contact?.trim() || null,
+        briloCliId: dto.briloCliId ?? null,
       },
     });
-    return this.toListItem(created);
   }
 
-  private toListItem(row: {
-    id: string;
-    type: ClientType;
-    name: string;
-    company: string | null;
-    email: string;
-    billingEmail: string | null;
-    contact: string | null;
-    createdAt: Date;
-    updatedAt: Date;
-  }): ClientListItem {
+  private async assertBriloClientExists(cliId: number): Promise<void> {
+    const rows = await this.briloDb.query<BriloClientRow>(
+      BRILO_CLIENT_BY_ID_SQL,
+      { CliId: cliId },
+    );
+    if (rows.length === 0) {
+      throw new BadRequestException(
+        'El cliente de Brilo seleccionado no existe',
+      );
+    }
+  }
+
+  private async findBriloClient(
+    cliId: number,
+  ): Promise<BriloClientOption | null> {
+    try {
+      const rows = await this.briloDb.query<BriloClientRow>(
+        BRILO_CLIENT_BY_ID_SQL,
+        { CliId: cliId },
+      );
+      return rows[0] ? toBriloClientOption(rows[0]) : null;
+    } catch (err) {
+      this.logger.warn(
+        `No se pudo cargar el cliente de Brilo ${cliId}: ${err instanceof Error ? err.message : String(err)}`,
+      );
+      return null;
+    }
+  }
+
+  private async toDetail(row: ClientRow): Promise<ClientDetail> {
+    const briloClient = row.briloCliId
+      ? await this.findBriloClient(row.briloCliId)
+      : null;
+    return { ...this.toListItem(row), briloClient };
+  }
+
+  private toListItem(row: ClientRow): ClientListItem {
     return {
       id: row.id,
       type: row.type,
@@ -287,6 +425,7 @@ export class ClientsService {
       email: row.email,
       billingEmail: row.billingEmail,
       contact: row.contact,
+      briloCliId: row.briloCliId,
       createdAt: row.createdAt.toISOString(),
       updatedAt: row.updatedAt.toISOString(),
     };

@@ -53,11 +53,8 @@ export function MyOfferActions({ offer }: MyOfferActionsProps) {
   }
 
   return (
-    <>
-      <div
-        className="flex flex-wrap items-center justify-end gap-1.5"
-        onClick={(event) => event.stopPropagation()}
-      >
+    <div onClick={(event) => event.stopPropagation()}>
+      <div className="flex flex-wrap items-center justify-end gap-1.5">
         {!readOnly && (isPending || isAccepted) ? (
           <Button
             type="button"
@@ -137,6 +134,6 @@ export function MyOfferActions({ offer }: MyOfferActionsProps) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </>
+    </div>
   );
 }

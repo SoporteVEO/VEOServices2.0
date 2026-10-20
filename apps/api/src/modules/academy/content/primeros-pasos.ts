@@ -34,7 +34,9 @@ export const PRIMEROS_PASOS: AcademyArticleSource[] = [
 
 Si no encuentras algo, abre a **Nexo**, el asistente de la plataforma (botón arriba a la derecha o **Ctrl + I**) y pregúntale con tus palabras, por ejemplo: *"¿Cómo envío el reporte mensual de un contrato?"*. Nexo lee esta misma academia para responderte y te comparte el enlace a la guía. Más detalles en [Nexo, tu asistente](academy:nexo).
 
-> **Consejo:** usa el buscador de la página principal de la Academy. Busca por lo que quieres hacer ("enviar reporte", "reservar valla", "aceptar cotización").`,
+> **Consejo:** usa el buscador de la página principal de la Academy. Busca por lo que quieres hacer ("enviar reporte", "reservar valla", "aceptar cotización").
+>
+> Para ir rápido a un módulo de la plataforma, usa el **buscador de módulos** (la lupa de arriba o **Ctrl + K**). Ver [Conoce VEO Services](academy:conoce-veo-services#buscar-un-modulo).`,
   },
   {
     slug: 'conoce-veo-services',
@@ -55,6 +57,18 @@ Si no encuentras algo, abre a **Nexo**, el asistente de la plataforma (botón ar
 ## Cómo está organizado el menú
 
 El menú de la izquierda muestra solo los módulos a los que tienes permiso. Si necesitas uno que no ves, pide acceso a un administrador.
+
+## Buscar un módulo
+
+Arriba a la derecha está la **lupa**. Haz clic en ella o presiona **Ctrl + K**, escribe el nombre del módulo (por ejemplo, *testigos* o *pantallas*) y selecciona el resultado para ir directo. Solo aparecen los módulos a los que tienes acceso.
+
+## Notificaciones
+
+La **campana** de arriba reúne tus avisos: cotizaciones, órdenes, solicitudes y actualizaciones. Haz clic en uno para abrir el módulo correspondiente.
+
+También puedes recibirlos como **aviso del navegador**, aunque estés en otra pestaña. La primera vez verás un mensaje para **Activar** las notificaciones; si lo cierras, actívalas desde la campana. Si tu navegador las tiene bloqueadas, permítelas desde el candado de la barra de direcciones. Al **cerrar sesión**, se desactivan en ese equipo.
+
+## Los módulos
 
 ### Mi Espacio
 Tu escritorio personal: tus cotizaciones, contratos, órdenes y facturas como vendedor. Ver [Mi Espacio](academy:mi-espacio).
@@ -77,10 +91,15 @@ Lista de contratos de Brilo que **vencen en los próximos 15 días** y el histor
 ### Pantallas
 Ocupación de las pantallas digitales, campañas, sublistas y órdenes de pauta. Ver [Pantallas digitales](academy:pantallas).
 
-### Vallas estáticas
-Inventario de vallas con su disponibilidad por fechas. Desde aquí se genera la [cotización de vallas](academy:crear-cotizacion-vallas).
+### Producción Pantallas
+Las órdenes de pauta (**OP**) de pantallas: Soporte Comercial las crea y Producción las revisa e ingresa a las listas. Ver [Órdenes de pauta (OP)](academy:pantallas#ordenes-de-pauta-op).
 
-[Abrir Vallas estáticas](app:/dashboard/static-billboards)
+[Abrir Producción Pantallas](app:/dashboard/produccion-pantallas)
+
+### Vallas
+Inventario de vallas estáticas con su disponibilidad por fechas. Desde aquí se genera la [cotización de vallas](academy:crear-cotizacion-vallas).
+
+[Abrir Vallas](app:/dashboard/static-billboards)
 
 ### Imágenes
 Galería de fotos de vallas (mensuales, de instalación y de mantenimiento). Ver [Subir fotos de vallas](academy:subir-fotos).
@@ -88,7 +107,7 @@ Galería de fotos de vallas (mensuales, de instalación y de mantenimiento). Ver
 [Abrir Imágenes](app:/dashboard/images)
 
 ### Clientes (dentro del CRM)
-Registro de clientes **directos** y **agencias** usados en las cotizaciones, con su información, contratos en Brilo, negocios y actividad. Está en **CRM → Clientes**. Ver [Registrar un cliente](academy:crear-cliente).
+Registro de clientes **directos** y **agencias** usados en las cotizaciones, con sus contactos, contratos en Brilo, negocios y actividad. Está en **CRM → Clientes**. Ver [Registrar un cliente](academy:crear-cliente).
 
 [Abrir Clientes](app:/dashboard/crm/clientes)
 
@@ -127,6 +146,7 @@ Al aceptar una cotización con vallas estáticas, VEO Services **crea sola** la 
       'mis cotizaciones',
       'mis contratos',
       'mis órdenes',
+      'producción vallas',
       'mis facturas',
     ],
     modules: [{ label: 'Abrir Mi Espacio', href: '/dashboard/my-space' }],
@@ -148,7 +168,7 @@ La lista de tus [cotizaciones](academy:glosario#cotizacion). Desde aquí:
 - **Descargar** el PDF de la cotización o el **Contrato** de una cotización aceptada.
 - Hacer clic en una fila para ver el detalle, editarla (solo si sigue pendiente) y ver su historial.
 
-Puedes buscar por número, cliente o correo.
+Puedes buscar por número, cliente o correo. Las cotizaciones **rechazadas** no aparecen en la lista.
 
 [Abrir Mis cotizaciones](app:/dashboard/my-space/offers)
 
@@ -158,11 +178,11 @@ Tus contratos vigentes en Brilo con las fotos de cada valla. Haz clic en uno par
 
 [Abrir Mis contratos](app:/dashboard/my-space/contracts)
 
-## Mis órdenes
+## Producción Vallas
 
-Las [órdenes de producción](academy:glosario#orden-de-produccion) que nacieron de tus cotizaciones aceptadas. Ábrelas para cargar el **arte** de cada valla y ver en qué estado va la impresión y la instalación. Ver [Arte de cada valla](academy:produccion#arte-de-cada-valla).
+Las [órdenes de producción](academy:glosario#orden-de-produccion) que nacieron de tus cotizaciones aceptadas. Ábrelas para cargar el **arte** de cada valla (como archivo o como enlace) y ver en qué estado va la impresión y la instalación. Ver [Arte de cada valla](academy:produccion#arte-de-cada-valla).
 
-[Abrir Mis órdenes](app:/dashboard/my-space/production-orders)
+[Abrir Producción Vallas](app:/dashboard/my-space/production-orders)
 
 ## Mis facturas
 
@@ -189,6 +209,7 @@ La facturación registrada en Brilo bajo tu nombre como vendedor, por centro de 
 - **Generar reportes y archivos**: reporte de disponibilidad, reporte mensual de un contrato, Excel o PDF.
 - **Enviar correos** y hacer acciones, siempre pidiéndote aprobación antes.
 - **Consultar Brilo** directamente: clientes, cotizaciones y contratos de vallas, facturas, cuentas por cobrar, contabilidad e inventario.
+- **Mostrar los contratos por vencer** de un periodo o de un vendedor, con la tabla completa, por ejemplo: *"¿Qué contratos vencen en noviembre?"*.
 
 Nexo solo te muestra información de los módulos a los que tienes acceso.
 

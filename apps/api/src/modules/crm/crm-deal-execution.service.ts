@@ -81,6 +81,7 @@ export class CrmDealExecutionService {
                         cityName: true,
                         status: true,
                         artS3Key: true,
+                        artLinkUrl: true,
                         scheduledInstallationAt: true,
                         installedAt: true,
                         assignedInstaller: {
@@ -131,7 +132,7 @@ export class CrmDealExecutionService {
         address: item.address,
         cityName: item.cityName,
         status: item.status,
-        hasArt: !!item.artS3Key,
+        hasArt: !!item.artS3Key || !!item.artLinkUrl,
         scheduledInstallationAt:
           item.scheduledInstallationAt?.toISOString() ?? null,
         installedAt: item.installedAt?.toISOString() ?? null,

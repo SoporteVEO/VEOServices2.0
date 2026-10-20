@@ -1,5 +1,6 @@
 import type { LucideIcon } from "lucide-react";
-import { FileText, LayoutGrid, PackageCheck, Receipt, ScrollText } from "lucide-react";
+import { FileText, LayoutGrid, Receipt, ScrollText } from "lucide-react";
+import { STATIC_BILLBOARD_ICON } from "@/lib/billboard-icons";
 
 export const MY_SPACE_BASE_PATH = "/dashboard/my-space";
 
@@ -30,9 +31,9 @@ export const MY_SPACE_NAV_ITEMS: MySpaceNavItem[] = [
     description: "Cotizaciones que has creado en la plataforma",
   },
   {
-    title: "Mis órdenes",
+    title: "Producción Vallas",
     href: `${MY_SPACE_BASE_PATH}/production-orders`,
-    icon: PackageCheck,
+    icon: STATIC_BILLBOARD_ICON,
     description:
       "Órdenes de producción generadas por tus cotizaciones aceptadas",
   },

@@ -111,7 +111,7 @@ export const NAV_GROUPS: NavGroup[] = [
         requiredSubRoles: ["PANTALLAS_PRODUCCION", "PANTALLAS_COMERCIAL"],
       },
       {
-        title: "Vallas estáticas",
+        title: "Vallas",
         href: "/dashboard/static-billboards",
         icon: STATIC_BILLBOARD_ICON,
       },

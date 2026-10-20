@@ -11,6 +11,7 @@ import type { ProductionOrderItem } from "@/api/production-orders/production-ord
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { ProductionOrderArtDropzone } from "./production-order-art-dropzone";
+import { ProductionOrderArtLink } from "./production-order-art-link";
 import {
   PRODUCTION_ART_ACCEPT,
   validateProductionArt,
@@ -61,7 +62,7 @@ export function ProductionOrderArtSlot({
       <div className="flex items-center gap-2">
         <ImageIcon className="size-4 shrink-0 text-muted-foreground" aria-hidden />
         <p className="min-w-0 flex-1 truncate text-xs font-medium">Arte</p>
-        {item.art ? (
+        {item.art || item.artLinkUrl ? (
           <span className="bg-emerald-500/15 px-1.5 py-0.5 text-[10px] font-medium text-emerald-700 dark:text-emerald-400">
             Cargado
           </span>
@@ -102,7 +103,9 @@ export function ProductionOrderArtSlot({
           }
         />
       ) : readOnly ? (
-        <p className="text-[11px] text-muted-foreground">{emptyReadOnlyHint}</p>
+        item.artLinkUrl ? null : (
+          <p className="text-[11px] text-muted-foreground">{emptyReadOnlyHint}</p>
+        )
       ) : uploadMutation.isPending ? (
         <p className="rounded-md border border-dashed px-3 py-4 text-center text-xs text-muted-foreground">
           Subiendo arte…
@@ -113,6 +116,12 @@ export function ProductionOrderArtSlot({
           onFileSelected={(file) => void handleUpload(file)}
         />
       )}
+
+      <ProductionOrderArtLink
+        itemId={item.id}
+        url={item.artLinkUrl}
+        readOnly={readOnly}
+      />
 
       <ConfirmDialog
         open={confirmDeleteOpen}

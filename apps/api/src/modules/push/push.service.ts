@@ -78,11 +78,15 @@ export class PushService {
    * assignment that triggered it, so errors are logged and swallowed here.
    */
   async sendToUser(userId: string, payload: PushPayload): Promise<void> {
-    if (!this.enabled) return;
+    await this.sendToUsers([userId], payload);
+  }
+
+  async sendToUsers(userIds: string[], payload: PushPayload): Promise<void> {
+    if (!this.enabled || userIds.length === 0) return;
 
     try {
       const subscriptions = await this.prisma.pushSubscription.findMany({
-        where: { userId },
+        where: { userId: { in: userIds } },
       });
       if (subscriptions.length === 0) return;
 
@@ -131,7 +135,9 @@ export class PushService {
           : null,
       ]);
     } catch (error) {
-      this.logger.error(`Push to user ${userId} failed: ${String(error)}`);
+      this.logger.error(
+        `Push to ${userIds.length} user(s) failed: ${String(error)}`,
+      );
     }
   }
 }

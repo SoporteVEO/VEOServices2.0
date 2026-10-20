@@ -73,7 +73,7 @@ En el CRM, marca el negocio como **Ganado** (etapa *Orden firmada*): los sitios 
 
 ## Paso 5: Producción, instalación y campaña
 
-Carga el **arte** de cada valla en [Mis órdenes](app:/dashboard/my-space/production-orders); con eso Producción imprime las lonas, se programa la instalación y el instalador sube las fotos de evidencia. En pantallas, se confirma el arte y la campaña sale al aire. Puedes seguir todo desde [Mis órdenes](app:/dashboard/my-space/production-orders) o en la pestaña Ejecución del negocio. Ver [Después de la venta](academy:despues-de-la-venta).
+Carga el **arte** de cada valla en [Producción Vallas](app:/dashboard/my-space/production-orders), como archivo o como enlace; con eso Producción imprime las lonas, se programa la instalación y el instalador sube las fotos de evidencia. En pantallas, Soporte Comercial crea la **OP** y Producción la ingresa para que la campaña salga al aire. Puedes seguir todo desde [Producción Vallas](app:/dashboard/my-space/production-orders) o en la pestaña Ejecución del negocio. Ver [Después de la venta](academy:despues-de-la-venta).
 
 ## Paso 6: Reporta al cliente
 
@@ -95,6 +95,8 @@ Revisa con tiempo los contratos que están por terminar y ofrece la renovación 
       'agencia',
       'directo',
       'registrar cliente',
+      'contacto principal',
+      'cliente brilo',
     ],
     modules: [{ label: 'Abrir Clientes', href: '/dashboard/crm/clientes' }],
     related: [
@@ -111,32 +113,35 @@ Revisa con tiempo los contratos que están por terminar y ofrece la renovación 
 | **Directo** | La marca nos compra directamente (por ejemplo, un supermercado). |
 | **Agencia** | Una agencia de publicidad compra en nombre de una o varias marcas. |
 
-El tipo se define en el cliente, no en la cotización. En los buscadores de clientes, las agencias se muestran como *Nombre (Empresa) · Agencia*.
+El tipo se define en el cliente, no en la cotización. En los buscadores de clientes, las agencias se muestran como *Nombre · Agencia*.
 
 ## Crear un cliente
 
 1. Ve a **CRM → Clientes** y haz clic en **Nuevo cliente**.
 2. Elige el **Tipo de cliente**: **Directo** o **Agencia**.
-3. Llena el nombre (o nombre de la agencia), la **empresa o razón social**, el **correo principal**, el **correo de facturación** y el **teléfono**.
-4. Haz clic en **Registrar**. Se abre la ficha del cliente para que agregues contactos o un negocio.
+3. Escribe el **nombre**. Si es una agencia, usa el nombre de la empresa.
+4. Opcional: elige el **Cliente Brilo** con el que se corresponde. Así, al aceptar una cotización de este cliente, el cliente de Brilo se completa solo.
+5. Haz clic en **Registrar**. Se abre la ficha del cliente para que agregues contactos o un negocio.
+
+Los correos y teléfonos no se guardan en el cliente: agrégalos como **contactos** en la pestaña **Contactos**, y marca uno como **principal**.
 
 [Abrir Clientes](app:/dashboard/crm/clientes)
 
 ## Editar un cliente
 
-Abre el cliente en **CRM → Clientes** y entra a la pestaña **Información**. Haz clic en cualquier campo (tipo, nombre, empresa, teléfono, correos) para editarlo. En la pestaña **Contratos** ves su historial de contratos en Brilo.
+Abre el cliente en **CRM → Clientes** y entra a la pestaña **Información**. Haz clic en el nombre o cambia el tipo para editarlos. En la tarjeta **Cliente en Brilo** puedes vincular o cambiar el cliente de Brilo. En la pestaña **Contratos** ves su historial de contratos en Brilo, buscado por los correos de todos sus contactos.
 
 > **Atajo:** mientras generas una cotización, en el campo Cliente elige **+ Crear nuevo cliente** y se abre el mismo formulario.
 
 ## Ver el historial de un cliente
 
-Haz clic en un cliente para ver su historial de contratos, marcados como **Vigente**, **Próximo** o **Finalizado**. Puedes filtrar la lista por tipo (Todos, Directo o Agencia) y buscar por nombre, empresa o correo.
+Haz clic en un cliente para ver su historial de contratos, marcados como **Vigente**, **Próximo** o **Finalizado**. Puedes filtrar la lista por tipo (Todos, Directo o Agencia) y buscar por nombre.
 
 ## El cliente también debe existir en Brilo
 
 El [contrato en Brilo](academy:contrato-en-brilo) se crea a nombre de un cliente que ya existe en Brilo, con sus datos legales completos (representante legal, DUI, dirección y correos), porque el contrato en PDF los toma de ahí.
 
-> **Usa el mismo correo en los dos sistemas.** Al aceptar una cotización, VEO Services busca al cliente en Brilo por su correo. Si coinciden, lo propone solo; si no, tendrás que buscarlo a mano.`,
+> **Vincula el cliente de Brilo.** Si el cliente tiene un **Cliente Brilo** vinculado, al aceptar una cotización se usa ese. Si no, VEO Services lo busca en Brilo por el correo del contacto de la cotización: si coinciden, lo propone solo; si no, tendrás que buscarlo a mano.`,
   },
   {
     slug: 'crear-cotizacion-vallas',
@@ -163,26 +168,27 @@ El [contrato en Brilo](academy:contrato-en-brilo) se crea a nombre de un cliente
       'precio de lista',
     ],
     modules: [
-      { label: 'Abrir Vallas estáticas', href: '/dashboard/static-billboards' },
+      { label: 'Abrir Vallas', href: '/dashboard/static-billboards' },
     ],
     related: ['crear-cotizacion-mixta', 'aceptar-cotizacion', 'crear-cliente'],
-    body: `La forma más rápida de cotizar vallas es desde el inventario de **Vallas estáticas**, porque ahí ves la disponibilidad real en las fechas que pide el cliente.
+    body: `La forma más rápida de cotizar vallas es desde el inventario de **Vallas**, porque ahí ves la disponibilidad real en las fechas que pide el cliente.
 
 ## Paso a paso
 
-1. Abre **Vallas estáticas**.
+1. Abre **Vallas** en el menú.
 2. Elige el **rango de fechas** de la campaña. Activa **Mostrar ocupadas** si también quieres ver las vallas no disponibles.
 3. Usa **Buscar vallas...** para filtrar por código o ubicación.
 4. **Selecciona** las vallas que quieres cotizar (marca su casilla).
 5. Haz clic en **Generar Cotización (N)**, donde N es el número de vallas seleccionadas.
 6. En la ventana **Generar Cotización**:
    - **Cliente** (obligatorio): búscalo o elige **+ Crear nuevo cliente**. Ver [Registrar un cliente](academy:crear-cliente).
+   - **Contacto**: al elegir el cliente se selecciona solo su contacto principal; puedes cambiarlo o crear uno nuevo. Su nombre y correo aparecen en la cotización.
    - **Vigencia oferta** (obligatoria): por defecto, 15 días a partir de hoy.
    - **Condiciones especiales**: términos, descuentos u observaciones que quieras que aparezcan en la cotización.
 7. Revisa la tabla **Vallas seleccionadas** y ajusta por cada valla la **Impresión**, el **Arrendamiento** y la **Duración**.
 8. Haz clic en **Descargar**.
 
-[Abrir Vallas estáticas](app:/dashboard/static-billboards)
+[Abrir Vallas](app:/dashboard/static-billboards)
 
 ## Cómo se calculan los precios
 
@@ -233,7 +239,7 @@ Cuando el cliente acepte, [acepta la cotización](academy:aceptar-cotizacion). L
 ## Paso a paso
 
 1. Abre **Mis cotizaciones** y haz clic en **Generar Cotización**.
-2. Llena el **Cliente**, la **Vigencia oferta** y las **Condiciones especiales**, igual que en la [cotización de vallas](academy:crear-cotizacion-vallas#paso-a-paso).
+2. Llena el **Cliente**, el **Contacto**, la **Vigencia oferta** y las **Condiciones especiales**, igual que en la [cotización de vallas](academy:crear-cotizacion-vallas#paso-a-paso). Al elegir el cliente, se selecciona solo su contacto principal.
 3. Agrega lo que vas a cotizar:
    - **Pantallas**: usa **Agregar pantalla...**. Por cada pantalla elige los **Spots/día**, el **Arrendamiento** y la **Duración**.
    - **Vallas estáticas**: usa **Agregar valla estática...**.
@@ -259,7 +265,7 @@ En las **vallas estáticas**, la **Impresión** y el **Arrendamiento** empiezan 
 - El PDF indica en los totales: *Incluye un descuento de … sobre el precio recomendado*.
 - Los descuentos se calculan **antes de IVA**. Si subes el precio de una valla, eso no reduce el descuento que diste en otra.
 
-> Las pantallas y los conceptos adicionales no muestran descuento. Tampoco las cotizaciones rápidas hechas desde **Vallas estáticas**: ahí escribe el descuento en **Condiciones especiales**.
+> Las pantallas y los conceptos adicionales no muestran descuento. Tampoco las cotizaciones rápidas hechas desde **Vallas**: ahí escribe el descuento en **Condiciones especiales**.
 
 ## Editar una cotización
 
@@ -278,7 +284,7 @@ Si **agregas o quitas vallas o pantallas**, la plataforma te pide el **Motivo de
 - Corrección de un error
 - Otro (en este caso, describe el motivo en **Detalle**)
 
-Si solo cambias precios, fechas o datos del cliente, el motivo es opcional. Queda registrado en el **Historial** de la cotización junto con el cambio de vallas (por ejemplo, *Vallas: 5 → 3*), y los administradores lo ven en **Analíticas → Resumen de cotizaciones**, en la sección **Ediciones de cotizaciones**, para entender por qué cambian las propuestas.
+Si solo cambias precios, fechas o datos del cliente, el motivo es opcional. Queda registrado en el **Historial** de la cotización junto con el cambio de vallas (por ejemplo, *Vallas: 5 → 3*). El historial muestra cada cambio con su **antes y después**, agrupado por datos generales, vallas o pantallas agregadas y quitadas, líneas editadas y totales. Los administradores lo ven en **Analíticas → Resumen de cotizaciones**, en la sección **Ediciones de cotizaciones**, para entender por qué cambian las propuestas.
 
 ## Siguiente paso
 
@@ -320,7 +326,7 @@ Cuando el cliente acepte, [acepta la cotización](academy:aceptar-cotizacion). S
 
 Al aceptar, la plataforma te pide confirmar dos datos de Brilo:
 
-- **Cliente Brilo**: se busca por el **correo** del cliente de la cotización. Si hay una sola coincidencia, se propone sola. Si no hay ninguna o hay varias, búscalo por nombre, código, NIT o correo.
+- **Cliente Brilo**: si el cliente de la cotización tiene un **Cliente Brilo vinculado** (ver [Registrar un cliente](academy:crear-cliente)), se usa ese. Si no, se busca por el **correo** de la cotización: con una sola coincidencia se propone sola, y si no hay ninguna o hay varias, búscalo por nombre, código, NIT o correo.
 - **Ejecutivo Brilo**: se busca por el **nombre del asesor** de la cotización. Si hay una sola coincidencia, se propone solo; si no, elígelo de la lista. Así el contrato aparece en [Mis contratos](app:/dashboard/my-space/contracts) y en tus reportes.
 
 El cliente tiene que existir en Brilo con sus **datos legales completos**: el PDF del contrato toma de Brilo el **nombre o razón social**, el **representante legal**, su **DUI**, el **municipio, departamento y dirección**, y los **correos**. Si el cliente no existe en Brilo, pide que lo registren antes de aceptar.
@@ -391,7 +397,7 @@ Ya **no** tienes que crear el contrato en Brilo antes: se crea al confirmar.
 1. Abre **Mis cotizaciones**.
 2. En la cotización, haz clic en **Aceptada** (o elige **Aceptada** en el estado de su detalle).
 3. En la ventana **Aceptar cotización**, revisa:
-   - **Cliente Brilo**: propuesto por el correo del cliente. Si no aparece, búscalo por nombre, código, NIT o correo.
+   - **Cliente Brilo**: el vinculado al cliente, si lo tiene; si no, el propuesto por el correo de la cotización. Si no aparece, búscalo por nombre, código, NIT o correo.
    - **Ejecutivo Brilo**: propuesto por el nombre del asesor. Si hay varias coincidencias o ninguna, elígelo de la lista.
 4. Haz clic en **Confirmar aceptación** y espera mientras se crea en Brilo.
 
@@ -407,7 +413,7 @@ Si la cotización solo tiene **pantallas** o **conceptos adicionales**, no se cr
 
 - Si hay vallas estáticas, se crean en Brilo la **cotización** y el **contrato posteado**, y el contrato queda vinculado solo.
 - Se descarga automáticamente el **contrato de arrendamiento** en PDF (archivo *Contrato CON….pdf*). Lo puedes volver a descargar con el botón **Contrato**.
-- Si la cotización tiene **vallas**, se crea la [orden de producción](academy:glosario#orden-de-produccion) con el mismo número de la cotización y Producción recibe un aviso. Después carga el [arte de cada valla](academy:produccion#arte-de-cada-valla) en **Mis órdenes**.
+- Si la cotización tiene **vallas**, se crea la [orden de producción](academy:glosario#orden-de-produccion) con el mismo número de la cotización y Producción recibe un aviso. Después carga el [arte de cada valla](academy:produccion#arte-de-cada-valla) en **Producción Vallas**.
 - Si tiene **pantallas**, se programan las campañas digitales en el módulo Pantallas.
 
 > **Si Brilo falla**, la cotización sí queda aceptada y verás el error. Usa **Reintentar Brilo** en la fila o en el detalle de la cotización. Ver [Si Brilo no responde](academy:contrato-en-brilo#si-brilo-no-responde).
@@ -416,7 +422,7 @@ Si la cotización solo tiene **pantallas** o **conceptos adicionales**, no se cr
 
 ## Rechazar una cotización
 
-- Si está **Pendiente**, haz clic en **Rechazada**.
+- Si está **Pendiente**, haz clic en **Rechazada**. Las cotizaciones rechazadas dejan de aparecer en **Mis cotizaciones**.
 - Si ya estaba **Aceptada**, al rechazarla se te pedirá confirmar. Esto **desvincula el contrato de Brilo**, elimina la orden de producción y libera el espacio reservado en las pantallas. El contrato **sigue posteado en Brilo**: pide que lo anulen allí para detener la facturación.
 
 ## Siguiente paso
@@ -482,7 +488,7 @@ Si la cotización solo tiene **pantallas** o **conceptos adicionales**, no se cr
     ],
     modules: [
       {
-        label: 'Abrir Mis órdenes',
+        label: 'Abrir Producción Vallas',
         href: '/dashboard/my-space/production-orders',
       },
     ],
@@ -492,16 +498,16 @@ Si la cotización solo tiene **pantallas** o **conceptos adicionales**, no se cr
 ## Vallas estáticas
 
 1. **Orden de producción**: se crea sola con el número de la cotización. Producción recibe un aviso. Ver [Órdenes de producción e instalación](academy:produccion).
-2. **Arte e impresión**: abre la orden en [Mis órdenes](app:/dashboard/my-space/production-orders) y carga el **arte** de cada valla (JPG, PNG, WEBP, TIFF o PDF). Producción lo descarga e imprime la lona según su calendario. Ver [Arte de cada valla](academy:produccion#arte-de-cada-valla).
+2. **Arte e impresión**: abre la orden en [Producción Vallas](app:/dashboard/my-space/production-orders) y carga el **arte** de cada valla (JPG, PNG, WEBP, TIFF o PDF) o pega su **enlace** (WeTransfer, Drive). Producción lo descarga e imprime la lona según su calendario. Ver [Arte de cada valla](academy:produccion#arte-de-cada-valla).
 3. **Instalación**: se asigna instalador y fecha. El instalador sube las **fotos de instalación** desde su portal.
 4. **Reporte de instalación**: con las fotos listas, envía el reporte al cliente. Ver [Enviar reportes a clientes](academy:enviar-reporte).
 
-Sigue el avance en [Mis órdenes](app:/dashboard/my-space/production-orders) o en la pestaña **Ejecución** del negocio en el CRM.
+Sigue el avance en [Producción Vallas](app:/dashboard/my-space/production-orders) o en la pestaña **Ejecución** del negocio en el CRM.
 
 ## Pantallas digitales
 
 1. Las campañas se registran solas en **Pantallas** con las fechas y spots por día de la cotización.
-2. El equipo de pantallas confirma el **arte**: Arte recibido, Arte en aprobación o Sin arte.
+2. El equipo de pantallas confirma el **arte**: Arte recibido, Arte en aprobación o Sin arte. Si el pedido llega como **OP** desde Soporte Comercial, Producción la revisa e ingresa a las listas. Ver [Órdenes de pauta (OP)](academy:pantallas#ordenes-de-pauta-op).
 3. La campaña sale **al aire** en las fechas contratadas. Ver [Pantallas digitales](academy:pantallas).
 
 ## Durante la campaña

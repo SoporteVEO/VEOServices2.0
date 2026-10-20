@@ -119,7 +119,7 @@ const DEAL_LITE_SELECT = {
   expectedCloseDate: true,
   lastActivityAt: true,
   stage: { select: { name: true, color: true, rottingDays: true } },
-  client: { select: { name: true, company: true } },
+  client: { select: { name: true } },
   owner: { select: { firstName: true, lastName: true } },
 } as const satisfies Prisma.CrmDealSelect;
 
@@ -134,7 +134,7 @@ function toLite(row: DealLiteRow): DashboardDealLite {
     value: row.value,
     stageName: row.stage.name,
     stageColor: row.stage.color,
-    clientName: row.client?.company || row.client?.name || null,
+    clientName: row.client?.name ?? null,
     ownerName: [row.owner.firstName, row.owner.lastName]
       .filter(Boolean)
       .join(' '),

@@ -4,6 +4,10 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service.js';
+import { PushService, type PushPayload } from '../push/push.service.js';
+
+const PUSH_TITLE = 'Veo Services';
+const DEFAULT_PUSH_URL = '/dashboard';
 
 export type NotificationPriority = 'HIGH' | 'MEDIUM' | 'LOW';
 export type UserNotificationStatus = 'PENDING' | 'VIEWED' | 'DELETED';
@@ -39,7 +43,36 @@ export interface CreateNotificationInput {
 
 @Injectable()
 export class NotificationsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly push: PushService,
+  ) {}
+
+  /** Mirrors in-app notifications to the users' browsers; never blocks or fails the caller. */
+  private pushToBrowsers(inputs: CreateNotificationInput[]) {
+    const groups = new Map<
+      string,
+      { userIds: string[]; payload: PushPayload }
+    >();
+
+    for (const input of inputs) {
+      const url = input.href ?? DEFAULT_PUSH_URL;
+      const key = `${url}\u0000${input.description}`;
+      const group = groups.get(key);
+      if (group) {
+        group.userIds.push(input.userId);
+        continue;
+      }
+      groups.set(key, {
+        userIds: [input.userId],
+        payload: { title: PUSH_TITLE, body: input.description, url },
+      });
+    }
+
+    for (const { userIds, payload } of groups.values()) {
+      void this.push.sendToUsers(userIds, payload);
+    }
+  }
 
   private serialize(row: NotificationRow) {
     return {
@@ -64,6 +97,7 @@ export class NotificationsService {
       },
       select: NOTIFICATION_SELECT,
     });
+    this.pushToBrowsers([input]);
     return this.serialize(created as NotificationRow);
   }
 
@@ -77,6 +111,7 @@ export class NotificationsService {
         href: i.href,
       })),
     });
+    this.pushToBrowsers(inputs);
     return { count: result.count };
   }
 

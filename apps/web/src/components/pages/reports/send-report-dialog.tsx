@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Mail, Send } from "lucide-react";
+import { useReportRecipients } from "@/api/clients/clients.get";
 import { Skeleton } from "@/components/primitives/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import {
@@ -13,7 +14,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
+import { ReportRecipientCombobox } from "./report-recipient-combobox";
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -21,6 +22,8 @@ export interface SendReportDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   defaultEmail: string | null;
+  /** Brilo customer id, used to find the CRM client and its contacts. */
+  briloCliId?: number | null;
   contractNumber: string;
   /** Month the report covers, e.g. "Agosto 2026". */
   periodLabel: string;
@@ -49,6 +52,7 @@ export function SendReportDialog(props: SendReportDialogProps) {
 
 function SendReportDialogContent({
   defaultEmail,
+  briloCliId,
   contractNumber,
   periodLabel,
   totalBillboardsCount,
@@ -58,18 +62,24 @@ function SendReportDialogContent({
   onSubmit,
   onOpenChange,
 }: SendReportDialogProps) {
-  const [email, setEmail] = useState(defaultEmail ?? "");
-  const [touched, setTouched] = useState(false);
+  const recipientsQuery = useReportRecipients({
+    briloCliId,
+    email: defaultEmail,
+  });
+  const contacts = recipientsQuery.data?.contacts ?? [];
+  const [chosen, setChosen] = useState<string | null>(null);
 
-  const trimmed = email.trim();
-  const isValid = trimmed.length > 0 && EMAIL_REGEX.test(trimmed);
-  const showError = touched && !isValid;
+  const primaryEmail = contacts.find((contact) => contact.isPrimary)?.email;
+  const email =
+    chosen ?? primaryEmail ?? defaultEmail?.trim().toLowerCase() ?? "";
+  const isResolving = recipientsQuery.isLoading && chosen === null;
+  const isValid = email.length > 0 && EMAIL_REGEX.test(email);
+  const showError = !isResolving && email.length > 0 && !isValid;
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    setTouched(true);
-    if (!isValid) return;
-    onSubmit(trimmed);
+    if (!isValid || isResolving) return;
+    onSubmit(email);
   }
 
   return (
@@ -107,29 +117,24 @@ function SendReportDialogContent({
           </p>
         </div>
 
-        <Input
-          label="Correo del destinatario"
-          type="email"
-          autoFocus
-          required
-          autoComplete="email"
-          placeholder="cliente@empresa.com"
+        <ReportRecipientCombobox
+          label="Destinatario"
           value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          onBlur={() => setTouched(true)}
+          onChange={setChosen}
+          contacts={contacts}
+          fallbackEmail={defaultEmail}
+          isLoading={recipientsQuery.isLoading}
           disabled={isSubmitting}
-          aria-invalid={showError || undefined}
-          className={showError ? "border-destructive" : undefined}
         />
         {showError ? (
           <p className="-mt-2 text-xs text-destructive">
-            {trimmed.length === 0
-              ? "El correo es obligatorio."
-              : "Ingresa un correo válido."}
+            Ingresa un correo válido.
           </p>
         ) : (
           <p className="-mt-2 text-xs text-muted-foreground">
-            Puedes editar el correo si quieres enviarlo a otro destinatario.
+            {recipientsQuery.data?.client
+              ? `Contactos de ${recipientsQuery.data.client.name}. Escribe un correo para usar otro.`
+              : "Escribe un correo para enviarlo a otro destinatario."}
           </p>
         )}
 
@@ -155,7 +160,7 @@ function SendReportDialogContent({
         </Button>
         <Button
           type="submit"
-          disabled={isSubmitting || !isValid}
+          disabled={isSubmitting || !isValid || isResolving}
           icon={Send}
           loading={isSubmitting}
         >

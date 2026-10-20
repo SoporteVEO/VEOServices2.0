@@ -24,6 +24,7 @@ import {
   QuotationCustomerForm,
   type QuotationCustomerFormValues,
 } from "@/components/pages/static-billboards/quotation/quotation-customer-form";
+import { useQuotationCustomer } from "@/components/pages/static-billboards/quotation/use-quotation-customer";
 import { Separator } from "@/components/primitives/ui/separator";
 import {
   blobToBase64,
@@ -77,23 +78,12 @@ function emptyFormValues(): QuotationCustomerFormValues {
   };
 }
 
-function clientFormValues(client: Client) {
-  return {
-    clientId: client.id,
-    customerName: client.name,
-    customerCompany: client.company ?? "",
-    customerEmail: client.email,
-    customerBillingEmail: client.billingEmail ?? "",
-    customerContact: client.contact ?? "",
-  };
-}
-
 function initialFormValues(
   offer: OfferDetail | undefined,
   client: Client | undefined,
 ): QuotationCustomerFormValues {
   if (offer) return formValuesFromOffer(offer);
-  if (client) return { ...emptyFormValues(), ...clientFormValues(client) };
+  if (client) return { ...emptyFormValues(), clientId: client.id };
   return emptyFormValues();
 }
 
@@ -195,9 +185,10 @@ export function GenerateOfferModal({
   const editMutation = useEditOffer();
   const attachPdfMutation = useAttachOfferPdf();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [selectedClient, setSelectedClient] = useState<Client | null>(
-    initialClient ?? null,
-  );
+  const customer = useQuotationCustomer({
+    initialClient,
+    keepSnapshot: isEditing,
+  });
 
   const [seededItems] = useState(() =>
     offer ? offerDetailItemsToOfferItems(offer.items) : (initialItems ?? []),
@@ -253,19 +244,13 @@ export function GenerateOfferModal({
   });
 
   function handleSelectClient(client: Client | null) {
-    setSelectedClient(client);
-    if (!client) {
-      form.setValue("clientId", null);
-      return;
-    }
-    for (const [key, value] of Object.entries(clientFormValues(client))) {
-      form.setValue(key as keyof ReturnType<typeof clientFormValues>, value);
-    }
+    customer.selectClient(client);
+    form.setValue("clientId", client?.id ?? null);
   }
 
   function resetState() {
     form.reset(emptyFormValues());
-    setSelectedClient(null);
+    customer.reset();
     setStaticItems([]);
     setDigitalItems([]);
     setMiscItems([]);
@@ -279,6 +264,9 @@ export function GenerateOfferModal({
   }
 
   function validateBeforeSubmit(values: QuotationCustomerFormValues): string | null {
+    if (!values.customerName.trim()) {
+      return "Selecciona un cliente para la cotización.";
+    }
     if (allItems.length === 0) {
       return "Agrega al menos una valla o concepto a la cotización.";
     }
@@ -312,7 +300,8 @@ export function GenerateOfferModal({
     return null;
   }
 
-  async function onSubmit(values: QuotationCustomerFormValues) {
+  async function onSubmit(formValues: QuotationCustomerFormValues) {
+    const values = { ...formValues, ...customer.fields };
     const validationError = validateBeforeSubmit(values);
     if (validationError) {
       toast.warning(validationError);
@@ -414,8 +403,10 @@ export function GenerateOfferModal({
           <DialogBody className="space-y-6">
             <QuotationCustomerForm
               form={form}
-              defaultSelectedClient={selectedClient}
+              client={customer.client}
+              contact={customer.contact}
               onSelectClient={handleSelectClient}
+              onSelectContact={customer.selectContact}
             />
 
             <Separator />
@@ -464,7 +455,11 @@ export function GenerateOfferModal({
             </Button>
             <Button
               type="submit"
-              disabled={isSubmitting || allItems.length === 0}
+              disabled={
+                isSubmitting ||
+                allItems.length === 0 ||
+                customer.isResolvingContact
+              }
               icon={Download}
               loading={isSubmitting}
             >

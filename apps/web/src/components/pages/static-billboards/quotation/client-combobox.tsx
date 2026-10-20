@@ -23,7 +23,6 @@ export interface ClientComboboxProps {
 
 function buildClientLabel(client: Client): string {
   const parts = [client.name];
-  if (client.company) parts.push(`(${client.company})`);
   if (client.type === "AGENCY") parts.push("· Agencia");
   return parts.join(" ");
 }
@@ -62,7 +61,7 @@ export function ClientCombobox({
     return clients.map((client) => ({
       value: client.id,
       label: buildClientLabel(client),
-      filterValue: `${client.name} ${client.company ?? ""} ${client.email} ${client.billingEmail ?? ""}`,
+      filterValue: `${client.name} ${client.company ?? ""} ${client.email ?? ""} ${client.billingEmail ?? ""}`,
     }));
   }, [clients]);
 

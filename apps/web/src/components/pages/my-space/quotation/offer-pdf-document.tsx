@@ -63,16 +63,12 @@ function orDash(value: string) {
 }
 
 function CustomerGrid({ data }: { data: OfferPdfData }) {
+  const hasCompany = Boolean(data.customerCompany.trim());
   return (
     <View style={d.infoGrid} wrap={false}>
       <View style={d.infoRow}>
         <DocInfoCell
-          label="EMPRESA:"
-          value={orDash(data.customerCompany)}
-          valueStyle={s.infoValue}
-        />
-        <DocInfoCell
-          label="NOMBRE:"
+          label="CLIENTE:"
           value={orDash(data.customerName)}
           valueStyle={s.infoValue}
         />
@@ -81,19 +77,26 @@ function CustomerGrid({ data }: { data: OfferPdfData }) {
           value={orDash(data.customerContact)}
           valueStyle={s.infoValue}
         />
-      </View>
-      <View style={d.infoRow}>
         <DocInfoCell
           label="CORREO CLIENTE:"
           value={orDash(data.customerEmail)}
           valueStyle={s.infoValueText}
-          width="33.333%"
         />
+      </View>
+      <View style={d.infoRow}>
+        {hasCompany ? (
+          <DocInfoCell
+            label="EMPRESA:"
+            value={data.customerCompany}
+            valueStyle={s.infoValue}
+            width="33.333%"
+          />
+        ) : null}
         <DocInfoCell
           label="CORREO DE FACTURACIÓN:"
           value={orDash(data.customerBillingEmail)}
           valueStyle={s.infoValueText}
-          width="66.667%"
+          width={hasCompany ? "66.667%" : undefined}
         />
       </View>
     </View>

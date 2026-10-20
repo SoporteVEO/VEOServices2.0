@@ -97,6 +97,8 @@ export interface BriloAcceptContext {
   requiresBriloDocuments: boolean;
   staticItemCount: number;
   customerEmail: string | null;
+  /** Brilo client explicitly linked to the offer's VEO client, if any. */
+  linkedClient: BriloClientOption | null;
   clientMatches: BriloClientOption[];
   advisorFullName: string | null;
   executives: BriloExecutiveOption[];
@@ -309,6 +311,7 @@ export interface MyOffersQuery {
   search?: string;
   page?: number;
   pageSize?: number;
+  hideDeclined?: boolean;
 }
 
 export interface MyOffersStatusBreakdown {

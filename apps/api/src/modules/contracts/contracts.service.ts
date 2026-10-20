@@ -97,6 +97,7 @@ interface ActiveContractGroupRow {
   mconAtencionA: string;
   cliNombres: string;
   cliEmail: string;
+  cliId: number | null;
   createdByName: string | null;
   earliestStart: Date;
   latestEnd: Date;
@@ -206,6 +207,7 @@ WITH FilteredContracts AS (
         MAX(maecon.mconAtencionA) AS mconAtencionA,
         MAX(cli.cliNombres) AS cliNombres,
         MAX(cli.cliEmail) AS cliEmail,
+        MAX(cli.cliId) AS cliId,
         MAX(ej.ejecNombre) AS createdByName
     FROM olVallas.dbo.maeContratos maecon
     INNER JOIN olVallas.dbo.detContratos detcon
@@ -273,6 +275,7 @@ SELECT
     mconAtencionA,
     cliNombres,
     cliEmail,
+    cliId,
     createdByName,
     earliestStart,
     latestEnd,
@@ -581,6 +584,7 @@ export class ContractsService {
         description: row.mconAtencionA,
         customerName: row.cliNombres,
         customerEmail: row.cliEmail,
+        customerBriloId: row.cliId ?? null,
         createdByName: row.createdByName?.trim() || null,
         startDate: row.earliestStart,
         endDate: row.latestEnd,

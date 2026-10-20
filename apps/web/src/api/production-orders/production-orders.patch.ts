@@ -61,6 +61,43 @@ export function useDeleteProductionOrderArt() {
   });
 }
 
+export async function setProductionOrderArtLink(input: {
+  itemId: string;
+  url: string;
+}): Promise<ProductionOrderItem> {
+  const response = await apiFetch<{ data: ProductionOrderItem }>(
+    `/production-orders/items/${input.itemId}/art-link`,
+    { method: "PATCH", body: JSON.stringify({ url: input.url }) },
+  );
+  return response.data;
+}
+
+export function useSetProductionOrderArtLink() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: setProductionOrderArtLink,
+    onSuccess: (updatedItem) => applyItemToCaches(queryClient, updatedItem),
+  });
+}
+
+export async function deleteProductionOrderArtLink(
+  itemId: string,
+): Promise<ProductionOrderItem> {
+  const response = await apiFetch<{ data: ProductionOrderItem }>(
+    `/production-orders/items/${itemId}/art-link`,
+    { method: "DELETE" },
+  );
+  return response.data;
+}
+
+export function useDeleteProductionOrderArtLink() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: deleteProductionOrderArtLink,
+    onSuccess: (updatedItem) => applyItemToCaches(queryClient, updatedItem),
+  });
+}
+
 export interface UpdateProductionOrderItemAssignmentInput {
   itemId: string;
   assignedInstallerId?: string | null;

@@ -996,9 +996,12 @@ model Client {
   type          ClientType     @default(DIRECT)
   name          String
   company       String?
-  email         String         @unique
+  /// Legacy: emails and phones now live on `CrmContact`.
+  email         String?        @unique
   billingEmail  String?        @map("billing_email")
   contact       String?
+  /// Optional link to the Brilo client (olComun.dbo.Clientes.cliId) used to prefill offer acceptance.
+  briloCliId    Int?           @map("brilo_cli_id")
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
   offers        OfferCreated[]
@@ -1011,6 +1014,7 @@ model Client {
   @@index([company])
   @@index([name])
   @@index([type])
+  @@index([briloCliId])
   @@map("clients")
 }
 
@@ -1363,6 +1367,8 @@ model ProductionOrderItem {
   artFileName             String?                  @map("art_file_name")
   artMimeType             String?                  @map("art_mime_type")
   artUploadedAt           DateTime?                @map("art_uploaded_at")
+  /// External download link (e.g. WeTransfer) for the print-ready art files.
+  artLinkUrl              String?                  @map("art_link_url")
   assignedInstallerId     String?                  @map("assigned_installer_id")
   assignedInstaller       User?                    @relation("ProductionOrderInstaller", fields: [assignedInstallerId], references: [id], onDelete: SetNull)
   assignedVulcanizadorId  String?                  @map("assigned_vulcanizador_id")

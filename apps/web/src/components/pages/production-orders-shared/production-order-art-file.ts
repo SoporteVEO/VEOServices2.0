@@ -25,6 +25,18 @@ export function validateProductionArt(file: File): string | null {
   return null;
 }
 
+/** Returns the trimmed link when it is an http(s) URL, otherwise null. */
+export function normalizeArtLink(value: string): string | null {
+  const trimmed = value.trim();
+  if (!trimmed) return null;
+  try {
+    const { protocol } = new URL(trimmed);
+    return protocol === "http:" || protocol === "https:" ? trimmed : null;
+  } catch {
+    return null;
+  }
+}
+
 export function isPreviewableArt(mimeType: string): boolean {
   return PREVIEWABLE_MIME_TYPES.has(mimeType);
 }

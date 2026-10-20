@@ -1,7 +1,10 @@
 "use client";
 
+import { useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { PUSH_STATUS_QUERY_KEY } from "@/hooks/use-push-notifications";
+import { unsubscribeDevice } from "@/lib/pwa/push-subscription";
 import {
   Sidebar,
   SidebarContent,
@@ -60,6 +63,7 @@ function portalGroupsFor(role?: UserRole): NavGroup[] {
 export function AppSidebar() {
   const pathname = usePathname();
   const router = useRouter();
+  const queryClient = useQueryClient();
   const { data: session } = authClient.useSession();
 
   const userName = session?.user?.name ?? "Usuario";
@@ -72,11 +76,13 @@ export function AppSidebar() {
     ...filterNavGroupsByAccess(NAV_GROUPS, userRole, userSubRoles),
   ];
 
-  function handleSignOut() {
-    authClient.signOut({
+  async function handleSignOut() {
+    await unsubscribeDevice();
+    await authClient.signOut({
       fetchOptions: {
         onSuccess: () => {
           clearAuthToken();
+          queryClient.removeQueries({ queryKey: PUSH_STATUS_QUERY_KEY });
           router.push("/");
         },
       },

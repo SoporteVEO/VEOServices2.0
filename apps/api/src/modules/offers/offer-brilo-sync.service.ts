@@ -28,6 +28,8 @@ export interface BriloAcceptContext {
   requiresBriloDocuments: boolean;
   staticItemCount: number;
   customerEmail: string | null;
+  /** Brilo client explicitly linked to the offer's VEO client, if any. */
+  linkedClient: BriloClientOption | null;
   clientMatches: BriloClientOption[];
   advisorFullName: string | null;
   executives: BriloExecutiveOption[];
@@ -62,6 +64,7 @@ export class OfferBriloSyncService {
         customerEmail: true,
         billingEmail: true,
         advisorFullName: true,
+        client: { select: { briloCliId: true } },
         items: {
           select: {
             itemType: true,
@@ -82,6 +85,7 @@ export class OfferBriloSyncService {
         requiresBriloDocuments: false,
         staticItemCount,
         customerEmail: offer.customerEmail,
+        linkedClient: null,
         clientMatches: [],
         advisorFullName: offer.advisorFullName,
         executives: [],
@@ -89,7 +93,9 @@ export class OfferBriloSyncService {
       };
     }
 
-    const [clientMatches, executives] = await Promise.all([
+    const linkedCliId = offer.client?.briloCliId ?? null;
+    const [linkedClient, clientMatches, executives] = await Promise.all([
+      linkedCliId ? this.findClientById(linkedCliId) : null,
       this.findClientsByEmail(offer.customerEmail, offer.billingEmail),
       this.listExecutives(),
     ]);
@@ -98,6 +104,7 @@ export class OfferBriloSyncService {
       requiresBriloDocuments: true,
       staticItemCount,
       customerEmail: offer.customerEmail,
+      linkedClient,
       clientMatches,
       advisorFullName: offer.advisorFullName,
       executives,
@@ -317,6 +324,16 @@ export class OfferBriloSyncService {
         }),
       ]);
     }
+  }
+
+  private async findClientById(
+    cliId: number,
+  ): Promise<BriloClientOption | null> {
+    const rows = await this.briloDb.query<BriloClientRow>(
+      BRILO_CLIENT_BY_ID_SQL,
+      { CliId: cliId },
+    );
+    return rows[0] ? toBriloClientOption(rows[0]) : null;
   }
 
   private async findClientsByEmail(

@@ -51,8 +51,8 @@ function sameName(a: string | null | undefined, b: string | null | undefined) {
   return !!a && !!b && normalizeText(a) === normalizeText(b);
 }
 
-function clientLabel(client: { name: string; company: string | null }) {
-  return client.company || client.name;
+function clientLabel(client: { name: string }) {
+  return client.name;
 }
 
 export function buildCrmOpportunityTools(ctx: AgentToolContext) {
@@ -122,7 +122,7 @@ export function buildCrmOpportunityTools(ctx: AgentToolContext) {
         query: { search: input.email, pageSize: 5 },
       });
       const match = byEmail.data?.data.find(
-        (row) => row.email.toLowerCase() === input.email!.toLowerCase(),
+        (row) => row.email?.toLowerCase() === input.email!.toLowerCase(),
       );
       if (match) return { client: match, created: false };
     }

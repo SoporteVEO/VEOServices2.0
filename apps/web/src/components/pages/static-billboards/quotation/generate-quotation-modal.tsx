@@ -34,6 +34,7 @@ import {
   type ContractRange,
 } from "../detail/billboard-detail-utils";
 import { useQuotationBillboardContractRanges } from "./use-quotation-billboard-contracts";
+import { useQuotationCustomer } from "./use-quotation-customer";
 
 function defaultValidUntil(): Date {
   const d = new Date();
@@ -123,7 +124,7 @@ export function GenerateQuotationModal({
   const createMutation = useCreateOffer();
   const attachPdfMutation = useAttachOfferPdf();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [selectedClient, setSelectedClient] = useState<Client | null>(null);
+  const customer = useQuotationCustomer();
 
   const advisorFullName = useMemo<string | null>(() => {
     const fromTeamMember = teamMemberQuery.data?.fullName?.trim();
@@ -216,13 +217,8 @@ export function GenerateQuotationModal({
   });
 
   function handleSelectClient(client: Client | null) {
-    setSelectedClient(client);
+    customer.selectClient(client);
     form.setValue("clientId", client?.id ?? null);
-    form.setValue("customerName", client?.name ?? "");
-    form.setValue("customerCompany", client?.company ?? "");
-    form.setValue("customerEmail", client?.email ?? "");
-    form.setValue("customerBillingEmail", client?.billingEmail ?? "");
-    form.setValue("customerContact", client?.contact ?? "");
   }
 
   function handleClose(nextOpen: boolean) {
@@ -230,11 +226,12 @@ export function GenerateQuotationModal({
     onOpenChange(nextOpen);
     if (!nextOpen) {
       form.reset(emptyFormValues());
-      setSelectedClient(null);
+      customer.reset();
     }
   }
 
-  async function onSubmit(values: QuotationCustomerFormValues) {
+  async function onSubmit(formValues: QuotationCustomerFormValues) {
+    const values = { ...formValues, ...customer.fields };
     if (!values.clientId) {
       toast.warning("Selecciona un cliente para la cotización.");
       return;
@@ -335,7 +332,7 @@ export function GenerateQuotationModal({
       toast.success(`Cotización ${created.offerNumber} generada.`);
       onOpenChange(false);
       setItems([]);
-      setSelectedClient(null);
+      customer.reset();
       form.reset(emptyFormValues());
       onSuccess?.();
     } catch (err) {
@@ -368,8 +365,10 @@ export function GenerateQuotationModal({
           <DialogBody className="space-y-6">
             <QuotationCustomerForm
               form={form}
-              defaultSelectedClient={selectedClient}
+              client={customer.client}
+              contact={customer.contact}
               onSelectClient={handleSelectClient}
+              onSelectContact={customer.selectContact}
             />
 
             <QuotationItemsTable
@@ -390,7 +389,11 @@ export function GenerateQuotationModal({
             </Button>
             <Button
               type="submit"
-              disabled={isSubmitting || items.length === 0}
+              disabled={
+                isSubmitting ||
+                items.length === 0 ||
+                customer.isResolvingContact
+              }
               icon={Download}
               loading={isSubmitting}
             >

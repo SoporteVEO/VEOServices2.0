@@ -26,7 +26,7 @@ import {
   DrawerTitle,
 } from "@/components/ui/drawer";
 import { ImagePreviewDialog } from "@/components/pages/images/image-preview-dialog";
-import { formatShortDate } from "@/lib/format";
+import { formatBriloShortDate, formatShortDate } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import {
   buildContractReport,
@@ -242,6 +242,7 @@ function ContractReportDrawerContent({
         open={isSendOpen}
         onOpenChange={setIsSendOpen}
         defaultEmail={group.customerEmail}
+        briloCliId={group.customerBriloId}
         contractNumber={group.contractNumber}
         periodLabel={formatMonthLabel(month)}
         totalBillboardsCount={group.totalBillboards}
@@ -273,7 +274,7 @@ function ContractSummary({
       <SummaryItem label="Periodo">{formatMonthLabel(month)}</SummaryItem>
       <SummaryItem label="Atención">{group.description || "—"}</SummaryItem>
       <SummaryItem label="Vencimiento">
-        {formatShortDate(new Date(group.endDate))}
+        {formatBriloShortDate(group.endDate)}
       </SummaryItem>
       <SummaryItem label="Imágenes subidas">
         <span className="font-medium tabular-nums">
@@ -335,8 +336,8 @@ function BillboardCard({
           </p>
         </div>
         <p className="shrink-0 text-xs text-muted-foreground tabular-nums">
-          {formatShortDate(new Date(billboard.startDate))} —{" "}
-          {formatShortDate(new Date(billboard.endDate))}
+          {formatBriloShortDate(billboard.startDate)} —{" "}
+          {formatBriloShortDate(billboard.endDate)}
         </p>
       </div>
 

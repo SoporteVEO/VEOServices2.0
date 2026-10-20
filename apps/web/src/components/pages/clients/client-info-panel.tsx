@@ -11,11 +11,10 @@ import {
   CardHeader,
   CardTitleWithInfo,
 } from "@/components/ui/card";
+import { BriloClientCombobox } from "@/components/pages/my-space/brilo-client-combobox";
 import { TextEditField } from "@/components/ui/edit-field";
 import { formatLongDate } from "@/lib/format";
 import { ClientTypeToggleField } from "./client-type-toggle-field";
-
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export function ClientInfoPanel({ clientId }: { clientId: string }) {
   const { data: client, isLoading, isError } = useClient(clientId);
@@ -63,7 +62,7 @@ function ClientInfoForm({ client }: { client: Client }) {
     <div className="flex flex-col gap-4 p-4">
       <Card>
         <CardHeader>
-          <CardTitleWithInfo info="Datos generales del cliente. Toca cualquier campo para editarlo en línea.">
+          <CardTitleWithInfo info="Para una agencia, usa el nombre de la empresa. Correos y teléfonos se gestionan como contactos del cliente.">
             Información general
           </CardTitleWithInfo>
         </CardHeader>
@@ -73,63 +72,32 @@ function ClientInfoForm({ client }: { client: Client }) {
             isPending={isPending}
             onChange={(type) => void update({ type }).catch(() => {})}
           />
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <TextEditField
-              label="Nombre"
-              required
-              initialValue={client.name}
-              isPending={isPending}
-              onSubmit={(v) => update({ name: v ?? "" })}
-            />
-            <TextEditField
-              label="Empresa"
-              initialValue={client.company}
-              emptyText="Sin empresa"
-              isPending={isPending}
-              onSubmit={(v) => update({ company: v })}
-            />
-          </div>
           <TextEditField
-            label="Teléfono"
-            type="tel"
-            initialValue={client.contact}
-            emptyText="Sin teléfono registrado"
+            label="Nombre"
+            required
+            initialValue={client.name}
             isPending={isPending}
-            onSubmit={(v) => update({ contact: v })}
+            onSubmit={(v) => update({ name: v ?? "" })}
           />
         </CardContent>
       </Card>
 
       <Card>
         <CardHeader>
-          <CardTitleWithInfo info="Correos asociados al cliente. El correo principal es la clave única en el sistema.">
-            Correos electrónicos
+          <CardTitleWithInfo info="Al aceptar una cotización de este cliente, el cliente de Brilo se completa automáticamente.">
+            Cliente en Brilo
           </CardTitleWithInfo>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <TextEditField
-            label="Correo principal"
-            required
-            type="email"
-            initialValue={client.email}
-            isPending={isPending}
-            validate={(v) =>
-              EMAIL_RE.test(v) ? null : "Correo electrónico no válido"
+        <CardContent>
+          <BriloClientCombobox
+            label="Cliente Brilo (opcional)"
+            required={false}
+            value={client.briloClient ?? null}
+            onChange={(briloClient) =>
+              void update({ briloCliId: briloClient?.cliId ?? null }).catch(
+                () => {},
+              )
             }
-            onSubmit={(v) => update({ email: v ?? "" })}
-          />
-          <TextEditField
-            label="Correo de facturación"
-            type="email"
-            initialValue={client.billingEmail}
-            emptyText="Usar correo principal"
-            isPending={isPending}
-            validate={(v) =>
-              v.length === 0 || EMAIL_RE.test(v)
-                ? null
-                : "Correo electrónico no válido"
-            }
-            onSubmit={(v) => update({ billingEmail: v })}
           />
         </CardContent>
       </Card>

@@ -103,6 +103,7 @@ function clientStub(client: Pick<Client, "id" | "name" | "company">): Client {
     email: "",
     billingEmail: null,
     contact: null,
+    briloCliId: null,
     createdAt: "",
     updatedAt: "",
   };

@@ -34,6 +34,7 @@ export interface ProductionOrderItem {
   height: number | null;
   quantity: number;
   art: ProductionOrderArt | null;
+  artLinkUrl: string | null;
   hasProductionDocument: boolean;
   hasDesignDocument: boolean;
   assignedInstaller: InstallerSummary | null;
@@ -164,4 +165,5 @@ export interface ProductionOrdersQuery {
   page?: number;
   pageSize?: number;
   status?: ProductionOrderStatus;
+  hideFinished?: boolean;
 }

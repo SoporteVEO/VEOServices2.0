@@ -99,6 +99,7 @@ export interface AgentMonthlyReportContract {
   contractNumber: string;
   customerName: string | null;
   customerEmail: string | null;
+  customerBriloId?: number | null;
   description: string | null;
   endDate: string;
   totalBillboards: number;

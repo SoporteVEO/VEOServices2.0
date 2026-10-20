@@ -25,11 +25,14 @@ export const OPERACION: AcademyArticleSource[] = [
       'reprogramación',
       'prioridad',
       'solicitudes',
+      'producción vallas',
+      'enlace del arte',
+      'wetransfer',
     ],
     modules: [
       { label: 'Abrir Producción', href: '/dashboard/production' },
       {
-        label: 'Abrir Mis órdenes',
+        label: 'Abrir Producción Vallas',
         href: '/dashboard/my-space/production-orders',
       },
     ],
@@ -47,17 +50,27 @@ export const OPERACION: AcademyArticleSource[] = [
 
 Cada valla de la orden lleva **un solo archivo: su arte**, que es lo que Producción imprime.
 
-- **Quién lo carga**: el vendedor, desde **Mi Espacio → Mis órdenes**. En las órdenes manuales lo carga Producción.
+- **Quién lo carga**: el vendedor, desde **Mi Espacio → Producción Vallas**. En las órdenes manuales lo carga Producción.
 - **Cómo**: abre la orden, busca la valla y arrastra el archivo al recuadro **Cargar arte** (o haz clic para elegirlo). Con **Reemplazar** subes una versión nueva y con **Eliminar** lo quitas.
 - **Formatos**: JPG, PNG, WEBP, TIFF o PDF, de hasta 100 MB.
 
 Producción ve el arte de cada valla en el detalle de la orden: una miniatura, el botón **Ver** para abrirlo en grande y **Descargar** para obtener el archivo original con su nombre.
 
+### Arte por enlace
+
+Si el arte pesa demasiado o el cliente lo mandó por WeTransfer, Drive u otro servicio, no necesitas subir el archivo: pega su enlace.
+
+1. En la valla, haz clic en **Agregar enlace (WeTransfer, Drive…)**.
+2. Pega el enlace (debe empezar con **http** o **https**) y haz clic en **Guardar**.
+3. El enlace aparece como **Enlace del arte**, con los botones **Abrir**, **Editar** y **Eliminar**.
+
+La valla cuenta como **Cargado** si tiene el archivo o el enlace, y Producción abre el enlace desde la misma tarjeta. Puedes tener ambos.
+
 > Antes se pedían una *orden de producción* y una *orden de diseño* en PDF por valla. Ya no se usan: ahora solo se carga el arte. En órdenes antiguas, esos PDF siguen disponibles en **Documentos anteriores**.
 
 ## Pestaña Órdenes
 
-Lista todas las órdenes con su cliente y sus vallas. Cada valla de la orden tiene su estado:
+Lista las órdenes **activas** con su cliente y sus vallas. Cada valla de la orden tiene su estado:
 
 | Estado | Significado |
 | --- | --- |
@@ -65,6 +78,8 @@ Lista todas las órdenes con su cliente y sus vallas. Cada valla de la orden tie
 | **En producción** | Se está diseñando o imprimiendo. |
 | **Completada** | Lista e instalada. |
 | **Cancelada** | Ya no se hará. |
+
+Las órdenes con todas sus vallas **completadas** y las **canceladas** ya no aparecen en la lista, por eso el filtro de estado solo ofrece **Recibida** y **En producción**.
 
 ## Instalación en sitio
 
@@ -102,25 +117,25 @@ En ambos casos el vendedor recibe una notificación con la respuesta.
 
 Cada valla de la orden muestra su tarjeta **Impresión** con la fecha, la máquina y el estado del trabajo (**Agendada**, **En set up**, **Imprimiendo**, **En cooldown** o **Impresa**). Si aún no tiene fecha, verás que Producción todavía la va a agendar.
 
-En **Mis órdenes**, la columna **Fecha de impresión** muestra la próxima fecha agendada, cuántas vallas de la orden ya tienen fecha (por ejemplo, *2/3 agendadas*), **Impresión finalizada** o **Sin fecha asignada**.
+En **Producción Vallas**, la columna **Fecha de impresión** muestra la próxima fecha agendada, cuántas vallas de la orden ya tienen fecha (por ejemplo, *2/3 agendadas*), **Impresión finalizada** o **Sin fecha asignada**.
 
 ## Reprogramar la impresión
 
 Si el cliente necesita la lona antes o después, el vendedor dueño de la orden puede pedir otra fecha:
 
-1. En **Mis órdenes**, abre la orden y busca la valla.
+1. En **Producción Vallas**, abre la orden y busca la valla.
 2. En la tarjeta **Impresión**, haz clic en **Solicitar reprogramación**.
 3. Elige la **Fecha preferida de impresión** (o déjala en *Lo antes posible*) y escribe el **Motivo**.
 4. Si es urgente, activa **Dar prioridad a esta valla**.
-5. Haz clic en **Enviar solicitud**. Producción recibe una notificación.
+5. Haz clic en **Enviar solicitud**. Producción recibe una notificación. Si el motivo es muy corto, el aviso aparece junto al campo y la solicitud no se envía hasta que lo completes.
 
 Mientras esté pendiente verás **Reprogramación solicitada** y puedes **Retirar solicitud**. Solo se puede pedir mientras la impresión siga **Agendada** (o sin fecha) y no haya otra solicitud pendiente para esa valla.
 
 ## Para vendedores
 
-No necesitas entrar a Producción. En **Mi Espacio → Mis órdenes** carga el [arte de cada valla](#arte-de-cada-valla), revisa la [fecha de impresión](#fecha-de-impresion) y el avance de tus ventas; también lo ves en la pestaña **Ejecución** del negocio en el [CRM](academy:crm-negocios#ver-la-ejecucion-de-la-campana).
+No necesitas entrar a Producción. En **Mi Espacio → Producción Vallas** carga el [arte de cada valla](#arte-de-cada-valla), revisa la [fecha de impresión](#fecha-de-impresion) y el avance de tus ventas; también lo ves en la pestaña **Ejecución** del negocio en el [CRM](academy:crm-negocios#ver-la-ejecucion-de-la-campana).
 
-[Abrir Mis órdenes](app:/dashboard/my-space/production-orders)`,
+[Abrir Producción Vallas](app:/dashboard/my-space/production-orders)`,
   },
   {
     slug: 'pantallas',
@@ -138,8 +153,19 @@ No necesitas entrar a Producción. En **Mi Espacio → Mis órdenes** carga el [
       'ocupación',
       'arte',
       'OP',
+      'orden de pauta',
+      'producción pantallas',
+      'soporte comercial',
+      'ingresar a las listas',
+      'devolver',
     ],
-    modules: [{ label: 'Abrir Pantallas', href: '/dashboard/pantallas' }],
+    modules: [
+      { label: 'Abrir Pantallas', href: '/dashboard/pantallas' },
+      {
+        label: 'Abrir Producción Pantallas',
+        href: '/dashboard/produccion-pantallas',
+      },
+    ],
     related: [
       'crear-cotizacion-mixta',
       'crm-disponibilidad',
@@ -162,6 +188,37 @@ Arriba están los botones **Ingresar OP**, **Reporte OP**, **Exportar Excel** y 
 
 - **Automáticas**: al [aceptar una cotización](academy:aceptar-cotizacion) que incluye pantallas, cada pantalla queda con su campaña programada.
 - **Manuales**: con el formulario de campaña, llenando **Cliente**, **Campaña**, fechas, **Sublista**, **Spots por día (frecuencia)**, **Estado del arte** y los valores.
+
+## Órdenes de pauta (OP)
+
+Una **OP** es la orden con la que comercial pide que una campaña entre a las pantallas. Se gestiona en el módulo **Producción Pantallas**, que ven **Soporte Comercial** y **Producción de Pantallas**.
+
+### Soporte Comercial: crear la OP
+
+1. En **Producción Pantallas**, haz clic en **Crear OP**.
+2. Llena los **Datos comerciales** (**Ejecutivo/a**, **Fecha de ingreso** y, si aplica, la **Agencia**) y la **Campaña** (**Marca**, **Campaña**, **Formato de arte** y la **Vigencia**).
+3. En cada pantalla indica los **spots por día**, el **valor** de la pantalla y el **costo por spot**. El formulario calcula los totales y el **Valor mensual**.
+4. Agrega el **Enlace de descarga** del arte y, si hace falta, las **Indicaciones especiales**.
+5. Haz clic en **Crear OP**. Producción recibe una notificación.
+
+Cada OP lleva su propio código y se puede descargar en **PDF** con **Ver PDF**.
+
+### Producción: revisar la OP
+
+Las OP **por revisar** aparecen primero. Revisa la información, los enlaces del arte y, en cada pantalla, si hay espacio en las fechas pedidas. Luego:
+
+- **Ingresar a las listas**: se abre la ventana de siempre ya llena, para ver en qué sublistas queda y confirmar. La OP pasa a **Ingresada** y Soporte Comercial recibe una notificación.
+- **Devolver a Soporte**: escribe **qué hay que corregir** (por ejemplo, que no hay espacio con esos spots). La OP pasa a **Devuelta a Soporte** y Soporte Comercial recibe el motivo.
+
+### Soporte Comercial: corregir y reenviar
+
+Si Producción devuelve la OP, verás el motivo en la misma OP. Haz clic en **Corregir y reenviar**, ajusta lo necesario y haz clic en **Reenviar OP**. Conserva el mismo número y vuelve a **Por revisar**. Una OP ya ingresada no se puede modificar.
+
+Las pestañas **por revisar**, **devueltas**, **ingresadas** y **todas** muestran cuántas OP hay en cada estado. Los usuarios sin permiso de edición la ven en solo lectura.
+
+[Abrir Producción Pantallas](app:/dashboard/produccion-pantallas)
+
+> Producción también puede registrar una OP directamente con **Ingresar OP** en **Pantallas**, sin pasar por Soporte Comercial.
 
 ## Spots y capacidad
 

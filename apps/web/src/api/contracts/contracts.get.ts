@@ -51,6 +51,7 @@ export interface ActiveContractGroup {
   description: string | null;
   customerName: string | null;
   customerEmail: string | null;
+  customerBriloId?: number | null;
   createdByName: string | null;
   startDate: string;
   endDate: string;

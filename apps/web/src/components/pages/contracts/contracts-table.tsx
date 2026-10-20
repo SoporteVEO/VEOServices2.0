@@ -10,7 +10,7 @@ import {
   TooltipTrigger,
 } from "@/components/primitives/ui/tooltip";
 import { DataTable } from "@/components/ui/data-table";
-import { formatShortDate } from "@/lib/format";
+import { formatBriloShortDate } from "@/lib/format";
 import type { EndingSoonContract } from "@/api/contracts/contracts.get";
 
 export function ContractsTable({
@@ -81,7 +81,7 @@ export function ContractsTable({
       {
         accessorKey: "endDate",
         header: "Vencimiento",
-        cell: ({ row }) => formatShortDate(new Date(row.original.endDate)),
+        cell: ({ row }) => formatBriloShortDate(row.original.endDate),
       },
     ],
     [],

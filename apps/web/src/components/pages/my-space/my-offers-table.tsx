@@ -29,6 +29,7 @@ export function MyOffersTable() {
     page: pageIndex + 1,
     pageSize,
     search: debouncedSearch || undefined,
+    hideDeclined: true,
     viewAsUserId,
   });
 
