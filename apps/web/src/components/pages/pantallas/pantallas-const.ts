@@ -185,14 +185,14 @@ export const SCREEN_CHANGE_LABELS: Record<string, string> = {
 
 export const ART_FORMAT_LABELS: Record<OrderArtFormat, string> = {
   ANIMATED: "Animado",
-  STATIC: "Est·tico",
+  STATIC: "Est√°tico",
   VIDEO: "Video",
 };
 
 export const ART_FORMAT_OPTIONS: OrderArtFormat[] = ["ANIMATED", "STATIC", "VIDEO"];
 
 export const ORDER_STATUS_LABELS: Record<OrderStatus, string> = {
-  PENDING: "Esperando a ProducciÛn",
+  PENDING: "Esperando a Producci√≥n",
   INGESTED: "Ingresada",
   RETURNED: "Devuelta a Soporte",
 };
