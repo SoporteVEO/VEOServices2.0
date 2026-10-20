@@ -117,6 +117,13 @@ export interface AgentMonthlyReportOutput {
   contracts: AgentMonthlyReportContract[];
 }
 
+export interface AgentExpiringContractsOutput extends AgentTableInput {
+  ok: true;
+  total: number;
+  totalBillboards: number;
+  truncated: boolean;
+}
+
 export interface AgentImage {
   id: string;
   url: string;
@@ -353,6 +360,10 @@ export type AgentUITools = {
     input: { month: string; search: string };
     output: ToolResult<AgentMonthlyReportOutput>;
   };
+  list_expiring_contracts: {
+    input: { from: string; to: string; seller?: string };
+    output: ToolResult<AgentExpiringContractsOutput>;
+  };
   get_billboard_images: {
     input: { code: string; limit?: number; type?: S3ImageType };
     output: ToolResult<AgentImagesOutput>;
@@ -411,7 +422,7 @@ export type AgentUITools = {
     output: ToolResult<{ ok: true; count?: number }>;
   };
   brilo_api_describe: {
-    input: { endpoint?: string; model?: string };
+    input: { endpoint?: string; model?: string; module?: string };
     output: ToolResult<{ ok: true; endpoint?: string }>;
   };
   brilo_api_get: {

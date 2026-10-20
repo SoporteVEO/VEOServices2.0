@@ -3,6 +3,7 @@ import { buildAcademyTools } from './academy.tools.js';
 import { buildApiTools } from './api.tools.js';
 import { buildBillboardTools } from './billboards.tools.js';
 import { buildBriloApiTools } from './brilo-api.tools.js';
+import { buildContractTools } from './contracts.tools.js';
 import { buildCrmOpportunityTools } from './crm-opportunity.tools.js';
 import { buildCrmTools } from './crm.tools.js';
 import { buildDataSourceTools } from './data-source.tools.js';
@@ -19,6 +20,7 @@ export function buildAgentTools(ctx: AgentToolContext) {
     ...buildApiTools(ctx),
     ...buildBillboardTools(ctx),
     ...buildReportTools(ctx),
+    ...buildContractTools(ctx),
     ...buildProposalTools(ctx),
     ...buildSalesTools(ctx),
     ...buildCrmTools(ctx),

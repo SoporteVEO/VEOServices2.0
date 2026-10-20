@@ -1,14 +1,14 @@
 "use client";
 
 import type {
-  OfferChange,
   OfferDetail,
   OfferEventEntry,
   OfferEventType,
 } from "@/api/offers/offers.types";
 import { Badge } from "@/components/primitives/ui/badge";
-import { formatBriloShortDate, formatMoney } from "@/lib/format";
+import { formatBriloShortDate } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import { OfferChangeDiff } from "./offer-change-diff";
 import { OFFER_EDIT_REASON_LABELS } from "./quotation/offer-edit-reasons";
 
 const EVENT_LABELS: Record<OfferEventType, string> = {
@@ -50,70 +50,6 @@ const FAILED_EVENTS = new Set<OfferEventType>([
   "BRILO_COTIZACION_FAILED",
   "BRILO_CONTRATO_FAILED",
 ]);
-
-const MONEY_FIELDS = new Set([
-  "subtotalImpression",
-  "totalImpression",
-  "subtotalRental",
-  "totalRental",
-  "impressionPrice",
-  "rentalPrice",
-]);
-
-const FIELD_LABELS: Record<string, string> = {
-  customerName: "Nombre del cliente",
-  customerCompany: "Empresa",
-  customerEmail: "Correo",
-  billingEmail: "Correo de facturación",
-  customerContact: "Contacto",
-  clientId: "Cliente vinculado",
-  validUntil: "Vigencia",
-  specialConditions: "Condiciones especiales",
-  status: "Estado",
-  briloMconId: "Contrato Brilo",
-  briloContract: "Contrato Brilo",
-  subtotalImpression: "Subtotal impresión",
-  totalImpression: "Total impresión",
-  subtotalRental: "Subtotal arrendamiento",
-  totalRental: "Total arrendamiento",
-  quantity: "cantidad",
-  impressionPrice: "precio de impresión",
-  rentalPrice: "precio de arrendamiento",
-  taxRate: "impuesto",
-  description: "descripción",
-  spotCount: "spots",
-  startDate: "fecha de inicio",
-  endDate: "fecha de fin",
-};
-
-const ISO_DATE = /^\d{4}-\d{2}-\d{2}T/;
-
-/**
- * Change keys are either a plain header field or `item.<signature>[.<field>]`.
- * Only the trailing field name carries a label; the signature is shown as-is
- * so the reader can tell which line changed.
- */
-function describeKey(key: string): string {
-  if (!key.startsWith("item.")) return FIELD_LABELS[key] ?? key;
-
-  const parts = key.split(".");
-  const signature = parts[1] ?? "";
-  const field = parts[2];
-  const line = signature.replace(":", " ");
-  return field ? `${line} · ${FIELD_LABELS[field] ?? field}` : line;
-}
-
-function formatValue(key: string, value: unknown): string {
-  if (value == null || value === "") return "—";
-  if (typeof value === "number") {
-    const field = key.split(".").pop() ?? key;
-    return MONEY_FIELDS.has(field) ? formatMoney(value) : String(value);
-  }
-  if (typeof value === "string" && ISO_DATE.test(value)) {
-    return formatBriloShortDate(value);
-  }
-  return String(value);
-}
 
 function actorName(actor: OfferDetail["events"][number]["actor"]): string {
   if (!actor) return "Sistema";
@@ -168,7 +104,7 @@ export function MyOfferHistory({ offer }: { offer: OfferDetail }) {
           <EditReason event={event} />
 
           {event.changes ? (
-            <ChangeList changes={event.changes} offer={offer} />
+            <OfferChangeDiff changes={event.changes} offer={offer} />
           ) : null}
         </li>
       ))}
@@ -203,49 +139,5 @@ function EditReason({ event }: { event: OfferEventEntry }) {
         </p>
       ) : null}
     </div>
-  );
-}
-
-/** Older entries stored the Brilo contract id; users know it by its code. */
-function displayValue(key: string, value: unknown, offer: OfferDetail) {
-  if (
-    key === "briloMconId" &&
-    value != null &&
-    value === offer.briloMconId &&
-    offer.briloMconCodigo
-  ) {
-    return offer.briloMconCodigo;
-  }
-  return formatValue(key, value);
-}
-
-function ChangeList({
-  changes,
-  offer,
-}: {
-  changes: Record<string, OfferChange>;
-  offer: OfferDetail;
-}) {
-  const entries = Object.entries(changes);
-  if (entries.length === 0) return null;
-
-  return (
-    <ul className="mt-2 space-y-1 rounded-md border bg-muted/30 p-2">
-      {entries.map(([key, change]) => (
-        <li
-          key={key}
-          className="flex flex-wrap items-baseline gap-x-1.5 text-[11px]"
-        >
-          <span className="font-medium">{describeKey(key)}:</span>
-          <span className="text-muted-foreground line-through">
-            {displayValue(key, change.from, offer)}
-          </span>
-          <span className="text-muted-foreground">→</span>
-          <span className="font-medium tabular-nums">
-            {displayValue(key, change.to, offer)}
-          </span>
-        </li>
-      ))}
-    </ul>
   );
 }

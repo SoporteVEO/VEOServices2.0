@@ -15,6 +15,14 @@ import { NotificationsService } from '../notifications/notifications.service.js'
 import { NotificationStatus, ReportType, S3ImageType } from '@prisma/client';
 import type { EndingSoonContract } from './entities/ending-soon-contract.js';
 import type {
+  ExpiringContract,
+  ExpiringContractsResult,
+} from './entities/expiring-contract.js';
+import {
+  EXPIRING_CONTRACTS_SQL,
+  MAX_EXPIRING_CONTRACTS,
+} from './expiring-contracts.sql.js';
+import type {
   ActiveContractGroup,
   ActiveContractImage,
   ActiveContractWithImages,
@@ -65,6 +73,16 @@ interface SourceContractRow {
   sitiDireccion: string;
   cliNombres: string;
   cliEmail: string;
+}
+
+interface ExpiringContractRow {
+  mconId: number;
+  latestEnd: Date;
+  mconCodigo: string;
+  cliNombres: string;
+  cliEmail: string | null;
+  ejecNombre: string | null;
+  caraCodigo: string | null;
 }
 
 interface ActiveContractRow extends SourceContractRow {
@@ -356,6 +374,56 @@ export class ContractsService {
     return this.mapSourceContracts(
       sourceRows.filter((row) => !notifiedSourceIds.has(row.dconId)),
     );
+  }
+
+  /**
+   * Contracts whose latest end date falls in [from, to] (inclusive), one entry
+   * per contract. Meant for the assistant; the notification worker keeps using
+   * the ending-soon queries above.
+   */
+  async getExpiringContracts(args: {
+    from: Date;
+    to: Date;
+    seller?: string;
+  }): Promise<ExpiringContractsResult> {
+    const rows = await this.brilo.query<ExpiringContractRow>(
+      EXPIRING_CONTRACTS_SQL,
+      {
+        FechaDesde: args.from,
+        FechaHasta: args.to,
+        MaxContracts: MAX_EXPIRING_CONTRACTS,
+        ...buildEjecutivoNameSqlParams(
+          advisorNameMatchFromParts({ fullName: args.seller }) ?? undefined,
+        ),
+      },
+    );
+
+    const contracts = new Map<number, ExpiringContract>();
+    for (const row of rows) {
+      const existing = contracts.get(row.mconId);
+      if (existing) {
+        existing.totalBillboards += 1;
+        if (row.caraCodigo) existing.billboardCodes.push(row.caraCodigo);
+        continue;
+      }
+      contracts.set(row.mconId, {
+        contractNumber: row.mconCodigo,
+        contractSourceId: row.mconId,
+        customerName: row.cliNombres,
+        customerEmail: row.cliEmail?.trim() || null,
+        sellerName: row.ejecNombre?.trim() || null,
+        endDate: row.latestEnd,
+        totalBillboards: 1,
+        billboardCodes: row.caraCodigo ? [row.caraCodigo] : [],
+      });
+    }
+
+    const data = Array.from(contracts.values());
+    return {
+      data,
+      total: data.length,
+      truncated: data.length >= MAX_EXPIRING_CONTRACTS,
+    };
   }
 
   async getNotifiedContracts() {

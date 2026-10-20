@@ -1,4 +1,5 @@
 import { pdf } from "@react-pdf/renderer";
+import { getBillboardImageUrl } from "@/api/billboards/billboards.get";
 import type { AvailableBillboardReport } from "@/api/billboards/billboards.types";
 import { loadReportImage } from "@/components/pages/reports/pdf/contract-report-pdf-images";
 import { parseYYYYMMDD } from "@/lib/format";
@@ -23,12 +24,16 @@ const IMAGE_BATCH_SIZE = 8;
 /** The photo boxes are ~720 px wide; 1400 px stays sharp and keeps big decks light. */
 const MAX_IMAGE_EDGE = 1400;
 
+function billboardPhotoUrl(billboard: AvailableBillboardReport): string | null {
+  return getBillboardImageUrl(billboard.imageId);
+}
+
 async function loadImages(
   billboards: AvailableBillboardReport[],
   onProgress?: (progress: ReportProgress) => void,
 ): Promise<Map<string, string>> {
   const urls = [
-    ...new Set(billboards.map((b) => b.s3ImageUrl).filter((u): u is string => !!u)),
+    ...new Set(billboards.map(billboardPhotoUrl).filter((u): u is string => !!u)),
   ];
   const images = new Map<string, string>();
 
@@ -55,6 +60,7 @@ function toPdfBillboard(
   billboard: AvailableBillboardReport,
   images: Map<string, string>,
 ): AvailabilityPdfBillboard {
+  const photoUrl = billboardPhotoUrl(billboard);
   return {
     code: billboard.billboardCode ?? "",
     address: billboard.address ?? billboard.reference ?? "",
@@ -66,7 +72,7 @@ function toPdfBillboard(
     longitude: billboard.longitude,
     price: billboard.price,
     impressionPrice: billboard.impressionPrice ?? billboard.price,
-    image: billboard.s3ImageUrl ? (images.get(billboard.s3ImageUrl) ?? null) : null,
+    image: photoUrl ? (images.get(photoUrl) ?? null) : null,
   };
 }
 

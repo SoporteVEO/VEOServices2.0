@@ -19,7 +19,7 @@ export interface BriloBanco {
 }
 
 /**
- * Body accepted by POST /api/CXC/AbonoFactura (AbonosXFacturaModelExtended).
+ * Body accepted by POST /api/v2/CXC/AbonoFactura (AbonosXFacturaModelExtended).
  * Only the fields we actually populate from the recuperaciones flow are listed.
  */
 export interface BriloAbonoFacturaInput {
@@ -36,7 +36,7 @@ export interface BriloAbonoFacturaInput {
 }
 
 /**
- * Response returned by POST /api/CXC/AbonoFactura (ConsultaAbonosFacturasModel).
+ * Response returned by POST /api/v2/CXC/AbonoFactura (ConsultaAbonosFacturasModel).
  */
 export interface BriloAbonoFacturaResponse {
   cod_Cliente?: string;

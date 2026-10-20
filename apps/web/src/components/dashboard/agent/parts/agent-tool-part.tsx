@@ -29,6 +29,7 @@ const TOOL_LABELS: Record<string, string> = {
   list_api_endpoints: "Revisando capacidades",
   generate_static_billboards_report: "Consultando disponibilidad",
   generate_monthly_report: "Preparando reporte mensual",
+  list_expiring_contracts: "Consultando contratos por vencer",
   get_billboard_images: "Buscando imágenes",
   get_sales_summary: "Consultando ventas",
   run_query: "Consultando el ERP",
@@ -142,6 +143,25 @@ export function AgentToolPart({ part }: { part: AgentMessagePart }) {
       if ("contracts" in output)
         return <AgentMonthlyReportCard report={output} />;
       return <AgentReportCard report={output} />;
+    }
+
+    case "tool-list_expiring_contracts": {
+      const output =
+        part.state === "output-available" ? part.output : undefined;
+      if (isUnauthorized(output))
+        return <AgentUnauthorizedNote message={output.message} />;
+      if (output?.ok === true) return <AgentTable table={output} />;
+      return (
+        <AgentToolStatus
+          label={TOOL_LABELS.list_expiring_contracts}
+          detail={part.input?.seller}
+          state={part.state}
+          output={output}
+          errorText={
+            part.state === "output-error" ? part.errorText : toolErrorText(output)
+          }
+        />
+      );
     }
 
     case "tool-send_email":

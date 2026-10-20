@@ -294,11 +294,11 @@ function round2(value: number): number {
 function decodeBase64Pdf(base64: string): Buffer {
   const normalized = base64.includes(',') ? base64.split(',')[1] : base64;
   if (!normalized) {
-    throw new BadRequestException('El PDF estÃ¡ vacÃ­o o es invÃ¡lido');
+    throw new BadRequestException('El PDF está vacío o es inválido');
   }
   const buffer = Buffer.from(normalized, 'base64');
   if (buffer.length < 4 || buffer.subarray(0, 4).toString('ascii') !== '%PDF') {
-    throw new BadRequestException('El archivo no es un PDF vÃ¡lido');
+    throw new BadRequestException('El archivo no es un PDF válido');
   }
   return buffer;
 }
@@ -325,7 +325,7 @@ export class OffersService {
 
     const validUntil = new Date(dto.validUntil);
     if (Number.isNaN(validUntil.getTime())) {
-      throw new BadRequestException('Vigencia de oferta invÃ¡lida');
+      throw new BadRequestException('Vigencia de oferta inválida');
     }
 
     this.validateItems(dto.items);
@@ -408,7 +408,7 @@ export class OffersService {
             events: {
               create: {
                 type: OfferEventType.CREATED,
-                message: `CotizaciÃ³n ${offerNumber} creada`,
+                message: `Cotización ${offerNumber} creada`,
                 actorUserId: createdByUserId,
               },
             },
@@ -443,7 +443,7 @@ export class OffersService {
         }
         if (isUniqueConflict) {
           throw new ConflictException(
-            'Se generÃ³ un nÃºmero de cotizaciÃ³n duplicado, intenta de nuevo.',
+            'Se generó un número de cotización duplicado, intenta de nuevo.',
           );
         }
         throw e;
@@ -454,7 +454,7 @@ export class OffersService {
       await this.storage.deleteByKey(uploadedKey);
     }
     throw new ConflictException(
-      'Se generÃ³ un nÃºmero de cotizaciÃ³n duplicado, intenta de nuevo.',
+      'Se generó un número de cotización duplicado, intenta de nuevo.',
     );
   }
 
@@ -473,7 +473,7 @@ export class OffersService {
       select: { id: true, pdfS3Key: true },
     });
     if (!offer) {
-      throw new NotFoundException('CotizaciÃ³n no encontrada');
+      throw new NotFoundException('Cotización no encontrada');
     }
 
     const buffer = decodeBase64Pdf(pdfBase64);
@@ -506,7 +506,7 @@ export class OffersService {
           data: {
             offerId: id,
             type: OfferEventType.PDF_ATTACHED,
-            message: 'PDF de la cotizaciÃ³n regenerado',
+            message: 'PDF de la cotización regenerado',
             actorUserId,
           },
         });
@@ -863,7 +863,7 @@ export class OffersService {
       include: this.offerDetailInclude(),
     });
     if (!row) {
-      throw new NotFoundException('CotizaciÃ³n no encontrada');
+      throw new NotFoundException('Cotización no encontrada');
     }
 
     return this.mapToDetail(row, await this.resolveLinkedContract(row));
@@ -889,7 +889,7 @@ export class OffersService {
     if (dto.status === OfferStatus.ACCEPTED) {
       if (!dto.briloMconId) {
         throw new BadRequestException(
-          'Debes vincular un contrato de Brilo para marcar la cotizaciÃ³n como aceptada',
+          'Debes vincular un contrato de Brilo para marcar la cotización como aceptada',
         );
       }
       mconCodigo =
@@ -969,7 +969,7 @@ export class OffersService {
       include: { items: { orderBy: { createdAt: 'asc' } } },
     });
     if (!existing) {
-      throw new NotFoundException('CotizaciÃ³n no encontrada');
+      throw new NotFoundException('Cotización no encontrada');
     }
     if (existing.status !== OfferStatus.PENDING) {
       throw new BadRequestException(
@@ -979,7 +979,7 @@ export class OffersService {
 
     const validUntil = new Date(dto.validUntil);
     if (Number.isNaN(validUntil.getTime())) {
-      throw new BadRequestException('Vigencia de oferta invÃ¡lida');
+      throw new BadRequestException('Vigencia de oferta inválida');
     }
 
     this.validateItems(dto.items);
@@ -1101,7 +1101,7 @@ export class OffersService {
   async declineOffer(id: string, userId: string): Promise<OfferListItem> {
     const offer = await this.findOwnedOffer(id, userId);
     if (offer.status === OfferStatus.DECLINED) {
-      throw new BadRequestException('La cotizaciÃ³n ya estÃ¡ rechazada');
+      throw new BadRequestException('La cotización ya está rechazada');
     }
 
     const wasAccepted = offer.status === OfferStatus.ACCEPTED;
@@ -1124,7 +1124,7 @@ export class OffersService {
       await this.recordEvent(tx, {
         offerId: id,
         type: OfferEventType.DECLINED,
-        message: 'CotizaciÃ³n rechazada',
+        message: 'Cotización rechazada',
         changes: { status: { from: offer.status, to: OfferStatus.DECLINED } },
         actorUserId: userId,
       });
@@ -1292,12 +1292,12 @@ export class OffersService {
       where: { id },
       select: { pdfS3Key: true, createdByUserId: true },
     });
-    if (!row) throw new NotFoundException('CotizaciÃ³n no encontrada');
+    if (!row) throw new NotFoundException('Cotización no encontrada');
     if (requestUserId && row.createdByUserId !== requestUserId) {
-      throw new NotFoundException('CotizaciÃ³n no encontrada');
+      throw new NotFoundException('Cotización no encontrada');
     }
     if (!row.pdfS3Key) {
-      throw new NotFoundException('La cotizaciÃ³n no tiene PDF asociado');
+      throw new NotFoundException('La cotización no tiene PDF asociado');
     }
     const url = await this.storage.getSignedUrl(row.pdfS3Key);
     return { url };
@@ -1345,11 +1345,11 @@ export class OffersService {
     });
 
     if (!offer || offer.createdByUserId !== requestUserId) {
-      throw new NotFoundException('CotizaciÃ³n no encontrada');
+      throw new NotFoundException('Cotización no encontrada');
     }
     if (offer.status !== OfferStatus.ACCEPTED || !offer.briloMconId) {
       throw new BadRequestException(
-        'El contrato solo estÃ¡ disponible para cotizaciones aceptadas y vinculadas a Brilo',
+        'El contrato solo está disponible para cotizaciones aceptadas y vinculadas a Brilo',
       );
     }
 
@@ -1359,7 +1359,7 @@ export class OffersService {
     });
     if (!contract) {
       throw new BadRequestException(
-        'El contrato de Brilo vinculado ya no estÃ¡ disponible',
+        'El contrato de Brilo vinculado ya no está disponible',
       );
     }
 
@@ -1491,7 +1491,7 @@ export class OffersService {
       },
     });
     if (!offer || offer.createdByUserId !== actorUserId) {
-      throw new NotFoundException('CotizaciÃ³n no encontrada');
+      throw new NotFoundException('Cotización no encontrada');
     }
 
     const buffer = decodeBase64Pdf(pdfBase64);
@@ -1629,11 +1629,11 @@ export class OffersService {
       },
     });
     if (!offer) {
-      throw new NotFoundException('CotizaciÃ³n no encontrada');
+      throw new NotFoundException('Cotización no encontrada');
     }
     if (offer.createdByUserId !== userId) {
       throw new ForbiddenException(
-        'No tienes permiso para modificar esta cotizaciÃ³n',
+        'No tienes permiso para modificar esta cotización',
       );
     }
     return offer;
@@ -1668,7 +1668,7 @@ export class OffersService {
         const desc = item.description?.trim();
         if (!desc) {
           throw new BadRequestException(
-            'Cada concepto adicional debe tener una descripciÃ³n',
+            'Cada concepto adicional debe tener una descripción',
           );
         }
       }
@@ -1727,7 +1727,7 @@ export class OffersService {
             startDate: localIsoDate(item.startDate!),
             endDate: localIsoDate(item.endDate!),
             spotsPerDay: item.spotCount!,
-            notes: 'Ingresada desde una cotizaciÃ³n aceptada',
+            notes: 'Ingresada desde una cotización aceptada',
             paused: false,
             pauseReason: null,
             art: DigitalCampaignArt.MISSING,
@@ -2001,13 +2001,13 @@ function statusEventType(status: OfferStatus): OfferEventType {
 function statusEventMessage(from: OfferStatus, to: OfferStatus): string {
   switch (to) {
     case OfferStatus.ACCEPTED:
-      return 'CotizaciÃ³n aceptada';
+      return 'Cotización aceptada';
     case OfferStatus.DECLINED:
-      return 'CotizaciÃ³n rechazada';
+      return 'Cotización rechazada';
     case OfferStatus.PENDING:
       return from === OfferStatus.ACCEPTED
-        ? 'CotizaciÃ³n reabierta: se revirtiÃ³ la aceptaciÃ³n'
-        : 'CotizaciÃ³n reabierta como pendiente';
+        ? 'Cotización reabierta: se revirtió la aceptación'
+        : 'Cotización reabierta como pendiente';
   }
 }
 

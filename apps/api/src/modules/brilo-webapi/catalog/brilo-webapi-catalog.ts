@@ -137,7 +137,8 @@ export function findBriloEndpoint(ref: string): BriloEndpointDoc | undefined {
 export function getBriloModel(
   name: string,
 ): { name: string; fields: readonly string[] } | undefined {
-  const key = MODELS_BY_LOWER.get(name.replace(/[[\]]/g, '').toLowerCase());
+  const bare = name.replace(/^(array|list of)\s*/i, '').replace(/[[\]]/g, '');
+  const key = MODELS_BY_LOWER.get(bare.toLowerCase());
   return key ? { name: key, fields: BRILO_MODELS[key] } : undefined;
 }
 

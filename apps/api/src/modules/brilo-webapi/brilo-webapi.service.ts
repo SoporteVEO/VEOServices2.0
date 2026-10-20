@@ -13,6 +13,15 @@ import type {
   BriloCotizacionResponse,
 } from './brilo-webapi.types.js';
 import { unwrapSingle } from './brilo-response.js';
+import {
+  type BriloModuleRules,
+  extractRulesLinks,
+  parseModuleRules,
+} from './catalog/brilo-webapi-rules.js';
+
+const API_CATALOG_PATH = '/.well-known/api-catalog';
+const RULES_CACHE_MS = 6 * 60 * 60 * 1000;
+const RULES_TIMEOUT_MS = 15_000;
 
 export type BriloQueryValue = string | number | boolean | string[] | undefined;
 export type BriloQuery = Record<string, BriloQueryValue>;
@@ -46,6 +55,11 @@ interface BriloErrorBody {
 @Injectable()
 export class BriloWebapiService {
   private readonly logger = new Logger(BriloWebapiService.name);
+  private rulesCache: {
+    expiresAt: number;
+    modules: BriloModuleRules[];
+  } | null = null;
+  private rulesLoading: Promise<BriloModuleRules[]> | null = null;
 
   isConfigured(): boolean {
     return (
@@ -159,6 +173,65 @@ export class BriloWebapiService {
     };
   }
 
+  /**
+   * Business rules Brilo publishes at `/.well-known/api-catalog` (RFC 9727),
+   * which lives at the instance origin, outside `/api`. Cached because the
+   * rules only change with a Brilo release; failures return an empty list so
+   * callers keep working with the static catalog.
+   */
+  async getBusinessRules(): Promise<BriloModuleRules[]> {
+    if (this.rulesCache && this.rulesCache.expiresAt > Date.now()) {
+      return this.rulesCache.modules;
+    }
+    this.rulesLoading ??= this.loadBusinessRules().finally(() => {
+      this.rulesLoading = null;
+    });
+    return this.rulesLoading;
+  }
+
+  private async loadBusinessRules(): Promise<BriloModuleRules[]> {
+    try {
+      const links = extractRulesLinks(
+        await this.fetchWellKnown(API_CATALOG_PATH),
+      );
+      const settled = await Promise.allSettled(
+        links.map(async (href) =>
+          parseModuleRules(
+            decodeURIComponent(href.split('/').pop() ?? href),
+            await this.fetchWellKnown(href),
+          ),
+        ),
+      );
+      const modules = settled.flatMap((result) =>
+        result.status === 'fulfilled' ? [result.value] : [],
+      );
+      if (modules.length > 0) {
+        this.rulesCache = {
+          modules,
+          expiresAt: Date.now() + RULES_CACHE_MS,
+        };
+      }
+      return modules;
+    } catch (err) {
+      this.logger.warn(
+        `Brilo business rules unavailable: ${err instanceof Error ? err.message : String(err)}`,
+      );
+      return this.rulesCache?.modules ?? [];
+    }
+  }
+
+  private async fetchWellKnown(path: string): Promise<unknown> {
+    const { baseUrl } = this.getConfig();
+    const response = await fetch(`${new URL(baseUrl).origin}${path}`, {
+      headers: this.buildHeaders(),
+      signal: AbortSignal.timeout(RULES_TIMEOUT_MS),
+    });
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status} en ${path}`);
+    }
+    return this.safeJsonParse(await response.text());
+  }
+
   async fetchFile(path: string, query?: BriloQuery): Promise<BriloFile> {
     const response = await this.fetchRaw(path, {
       method: 'GET',
@@ -212,7 +285,7 @@ export class BriloWebapiService {
   ): Promise<BriloAbonoFacturaResponse> {
     const body = this.buildAbonoFacturaBody(input);
     const raw = await this.request<BriloAbonoFacturaResponse>(
-      '/CXC/AbonoFactura',
+      '/v2/CXC/AbonoFactura',
       { method: 'POST', body: JSON.stringify(body) },
     );
     return raw;

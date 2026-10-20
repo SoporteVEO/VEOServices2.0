@@ -13,6 +13,10 @@ import {
   normalizeBriloPath,
   toBriloServicePath,
 } from '../../brilo-webapi/catalog/brilo-webapi-catalog.js';
+import {
+  findModuleRules,
+  findRulesForEndpoint,
+} from '../../brilo-webapi/catalog/brilo-webapi-rules.js';
 import type { BriloMethod } from '../../brilo-webapi/brilo-webapi.service.js';
 import { defineTool } from '../agent-sdk.js';
 import { hasScope, type AgentUser } from '../agent-scopes.js';
@@ -238,6 +242,34 @@ function describeModel(name: string) {
   return { name: model.name, fields: model.fields, nested };
 }
 
+async function describeModuleRules(ctx: AgentToolContext, name: string) {
+  const modules = (await ctx.brilo.getBusinessRules()).filter(
+    (m) => ctx.user.role === 'ADMIN' || !BRILO_ADMIN_ONLY_MODULES.has(m.name),
+  );
+  const found = findModuleRules(modules, name);
+  if (found.length === 0) {
+    return {
+      ok: false as const,
+      error:
+        modules.length === 0
+          ? 'Las reglas de negocio de Brilo no están disponibles ahora; usa la documentación del endpoint.'
+          : `No hay reglas publicadas para el módulo ${name}. Módulos con reglas: ${modules.map((m) => m.name).join(', ')}.`,
+    };
+  }
+  return {
+    ok: true as const,
+    modules: found.map((m) => ({
+      name: m.name,
+      summary: m.summary,
+      crossCuttingRules: m.crossCuttingRules,
+      notes: m.notes,
+      endpointsWithRules: m.endpoints.flatMap((e) =>
+        e.routes.map((r) => `${r.method} ${r.path}`),
+      ),
+    })),
+  };
+}
+
 async function callBrilo(
   ctx: AgentToolContext,
   method: BriloMethod,
@@ -301,20 +333,26 @@ export function buildBriloApiTools(ctx: AgentToolContext) {
 
     brilo_api_describe: defineTool({
       description:
-        'Returns the full documentation of a Brilo WebAPI endpoint (business rules, query/path parameters, body model fields with types) or of a model. Pass endpoint as "METHOD /api/path" or the operation id.',
+        'Returns the full documentation of a Brilo WebAPI endpoint (summary, parameters, body model fields with types) together with the business rules Brilo publishes live for it (validations, error codes, side effects), or of a model, or the general rules of a module (permissions, pagination, output whitelist, conventions). Pass endpoint as "METHOD /api/path" or the operation id.',
       inputSchema: z.object({
         endpoint: z
           .string()
           .optional()
           .describe(
-            'e.g. "PUT /api/v2/Ventas/ODF/{mfaId}" or "apiVallasCotizacionesPost".',
+            'e.g. "POST /api/v2/CXC/AbonoFactura" or "apiVallasCotizacionesPost".',
           ),
         model: z
           .string()
           .optional()
-          .describe('Model name, e.g. "MaeCotizacionesExtendedModel".'),
+          .describe('Model name, e.g. "maeCotizacionesExtendedModel".'),
+        module: z
+          .string()
+          .optional()
+          .describe(
+            'Module name, e.g. "Vallas" or "CXC", to read its general rules.',
+          ),
       }),
-      execute: ({ endpoint, model }) => {
+      execute: async ({ endpoint, model, module }) => {
         if (!hasScope(ctx.user, 'erp_api')) return unauthorized('erp_api');
         if (endpoint) {
           const doc = findBriloEndpoint(endpoint);
@@ -324,11 +362,17 @@ export function buildBriloApiTools(ctx: AgentToolContext) {
               error: `No encontré ${endpoint} en el catálogo de Brilo. Usa brilo_api_search.`,
             };
           }
+          const rules = findRulesForEndpoint(
+            await ctx.brilo.getBusinessRules(),
+            doc.method,
+            doc.path,
+          );
           return {
             ok: true as const,
             endpoint: endpointLabel(doc),
             ...doc,
             ...(doc.body ? { bodyModel: describeModel(doc.body) } : {}),
+            ...(rules.length > 0 ? { liveRules: rules } : {}),
           };
         }
         if (model) {
@@ -337,7 +381,11 @@ export function buildBriloApiTools(ctx: AgentToolContext) {
             ? { ok: true as const, model: described }
             : { ok: false as const, error: `No existe el modelo ${model}.` };
         }
-        return { ok: false as const, error: 'Indica endpoint o model.' };
+        if (module) return describeModuleRules(ctx, module);
+        return {
+          ok: false as const,
+          error: 'Indica endpoint, model o module.',
+        };
       },
       toModelOutput: ({ output }) => toModelText(output),
     }),

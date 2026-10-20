@@ -59,6 +59,12 @@ const HTTP_METHODS: Partial<Record<RequestMethod, HttpMethod>> = {
 
 const WEBHOOK_PATH = /\/webhooks?(\/|$)/;
 
+/** Endpoints that exist for background jobs and must not be used by the assistant. */
+const AGENT_EXCLUDED_ENDPOINTS = new Set([
+  'GET /contracts/ending-soon',
+  'POST /contracts/worker/ending-soon',
+]);
+
 @Injectable()
 export class AgentEndpointsService implements OnModuleInit {
   private endpoints: AgentEndpoint[] = [];
@@ -122,6 +128,7 @@ export class AgentEndpointsService implements OnModuleInit {
         const path = joinPaths(controllerPath, methodPath);
         const scope = findScopeForPath(path);
         if (!scope || WEBHOOK_PATH.test(path)) continue;
+        if (AGENT_EXCLUDED_ENDPOINTS.has(`${method} ${path}`)) continue;
 
         const { query, body } = this.readArgs(metatype, methodName);
         result.push({

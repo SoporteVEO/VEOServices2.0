@@ -85,6 +85,28 @@ export class ContractsController {
     return { data: contracts };
   }
 
+  @Get('expiring')
+  async getExpiringContracts(
+    @Query('from') fromStr?: string,
+    @Query('to') toStr?: string,
+    @Query('seller') seller?: string,
+  ) {
+    const from = parseDate(fromStr, 'from');
+    const to = parseDate(toStr, 'to');
+    if (!from || !to) {
+      throw new BadRequestException('"from" y "to" son requeridos');
+    }
+    if (from > to) {
+      throw new BadRequestException('"from" no puede ser posterior a "to"');
+    }
+
+    return this.contractsService.getExpiringContracts({
+      from,
+      to,
+      seller: seller?.trim() || undefined,
+    });
+  }
+
   @Get('active')
   async getActiveContracts(
     @Query('from') fromStr?: string,

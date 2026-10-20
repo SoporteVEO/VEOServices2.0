@@ -12,7 +12,6 @@ import { AppSidebar } from "@/components/dashboard/app-sidebar";
 import { DashboardAccessGuard } from "@/components/dashboard/dashboard-access-guard";
 import { NotificationsButton } from "@/components/dashboard/notifications";
 import { ModeToggle } from "@/components/mode-toggle";
-import { Separator } from "@/components/primitives/ui/separator";
 import {
   SidebarInset,
   SidebarProvider,
@@ -45,7 +44,6 @@ export function DashboardShell({ children }: { children: ReactNode }) {
             <div className="flex flex-1 items-center justify-end gap-1.5">
               <NotificationsButton />
               <ModeToggle />
-              <Separator orientation="vertical" className="mx-1 h-5" />
               <AgentPanelTrigger />
             </div>
           </header>
