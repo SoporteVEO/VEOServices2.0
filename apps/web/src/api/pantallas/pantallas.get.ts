@@ -1,11 +1,12 @@
 import { useQuery } from "@tanstack/react-query";
 import { apiFetch } from "@/lib/api";
-import type { PantallasBoard, PantallasLog } from "./pantallas.types";
+import type { DigitalOrder, PantallasBoard, PantallasLog } from "./pantallas.types";
 
 export const pantallasKeys = {
   all: ["pantallas"] as const,
   board: ["pantallas", "board"] as const,
   logs: ["pantallas", "logs"] as const,
+  orders: ["pantallas", "orders"] as const,
 };
 
 export async function getPantallasBoard(): Promise<PantallasBoard> {
@@ -32,5 +33,19 @@ export function usePantallasLogs() {
     queryKey: pantallasKeys.logs,
     queryFn: getPantallasLogs,
     staleTime: 30 * 1000,
+  });
+}
+
+export async function getPantallasOrders(): Promise<DigitalOrder[]> {
+  const response = await apiFetch<{ data: DigitalOrder[] }>("/pantallas/ops");
+  return response.data;
+}
+
+export function usePantallasOrders() {
+  return useQuery({
+    queryKey: pantallasKeys.orders,
+    queryFn: getPantallasOrders,
+    staleTime: 15 * 1000,
+    refetchInterval: 30 * 1000,
   });
 }

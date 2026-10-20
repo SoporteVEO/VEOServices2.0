@@ -104,6 +104,13 @@ export const NAV_GROUPS: NavGroup[] = [
         requiredSubRoles: ["PANTALLAS_PRODUCCION", "PANTALLAS_COMERCIAL"],
       },
       {
+        title: "Producción Pantallas",
+        href: "/dashboard/produccion-pantallas",
+        icon: ClipboardList,
+        allowedRoles: [],
+        requiredSubRoles: ["PANTALLAS_PRODUCCION", "PANTALLAS_COMERCIAL"],
+      },
+      {
         title: "Vallas estáticas",
         href: "/dashboard/static-billboards",
         icon: STATIC_BILLBOARD_ICON,

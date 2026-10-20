@@ -617,6 +617,7 @@ model DigitalBillboard {
   purchaseItems   PurchaseItem[]
   crmDealSites    CrmDealSite[]
   maintenanceJobs MaintenanceJob[]
+  orderScreens    DigitalOrderScreen[]
 
   @@map("digital_billboards")
 }
@@ -748,6 +749,80 @@ model DigitalBillboardLog {
   @@index([type, createdAt])
   @@index([client])
   @@map("digital_billboard_logs")
+}
+
+enum DigitalOrderStatus {
+  PENDING
+  INGESTED
+  RETURNED
+}
+
+enum DigitalOrderArtFormat {
+  ANIMATED
+  STATIC
+  VIDEO
+}
+
+/// OP (orden de pauta) created by Soporte Comercial and reviewed by Producción,
+/// who either ingest it into the playlists or return it with a reason.
+model DigitalOrder {
+  id           String                @id @default(uuid())
+  /// Daily sequence: DDMMYY-NN, from the entry date.
+  code         String                @unique
+  revision     Int                   @default(1)
+  status       DigitalOrderStatus    @default(PENDING)
+  executive    String
+  entryDate    DateTime              @map("entry_date") @db.Date
+  hasAgency    Boolean               @default(false) @map("has_agency")
+  agencyName   String?               @map("agency_name")
+  client       String
+  campaign     String                @default("")
+  artFormat    DigitalOrderArtFormat @default(ANIMATED) @map("art_format")
+  startDate    DateTime              @map("start_date") @db.Date
+  endDate      DateTime              @map("end_date") @db.Date
+  links        String[]              @default([])
+  instructions String?
+  totalValue   Float                 @default(0) @map("total_value")
+  monthlyValue Float                 @default(0) @map("monthly_value")
+
+  returnReason String?   @map("return_reason")
+  returnedAt   DateTime? @map("returned_at")
+  ingestedAt   DateTime? @map("ingested_at")
+  ingestedBy   String?   @map("ingested_by")
+  /// Links the OP to the campaigns it created in the playlists.
+  orderGroupId String?   @map("order_group_id")
+
+  createdByUserId String? @map("created_by_user_id")
+  createdByName   String? @map("created_by_name")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  screens DigitalOrderScreen[]
+
+  @@index([status, updatedAt])
+  @@index([entryDate])
+  @@map("digital_orders")
+}
+
+model DigitalOrderScreen {
+  id                 String              @id @default(uuid())
+  orderId            String              @map("order_id")
+  order              DigitalOrder        @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  digitalBillboardId String?             @map("digital_billboard_id")
+  digitalBillboard   DigitalBillboard?   @relation(fields: [digitalBillboardId], references: [id], onDelete: SetNull)
+  /// Copied so the OP keeps reading correctly if the screen is renamed or removed.
+  screenName         String              @map("screen_name")
+  spotsPerDay        Int                 @map("spots_per_day")
+  monthlyValue       Float?              @map("monthly_value")
+  spotValue          Float?              @map("spot_value")
+  spotValueManual    Boolean             @default(false) @map("spot_value_manual")
+  deal               DigitalCampaignDeal @default(COMMERCIAL)
+  position           Int                 @default(0)
+
+  @@index([orderId])
+  @@index([digitalBillboardId])
+  @@map("digital_order_screens")
 }
 
 enum Role {

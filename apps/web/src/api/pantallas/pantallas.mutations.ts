@@ -3,9 +3,11 @@ import { apiFetch } from "@/lib/api";
 import { pantallasKeys } from "./pantallas.get";
 import type {
   CampaignInput,
+  DigitalOrder,
   IngestOrderInput,
   PantallasSettings,
   PlacementResult,
+  SaveOrderInput,
   ScreenInput,
 } from "./pantallas.types";
 
@@ -126,5 +128,33 @@ export function useIngestOrder() {
 export function useClearPantallasLogs() {
   return usePantallasMutation(() =>
     send<{ deleted: number }>("/pantallas/logs", "DELETE"),
+  );
+}
+
+export function useCreateDigitalOrder() {
+  return usePantallasMutation((input: SaveOrderInput) =>
+    send<DigitalOrder>("/pantallas/ops", "POST", input),
+  );
+}
+
+export function useUpdateDigitalOrder() {
+  return usePantallasMutation(({ id, ...input }: { id: string } & SaveOrderInput) =>
+    send<DigitalOrder>(`/pantallas/ops/${id}`, "PATCH", input),
+  );
+}
+
+export function useIngestDigitalOrder() {
+  return usePantallasMutation(({ id, ...input }: { id: string } & IngestOrderInput) =>
+    send<{ order: DigitalOrder; orderGroupId: string; results: PlacementResult[] }>(
+      `/pantallas/ops/${id}/ingest`,
+      "POST",
+      input,
+    ),
+  );
+}
+
+export function useReturnDigitalOrder() {
+  return usePantallasMutation(({ id, reason }: { id: string; reason: string }) =>
+    send<DigitalOrder>(`/pantallas/ops/${id}/return`, "POST", { reason }),
   );
 }

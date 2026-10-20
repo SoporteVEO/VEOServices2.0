@@ -490,45 +490,53 @@ export class PantallasService {
   /** "Ingresar OP": the same campaign across several screens, each with its own frequency and values. */
   async ingestOrder(dto: IngestOrderDto, actor: PantallasActor) {
     const orderGroupId = randomUUID();
+    const results = await this.prisma.$transaction((tx) =>
+      this.placeOrder(tx, dto, orderGroupId, actor),
+    );
+    return { orderGroupId, results };
+  }
+
+  async placeOrder(
+    tx: Prisma.TransactionClient,
+    dto: IngestOrderDto,
+    orderGroupId: string,
+    actor: PantallasActor,
+  ): Promise<PlacementResult[]> {
     const refIso = dto.refDate ?? todayIso();
     const seen = new Set<string>();
     const rows = dto.screens.filter((s) =>
       seen.has(s.screenId) ? false : (seen.add(s.screenId), true),
     );
 
-    const results = await this.prisma.$transaction(async (tx) => {
-      const settings = await this.placement.loadSettings(tx);
-      const out: PlacementResult[] = [];
-      for (const row of rows) {
-        const data: CampaignData = {
-          client: dto.client.trim(),
-          campaign: dto.campaign?.trim() ?? '',
-          startDate: dto.startDate ?? null,
-          endDate: dto.endDate ?? null,
-          spotsPerDay: row.spotsPerDay,
-          notes: dto.notes?.trim() || null,
-          paused: false,
-          pauseReason: null,
-          art: dto.art ?? DigitalCampaignArt.RECEIVED,
-          deal: row.deal ?? DigitalCampaignDeal.COMMERCIAL,
-          monthlyValue: row.monthlyValue ?? null,
-          spotValue: row.spotValue ?? null,
-          totalValue: null,
-          versions: [],
-        };
-        out.push(
-          await this.placement.place(
-            tx,
-            { screenId: row.screenId, data, refIso, orderGroupId },
-            settings,
-            actor,
-          ),
-        );
-      }
-      return out;
-    });
-
-    return { orderGroupId, results };
+    const settings = await this.placement.loadSettings(tx);
+    const out: PlacementResult[] = [];
+    for (const row of rows) {
+      const data: CampaignData = {
+        client: dto.client.trim(),
+        campaign: dto.campaign?.trim() ?? '',
+        startDate: dto.startDate ?? null,
+        endDate: dto.endDate ?? null,
+        spotsPerDay: row.spotsPerDay,
+        notes: dto.notes?.trim() || null,
+        paused: false,
+        pauseReason: null,
+        art: dto.art ?? DigitalCampaignArt.RECEIVED,
+        deal: row.deal ?? DigitalCampaignDeal.COMMERCIAL,
+        monthlyValue: row.monthlyValue ?? null,
+        spotValue: row.spotValue ?? null,
+        totalValue: null,
+        versions: [],
+      };
+      out.push(
+        await this.placement.place(
+          tx,
+          { screenId: row.screenId, data, refIso, orderGroupId },
+          settings,
+          actor,
+        ),
+      );
+    }
+    return out;
   }
 
   private async placeCopies(

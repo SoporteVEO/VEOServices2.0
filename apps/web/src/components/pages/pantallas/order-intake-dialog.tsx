@@ -3,8 +3,15 @@
 import { useId, useRef, useState } from "react";
 import { FileUp } from "lucide-react";
 import { toast } from "sonner";
-import { useIngestOrder } from "@/api/pantallas/pantallas.mutations";
-import type { CampaignArt, CampaignDeal } from "@/api/pantallas/pantallas.types";
+import { useIngestDigitalOrder, useIngestOrder } from "@/api/pantallas/pantallas.mutations";
+import type {
+  CampaignArt,
+  CampaignDeal,
+  DigitalOrder,
+  IngestOrderInput,
+  PantallasBoard,
+  PlacementResult,
+} from "@/api/pantallas/pantallas.types";
 import { Button } from "@/components/ui/button";
 import { DatePicker } from "@/components/ui/date-picker";
 import {
@@ -19,7 +26,6 @@ import {
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { ART_LABELS, ART_OPTIONS, DEAL_LABELS, DEAL_OPTIONS, ORDER_SPOT_PRESETS } from "./pantallas-const";
-import { usePantallas } from "./pantallas-context";
 import {
   formatCount,
   formatIso,
@@ -33,6 +39,7 @@ import {
 import { billingDays, clientNames, exactSpotValue, planPlacement } from "./pantallas-logic";
 import { readOrderFile } from "./op-file-parser";
 import { OptionButtonGroup } from "./option-button-group";
+import { orderIntakeInitial } from "./order-intake-initial";
 import { EMPTY_ORDER_ROW, OrderIntakeRow, type OrderRowState } from "./order-intake-row";
 
 type FileNotice = { tone: "info" | "ok" | "bad"; text: string };
@@ -43,24 +50,36 @@ const NOTICE_CLASS: Record<FileNotice["tone"], string> = {
   bad: "text-red-600",
 };
 
-function OrderIntakeForm({ onDone }: { onDone: () => void }) {
-  const { board, refDate } = usePantallas();
+function OrderIntakeForm({
+  board,
+  refDate,
+  order,
+  onDone,
+}: {
+  board: PantallasBoard;
+  refDate: string;
+  order: DigitalOrder | null;
+  onDone: () => void;
+}) {
   const ingestOrder = useIngestOrder();
+  const ingestDigitalOrder = useIngestDigitalOrder();
   const fileRef = useRef<HTMLInputElement>(null);
   const clientsListId = useId();
-  const [client, setClient] = useState("");
-  const [campaign, setCampaign] = useState("");
-  const [startDate, setStartDate] = useState<string | null>(todayIso);
-  const [endDate, setEndDate] = useState<string | null>(null);
+  const [initial] = useState(() => (order ? orderIntakeInitial(order) : null));
+  const [client, setClient] = useState(initial?.client ?? "");
+  const [campaign, setCampaign] = useState(initial?.campaign ?? "");
+  const [startDate, setStartDate] = useState<string | null>(initial?.startDate ?? todayIso());
+  const [endDate, setEndDate] = useState<string | null>(initial?.endDate ?? null);
   const [art, setArt] = useState<CampaignArt>("RECEIVED");
   const [globalDeal, setGlobalDeal] = useState<CampaignDeal>("COMMERCIAL");
-  const [notes, setNotes] = useState("");
-  const [rows, setRows] = useState<Record<string, OrderRowState>>({});
+  const [notes, setNotes] = useState(initial?.notes ?? "");
+  const [rows, setRows] = useState<Record<string, OrderRowState>>(initial?.rows ?? {});
   const [reading, setReading] = useState(false);
   const [notice, setNotice] = useState<FileNotice>({
     tone: "info",
     text: "Elige el PDF o el Excel que te manda comercial y se llenan los campos solos.",
   });
+  const isPending = ingestOrder.isPending || ingestDigitalOrder.isPending;
 
   const rowOf = (id: string) => rows[id] ?? EMPTY_ORDER_ROW;
   const patchRow = (id: string, patch: Partial<OrderRowState>) =>
@@ -215,83 +234,86 @@ function OrderIntakeForm({ onDone }: { onDone: () => void }) {
       toast.error("Pon los spots de al menos una pantalla");
       return;
     }
-    ingestOrder.mutate(
-      {
-        client: name,
-        campaign: campaign.trim(),
-        startDate,
-        endDate,
-        notes: notes.trim(),
-        art,
-        refDate,
-        screens: activeScreens.map((s) => {
-          const row = rowOf(s.id);
-          return {
-            screenId: s.id,
-            spotsPerDay: row.spots,
-            monthlyValue: parseAmount(row.monthly),
-            spotValue: row.spotTouched ? parseAmount(row.spotInput) : autoSpotOf(row),
-            deal: row.deal !== "COMMERCIAL" ? row.deal : globalDeal,
-          };
-        }),
+    const input: IngestOrderInput = {
+      client: name,
+      campaign: campaign.trim(),
+      startDate,
+      endDate,
+      notes: notes.trim(),
+      art,
+      refDate,
+      screens: activeScreens.map((s) => {
+        const row = rowOf(s.id);
+        return {
+          screenId: s.id,
+          spotsPerDay: row.spots,
+          monthlyValue: parseAmount(row.monthly),
+          spotValue: row.spotTouched ? parseAmount(row.spotInput) : autoSpotOf(row),
+          deal: row.deal !== "COMMERCIAL" ? row.deal : globalDeal,
+        };
+      }),
+    };
+    const callbacks = {
+      onSuccess: ({ results }: { results: PlacementResult[] }) => {
+        onDone();
+        const placed = results.filter((r) => r.placed);
+        const repeated = results.length - placed.length;
+        const created = placed.filter((r) => r.newSublist).length;
+        let message = `OP de ${name} en ${placed.length} ${plural(placed.length, "pantalla")}`;
+        if (created) message += ` · ${created} ${plural(created, "sublista nueva", "sublistas nuevas")}`;
+        if (repeated) message += ` · ${repeated} ya la tenía`;
+        toast.success(message);
+        const expand = placed.filter((r) => r.needsMoreHours).map((r) => r.screenName);
+        if (expand.length) {
+          toast.warning("La OP entró, pero estas pantallas se quedaron sin horas suficientes", {
+            description: `${expand.join(", ")}. Abre cada una y aplica la sugerencia de horario.`,
+            duration: Infinity,
+            closeButton: true,
+          });
+        }
       },
-      {
-        onSuccess: ({ results }) => {
-          onDone();
-          const placed = results.filter((r) => r.placed);
-          const repeated = results.length - placed.length;
-          const created = placed.filter((r) => r.newSublist).length;
-          let message = `OP de ${name} en ${placed.length} ${plural(placed.length, "pantalla")}`;
-          if (created) message += ` · ${created} ${plural(created, "sublista nueva", "sublistas nuevas")}`;
-          if (repeated) message += ` · ${repeated} ya la tenía`;
-          toast.success(message);
-          const expand = placed.filter((r) => r.needsMoreHours).map((r) => r.screenName);
-          if (expand.length) {
-            toast.warning("La OP entró, pero estas pantallas se quedaron sin horas suficientes", {
-              description: `${expand.join(", ")}. Abre cada una y aplica la sugerencia de horario.`,
-              duration: Infinity,
-              closeButton: true,
-            });
-          }
-        },
-        onError: (err) => toast.error(err.message),
-      },
-    );
+      onError: (err: Error) => toast.error(err.message),
+    };
+    if (order) ingestDigitalOrder.mutate({ id: order.id, ...input }, callbacks);
+    else ingestOrder.mutate(input, callbacks);
   }
 
   return (
     <>
       <DialogHeader>
-        <DialogTitle>Ingresar OP</DialogTitle>
+        <DialogTitle>{order ? `Ingresar OP ${order.code}` : "Ingresar OP"}</DialogTitle>
         <DialogDescription>
-          Un cliente repartido en varias pantallas. Se coloca solo en la sublista con el hueco más
-          ajustado y avisa si hay que crear sublistas.
+          {order
+            ? "Revisa lo que cargó Soporte Comercial y confirma en qué sublistas queda cada pantalla."
+            : "Un cliente repartido en varias pantallas. Se coloca solo en la sublista con el hueco más ajustado y avisa si hay que crear sublistas."}
         </DialogDescription>
       </DialogHeader>
       <DialogBody className="flex flex-col gap-4">
-        <div className="flex flex-wrap items-center gap-3 rounded-lg border border-dashed p-3">
-          <Button
-            type="button"
-            sizeVariant="sm"
-            icon={FileUp}
-            disabled={reading}
-            onClick={() => fileRef.current?.click()}
-          >
-            Cargar desde archivo de OP
-          </Button>
-          <input
-            ref={fileRef}
-            type="file"
-            accept=".pdf,.xlsx,.xlsm"
-            hidden
-            onChange={(e) => {
-              const file = e.target.files?.[0];
-              e.target.value = "";
-              if (file) void handleFile(file);
-            }}
-          />
-          <p className={cn("flex-1 text-xs", NOTICE_CLASS[notice.tone])}>{notice.text}</p>
-        </div>
+        {order ? null : (
+          <div className="flex flex-wrap items-center gap-3 rounded-lg border border-dashed p-3">
+            <Button
+              type="button"
+              sizeVariant="sm"
+              icon={FileUp}
+              disabled={reading}
+              onClick={() => fileRef.current?.click()}
+            >
+              Cargar desde archivo de OP
+            </Button>
+            <input
+              ref={fileRef}
+              type="file"
+              accept=".pdf,.xlsx,.xlsm"
+              hidden
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                e.target.value = "";
+                if (file) void handleFile(file);
+              }}
+            />
+            <p className={cn("flex-1 text-xs", NOTICE_CLASS[notice.tone])}>{notice.text}</p>
+          </div>
+        )}
 
         <div className="grid gap-3 sm:grid-cols-2">
           <Input
@@ -420,22 +442,40 @@ function OrderIntakeForm({ onDone }: { onDone: () => void }) {
         />
       </DialogBody>
       <DialogFooter>
-        <Button variant="outline" onClick={onDone} disabled={ingestOrder.isPending}>
+        <Button variant="outline" onClick={onDone} disabled={isPending}>
           Cancelar
         </Button>
-        <Button onClick={submit} disabled={ingestOrder.isPending || reading}>
-          {ingestOrder.isPending ? "Ingresando…" : "Ingresar OP"}
+        <Button onClick={submit} disabled={isPending || reading}>
+          {isPending ? "Ingresando…" : order ? "Ingresar a las listas" : "Ingresar OP"}
         </Button>
       </DialogFooter>
     </>
   );
 }
 
-export function OrderIntakeDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
+export function OrderIntakeDialog({
+  open,
+  onClose,
+  board,
+  refDate,
+  order = null,
+}: {
+  open: boolean;
+  onClose: () => void;
+  board: PantallasBoard;
+  refDate: string;
+  order?: DigitalOrder | null;
+}) {
   return (
     <Dialog open={open} onOpenChange={(next) => !next && onClose()}>
       <DialogContent size="xl">
-        <OrderIntakeForm onDone={onClose} />
+        <OrderIntakeForm
+          key={order?.id ?? "manual"}
+          board={board}
+          refDate={refDate}
+          order={order}
+          onDone={onClose}
+        />
       </DialogContent>
     </Dialog>
   );

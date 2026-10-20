@@ -6,7 +6,7 @@ import { CampaignFormDialog } from "./campaign-form-dialog";
 import { DeleteCampaignDialog } from "./delete-campaign-dialog";
 import { OrderIntakeDialog } from "./order-intake-dialog";
 import { OrderReportDialog } from "./order-report-dialog";
-import type { PantallasDialogState } from "./pantallas-context";
+import { usePantallas, type PantallasDialogState } from "./pantallas-context";
 import { ScreenFormDialog } from "./screen-form-dialog";
 import { SublistFormDialog } from "./sublist-form-dialog";
 
@@ -17,6 +17,8 @@ export function PantallasDialogs({
   dialog: PantallasDialogState;
   onClose: () => void;
 }) {
+  const { board, refDate } = usePantallas();
+
   return (
     <>
       <CampaignFormDialog
@@ -46,7 +48,12 @@ export function PantallasDialogs({
         screenId={dialog?.type === "screen" ? dialog.screenId : null}
         onClose={onClose}
       />
-      <OrderIntakeDialog open={dialog?.type === "order"} onClose={onClose} />
+      <OrderIntakeDialog
+        open={dialog?.type === "order"}
+        onClose={onClose}
+        board={board}
+        refDate={refDate}
+      />
       <OrderReportDialog open={dialog?.type === "report"} onClose={onClose} />
     </>
   );

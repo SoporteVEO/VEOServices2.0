@@ -164,3 +164,71 @@ export interface ScreenInput {
   aliases: string[];
   imageBase64?: string;
 }
+
+export type OrderStatus = "PENDING" | "INGESTED" | "RETURNED";
+
+export type OrderArtFormat = "ANIMATED" | "STATIC" | "VIDEO";
+
+export interface DigitalOrderScreen {
+  screenId: string | null;
+  screenName: string;
+  spotsPerDay: number;
+  monthlyValue: number | null;
+  spotValue: number | null;
+  spotValueManual: boolean;
+  deal: CampaignDeal;
+}
+
+export interface DigitalOrder {
+  id: string;
+  code: string;
+  revision: number;
+  status: OrderStatus;
+  executive: string;
+  entryDate: string;
+  hasAgency: boolean;
+  agencyName: string | null;
+  client: string;
+  campaign: string;
+  artFormat: OrderArtFormat;
+  startDate: string;
+  endDate: string;
+  links: string[];
+  instructions: string | null;
+  totalValue: number;
+  monthlyValue: number;
+  returnReason: string | null;
+  returnedAt: string | null;
+  ingestedAt: string | null;
+  ingestedBy: string | null;
+  orderGroupId: string | null;
+  createdByName: string | null;
+  createdAt: string;
+  updatedAt: string;
+  screens: DigitalOrderScreen[];
+}
+
+export interface SaveOrderScreenInput {
+  screenId: string;
+  spotsPerDay: number;
+  monthlyValue: number | null;
+  spotValue: number | null;
+  spotValueManual: boolean;
+  deal: CampaignDeal;
+}
+
+export interface SaveOrderInput {
+  executive: string;
+  entryDate: string;
+  hasAgency: boolean;
+  agencyName: string;
+  client: string;
+  campaign: string;
+  artFormat: OrderArtFormat;
+  startDate: string;
+  endDate: string;
+  links: string[];
+  instructions: string;
+  monthlyValue: number | null;
+  screens: SaveOrderScreenInput[];
+}

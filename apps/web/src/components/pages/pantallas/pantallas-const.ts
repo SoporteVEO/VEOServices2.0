@@ -1,6 +1,8 @@
 import type {
   CampaignArt,
   CampaignDeal,
+  OrderArtFormat,
+  OrderStatus,
   PantallasLogType,
 } from "@/api/pantallas/pantallas.types";
 
@@ -179,4 +181,24 @@ export const SCREEN_CHANGE_LABELS: Record<string, string> = {
   pausada: "pausada",
   reanudada: "reanudada",
   eliminada: "eliminada",
+};
+
+export const ART_FORMAT_LABELS: Record<OrderArtFormat, string> = {
+  ANIMATED: "Animado",
+  STATIC: "Estático",
+  VIDEO: "Video",
+};
+
+export const ART_FORMAT_OPTIONS: OrderArtFormat[] = ["ANIMATED", "STATIC", "VIDEO"];
+
+export const ORDER_STATUS_LABELS: Record<OrderStatus, string> = {
+  PENDING: "Esperando a Producción",
+  INGESTED: "Ingresada",
+  RETURNED: "Devuelta a Soporte",
+};
+
+export const ORDER_STATUS_TONE: Record<OrderStatus, StatusTone> = {
+  PENDING: "accent",
+  INGESTED: "good",
+  RETURNED: "warning",
 };
