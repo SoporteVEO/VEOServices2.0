@@ -33,6 +33,7 @@ import {
   ReceiptText,
   ClipboardList,
   Lightbulb,
+  Telescope,
 } from "lucide-react";
 import {
   IMAGES_MODULE_FIELD_ROLES,
@@ -155,6 +156,20 @@ export const NAV_GROUPS: NavGroup[] = [
             icon: Car,
             allowedRoles: [],
             requiredSubRoles: ["MANTENIMIENTO"],
+          },
+        ],
+      },
+      {
+        title: "Expansión",
+        href: "/dashboard/expansion",
+        icon: Telescope,
+        children: [
+          {
+            title: "Sitios",
+            href: "/dashboard/expansion/sitios",
+            icon: MapPinned,
+            allowedRoles: [],
+            requiredSubRoles: ["EXPANSION"],
           },
         ],
       },

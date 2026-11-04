@@ -19,6 +19,7 @@ import {
 import { IMAGES_MODULE_ROLES } from '../auth/field-roles.js';
 import {
   AddCollaboratorDto,
+  AttachmentUploadUrlDto,
   CreateFeatureRequestDto,
   ReportProblemDto,
   SignFeatureRequestDto,
@@ -72,6 +73,11 @@ export class FeatureRequestsController {
     return { data: await this.service.createUploadUrl() };
   }
 
+  @Post('attachment-upload-url')
+  async createAttachmentUploadUrl(@Body() dto: AttachmentUploadUrlDto) {
+    return { data: await this.service.createAttachmentUploadUrl(dto) };
+  }
+
   @Post()
   async create(
     @Body() dto: CreateFeatureRequestDto,
@@ -98,6 +104,21 @@ export class FeatureRequestsController {
       id,
       toViewer(user),
       download === 'true',
+    );
+  }
+
+  @Get(':id/attachments/:attachmentId/url')
+  getExtraAttachmentUrl(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Param('attachmentId', ParseUUIDPipe) attachmentId: string,
+    @CurrentUser() user: AuthUser,
+    @Query('download') download?: string,
+  ) {
+    return this.service.getAttachmentUrl(
+      id,
+      toViewer(user),
+      download === 'true',
+      attachmentId,
     );
   }
 

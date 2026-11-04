@@ -9,8 +9,10 @@ import {
   type Prisma,
 } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service.js';
+import { S3StorageService } from '../s3-images/s3-storage.service.js';
 import type {
   ListFeatureRequestsQueryDto,
+  UpdateFeatureRequestDto,
   UpdateFeatureRequestStatusDto,
 } from './dto/feature-requests.dto.js';
 import { FeatureRequestNotifier } from './feature-request-notifier.js';
@@ -20,6 +22,7 @@ import {
   type FeatureRequestViewer,
 } from './feature-request.selects.js';
 import {
+  MAX_ATTACHMENTS,
   STATUS_LABELS,
   formatTicketNumber,
   parseTicketNumber,
@@ -54,6 +57,7 @@ export class FeatureRequestsDevService {
     private readonly prisma: PrismaService,
     private readonly notifier: FeatureRequestNotifier,
     private readonly requests: FeatureRequestsService,
+    private readonly storage: S3StorageService,
   ) {}
 
   async list(query: ListFeatureRequestsQueryDto, viewerId: string) {
@@ -101,6 +105,134 @@ export class FeatureRequestsDevService {
       pageSize,
       counts,
     };
+  }
+
+  async update(
+    id: string,
+    dto: UpdateFeatureRequestDto,
+    viewer: FeatureRequestViewer,
+  ) {
+    const row = await this.prisma.featureRequest.findUnique({
+      where: { id },
+      select: {
+        title: true,
+        summary: true,
+        priority: true,
+        fileS3Key: true,
+        attachments: { select: { id: true, s3Key: true } },
+      },
+    });
+    if (!row) throw new NotFoundException('Solicitud no encontrada');
+    if ((dto.fileKey === undefined) !== (dto.fileName === undefined)) {
+      throw new BadRequestException('Falta el nombre o la clave del archivo');
+    }
+
+    const removeIds = new Set(dto.removeAttachmentIds ?? []);
+    const removed = row.attachments.filter((item) => removeIds.has(item.id));
+    if (removed.length !== removeIds.size) {
+      throw new BadRequestException('Alguno de los archivos ya no existe');
+    }
+    const added = dto.attachments ?? [];
+    const addedKeys = added.map((item) => item.key);
+    if (new Set(addedKeys).size !== addedKeys.length) {
+      throw new BadRequestException('Hay archivos adjuntos repetidos');
+    }
+    if (
+      row.attachments.length - removed.length + added.length >
+      MAX_ATTACHMENTS
+    ) {
+      throw new BadRequestException(
+        `Solo se admiten ${MAX_ATTACHMENTS} archivos adicionales`,
+      );
+    }
+
+    const data: Prisma.FeatureRequestUpdateInput = {};
+    const changes: string[] = [];
+    const title = dto.title?.trim();
+    const summary = dto.summary?.trim();
+    if (title !== undefined && title !== row.title) {
+      data.title = title;
+      changes.push('título');
+    }
+    if (summary !== undefined && summary !== row.summary) {
+      data.summary = summary;
+      changes.push('descripción');
+    }
+    if (dto.priority !== undefined && dto.priority !== row.priority) {
+      data.priority = dto.priority;
+      changes.push('prioridad');
+    }
+    const replacedKey =
+      dto.fileKey !== undefined && dto.fileKey !== row.fileS3Key
+        ? dto.fileKey
+        : undefined;
+    const uploadedKeys = [
+      ...(replacedKey !== undefined ? [replacedKey] : []),
+      ...addedKeys,
+    ];
+    const discardUploads = () =>
+      uploadedKeys.forEach((key) => void this.storage.deleteByKey(key));
+
+    if (removed.length > 0 || added.length > 0 || replacedKey !== undefined) {
+      try {
+        if (replacedKey !== undefined && dto.fileName !== undefined) {
+          data.fileS3Key = replacedKey;
+          data.fileName = dto.fileName.trim();
+          data.fileSize = await this.requests.measureUploadedFile(replacedKey);
+          changes.push('archivo PDF');
+        }
+        if (removed.length > 0 || added.length > 0) {
+          const sizes = await Promise.all(
+            addedKeys.map((key) =>
+              this.requests.measureUploadedFile(key, 'archivo adjunto'),
+            ),
+          );
+          data.attachments = {
+            ...(removed.length > 0
+              ? { deleteMany: { id: { in: removed.map((item) => item.id) } } }
+              : {}),
+            ...(added.length > 0
+              ? {
+                  create: added.map((item, index) => ({
+                    s3Key: item.key,
+                    fileName: item.fileName.trim(),
+                    fileSize: sizes[index],
+                  })),
+                }
+              : {}),
+          };
+          changes.push('archivos adicionales');
+        }
+      } catch (error) {
+        discardUploads();
+        throw error;
+      }
+    }
+
+    if (changes.length === 0) {
+      throw new BadRequestException('No hay cambios que guardar');
+    }
+
+    try {
+      await this.prisma.$transaction(async (tx) => {
+        await tx.featureRequest.update({ where: { id }, data });
+        await tx.featureRequestEvent.create({
+          data: {
+            requestId: id,
+            type: FeatureRequestEventType.EDITED,
+            message: changes.join(', '),
+            actorUserId: viewer.id,
+          },
+        });
+      });
+    } catch (error) {
+      discardUploads();
+      throw error;
+    }
+    if (replacedKey) void this.storage.deleteByKey(row.fileS3Key);
+    removed.forEach((item) => void this.storage.deleteByKey(item.s3Key));
+
+    return this.requests.getDetail(id, viewer);
   }
 
   async updateStatus(

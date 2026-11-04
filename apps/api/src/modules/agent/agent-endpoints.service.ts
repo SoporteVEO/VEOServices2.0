@@ -59,10 +59,16 @@ const HTTP_METHODS: Partial<Record<RequestMethod, HttpMethod>> = {
 
 const WEBHOOK_PATH = /\/webhooks?(\/|$)/;
 
-/** Endpoints that exist for background jobs and must not be used by the assistant. */
+/**
+ * Endpoints the assistant must not use: background jobs, its own model call
+ * (needs the score computed in the browser) and browser-only file uploads.
+ */
 const AGENT_EXCLUDED_ENDPOINTS = new Set([
   'GET /contracts/ending-soon',
   'POST /contracts/worker/ending-soon',
+  'POST /expansion/nexo-insight',
+  'POST /expansion/sites/:id/documents/upload-url',
+  'POST /expansion/sites/:id/documents',
 ]);
 
 @Injectable()

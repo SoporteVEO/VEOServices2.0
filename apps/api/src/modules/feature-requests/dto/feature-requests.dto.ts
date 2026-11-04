@@ -1,4 +1,5 @@
 import { FeatureRequestPriority, FeatureRequestStatus } from '@prisma/client';
+import { Type } from 'class-transformer';
 import {
   ArrayMaxSize,
   Equals,
@@ -7,12 +8,17 @@ import {
   IsIn,
   IsOptional,
   IsString,
+  IsUUID,
   Matches,
   MaxLength,
   MinLength,
+  ValidateNested,
 } from 'class-validator';
 import {
+  ATTACHMENT_FILE_NAME_REGEX,
+  FEATURE_REQUEST_ATTACHMENT_KEY_REGEX,
   FEATURE_REQUEST_FILE_KEY_REGEX,
+  MAX_ATTACHMENTS,
   MAX_COLLABORATORS,
 } from '../feature-requests.constants.js';
 
@@ -24,6 +30,23 @@ export const DEV_SETTABLE_STATUSES = [
   FeatureRequestStatus.COMPLETED,
   FeatureRequestStatus.REJECTED,
 ] as const;
+
+export class AttachmentUploadUrlDto {
+  @IsString()
+  @MaxLength(255)
+  @Matches(ATTACHMENT_FILE_NAME_REGEX, {
+    message: 'El archivo debe ser PDF, Excel o PowerPoint',
+  })
+  fileName!: string;
+}
+
+export class AttachmentDto extends AttachmentUploadUrlDto {
+  @IsString()
+  @Matches(FEATURE_REQUEST_ATTACHMENT_KEY_REGEX, {
+    message: 'key debe ser una clave de archivo válida',
+  })
+  key!: string;
+}
 
 export class CreateFeatureRequestDto {
   @IsString()
@@ -56,6 +79,13 @@ export class CreateFeatureRequestDto {
   @IsString({ each: true })
   @MaxLength(128, { each: true })
   collaboratorIds?: string[];
+
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(MAX_ATTACHMENTS)
+  @ValidateNested({ each: true })
+  @Type(() => AttachmentDto)
+  attachments?: AttachmentDto[];
 }
 
 export class AddCollaboratorDto {
@@ -91,6 +121,50 @@ export class UpdateFeatureRequestStatusDto {
   @IsString()
   @MaxLength(2000)
   message?: string;
+}
+
+export class UpdateFeatureRequestDto {
+  @IsOptional()
+  @IsString()
+  @MinLength(3)
+  @MaxLength(120)
+  title?: string;
+
+  @IsOptional()
+  @IsString()
+  @MinLength(10)
+  @MaxLength(2000)
+  summary?: string;
+
+  @IsOptional()
+  @IsEnum(FeatureRequestPriority)
+  priority?: FeatureRequestPriority;
+
+  @IsOptional()
+  @IsString()
+  @Matches(FEATURE_REQUEST_FILE_KEY_REGEX, {
+    message: 'fileKey debe ser una clave de archivo válida',
+  })
+  fileKey?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(255)
+  @Matches(/\.pdf$/i, { message: 'El archivo debe ser un PDF' })
+  fileName?: string;
+
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(MAX_ATTACHMENTS)
+  @IsUUID('all', { each: true })
+  removeAttachmentIds?: string[];
+
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(MAX_ATTACHMENTS)
+  @ValidateNested({ each: true })
+  @Type(() => AttachmentDto)
+  attachments?: AttachmentDto[];
 }
 
 export class ListFeatureRequestsQueryDto {

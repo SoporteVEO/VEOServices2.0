@@ -10,6 +10,9 @@ type Props = {
   file: File | null;
   onChange: (file: File | null) => void;
   disabled?: boolean;
+  label?: string;
+  emptyLabel?: string;
+  required?: boolean;
 };
 
 export function fileProblem(file: File | null): string | null {
@@ -21,7 +24,14 @@ export function fileProblem(file: File | null): string | null {
   return null;
 }
 
-export function FeatureRequestPdfField({ file, onChange, disabled }: Props) {
+export function FeatureRequestPdfField({
+  file,
+  onChange,
+  disabled,
+  label = "Formato llenado en PDF",
+  emptyLabel = "Elegir el PDF del formato",
+  required = true,
+}: Props) {
   const inputRef = useRef<HTMLInputElement>(null);
   const problem = fileProblem(file);
 
@@ -33,8 +43,8 @@ export function FeatureRequestPdfField({ file, onChange, disabled }: Props) {
   return (
     <div className="flex flex-col gap-2">
       <Label className="text-xs font-semibold text-foreground/85">
-        Formato llenado en PDF
-        <span className="-ml-1 text-destructive">*</span>
+        {label}
+        {required ? <span className="-ml-1 text-destructive">*</span> : null}
       </Label>
       <input
         ref={inputRef}
@@ -70,7 +80,7 @@ export function FeatureRequestPdfField({ file, onChange, disabled }: Props) {
           disabled={disabled}
           onClick={() => inputRef.current?.click()}
         >
-          Elegir el PDF del formato
+          {emptyLabel}
         </Button>
       )}
       {problem ? <p className="text-xs text-destructive">{problem}</p> : null}

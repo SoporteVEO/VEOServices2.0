@@ -127,7 +127,8 @@ export class NotificationsService {
       | 'VENTAS'
       | 'CONTABILIDAD'
       | 'FINANZAS'
-      | 'FACTURACION',
+      | 'FACTURACION'
+      | 'EXPANSION',
     description: string,
     priority: NotificationPriority = 'MEDIUM',
     options: { excludeUserId?: string; href?: string } = {},

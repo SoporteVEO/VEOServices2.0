@@ -29,6 +29,7 @@ export type AgentScopeKey =
   | 'hr'
   | 'production'
   | 'maintenance'
+  | 'expansion'
   | 'shop'
   | 'recovery'
   | 'users'
@@ -162,6 +163,15 @@ export const AGENT_SCOPES: AgentScope[] = [
     allowedRoles: [],
     requiredSubRoles: ['MANTENIMIENTO'],
     pathPrefixes: ['/maintenance', '/fleet'],
+  },
+  {
+    key: 'expansion',
+    label: 'Expansión',
+    description:
+      'Billboard profitability map (ROI vs monthly cost, occupancy) and planned new locations with their surroundings, comments and status.',
+    allowedRoles: [],
+    requiredSubRoles: ['EXPANSION'],
+    pathPrefixes: ['/expansion'],
   },
   {
     key: 'shop',

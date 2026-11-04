@@ -10,6 +10,7 @@ import {
 import { CurrentUser, RequiredSubRoles } from '../auth/decorators.js';
 import {
   ListFeatureRequestsQueryDto,
+  UpdateFeatureRequestDto,
   UpdateFeatureRequestStatusDto,
 } from './dto/feature-requests.dto.js';
 import { DEVELOPER_SUB_ROLE } from './feature-requests.constants.js';
@@ -30,6 +31,19 @@ export class FeatureRequestsDevController {
     @CurrentUser() user: AuthUser,
   ) {
     return this.service.list(query, user.id);
+  }
+
+  @Patch(':id')
+  async update(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: UpdateFeatureRequestDto,
+    @CurrentUser() user: AuthUser,
+  ) {
+    const data = await this.service.update(id, dto, {
+      id: user.id,
+      isDeveloper: true,
+    });
+    return { data };
   }
 
   @Patch(':id/status')

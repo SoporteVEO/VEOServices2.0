@@ -13,6 +13,7 @@ import {
 } from './academy-text.js';
 import { ACADEMY_CATEGORIES } from './content/categories.js';
 import { CRM } from './content/crm.js';
+import { EXPANSION } from './content/expansion.js';
 import { FINANZAS } from './content/finanzas.js';
 import { OPERACION } from './content/operacion.js';
 import { PRIMEROS_PASOS } from './content/primeros-pasos.js';
@@ -33,6 +34,7 @@ const ORDERED_SOURCES: AcademyArticleSource[] = ACADEMY_CATEGORIES.flatMap(
       ...PROCESO_DE_VENTA,
       ...REPORTES,
       ...OPERACION,
+      ...EXPANSION,
       ...FINANZAS,
       ...CRM,
       ...REFERENCIA,

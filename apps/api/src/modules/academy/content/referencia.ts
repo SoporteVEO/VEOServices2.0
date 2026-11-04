@@ -56,6 +56,12 @@ La orden para imprimir e instalar las lonas de una venta. Se crea sola al acepta
 ### Posteado
 Estado de un contrato en Brilo que indica que está confirmado. Solo los contratos posteados y no anulados aparecen en VEO Services.
 
+### Puntaje de ubicación
+Calificación de 0 a 100 de una ubicación planificada en Expansión. Combina tráfico, competencia propia, rentabilidad y ocupación de la zona, densidad y retorno. Ver [El puntaje de ubicación](academy:expansion-ubicaciones#el-puntaje-de-ubicacion).
+
+### Rentabilidad de una valla
+Puntaje de 0 a 100 que compara lo que facturó una valla contra su costo mensual (ROI). Si la valla no tiene costo registrado, se califica por ocupación. Ver [Cómo se calcula la rentabilidad](academy:expansion-mapa#como-se-calcula-la-rentabilidad).
+
 ### Reporte mensual
 Documento PDF con las fotos del mes de las vallas de un contrato, enviada por correo al cliente. También existen el reporte de **instalación** y el de **mantenimiento**. Ver [Enviar reportes](academy:enviar-reporte).
 
@@ -143,6 +149,17 @@ Ahora está dentro del CRM, en **CRM → Clientes**. Ahí puedes crear clientes 
 
 ### ¿Dónde está la empresa o el correo del cliente?
 El cliente solo lleva **nombre** y **tipo**. Los correos y teléfonos están en sus **contactos**, y el **principal** es el que se propone en cotizaciones, mensajes y reportes. Ver [Contactos](academy:crm-clientes-contactos-tareas#contactos).
+
+## Expansión
+
+### ¿Por qué todas las vallas salen calificadas por ocupación?
+Porque todavía no tienen costo mensual registrado. Abre la valla, haz clic en **Ver detalle** y guarda su costo en **Costo mensual de la valla**. Ver [Registrar el costo de una valla](academy:expansion-mapa#registrar-el-costo-de-una-valla).
+
+### Mi ubicación no muestra tráfico ni densidad
+OpenStreetMap no respondió al crearla. Abre la ubicación y, en **Análisis**, haz clic en **Analizar entorno**. Ver [Datos del entorno](academy:expansion-ubicaciones#datos-del-entorno).
+
+### No veo el botón «Pedir opinión a Nexo»
+Nexo no está habilitado para tu cuenta, o la plataforma todavía está consultando el entorno (el botón dice **Analizando entorno...**). Espera unos segundos.
 
 ## Plataforma
 

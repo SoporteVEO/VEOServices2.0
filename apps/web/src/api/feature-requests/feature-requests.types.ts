@@ -16,7 +16,8 @@ export type FeatureRequestEventType =
   | "COLLABORATOR_REMOVED"
   | "SIGNED"
   | "PROBLEM_REPORTED"
-  | "APPROVED";
+  | "APPROVED"
+  | "EDITED";
 
 export type FeatureRequestUser = {
   id: string;
@@ -73,9 +74,16 @@ export type FeatureRequestPermissions = {
   isRequester: boolean;
   isDeveloper: boolean;
   canManageCollaborators: boolean;
+  canEdit: boolean;
   canSign: boolean;
   canReportProblem: boolean;
   canChangeStatus: boolean;
+};
+
+export type FeatureRequestExtraAttachment = {
+  id: string;
+  fileName: string;
+  fileSize: number;
 };
 
 export type FeatureRequestDetail = {
@@ -93,6 +101,7 @@ export type FeatureRequestDetail = {
   updatedAt: string;
   requester: FeatureRequestUser;
   attachment: { fileName: string; fileSize: number };
+  extraAttachments: FeatureRequestExtraAttachment[];
   participants: FeatureRequestParticipant[];
   signatureProgress: { signed: number; required: number };
   signatures: FeatureRequestSignature[];
@@ -113,7 +122,17 @@ export type CreateFeatureRequestInput = {
   summary: string;
   priority: FeatureRequestPriority;
   file: File;
+  attachments: File[];
   collaboratorIds: string[];
+};
+
+export type UpdateFeatureRequestInput = {
+  title: string;
+  summary: string;
+  priority: FeatureRequestPriority;
+  file?: File | null;
+  attachments: File[];
+  removeAttachmentIds: string[];
 };
 
 export type UpdateFeatureRequestStatusInput = {

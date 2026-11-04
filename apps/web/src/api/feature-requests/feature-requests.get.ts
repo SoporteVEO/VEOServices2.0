@@ -80,9 +80,12 @@ export function useDevFeatureRequests(query: ListDevFeatureRequestsQuery) {
 export async function getFeatureRequestAttachmentUrl(
   id: string,
   download: boolean,
+  attachmentId?: string,
 ): Promise<string> {
   const response = await apiFetch<{ url: string }>(
-    `/feature-requests/${id}/attachment-url`,
+    attachmentId
+      ? `/feature-requests/${id}/attachments/${attachmentId}/url`
+      : `/feature-requests/${id}/attachment-url`,
     { query: download ? { download: "true" } : {} },
   );
   return response.url;

@@ -15,6 +15,35 @@ export const FEATURE_REQUEST_FILE_KEY_REGEX = new RegExp(
   `^${FEATURE_REQUEST_FILE_FOLDER}/[A-Za-z0-9-]+\\.pdf$`,
 );
 
+export const FEATURE_REQUEST_ATTACHMENT_FOLDER = 'feature-requests/attachments';
+export const MAX_ATTACHMENTS = 5;
+
+export const ATTACHMENT_MIME_TYPES: Record<string, string> = {
+  pdf: 'application/pdf',
+  xls: 'application/vnd.ms-excel',
+  xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  ppt: 'application/vnd.ms-powerpoint',
+  pptx: 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+};
+
+export const ATTACHMENT_EXTENSIONS = Object.keys(ATTACHMENT_MIME_TYPES);
+
+export const FEATURE_REQUEST_ATTACHMENT_KEY_REGEX = new RegExp(
+  `^${FEATURE_REQUEST_ATTACHMENT_FOLDER}/[A-Za-z0-9-]+\\.(${ATTACHMENT_EXTENSIONS.join('|')})$`,
+);
+
+export const ATTACHMENT_FILE_NAME_REGEX = new RegExp(
+  `\\.(${ATTACHMENT_EXTENSIONS.join('|')})$`,
+  'i',
+);
+
+export function attachmentExtension(fileName: string): string | undefined {
+  const extension = fileName.split('.').pop()?.toLowerCase();
+  return extension && extension in ATTACHMENT_MIME_TYPES
+    ? extension
+    : undefined;
+}
+
 export const MAX_COLLABORATORS = 20;
 
 /** Roles that reach the module, so the only ones worth adding as collaborators. */

@@ -198,6 +198,7 @@ describe('FeatureRequestsDevService.updateStatus', () => {
       prisma as never,
       notifier as never,
       requests as never,
+      { deleteByKey: jest.fn() } as never,
     );
     return { prisma, notifier, service };
   }
@@ -263,6 +264,132 @@ describe('FeatureRequestsDevService.updateStatus', () => {
     expect(prisma.featureRequestEvent.create).toHaveBeenCalledWith({
       data: expect.objectContaining({ type: 'COMMENT', message: 'Avanzando' }),
     });
+  });
+});
+
+describe('FeatureRequestsDevService.update', () => {
+  const current = {
+    title: 'Recordatorio',
+    summary: 'Avisar antes de vencer',
+    priority: 'MEDIUM',
+    fileS3Key: 'feature-requests/files/old.pdf',
+    attachments: [
+      { id: 'att-1', s3Key: 'feature-requests/attachments/a.xlsx' },
+    ],
+  };
+  const dev = { id: 'dev', isDeveloper: true };
+
+  function setup() {
+    const prisma = createPrismaMock();
+    const requests = {
+      getDetail: jest.fn().mockResolvedValue({}),
+      measureUploadedFile: jest.fn().mockResolvedValue(2048),
+    };
+    const storage = { deleteByKey: jest.fn().mockResolvedValue(undefined) };
+    prisma.featureRequest.findUnique.mockResolvedValue(current);
+    const service = new FeatureRequestsDevService(
+      prisma as never,
+      createNotifierMock() as never,
+      requests as never,
+      storage as never,
+    );
+    return { prisma, storage, service };
+  }
+
+  it('saves only the changed fields and records the edit', async () => {
+    const { prisma, service } = setup();
+
+    await service.update(
+      'req-1',
+      { title: 'Recordatorio de contratos', summary: current.summary },
+      dev,
+    );
+
+    expect(prisma.featureRequest.update).toHaveBeenCalledWith({
+      where: { id: 'req-1' },
+      data: { title: 'Recordatorio de contratos' },
+    });
+    expect(prisma.featureRequestEvent.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({ type: 'EDITED', message: 'título' }),
+    });
+  });
+
+  it('replaces the PDF and removes the previous one from storage', async () => {
+    const { prisma, storage, service } = setup();
+
+    await service.update(
+      'req-1',
+      {
+        fileKey: 'feature-requests/files/new.pdf',
+        fileName: 'nuevo.pdf',
+      },
+      dev,
+    );
+
+    expect(prisma.featureRequest.update).toHaveBeenCalledWith({
+      where: { id: 'req-1' },
+      data: {
+        fileS3Key: 'feature-requests/files/new.pdf',
+        fileName: 'nuevo.pdf',
+        fileSize: 2048,
+      },
+    });
+    expect(storage.deleteByKey).toHaveBeenCalledWith(current.fileS3Key);
+  });
+
+  it('removes and adds extra attachments, cleaning up storage', async () => {
+    const { prisma, storage, service } = setup();
+    const attachmentId = '3f2b0f0e-5c1a-4f6e-9a57-7a5f4c0b9e11';
+    prisma.featureRequest.findUnique.mockResolvedValue({
+      ...current,
+      attachments: [
+        { id: attachmentId, s3Key: 'feature-requests/attachments/a.xlsx' },
+      ],
+    });
+
+    await service.update(
+      'req-1',
+      {
+        removeAttachmentIds: [attachmentId],
+        attachments: [
+          { key: 'feature-requests/attachments/b.pdf', fileName: 'b.pdf' },
+        ],
+      },
+      dev,
+    );
+
+    expect(prisma.featureRequest.update).toHaveBeenCalledWith({
+      where: { id: 'req-1' },
+      data: {
+        attachments: {
+          deleteMany: { id: { in: [attachmentId] } },
+          create: [
+            {
+              s3Key: 'feature-requests/attachments/b.pdf',
+              fileName: 'b.pdf',
+              fileSize: 2048,
+            },
+          ],
+        },
+      },
+    });
+    expect(storage.deleteByKey).toHaveBeenCalledWith(
+      'feature-requests/attachments/a.xlsx',
+    );
+  });
+
+  it('rejects removing an attachment that does not exist', async () => {
+    const { service } = setup();
+    await expect(
+      service.update('req-1', { removeAttachmentIds: ['missing'] }, dev),
+    ).rejects.toBeInstanceOf(BadRequestException);
+  });
+
+  it('rejects an update that changes nothing', async () => {
+    const { service } = setup();
+    await expect(
+      service.update('req-1', { title: current.title }, dev),
+    ).rejects.toBeInstanceOf(BadRequestException);
   });
 });
 

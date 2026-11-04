@@ -6,6 +6,7 @@ import {
   Kanban,
   Landmark,
   Rocket,
+  Telescope,
   type LucideIcon,
 } from "lucide-react";
 
@@ -17,6 +18,7 @@ const CATEGORY_ICONS: Record<string, LucideIcon> = {
   landmark: Landmark,
   kanban: Kanban,
   book: BookMarked,
+  telescope: Telescope,
 };
 
 export function academyCategoryIcon(icon: string): LucideIcon {

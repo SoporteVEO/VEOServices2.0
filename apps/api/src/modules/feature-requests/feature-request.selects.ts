@@ -39,6 +39,10 @@ export const DETAIL_SELECT = {
   createdAt: true,
   updatedAt: true,
   requester: { select: USER_SELECT },
+  attachments: {
+    orderBy: { createdAt: 'asc' },
+    select: { id: true, fileName: true, fileSize: true },
+  },
   collaborators: {
     orderBy: { createdAt: 'asc' },
     select: { createdAt: true, user: { select: USER_SELECT } },

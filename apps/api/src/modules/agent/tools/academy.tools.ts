@@ -9,7 +9,7 @@ export function buildAcademyTools() {
   return {
     search_academy: defineTool({
       description:
-        'Searches VEO Academy, the internal how-to guides of VEO Services (sales process, quotes, Brilo contracts, accepting quotes, sending the contract for signature, photo uploads, monthly/installation/maintenance reports, production, screens, maintenance, CRM, glossary, FAQ). Use it for any "how do I", "where is", "what does X mean" or process question about using the platform. Returns the best matching articles with the most relevant section, a snippet and its URL.',
+        'Searches VEO Academy, the internal how-to guides of VEO Services (sales process, quotes, Brilo contracts, accepting quotes, sending the contract for signature, photo uploads, monthly/installation/maintenance reports, production, screens, maintenance, expansion and planned locations, CRM, glossary, FAQ). Use it for any "how do I", "where is", "what does X mean" or process question about using the platform. Returns the best matching articles with the most relevant section, a snippet and its URL.',
       inputSchema: z.object({
         query: z
           .string()

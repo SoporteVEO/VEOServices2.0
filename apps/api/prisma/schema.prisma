@@ -69,6 +69,10 @@ model User {
   featureRequestCollabsAdded FeatureRequestCollaborator[] @relation("FeatureRequestCollaboratorAddedBy")
   featureRequestSignatures   FeatureRequestSignature[]    @relation("FeatureRequestSignatureUser")
   featureRequestEvents       FeatureRequestEvent[]        @relation("FeatureRequestEventActor")
+  expansionSitesCreated      ExpansionSite[]              @relation("ExpansionSiteCreatedBy")
+  expansionSiteComments      ExpansionSiteComment[]       @relation("ExpansionSiteCommentAuthor")
+  expansionSiteDocuments     ExpansionSiteDocument[]      @relation("ExpansionSiteDocumentUploader")
+  expansionBillboardCosts    ExpansionBillboardCost[]     @relation("ExpansionBillboardCostUpdatedBy")
 
   @@map("users")
 }
@@ -334,6 +338,7 @@ enum FeatureRequestEventType {
   SIGNED
   PROBLEM_REPORTED
   APPROVED
+  EDITED
 }
 
 /// A feature a user asks the dev team to build. The filled-in request form is
@@ -360,10 +365,25 @@ model FeatureRequest {
   collaborators   FeatureRequestCollaborator[]
   signatures      FeatureRequestSignature[]
   events          FeatureRequestEvent[]
+  attachments     FeatureRequestAttachment[]
 
   @@index([status, createdAt])
   @@index([requesterId])
   @@map("feature_requests")
+}
+
+/// Optional supporting file (PDF, Excel, PowerPoint) sent along with the request.
+model FeatureRequestAttachment {
+  id        String         @id @default(uuid())
+  requestId String         @map("request_id")
+  request   FeatureRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  s3Key     String         @map("s3_key")
+  fileName  String         @map("file_name")
+  fileSize  Int            @map("file_size")
+  createdAt DateTime       @default(now()) @map("created_at")
+
+  @@index([requestId])
+  @@map("feature_request_attachments")
 }
 
 model FeatureRequestCollaborator {
@@ -848,6 +868,7 @@ enum SubRole {
   CONTABILIDAD
   FINANZAS
   FACTURACION
+  EXPANSION
 }
 
 enum AgentIssueStatus {
@@ -2041,4 +2062,107 @@ model CrmChannelConnection {
   @@unique([userId, provider])
   @@index([provider, externalAccountId])
   @@map("crm_channel_connections")
+}
+
+enum ExpansionSiteStatus {
+  PROPOSED
+  EVALUATING
+  APPROVED
+  DISCARDED
+}
+
+enum ExpansionSitePriority {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+/// A location the Expansión team is considering for a future billboard. It
+/// lives only here; it becomes a Brilo `Sitio` once the billboard is built.
+model ExpansionSite {
+  id       String                @id @default(uuid())
+  number   Int                   @unique @default(autoincrement())
+  name     String
+  status   ExpansionSiteStatus   @default(PROPOSED)
+  priority ExpansionSitePriority @default(MEDIUM)
+
+  latitude       Float
+  longitude      Float
+  address        String?
+  departmentName String? @map("department_name")
+  description    String?
+
+  /// Brilo face type code (`TiposCaras.ticaCodigo`) the site is planned for.
+  formatCode String? @map("format_code")
+  width      Float?
+  height     Float?
+
+  estimatedMonthlyCost  Float? @map("estimated_monthly_cost")
+  estimatedMonthlyPrice Float? @map("estimated_monthly_price")
+
+  /// OpenStreetMap surroundings (road class, density) captured when the site is placed or moved.
+  locationContext Json? @map("location_context")
+
+  createdByUserId String? @map("created_by_user_id")
+  createdBy       User?   @relation("ExpansionSiteCreatedBy", fields: [createdByUserId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  comments  ExpansionSiteComment[]
+  documents ExpansionSiteDocument[]
+
+  @@index([status])
+  @@map("expansion_sites")
+}
+
+model ExpansionSiteComment {
+  id     String        @id @default(uuid())
+  siteId String        @map("site_id")
+  site   ExpansionSite @relation(fields: [siteId], references: [id], onDelete: Cascade)
+
+  body String
+
+  authorUserId String? @map("author_user_id")
+  author       User?   @relation("ExpansionSiteCommentAuthor", fields: [authorUserId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([siteId, createdAt])
+  @@map("expansion_site_comments")
+}
+
+model ExpansionSiteDocument {
+  id     String        @id @default(uuid())
+  siteId String        @map("site_id")
+  site   ExpansionSite @relation(fields: [siteId], references: [id], onDelete: Cascade)
+
+  s3Key    String @map("s3_key")
+  fileName String @map("file_name")
+  mimeType String @map("mime_type")
+  fileSize Int    @map("file_size")
+
+  uploadedByUserId String? @map("uploaded_by_user_id")
+  uploadedBy       User?   @relation("ExpansionSiteDocumentUploader", fields: [uploadedByUserId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([siteId, createdAt])
+  @@map("expansion_site_documents")
+}
+
+/// Monthly operating cost of a Brilo billboard face (land lease, permits,
+/// power...). Brilo does not track it, and it is what turns occupancy and
+/// revenue into rentabilidad.
+model ExpansionBillboardCost {
+  billboardId Int     @id @map("billboard_id")
+  monthlyCost Float   @map("monthly_cost")
+  notes       String?
+
+  updatedByUserId String? @map("updated_by_user_id")
+  updatedBy       User?   @relation("ExpansionBillboardCostUpdatedBy", fields: [updatedByUserId], references: [id], onDelete: SetNull)
+
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("expansion_billboard_costs")
 }

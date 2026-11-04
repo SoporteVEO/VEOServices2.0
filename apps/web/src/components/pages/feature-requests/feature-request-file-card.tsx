@@ -10,11 +10,16 @@ import { formatFileSize } from "./const";
 type Props = {
   requestId: string;
   attachment: { fileName: string; fileSize: number };
+  attachmentId?: string;
 };
 
 type Action = "view" | "download";
 
-export function FeatureRequestFileCard({ requestId, attachment }: Props) {
+export function FeatureRequestFileCard({
+  requestId,
+  attachment,
+  attachmentId,
+}: Props) {
   const [pending, setPending] = useState<Action | null>(null);
 
   async function handle(action: Action) {
@@ -25,6 +30,7 @@ export function FeatureRequestFileCard({ requestId, attachment }: Props) {
       const url = await getFeatureRequestAttachmentUrl(
         requestId,
         action === "download",
+        attachmentId,
       );
       if (tab) {
         tab.opener = null;
@@ -53,7 +59,8 @@ export function FeatureRequestFileCard({ requestId, attachment }: Props) {
       <div className="min-w-0 flex-1">
         <p className="truncate text-sm font-medium">{attachment.fileName}</p>
         <p className="text-xs text-muted-foreground">
-          PDF · {formatFileSize(attachment.fileSize)}
+          {attachment.fileName.split(".").pop()?.toUpperCase()} ·{" "}
+          {formatFileSize(attachment.fileSize)}
         </p>
       </div>
       <div className="flex gap-2">

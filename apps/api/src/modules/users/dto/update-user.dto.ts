@@ -32,6 +32,7 @@ enum SubRole {
   CONTABILIDAD = 'CONTABILIDAD',
   FINANZAS = 'FINANZAS',
   FACTURACION = 'FACTURACION',
+  EXPANSION = 'EXPANSION',
 }
 
 export class UpdateUserDto {

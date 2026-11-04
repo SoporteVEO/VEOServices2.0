@@ -8,7 +8,10 @@ import {
 import { FeatureRequestEventType, FeatureRequestStatus } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { S3StorageService } from '../s3-images/s3-storage.service.js';
-import type { CreateFeatureRequestDto } from './dto/feature-requests.dto.js';
+import type {
+  AttachmentUploadUrlDto,
+  CreateFeatureRequestDto,
+} from './dto/feature-requests.dto.js';
 import { FeatureRequestApprovalService } from './feature-request-approval.service.js';
 import { FeatureRequestNotifier } from './feature-request-notifier.js';
 import {
@@ -24,6 +27,9 @@ import {
   type FeatureRequestViewer,
 } from './feature-request.selects.js';
 import {
+  ATTACHMENT_MIME_TYPES,
+  attachmentExtension,
+  FEATURE_REQUEST_ATTACHMENT_FOLDER,
   FEATURE_REQUEST_FILE_FOLDER,
   FEATURE_REQUEST_ROLES,
   MAX_FEATURE_REQUEST_FILE_BYTES,
@@ -58,6 +64,20 @@ export class FeatureRequestsService {
       extension: 'pdf',
       mimeType: 'application/pdf',
       folder: FEATURE_REQUEST_FILE_FOLDER,
+    });
+  }
+
+  createAttachmentUploadUrl(dto: AttachmentUploadUrlDto) {
+    const extension = attachmentExtension(dto.fileName);
+    if (!extension) {
+      throw new BadRequestException(
+        'El archivo debe ser PDF, Excel o PowerPoint',
+      );
+    }
+    return this.storage.getPresignedPutUrl({
+      extension,
+      mimeType: ATTACHMENT_MIME_TYPES[extension],
+      folder: FEATURE_REQUEST_ATTACHMENT_FOLDER,
     });
   }
 
@@ -99,7 +119,26 @@ export class FeatureRequestsService {
     const collaboratorIds = (
       await this.resolveCollaborators(viewer.id, dto.collaboratorIds ?? [])
     ).map((user) => user.id);
-    const size = await this.measureUploadedFile(dto.fileKey);
+    const attachments = dto.attachments ?? [];
+    const attachmentKeys = attachments.map((item) => item.key);
+    if (new Set(attachmentKeys).size !== attachmentKeys.length) {
+      throw new BadRequestException('Hay archivos adjuntos repetidos');
+    }
+    const allKeys = [dto.fileKey, ...attachmentKeys];
+
+    let size: number;
+    let attachmentSizes: number[];
+    try {
+      size = await this.measureUploadedFile(dto.fileKey);
+      attachmentSizes = await Promise.all(
+        attachmentKeys.map((key) =>
+          this.measureUploadedFile(key, 'archivo adjunto'),
+        ),
+      );
+    } catch (error) {
+      allKeys.forEach((key) => void this.storage.deleteByKey(key));
+      throw error;
+    }
 
     let created: { id: string; number: number; title: string };
     try {
@@ -112,6 +151,13 @@ export class FeatureRequestsService {
           fileS3Key: dto.fileKey,
           fileName: dto.fileName.trim(),
           fileSize: size,
+          attachments: {
+            create: attachments.map((item, index) => ({
+              s3Key: item.key,
+              fileName: item.fileName.trim(),
+              fileSize: attachmentSizes[index],
+            })),
+          },
           collaborators: {
             create: collaboratorIds.map((userId) => ({
               userId,
@@ -129,7 +175,7 @@ export class FeatureRequestsService {
         select: { id: true, number: true, title: true },
       });
     } catch (error) {
-      void this.storage.deleteByKey(dto.fileKey);
+      allKeys.forEach((key) => void this.storage.deleteByKey(key));
       throw error;
     }
 
@@ -164,7 +210,9 @@ export class FeatureRequestsService {
       throw new ConflictException('Esa persona ya participa en la solicitud');
     }
 
-    const [target] = await this.resolveCollaborators(viewer.id, [targetUserId]);
+    const [target] = await this.resolveCollaborators(row.requester.id, [
+      targetUserId,
+    ]);
     await this.prisma.$transaction([
       this.prisma.featureRequestCollaborator.create({
         data: { requestId: id, userId: target.id, addedById: viewer.id },
@@ -226,6 +274,7 @@ export class FeatureRequestsService {
     id: string,
     viewer: FeatureRequestViewer,
     download: boolean,
+    attachmentId?: string,
   ) {
     const row = await this.prisma.featureRequest.findUnique({
       where: { id },
@@ -234,15 +283,25 @@ export class FeatureRequestsService {
         fileName: true,
         requester: { select: { id: true } },
         collaborators: { select: { userId: true } },
+        attachments: {
+          where: attachmentId ? { id: attachmentId } : { id: '' },
+          select: { s3Key: true, fileName: true },
+        },
       },
     });
     if (!row || (!viewer.isDeveloper && !isParticipant(row, viewer.id))) {
       throw new NotFoundException('Solicitud no encontrada');
     }
+    let file = { s3Key: row.fileS3Key, fileName: row.fileName };
+    if (attachmentId) {
+      const [attachment] = row.attachments;
+      if (!attachment) throw new NotFoundException('Archivo no encontrado');
+      file = attachment;
+    }
     const url = await this.storage.getSignedUrl(
-      row.fileS3Key,
+      file.s3Key,
       undefined,
-      download ? row.fileName : undefined,
+      download ? file.fileName : undefined,
     );
     return { url };
   }
@@ -258,10 +317,10 @@ export class FeatureRequestsService {
         collaborators: { select: { userId: true } },
       },
     });
-    if (!row || !isParticipant(row, viewer.id)) {
+    if (!row || (!viewer.isDeveloper && !isParticipant(row, viewer.id))) {
       throw new NotFoundException('Solicitud no encontrada');
     }
-    if (row.requester.id !== viewer.id) {
+    if (!viewer.isDeveloper && row.requester.id !== viewer.id) {
       throw new ForbiddenException(
         'Solo quien creó la solicitud puede gestionar a los colaboradores',
       );
@@ -293,17 +352,19 @@ export class FeatureRequestsService {
     return users;
   }
 
-  private async measureUploadedFile(fileKey: string): Promise<number> {
+  async measureUploadedFile(fileKey: string, label = 'PDF'): Promise<number> {
     let size: number;
     try {
       size = await this.storage.getObjectSize(fileKey);
     } catch {
-      throw new BadRequestException('No se encontró el PDF de la solicitud');
+      throw new BadRequestException(
+        `No se encontró el ${label} de la solicitud`,
+      );
     }
     if (size <= 0 || size > MAX_FEATURE_REQUEST_FILE_BYTES) {
       void this.storage.deleteByKey(fileKey);
       throw new BadRequestException(
-        `El PDF debe pesar menos de ${MAX_FEATURE_REQUEST_FILE_BYTES / (1024 * 1024)}MB`,
+        `El ${label} debe pesar menos de ${MAX_FEATURE_REQUEST_FILE_BYTES / (1024 * 1024)}MB`,
       );
     }
     return size;

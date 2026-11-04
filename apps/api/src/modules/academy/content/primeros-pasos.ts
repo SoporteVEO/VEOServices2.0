@@ -210,6 +210,7 @@ La facturación registrada en Brilo bajo tu nombre como vendedor, por centro de 
 - **Enviar correos** y hacer acciones, siempre pidiéndote aprobación antes.
 - **Consultar Brilo** directamente: clientes, cotizaciones y contratos de vallas, facturas, cuentas por cobrar, contabilidad e inventario.
 - **Mostrar los contratos por vencer** de un periodo o de un vendedor, con la tabla completa, por ejemplo: *"¿Qué contratos vencen en noviembre?"*.
+- **Evaluar ubicaciones de expansión**: dar su opinión sobre un sitio planificado (tráfico, densidad, competencia y rentabilidad) y consultar las vallas más y menos rentables. Ver [Opinión de Nexo](academy:expansion-ubicaciones#opinion-de-nexo).
 
 Nexo solo te muestra información de los módulos a los que tienes acceso.
 
@@ -231,6 +232,7 @@ Escribe como le hablarías a un compañero:
 - *"¿Cómo envío el reporte de instalación al cliente?"*
 - *"¿Qué vallas tengo disponibles en San Salvador en diciembre?"*
 - *"¿Cuánto vendí este mes?"*
+- *"¿Qué ubicaciones planificadas están en evaluación y cuál conviene más?"*
 
 Si la respuesta no es lo que buscabas, dile qué entendió mal. Nexo aprende de tus correcciones.
 

@@ -30,6 +30,10 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import {
+  FeatureRequestAttachmentsField,
+  attachmentsProblem,
+} from "./feature-request-attachments-field";
+import {
   FeatureRequestPdfField,
   fileProblem,
 } from "./feature-request-pdf-field";
@@ -81,6 +85,7 @@ function RequestForm({
   const [summary, setSummary] = useState("");
   const [priority, setPriority] = useState<FeatureRequestPriority>("MEDIUM");
   const [file, setFile] = useState<File | null>(null);
+  const [attachments, setAttachments] = useState<File[]>([]);
   const [collaboratorIds, setCollaboratorIds] = useState<string[]>([]);
 
   const { data: users = [] } = useCollaboratorOptions();
@@ -90,7 +95,8 @@ function RequestForm({
     title.trim().length >= MIN_TITLE_LENGTH &&
     summary.trim().length >= MIN_SUMMARY_LENGTH &&
     file !== null &&
-    fileProblem(file) === null;
+    fileProblem(file) === null &&
+    attachmentsProblem(attachments) === null;
 
   function handleSubmit() {
     if (!file) return;
@@ -100,6 +106,7 @@ function RequestForm({
         summary: summary.trim(),
         priority,
         file,
+        attachments,
         collaboratorIds,
       },
       {
@@ -185,6 +192,12 @@ function RequestForm({
         <FeatureRequestPdfField
           file={file}
           onChange={setFile}
+          disabled={create.isPending}
+        />
+
+        <FeatureRequestAttachmentsField
+          files={attachments}
+          onChange={setAttachments}
           disabled={create.isPending}
         />
 

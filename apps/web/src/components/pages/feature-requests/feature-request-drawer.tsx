@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { PenLine, TriangleAlert, X } from "lucide-react";
+import { Pencil, PenLine, TriangleAlert, X } from "lucide-react";
 import { useFeatureRequest } from "@/api/feature-requests/feature-requests.get";
 import type { FeatureRequestDetail } from "@/api/feature-requests/feature-requests.types";
 import { Button as PrimitiveButton } from "@/components/primitives/ui/button";
@@ -21,6 +21,7 @@ import {
   FeatureRequestPriorityBadge,
   FeatureRequestStatusBadge,
 } from "./feature-request-badges";
+import { FeatureRequestEditDialog } from "./feature-request-edit-dialog";
 import { FeatureRequestFileCard } from "./feature-request-file-card";
 import { FeatureRequestParticipants } from "./feature-request-participants";
 import { FeatureRequestProblemDialog } from "./feature-request-problem-dialog";
@@ -107,14 +108,17 @@ function RequestContent({
               {formatDateTime(request.createdAt)}
             </DrawerDescription>
           </div>
-          <PrimitiveButton
-            variant="ghost"
-            size="icon"
-            onClick={onClose}
-            aria-label="Cerrar"
-          >
-            <X className="size-4" />
-          </PrimitiveButton>
+          <div className="flex shrink-0 items-center gap-1">
+            {permissions.canEdit ? <EditAction request={request} /> : null}
+            <PrimitiveButton
+              variant="ghost"
+              size="icon"
+              onClick={onClose}
+              aria-label="Cerrar"
+            >
+              <X className="size-4" />
+            </PrimitiveButton>
+          </div>
         </div>
       </DrawerHeader>
 
@@ -153,6 +157,20 @@ function RequestContent({
                 attachment={request.attachment}
               />
             </Section>
+            {request.extraAttachments.length > 0 ? (
+              <Section title="Archivos adicionales">
+                <div className="flex flex-col gap-2">
+                  {request.extraAttachments.map((item) => (
+                    <FeatureRequestFileCard
+                      key={item.id}
+                      requestId={request.id}
+                      attachment={item}
+                      attachmentId={item.id}
+                    />
+                  ))}
+                </div>
+              </Section>
+            ) : null}
             <Section
               title="Participantes"
               hint={
@@ -184,6 +202,28 @@ function RequestContent({
           ) : null}
         </DrawerFooter>
       ) : null}
+    </>
+  );
+}
+
+function EditAction({ request }: { request: FeatureRequestDetail }) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <>
+      <Button
+        variant="outline"
+        sizeVariant="sm"
+        icon={Pencil}
+        onClick={() => setOpen(true)}
+      >
+        Editar
+      </Button>
+      <FeatureRequestEditDialog
+        request={request}
+        open={open}
+        onOpenChange={setOpen}
+      />
     </>
   );
 }

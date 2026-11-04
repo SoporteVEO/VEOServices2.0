@@ -62,7 +62,8 @@ export type SubRole =
   | "VENTAS"
   | "CONTABILIDAD"
   | "FINANZAS"
-  | "FACTURACION";
+  | "FACTURACION"
+  | "EXPANSION";
 
 export type User = {
   id: string;

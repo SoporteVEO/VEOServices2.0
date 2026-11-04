@@ -29,6 +29,13 @@ export const ACADEMY_CATEGORIES: AcademyCategory[] = [
     icon: 'factory',
   },
   {
+    id: 'expansion',
+    title: 'Expansión',
+    description:
+      'Rentabilidad de las vallas en el mapa y planificación de ubicaciones nuevas con la opinión de Nexo.',
+    icon: 'telescope',
+  },
+  {
     id: 'finanzas',
     title: 'Finanzas',
     description:

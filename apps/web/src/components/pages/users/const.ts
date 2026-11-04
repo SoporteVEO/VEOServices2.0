@@ -171,6 +171,12 @@ export const subRoleBadge: Record<SubRole, BadgeStyle> = {
     className:
       "border-blue-500/50 bg-blue-500/10 text-blue-700 dark:text-blue-400",
   },
+  EXPANSION: {
+    label: "Expansión",
+    variant: "outline",
+    className:
+      "border-teal-500/50 bg-teal-500/10 text-teal-700 dark:text-teal-400",
+  },
 };
 
 export const SUB_ROLE_OPTIONS: { value: SubRole; label: string; description: string }[] = [
@@ -237,5 +243,11 @@ export const SUB_ROLE_OPTIONS: { value: SubRole; label: string; description: str
     label: "Facturación",
     description:
       "Finanzas · Facturación: facturas de venta, órdenes de facturación, PDF y envío por correo desde Brilo",
+  },
+  {
+    value: "EXPANSION",
+    label: "Expansión",
+    description:
+      "Expansión · Sitios: mapa de vallas con su rentabilidad y planificación de nuevas ubicaciones",
   },
 ];

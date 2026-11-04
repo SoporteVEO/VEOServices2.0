@@ -110,6 +110,7 @@ export async function toDetail(
     updatedAt: row.updatedAt,
     requester: row.requester,
     attachment: { fileName: row.fileName, fileSize: row.fileSize },
+    extraAttachments: row.attachments,
     participants,
     signatureProgress: { signed: progress.signed, required: progress.required },
     signatures,
@@ -117,7 +118,9 @@ export async function toDetail(
     permissions: {
       isRequester,
       isDeveloper: viewer.isDeveloper,
-      canManageCollaborators: isRequester && !isClosed(row.status),
+      canManageCollaborators:
+        (isRequester || viewer.isDeveloper) && !isClosed(row.status),
+      canEdit: viewer.isDeveloper,
       canSign: awaitingSignature,
       canReportProblem: awaitingSignature,
       canChangeStatus:

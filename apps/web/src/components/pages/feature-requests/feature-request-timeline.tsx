@@ -4,6 +4,7 @@ import {
   BadgeCheck,
   MessageSquare,
   PenLine,
+  Pencil,
   Send,
   TriangleAlert,
   UserMinus,
@@ -24,6 +25,7 @@ const EVENT_ICONS: Record<FeatureRequestEventType, LucideIcon> = {
   SIGNED: PenLine,
   PROBLEM_REPORTED: TriangleAlert,
   APPROVED: BadgeCheck,
+  EDITED: Pencil,
 };
 
 function describeEvent(event: FeatureRequestEvent): string {
@@ -45,6 +47,8 @@ function describeEvent(event: FeatureRequestEvent): string {
       return `${actor} reportó un problema y la solicitud volvió a desarrollo`;
     case "APPROVED":
       return "Todos los participantes firmaron: solicitud aprobada";
+    case "EDITED":
+      return `${actor} editó la solicitud${event.message ? ` (${event.message})` : ""}`;
   }
 }
 
@@ -57,6 +61,7 @@ const NAME_MESSAGE_TYPES: FeatureRequestEventType[] = [
   "COLLABORATOR_ADDED",
   "COLLABORATOR_REMOVED",
   "SIGNED",
+  "EDITED",
 ];
 
 export function FeatureRequestTimeline({

@@ -34,6 +34,7 @@ import { AcademyModule } from './modules/academy/academy.module.js';
 import { PatchNotesModule } from './modules/patch-notes/patch-notes.module.js';
 import { FinanceModule } from './modules/finance/finance.module.js';
 import { FeatureRequestsModule } from './modules/feature-requests/feature-requests.module.js';
+import { ExpansionModule } from './modules/expansion/expansion.module.js';
 
 @Module({
   imports: [
@@ -72,6 +73,7 @@ import { FeatureRequestsModule } from './modules/feature-requests/feature-reques
     PatchNotesModule,
     FinanceModule,
     FeatureRequestsModule,
+    ExpansionModule,
   ],
 })
 export class AppModule {}

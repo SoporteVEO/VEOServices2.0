@@ -3,6 +3,7 @@ export type AcademyCategoryId =
   | "proceso-de-venta"
   | "reportes"
   | "operacion"
+  | "expansion"
   | "finanzas"
   | "crm"
   | "referencia";
