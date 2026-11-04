@@ -12,7 +12,12 @@ import {
 import { EmailService, type EmailAttachment } from '../email/email.service.js';
 import { EMAIL_COLORS } from '../email/brand-colors.js';
 import { NotificationsService } from '../notifications/notifications.service.js';
-import { NotificationStatus, ReportType, S3ImageType } from '@prisma/client';
+import {
+  NotificationStatus,
+  ReportType,
+  S3ImageType,
+  type Prisma,
+} from '@prisma/client';
 import type { EndingSoonContract } from './entities/ending-soon-contract.js';
 import type {
   ExpiringContract,
@@ -917,10 +922,7 @@ export class ContractsService {
       where: { code: { in: codes } },
       include: {
         s3Images: {
-          where: {
-            ...(imageType ? { type: imageType } : {}),
-            createdAt: { gte: from, lte: to },
-          },
+          where: buildReportImagesWhere(from, to, imageType),
           include: {
             uploadedUser: {
               select: {
@@ -1162,6 +1164,48 @@ function startOfCurrentMonth(): Date {
 function startOfNextMonth(): Date {
   const now = new Date();
   return new Date(now.getFullYear(), now.getMonth() + 1, 1);
+}
+
+function shiftMonthsUtc(date: Date, amount: number): Date {
+  const shifted = new Date(date);
+  shifted.setUTCMonth(shifted.getUTCMonth() + amount);
+  return shifted;
+}
+
+// Monthly shots must belong to the reported period, while maintenance and
+// installation shots are also accepted from the adjacent months because the
+// work order may be scheduled right before or after the period closes.
+function buildReportImagesWhere(
+  from: Date,
+  to: Date,
+  imageType: S3ImageType | undefined,
+): Prisma.S3ImageWhereInput {
+  const inPeriod = { gte: from, lte: to };
+  const withAdjacentMonths = {
+    gte: shiftMonthsUtc(from, -1),
+    lte: shiftMonthsUtc(to, 1),
+  };
+
+  if (imageType === S3ImageType.STATIC_BILLBOARD_MONTHLY) {
+    return { type: imageType, createdAt: inPeriod };
+  }
+  if (imageType) {
+    return { type: imageType, createdAt: withAdjacentMonths };
+  }
+  return {
+    OR: [
+      { type: S3ImageType.STATIC_BILLBOARD_MONTHLY, createdAt: inPeriod },
+      {
+        type: {
+          in: [
+            S3ImageType.STATIC_BILLBOARD_MAINTENANCE,
+            S3ImageType.STATIC_BILLBOARD_INSTALLATION,
+          ],
+        },
+        createdAt: withAdjacentMonths,
+      },
+    ],
+  };
 }
 
 function clampPage(value: number | undefined): number {

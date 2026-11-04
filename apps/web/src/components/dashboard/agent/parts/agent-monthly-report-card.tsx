@@ -102,7 +102,7 @@ function ContractReportItem({
   async function prepareReport() {
     setProgress({ stage: "Cargando datos", current: 0, total: 1 });
     const group = await loadContractGroup(contract.contractNumber, month);
-    const selection = buildInitialSelection(group);
+    const selection = buildInitialSelection(group, month);
     const report = await buildContractReport({
       group,
       month,

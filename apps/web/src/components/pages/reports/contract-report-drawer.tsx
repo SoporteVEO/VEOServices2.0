@@ -108,7 +108,7 @@ function ContractReportDrawerContent({
   const [preview, setPreview] = useState<S3Image | null>(null);
   const [selectedImageIds, setSelectedImageIds] = useState<
     Record<number, string | null>
-  >(() => buildInitialSelection(group));
+  >(() => buildInitialSelection(group, month));
   const [isSendOpen, setIsSendOpen] = useState(false);
   const [isSending, setIsSending] = useState(false);
   const [progress, setProgress] = useState<ContractReportProgress | null>(null);
@@ -185,7 +185,8 @@ function ContractReportDrawerContent({
               Vallas estáticas ({group.totalBillboards})
             </h3>
             <p className="text-xs text-muted-foreground">
-              Toca una imagen para incluirla en el reporte
+              Toca una imagen para incluirla en el reporte. Se muestran
+              instalaciones y mantenimientos del mes anterior y siguiente.
             </p>
           </div>
           {group.billboards.map((billboard) => (

@@ -10,19 +10,30 @@ import {
   type ContractReportProgress,
   type ContractReportResult,
 } from "./pdf/generate-contract-report";
-import { endOfMonth } from "./report-period";
+import { endOfMonth, startOfMonth } from "./report-period";
 import { BILLBOARD_REPORT_CONFIG } from "./report-types";
 
 /** Selected image per billboard, keyed by `contractDetailSourceId`. */
 export type ReportImageSelection = Record<number, string | null>;
 
-/** Each billboard starts with its most recent image of the month. */
+/**
+ * Each billboard starts with its most recent image of the reported month.
+ * Maintenance and installation images from adjacent months stay available but
+ * are never preselected.
+ */
 export function buildInitialSelection(
   group: ActiveContractGroup,
+  month: Date,
 ): ReportImageSelection {
+  const periodStart = startOfMonth(month).getTime();
+  const periodEnd = endOfMonth(month).getTime();
   const initial: ReportImageSelection = {};
   for (const billboard of group.billboards) {
-    initial[billboard.contractDetailSourceId] = billboard.images[0]?.id ?? null;
+    const image = billboard.images.find((img) => {
+      const createdAt = new Date(img.createdAt).getTime();
+      return createdAt >= periodStart && createdAt <= periodEnd;
+    });
+    initial[billboard.contractDetailSourceId] = image?.id ?? null;
   }
   return initial;
 }
