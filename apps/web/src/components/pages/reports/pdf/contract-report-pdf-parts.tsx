@@ -40,13 +40,20 @@ export function PageFooter({
   label,
   pageNumber,
   marginTop = 36,
+  pinned = false,
 }: {
   label: string;
   pageNumber: number;
   marginTop?: number;
+  pinned?: boolean;
 }) {
   return (
-    <View style={[s.footer, { marginTop: px(marginTop) }]}>
+    <View
+      style={[
+        s.footer,
+        pinned ? s.footerPinned : { marginTop: px(marginTop) },
+      ]}
+    >
       <Text style={s.footerText}>{`VEO · ${label}`}</Text>
       <View style={s.footerPager}>
         <View style={s.square} />

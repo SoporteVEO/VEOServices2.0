@@ -86,6 +86,13 @@ export const reportStyles = StyleSheet.create({
     alignItems: "center",
     marginTop: px(36),
   },
+  footerPinned: {
+    position: "absolute",
+    left: px(PAGE_PADDING),
+    right: px(PAGE_PADDING),
+    bottom: px(PAGE_PADDING),
+    marginTop: 0,
+  },
   footerText: {
     fontWeight: 400,
     fontSize: px(12),

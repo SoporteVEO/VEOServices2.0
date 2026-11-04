@@ -199,8 +199,7 @@ export function ContractReportIndexPage({
         </View>
       </View>
 
-      <View style={s.spacer} />
-      <PageFooter label={data.contractNumber} pageNumber={pageNumber} />
+      <PageFooter label={data.contractNumber} pageNumber={pageNumber} pinned />
     </Page>
   );
 }
