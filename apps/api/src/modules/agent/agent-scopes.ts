@@ -27,6 +27,7 @@ export type AgentScopeKey =
   | 'clients'
   | 'crm'
   | 'hr'
+  | 'mentorships'
   | 'production'
   | 'maintenance'
   | 'expansion'
@@ -143,10 +144,20 @@ export const AGENT_SCOPES: AgentScope[] = [
   {
     key: 'hr',
     label: 'Recursos Humanos',
-    description: 'Team members and medical leaves.',
+    description:
+      'Team members, medical leaves and the Área/Gerencia and Cargo catalogs.',
     allowedRoles: [],
     requiredSubRoles: ['HR'],
-    pathPrefixes: ['/team-members', '/absences'],
+    pathPrefixes: ['/team-members', '/absences', '/hr-catalogs'],
+  },
+  {
+    key: 'mentorships',
+    label: 'Mentorías',
+    description:
+      'Quarterly Keep / Stop / Start mentorships: own sessions, direct reports and, for HR, compliance per area.',
+    allowedRoles: ['ADMIN', 'USER'],
+    requiredSubRoles: ['HR'],
+    pathPrefixes: ['/mentorships'],
   },
   {
     key: 'production',

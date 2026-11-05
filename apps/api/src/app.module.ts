@@ -35,6 +35,7 @@ import { PatchNotesModule } from './modules/patch-notes/patch-notes.module.js';
 import { FinanceModule } from './modules/finance/finance.module.js';
 import { FeatureRequestsModule } from './modules/feature-requests/feature-requests.module.js';
 import { ExpansionModule } from './modules/expansion/expansion.module.js';
+import { MentorshipsModule } from './modules/mentorships/mentorships.module.js';
 
 @Module({
   imports: [
@@ -74,6 +75,7 @@ import { ExpansionModule } from './modules/expansion/expansion.module.js';
     FinanceModule,
     FeatureRequestsModule,
     ExpansionModule,
+    MentorshipsModule,
   ],
 })
 export class AppModule {}

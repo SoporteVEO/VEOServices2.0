@@ -27,10 +27,19 @@ export function TeamMembersTable({
           .join(" "),
     },
     {
-      accessorKey: "position",
+      id: "position",
       header: "Cargo",
       cell: ({ row }) => (
-        <span className="text-sm">{row.original.position}</span>
+        <span className="text-sm">{row.original.position?.name ?? "—"}</span>
+      ),
+    },
+    {
+      id: "department",
+      header: "Área/Gerencia",
+      cell: ({ row }) => (
+        <span className="text-sm text-muted-foreground">
+          {row.original.department?.name ?? "Sin asignar"}
+        </span>
       ),
     },
     {

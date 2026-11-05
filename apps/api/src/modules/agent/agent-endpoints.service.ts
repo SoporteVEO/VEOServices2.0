@@ -61,7 +61,8 @@ const WEBHOOK_PATH = /\/webhooks?(\/|$)/;
 
 /**
  * Endpoints the assistant must not use: background jobs, its own model call
- * (needs the score computed in the browser) and browser-only file uploads.
+ * (needs the score computed in the browser), browser-only file uploads and
+ * mentorship records, which the boss and collaborator sign off in person.
  */
 const AGENT_EXCLUDED_ENDPOINTS = new Set([
   'GET /contracts/ending-soon',
@@ -69,6 +70,11 @@ const AGENT_EXCLUDED_ENDPOINTS = new Set([
   'POST /expansion/nexo-insight',
   'POST /expansion/sites/:id/documents/upload-url',
   'POST /expansion/sites/:id/documents',
+  'GET /mentorships/cron/sweep',
+  'POST /mentorships/sweep',
+  'POST /mentorships',
+  'PATCH /mentorships/:id',
+  'POST /mentorships/:id/acknowledge',
 ]);
 
 @Injectable()

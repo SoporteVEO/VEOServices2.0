@@ -6,6 +6,7 @@ export type AcademyCategoryId =
   | 'expansion'
   | 'finanzas'
   | 'crm'
+  | 'talento-humano'
   | 'referencia';
 
 export interface AcademyCategory {

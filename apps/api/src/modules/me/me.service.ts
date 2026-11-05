@@ -4,6 +4,7 @@ import { PrismaService } from '../prisma/prisma.service.js';
 import { UpdateMeDto } from './dto/update-me.dto.js';
 import { UpdateMyTeamMemberDto } from './dto/update-my-team-member.dto.js';
 import { formatTeamMemberFullName } from '../team-members/team-member-full-name.js';
+import { TEAM_MEMBER_CATALOG_SELECT } from '../team-members/team-members.service.js';
 
 const ME_PUBLIC_SELECT = {
   id: true,
@@ -50,7 +51,10 @@ const TEAM_MEMBER_SELECT = {
   emergencyContactRelationship: true,
   directBossId: true,
   businessEmail: true,
-  position: true,
+  positionId: true,
+  departmentId: true,
+  position: TEAM_MEMBER_CATALOG_SELECT,
+  department: TEAM_MEMBER_CATALOG_SELECT,
   salary: true,
   createdAt: true,
   updatedAt: true,

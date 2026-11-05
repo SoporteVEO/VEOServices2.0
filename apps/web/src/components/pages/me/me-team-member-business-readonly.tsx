@@ -3,6 +3,7 @@
 import {
   Briefcase,
   BadgeCheck,
+  Building2,
   CalendarRange,
   DollarSign,
   Mail,
@@ -32,7 +33,12 @@ export function MeTeamMemberBusinessReadonly({
     {
       icon: Briefcase,
       label: "Cargo",
-      value: teamMember.position,
+      value: teamMember.position?.name,
+    },
+    {
+      icon: Building2,
+      label: "Área/Gerencia",
+      value: teamMember.department?.name,
     },
     {
       icon: Mail,

@@ -6,6 +6,7 @@ import {
   IsNumber,
   IsOptional,
   IsString,
+  IsUUID,
   Min,
 } from 'class-validator';
 
@@ -87,8 +88,11 @@ export class CreateTeamMemberDto {
   @IsEmail()
   businessEmail!: string;
 
-  @IsString()
-  position!: string;
+  @IsUUID()
+  positionId!: string | null;
+
+  @IsUUID()
+  departmentId!: string | null;
 
   @IsNumber()
   @Min(0)

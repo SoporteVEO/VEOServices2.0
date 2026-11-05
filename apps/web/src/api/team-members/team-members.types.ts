@@ -1,3 +1,5 @@
+import type { HrCatalogEntry } from "@/api/hr-catalogs/hr-catalogs.types";
+
 export type TeamMemberUser = {
   id: string;
   firstName: string;
@@ -54,7 +56,10 @@ export type TeamMember = {
   emergencyContactRelationship: string | null;
   directBossId: string | null;
   businessEmail: string;
-  position: string;
+  positionId: string | null;
+  departmentId: string | null;
+  position: HrCatalogEntry | null;
+  department: HrCatalogEntry | null;
   salary: number;
   createdAt: string;
   updatedAt: string;
@@ -92,7 +97,8 @@ export type CreateTeamMemberInput = {
   emergencyContactRelationship?: string | null;
   directBossId?: string | null;
   businessEmail: string;
-  position: string;
+  positionId: string | null;
+  departmentId: string | null;
   salary: number;
 };
 

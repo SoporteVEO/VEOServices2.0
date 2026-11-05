@@ -73,6 +73,9 @@ model User {
   expansionSiteComments      ExpansionSiteComment[]       @relation("ExpansionSiteCommentAuthor")
   expansionSiteDocuments     ExpansionSiteDocument[]      @relation("ExpansionSiteDocumentUploader")
   expansionBillboardCosts    ExpansionBillboardCost[]     @relation("ExpansionBillboardCostUpdatedBy")
+  mentorshipsReceived        MentorshipSession[]          @relation("MentorshipCollaborator")
+  mentorshipsGiven           MentorshipSession[]          @relation("MentorshipMentor")
+  mentorshipRevisions        MentorshipSessionRevision[]  @relation("MentorshipRevisionActor")
 
   @@map("users")
 }
@@ -229,7 +232,10 @@ model TeamMember {
   directBoss                   User?               @relation("TeamMemberDirectBoss", fields: [directBossId], references: [id])
   directBossId                 String?             @map("direct_boss_id")
   businessEmail                String              @unique @map("business_email")
-  position                     String
+  positionId                   String?             @map("position_id")
+  position                     HrPosition?         @relation(fields: [positionId], references: [id])
+  departmentId                 String?             @map("department_id")
+  department                   HrDepartment?       @relation(fields: [departmentId], references: [id])
   salary                       Float
   createdAt                    DateTime            @default(now())
   updatedAt                    DateTime            @updatedAt
@@ -238,7 +244,30 @@ model TeamMember {
   reportSended                 ReportSended[]
 
   @@index([userId])
+  @@index([departmentId])
   @@map("team_members")
+}
+
+/// Catalog of areas / management units (gerencias) HR assigns in Plantilla.
+model HrDepartment {
+  id          String       @id @default(uuid())
+  name        String       @unique
+  teamMembers TeamMember[]
+  createdAt   DateTime     @default(now()) @map("created_at")
+  updatedAt   DateTime     @updatedAt @map("updated_at")
+
+  @@map("hr_departments")
+}
+
+/// Catalog of job positions (cargos) HR assigns in Plantilla.
+model HrPosition {
+  id          String       @id @default(uuid())
+  name        String       @unique
+  teamMembers TeamMember[]
+  createdAt   DateTime     @default(now()) @map("created_at")
+  updatedAt   DateTime     @updatedAt @map("updated_at")
+
+  @@map("hr_positions")
 }
 
 model TeamMemberComment {
@@ -2165,4 +2194,88 @@ model ExpansionBillboardCost {
   updatedAt DateTime @updatedAt @map("updated_at")
 
   @@map("expansion_billboard_costs")
+}
+
+enum MentorshipStartOutcome {
+  YES
+  PARTIAL
+  NO
+}
+
+/// One Keep / Stop / Start mentoring session (sheet VEO-FOR-03) a direct boss
+/// gave to a collaborator. Names, position and area are copied at registration
+/// so the record still reads the same after a change of boss or position.
+/// A collaborator gets at most one session per quarter (`quarter` = "2026-Q4").
+model MentorshipSession {
+  id                     String                      @id @default(uuid())
+  collaboratorId         String                      @map("collaborator_id")
+  collaborator           User                        @relation("MentorshipCollaborator", fields: [collaboratorId], references: [id], onDelete: Cascade)
+  mentorId               String?                     @map("mentor_id")
+  mentor                 User?                       @relation("MentorshipMentor", fields: [mentorId], references: [id], onDelete: SetNull)
+  sessionNumber          Int                         @map("session_number")
+  quarter                String
+  collaboratorName       String                      @map("collaborator_name")
+  collaboratorPosition   String?                     @map("collaborator_position")
+  collaboratorDepartment String?                     @map("collaborator_department")
+  mentorName             String                      @map("mentor_name")
+  sessionDate            DateTime                    @map("session_date") @db.Date
+  nextFollowUpDate       DateTime                    @map("next_follow_up_date") @db.Date
+  /// The session whose Start is evaluated here.
+  previousSessionId      String?                     @unique @map("previous_session_id")
+  previousSession        MentorshipSession?          @relation("MentorshipPreviousSession", fields: [previousSessionId], references: [id], onDelete: SetNull)
+  nextSession            MentorshipSession?          @relation("MentorshipPreviousSession")
+  previousStartOutcome   MentorshipStartOutcome?     @map("previous_start_outcome")
+  previousStartEvidence  String?                     @map("previous_start_evidence")
+  keepWhat               String                      @map("keep_what")
+  keepHow                String                      @map("keep_how")
+  keepWhen               String                      @map("keep_when")
+  keepIndicator          String                      @map("keep_indicator")
+  stopWhat               String                      @map("stop_what")
+  stopHow                String                      @map("stop_how")
+  stopWhen               String                      @map("stop_when")
+  stopIndicator          String                      @map("stop_indicator")
+  startWhat              String                      @map("start_what")
+  startHow               String                      @map("start_how")
+  startWhen              String                      @map("start_when")
+  startIndicator         String                      @map("start_indicator")
+  commitment             String
+  acknowledgedAt         DateTime?                   @map("acknowledged_at")
+  acknowledgementComment String?                     @map("acknowledgement_comment")
+  revisions              MentorshipSessionRevision[]
+  createdAt              DateTime                    @default(now()) @map("created_at")
+  updatedAt              DateTime                    @updatedAt @map("updated_at")
+
+  @@unique([collaboratorId, sessionNumber])
+  @@unique([collaboratorId, quarter])
+  @@index([quarter])
+  @@index([mentorId])
+  @@index([nextFollowUpDate])
+  @@map("mentorship_sessions")
+}
+
+/// Who changed what on a session and when. `changes` is
+/// `{ field, label, from, to }[]`; the actor's name is copied so the trail
+/// survives the account being deleted.
+model MentorshipSessionRevision {
+  id        String            @id @default(uuid())
+  sessionId String            @map("session_id")
+  session   MentorshipSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  actorId   String?           @map("actor_id")
+  actor     User?             @relation("MentorshipRevisionActor", fields: [actorId], references: [id], onDelete: SetNull)
+  actorName String            @map("actor_name")
+  changes   Json
+  reason    String?
+  createdAt DateTime          @default(now()) @map("created_at")
+
+  @@index([sessionId, createdAt])
+  @@map("mentorship_session_revisions")
+}
+
+/// Idempotency keys of the scheduled mentorship notices (quarter start,
+/// overdue, follow-up), so a sweep that runs twice never repeats a notice.
+model MentorshipNotice {
+  key       String   @id
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("mentorship_notices")
 }

@@ -34,6 +34,8 @@ import {
   ClipboardList,
   Lightbulb,
   Telescope,
+  MessagesSquare,
+  CalendarOff,
 } from "lucide-react";
 import {
   IMAGES_MODULE_FIELD_ROLES,
@@ -117,13 +119,6 @@ export const NAV_GROUPS: NavGroup[] = [
         icon: STATIC_BILLBOARD_ICON,
       },
       IMAGES_NAV_ITEM,
-      {
-        title: "Recursos Humanos",
-        href: "/dashboard/rh",
-        icon: BookUser,
-        allowedRoles: [],
-        requiredSubRoles: ["HR"],
-      },
       {
         title: "Producción",
         href: "/dashboard/production",
@@ -280,6 +275,31 @@ export const NAV_GROUPS: NavGroup[] = [
         icon: ReceiptText,
         allowedRoles: [],
         requiredSubRoles: ["FACTURACION"],
+      },
+    ],
+  },
+  {
+    label: "Recursos Humanos",
+    items: [
+      {
+        title: "Plantilla",
+        href: "/dashboard/rh",
+        icon: BookUser,
+        allowedRoles: [],
+        requiredSubRoles: ["HR"],
+      },
+      {
+        title: "Incapacidades",
+        href: "/dashboard/rh/incapacidades",
+        icon: CalendarOff,
+        allowedRoles: [],
+        requiredSubRoles: ["HR"],
+      },
+      {
+        title: "Mentorías",
+        href: "/dashboard/rh/mentorias",
+        icon: MessagesSquare,
+        allowedRoles: ["ADMIN", "USER"],
       },
     ],
   },

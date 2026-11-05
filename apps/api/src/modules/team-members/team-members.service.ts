@@ -23,6 +23,10 @@ const TEAM_MEMBER_DIRECT_BOSS_SELECT = {
   },
 } as const;
 
+export const TEAM_MEMBER_CATALOG_SELECT = {
+  select: { id: true, name: true },
+} as const;
+
 const TEAM_MEMBER_SELECT = {
   id: true,
   userId: true,
@@ -46,7 +50,10 @@ const TEAM_MEMBER_SELECT = {
   emergencyContactRelationship: true,
   directBossId: true,
   businessEmail: true,
-  position: true,
+  positionId: true,
+  departmentId: true,
+  position: TEAM_MEMBER_CATALOG_SELECT,
+  department: TEAM_MEMBER_CATALOG_SELECT,
   salary: true,
   createdAt: true,
   updatedAt: true,
@@ -103,6 +110,26 @@ export class TeamMembersService {
     }
   }
 
+  private async assertCatalogEntriesExist(
+    positionId: string | null | undefined,
+    departmentId: string | null | undefined,
+  ) {
+    const [position, department] = await Promise.all([
+      positionId
+        ? this.prisma.hrPosition.findUnique({ where: { id: positionId } })
+        : null,
+      departmentId
+        ? this.prisma.hrDepartment.findUnique({ where: { id: departmentId } })
+        : null,
+    ]);
+    if (positionId && !position) {
+      throw new NotFoundException('Cargo no encontrado');
+    }
+    if (departmentId && !department) {
+      throw new NotFoundException('Área / gerencia no encontrada');
+    }
+  }
+
   async create(dto: CreateTeamMemberDto) {
     const user = await this.prisma.user.findUnique({
       where: { id: dto.userId },
@@ -126,6 +153,7 @@ export class TeamMembersService {
     }
 
     await this.assertDirectBossValid(dto.directBossId ?? null, dto.userId);
+    await this.assertCatalogEntriesExist(dto.positionId, dto.departmentId);
 
     const fullName = formatTeamMemberFullName({
       firstName: dto.firstName,
@@ -154,7 +182,12 @@ export class TeamMembersService {
       emergencyContactPhone: dto.emergencyContactPhone ?? null,
       emergencyContactRelationship: dto.emergencyContactRelationship ?? null,
       businessEmail: dto.businessEmail,
-      position: dto.position,
+      ...(dto.positionId
+        ? { position: { connect: { id: dto.positionId } } }
+        : {}),
+      ...(dto.departmentId
+        ? { department: { connect: { id: dto.departmentId } } }
+        : {}),
       salary: dto.salary,
       ...(dto.directBossId
         ? { directBoss: { connect: { id: dto.directBossId } } }
@@ -250,6 +283,7 @@ export class TeamMembersService {
 
     const targetUserId = dto.userId ?? member.userId;
     await this.assertDirectBossValid(dto.directBossId ?? null, targetUserId);
+    await this.assertCatalogEntriesExist(dto.positionId, dto.departmentId);
 
     const firstName = dto.firstName ?? member.firstName;
     const lastName =
@@ -274,7 +308,16 @@ export class TeamMembersService {
       ...(dto.businessEmail !== undefined
         ? { businessEmail: dto.businessEmail }
         : {}),
-      ...(dto.position !== undefined ? { position: dto.position } : {}),
+      ...(dto.positionId !== undefined
+        ? dto.positionId
+          ? { position: { connect: { id: dto.positionId } } }
+          : { position: { disconnect: true } }
+        : {}),
+      ...(dto.departmentId !== undefined
+        ? dto.departmentId
+          ? { department: { connect: { id: dto.departmentId } } }
+          : { department: { disconnect: true } }
+        : {}),
       ...(dto.salary !== undefined ? { salary: dto.salary } : {}),
       ...(dto.dui !== undefined ? { dui: dto.dui || null } : {}),
       ...(dto.inss !== undefined ? { inss: dto.inss || null } : {}),
@@ -320,10 +363,26 @@ export class TeamMembersService {
         : {}),
     };
 
-    return this.prisma.teamMember.update({
-      where: { id },
-      data,
-      select: TEAM_MEMBER_SELECT,
+    const shouldDisableAccount =
+      dto.status === TeamMemberStatus.INACTIVE ||
+      dto.status === TeamMemberStatus.TERMINATED;
+
+    return this.prisma.$transaction(async (tx) => {
+      const updated = await tx.teamMember.update({
+        where: { id },
+        data,
+        select: TEAM_MEMBER_SELECT,
+      });
+
+      if (shouldDisableAccount) {
+        await tx.user.update({
+          where: { id: targetUserId },
+          data: { disabled: true },
+        });
+        await tx.session.deleteMany({ where: { userId: targetUserId } });
+      }
+
+      return updated;
     });
   }
 

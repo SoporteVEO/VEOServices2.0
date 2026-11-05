@@ -64,7 +64,9 @@ export function ProfileHeader({
               </p>
               {teamMember?.position ? (
                 <p className="mt-0.5 truncate text-sm text-muted-foreground">
-                  {teamMember.position}
+                  {[teamMember.position.name, teamMember.department?.name]
+                    .filter(Boolean)
+                    .join(" · ")}
                 </p>
               ) : null}
 

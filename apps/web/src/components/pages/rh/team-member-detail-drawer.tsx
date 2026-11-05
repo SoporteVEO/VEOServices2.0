@@ -67,6 +67,7 @@ import {
   TextEditField,
 } from "@/components/ui/edit-field";
 import { cn } from "@/lib/utils";
+import { HrCatalogEditField } from "./hr-catalog-fields";
 
 type TeamMemberDetailDrawerProps = {
   teamMemberId: string | null;
@@ -427,13 +428,20 @@ function TeamMemberDetailContent({
                 onSubmit={(v) => update({ businessEmail: v ?? "" })}
               />
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <TextEditField
-                  label="Cargo"
-                  required
-                  initialValue={detail.position}
+                <HrCatalogEditField
+                  kind="positions"
+                  entry={detail.position}
                   isPending={isPending}
-                  onSubmit={(v) => update({ position: v ?? "" })}
+                  onSubmit={(v) => update({ positionId: v })}
                 />
+                <HrCatalogEditField
+                  kind="departments"
+                  entry={detail.department}
+                  isPending={isPending}
+                  onSubmit={(v) => update({ departmentId: v })}
+                />
+              </div>
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
                 <NumberEditField
                   label="Salario"
                   required
@@ -444,8 +452,6 @@ function TeamMemberDetailContent({
                   display={(v) => formatMoney(v)}
                   onSubmit={(v) => update({ salary: v })}
                 />
-              </div>
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <SelectEditField
                   label="Tipo de contrato"
                   initialValue={detail.contractType}

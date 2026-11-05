@@ -27,6 +27,7 @@ export const PRIMEROS_PASOS: AcademyArticleSource[] = [
 | Producción o instalación | [Órdenes de producción e instalación](academy:produccion). |
 | Pantallas digitales | [Pantallas digitales: campañas y ocupación](academy:pantallas). |
 | Mantenimiento | [Mantenimiento de vallas y flota](academy:mantenimiento). |
+| Jefe de equipo o Talento Humano | [Mentorías Keep / Stop / Start](academy:mentorias). |
 | Nuevo en VEO | [Conoce VEO Services](academy:conoce-veo-services) y el [glosario](academy:glosario). |
 | Quieres pedir una mejora a la plataforma | [Solicitar una nueva funcionalidad](academy:solicitar-funcionalidad). |
 
@@ -116,6 +117,11 @@ Registro de clientes **directos** y **agencias** usados en las cotizaciones, con
 
 ### CRM (Ventas)
 El seguimiento comercial: pipeline de negocios, reservas de sitios, renovaciones, correos y WhatsApp. Ver [CRM de Ventas](academy:crm-introduccion).
+
+### Recursos Humanos
+**Plantilla** e **Incapacidades** son para Talento Humano. **Mentorías** es para todos: el jefe directo registra cada trimestre la retroalimentación Keep / Stop / Start de su equipo y el colaborador la confirma. Ver [Mentorías Keep / Stop / Start](academy:mentorias).
+
+[Abrir Mentorías](app:/dashboard/rh/mentorias)
 
 ### Tienda
 La tienda en línea pública y las órdenes recibidas. Ver [Tienda en línea](academy:tienda-en-linea).
@@ -211,6 +217,7 @@ La facturación registrada en Brilo bajo tu nombre como vendedor, por centro de 
 - **Consultar Brilo** directamente: clientes, cotizaciones y contratos de vallas, facturas, cuentas por cobrar, contabilidad e inventario.
 - **Mostrar los contratos por vencer** de un periodo o de un vendedor, con la tabla completa, por ejemplo: *"¿Qué contratos vencen en noviembre?"*.
 - **Evaluar ubicaciones de expansión**: dar su opinión sobre un sitio planificado (tráfico, densidad, competencia y rentabilidad) y consultar las vallas más y menos rentables. Ver [Opinión de Nexo](academy:expansion-ubicaciones#opinion-de-nexo).
+- **Dar seguimiento a las mentorías**: qué mentorías de tu equipo faltan este trimestre, el último Start de un colaborador o, si eres de Talento Humano, el avance por área. Ver [Mentorías Keep / Stop / Start](academy:mentorias).
 
 Nexo solo te muestra información de los módulos a los que tienes acceso.
 
@@ -233,6 +240,7 @@ Escribe como le hablarías a un compañero:
 - *"¿Qué vallas tengo disponibles en San Salvador en diciembre?"*
 - *"¿Cuánto vendí este mes?"*
 - *"¿Qué ubicaciones planificadas están en evaluación y cuál conviene más?"*
+- *"¿A quién de mi equipo le falta la mentoría de este trimestre?"*
 
 Si la respuesta no es lo que buscabas, dile qué entendió mal. Nexo aprende de tus correcciones.
 

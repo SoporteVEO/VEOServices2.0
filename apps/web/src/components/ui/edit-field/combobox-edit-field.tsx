@@ -5,7 +5,11 @@ import {
   Editable,
   EditableArea,
 } from "@/components/primitives/ui/editable";
-import { Combobox, type ComboboxOption } from "@/components/ui/combobox";
+import {
+  CreatableCombobox,
+  type ComboboxOption,
+  type CreatableComboboxProps,
+} from "@/components/ui/combobox";
 import {
   EditFieldPreview,
   EditFieldShell,
@@ -23,6 +27,8 @@ export type ComboboxEditFieldProps = {
   required?: boolean;
   isPending: boolean;
   onSubmit: (value: string | null) => Promise<void>;
+  onCreate?: CreatableComboboxProps["onCreate"];
+  createLabel?: CreatableComboboxProps["createLabel"];
 };
 
 export function ComboboxEditField({
@@ -36,6 +42,8 @@ export function ComboboxEditField({
   required,
   isPending,
   onSubmit,
+  onCreate,
+  createLabel,
 }: ComboboxEditFieldProps) {
   const [draft, setDraft] = useState<string | null>(initialValue);
   const [editing, setEditing] = useState(false);
@@ -72,7 +80,9 @@ export function ComboboxEditField({
         <EditableArea className="block w-full">
           {editing ? (
             <div className="flex flex-col gap-2">
-              <Combobox
+              <CreatableCombobox
+                onCreate={onCreate}
+                createLabel={createLabel}
                 options={options}
                 value={draft ?? undefined}
                 selectedOption={selectedOption}

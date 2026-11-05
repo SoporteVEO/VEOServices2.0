@@ -20,6 +20,7 @@ import { PRIMEROS_PASOS } from './content/primeros-pasos.js';
 import { PROCESO_DE_VENTA } from './content/proceso-de-venta.js';
 import { REFERENCIA } from './content/referencia.js';
 import { REPORTES } from './content/reportes.js';
+import { TALENTO_HUMANO } from './content/talento-humano.js';
 
 export interface AcademyEntry {
   source: AcademyArticleSource;
@@ -37,6 +38,7 @@ const ORDERED_SOURCES: AcademyArticleSource[] = ACADEMY_CATEGORIES.flatMap(
       ...EXPANSION,
       ...FINANZAS,
       ...CRM,
+      ...TALENTO_HUMANO,
       ...REFERENCIA,
     ].filter((article) => article.category === category.id),
 );

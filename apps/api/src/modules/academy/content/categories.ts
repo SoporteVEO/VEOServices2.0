@@ -50,6 +50,13 @@ export const ACADEMY_CATEGORIES: AcademyCategory[] = [
     icon: 'kanban',
   },
   {
+    id: 'talento-humano',
+    title: 'Talento Humano',
+    description:
+      'Mentorías trimestrales Keep / Stop / Start, seguimiento de cumplimiento y Plantilla.',
+    icon: 'users',
+  },
+  {
     id: 'referencia',
     title: 'Referencia',
     description: 'Glosario de términos y preguntas frecuentes.',

@@ -27,6 +27,7 @@ import {
   STATUS_LABELS,
 } from "@/lib/team-member-labels";
 import { parseYYYYMMDD, toYYYYMMDD } from "@/lib/format";
+import { HrCatalogCombobox } from "./hr-catalog-fields";
 
 export type TeamMemberFormValues = {
   userId: string;
@@ -34,7 +35,8 @@ export type TeamMemberFormValues = {
   lastName: string;
   secondLastName: string;
   businessEmail: string;
-  position: string;
+  positionId: string | null;
+  departmentId: string | null;
   salary: number;
   dui: string;
   inss: string;
@@ -85,7 +87,8 @@ export function TeamMemberForm({
         lastName: "",
         secondLastName: "",
         businessEmail: "",
-        position: "",
+        positionId: null,
+        departmentId: null,
         salary: 0,
         dui: "",
         inss: "",
@@ -227,11 +230,34 @@ export function TeamMemberForm({
             {...register("businessEmail", { required: true })}
           />
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Input
-              label="Cargo"
-              required
-              {...register("position", { required: true })}
+            <Controller
+              control={control}
+              name="positionId"
+              rules={{ required: true }}
+              render={({ field }) => (
+                <HrCatalogCombobox
+                  kind="positions"
+                  required
+                  value={field.value}
+                  onChange={field.onChange}
+                />
+              )}
             />
+            <Controller
+              control={control}
+              name="departmentId"
+              rules={{ required: true }}
+              render={({ field }) => (
+                <HrCatalogCombobox
+                  kind="departments"
+                  required
+                  value={field.value}
+                  onChange={field.onChange}
+                />
+              )}
+            />
+          </div>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
             <Input
               label="Salario"
               required
@@ -243,8 +269,6 @@ export function TeamMemberForm({
                 min: 0,
               })}
             />
-          </div>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Controller
               control={control}
               name="contractType"

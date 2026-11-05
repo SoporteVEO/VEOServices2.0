@@ -450,7 +450,11 @@ export class DashboardAnalyticsService {
     const [teamMembers, users] = await Promise.all([
       this.prisma.teamMember.findMany({
         where: { userId: { in: userIds } },
-        select: { userId: true, fullName: true, position: true },
+        select: {
+          userId: true,
+          fullName: true,
+          position: { select: { name: true } },
+        },
       }),
       this.prisma.user.findMany({
         where: { id: { in: userIds } },
@@ -476,7 +480,7 @@ export class DashboardAnalyticsService {
       return {
         userId: g.createdByUserId,
         fullName,
-        position: member?.position ?? null,
+        position: member?.position?.name ?? null,
         email: user?.email ?? null,
         offerCount: g._count?._all ?? 0,
         totalRentalAmount: Number(g._sum?.totalRental ?? 0),

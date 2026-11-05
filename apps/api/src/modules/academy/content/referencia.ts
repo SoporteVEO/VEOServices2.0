@@ -41,6 +41,12 @@ La propuesta económica que se envía al cliente, con número como **COT0001/26*
 ### Ejecutivo
 El vendedor responsable de un contrato en Brilo. Define en qué **Mi Espacio** aparece el contrato y a quién se le atribuye la facturación.
 
+### Keep / Stop / Start
+El formato de las [mentorías](#mentoria): qué conducta **mantener** (Keep), cuál **dejar de hacer** (Stop) y cuál **empezar a hacer** (Start). Cada uno lleva qué, cómo, cuándo e indicador. Ver [Acuerdos Keep / Stop / Start](academy:mentorias#acuerdos-keep-stop-start).
+
+### Mentoría
+La sesión trimestral en la que el jefe directo acuerda con su colaborador un Keep, un Stop y un Start. Vence el último día del primer mes del trimestre y el colaborador la confirma de recibido. Ver [Mentorías Keep / Stop / Start](academy:mentorias).
+
 ### Negocio
 Una oportunidad de venta dentro del [CRM](academy:crm-introduccion). Avanza por etapas hasta **Ganado** o **Perdido**.
 
@@ -160,6 +166,17 @@ OpenStreetMap no respondió al crearla. Abre la ubicación y, en **Análisis**, 
 
 ### No veo el botón «Pedir opinión a Nexo»
 Nexo no está habilitado para tu cuenta, o la plataforma todavía está consultando el entorno (el botón dice **Analizando entorno...**). Espera unos segundos.
+
+## Mentorías
+
+### No veo a un colaborador en Mi equipo
+Revisa en la **Plantilla** que esté **activo** y que tú seas su **Jefe directo**. Si entró durante este trimestre, su primera mentoría es en el siguiente. Ver [Trimestre y fecha límite](academy:mentorias#trimestre-y-fecha-limite).
+
+### Me equivoqué en una mentoría que ya confirmó el colaborador
+Después de la confirmación solo **Talento Humano** puede corregirla, indicando el motivo. Pídeselo a Talento Humano. Ver [Corregir una sesión confirmada](academy:mentorias-talento-humano#corregir-una-sesion-confirmada).
+
+### La mentoría venció, ¿todavía puedo registrarla?
+Sí. Aparece como **Vencida** en **Mi equipo** y puedes registrarla igual. Al guardarla pasa a **Realizada**.
 
 ## Plataforma
 
