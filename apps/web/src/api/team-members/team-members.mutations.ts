@@ -38,6 +38,7 @@ export function useUpdateTeamMember() {
     onSuccess: (_data, variables) => {
       qc.invalidateQueries({ queryKey: ["team-members"] });
       qc.invalidateQueries({ queryKey: ["team-member", variables.id] });
+      qc.invalidateQueries({ queryKey: ["users"] });
     },
   });
 }

@@ -83,6 +83,11 @@ export function NotificationItem({
           <span>{formatNotificationTime(notification.createdAt)}</span>
           <span aria-hidden>•</span>
           <span>Prioridad {visual.label.toLowerCase()}</span>
+          {isPending ? (
+            <span className="ms-auto bg-primary/10 px-1.5 py-0.5 text-[10px] font-semibold uppercase leading-none text-primary">
+              Pendiente
+            </span>
+          ) : null}
         </div>
       </div>
     </>
@@ -107,7 +112,7 @@ export function NotificationItem({
       {isPending ? (
         <span
           aria-hidden
-          className="absolute left-1.5 top-1/2 size-1.5 -translate-y-1/2 bg-primary"
+          className="absolute left-1.5 top-1/2 size-2 -translate-y-1/2 rounded-full bg-primary"
         />
       ) : null}
       {href ? (

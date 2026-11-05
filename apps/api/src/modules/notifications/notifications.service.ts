@@ -171,7 +171,7 @@ export class NotificationsService {
         userId,
         status: { in: ['PENDING', 'VIEWED'] },
       },
-      orderBy: [{ status: 'asc' }, { createdAt: 'desc' }],
+      orderBy: { createdAt: 'desc' },
       select: NOTIFICATION_SELECT,
     });
     return rows.map((row) => this.serialize(row as NotificationRow));
